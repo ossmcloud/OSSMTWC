@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/email', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', '../../O/oTWC_themes.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js'],
-    (email, file, core, https, b64, oStyles, twcThemes, twcIcons, twcConfig, dialog, twcUI, uiTable) => {
+define(['N/email', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', '../../O/oTWC_themes.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_permissions.js'],
+    (email, file, core, https, b64, oStyles, twcThemes, twcIcons, twcConfig, dialog, twcUI, uiTable, permissions) => {
 
         class TWCPageBase {
             #options = null;
@@ -169,13 +169,13 @@ define(['N/email', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundl
             }
         }
 
-        function initPageData(data) {
+        function initPageData(context, data) {
             return {
-                userInfo: twcConfig.userInfo(),
+                userInfo: twcConfig.userInfo(context),
                 options: {},
                 themes: twcThemes.get(),
                 userPref: twcConfig.getUserPref(),
-                data: data,
+                data: data || {},
                 icons: twcIcons.ICONS,
             }
         }
@@ -198,10 +198,22 @@ define(['N/email', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundl
             html = html.replaceAll('{PAGE_DATA}', b64.encode(JSON.stringify(pageData)));
             html = html.replaceAll('{PAGE_VERSION}', pageVersion);
 
-            // @@TODO: based on userInfo populate core page menus and similar
-
-            var htmlPage = file.load(`SuiteScripts/OSSMTWC/ui/views/${viewName}.html`).getContents();
+            var htmlPage = '';
+            if (userInfo.permission.lvl == permissions.LEVEL.NONE) {
+                htmlPage = file.load(`SuiteScripts/OSSMTWC/ui/views/oTWC_permissionError.html`).getContents();
+                htmlPage = htmlPage.replaceAll('{FEATURE_NAME}', userInfo.permission.feature);    
+                html = html.replaceAll('{PERMISSION_ICON}', twcIcons.ICONS.exclamation);
+            } else {
+                // @@TODO: based on userInfo populate core page menus and similar
+                htmlPage = file.load(`SuiteScripts/OSSMTWC/ui/views/${viewName}.html`).getContents();
+                if (userInfo.permission.lvl == permissions.LEVEL.VIEW) {
+                    html = html.replaceAll('{PERMISSION_ICON}', twcIcons.ICONS.readOnly);   
+                } else {
+                    html = html.replaceAll('{PERMISSION_ICON}', '');
+                }
+            }
             html = html.replaceAll('{PAGE_CONTENT}', htmlPage);
+            
 
             pageData.userInfo = userInfo;
             return html;

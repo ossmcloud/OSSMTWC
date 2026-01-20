@@ -11,7 +11,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var suiteLet = uis.new({ title: 'TWC Site Locator', script: 'SuiteScripts/OSSMTWC/ui/oTWC_siteLocator_cs.js' });   
         suiteLet.get = (context, s) => {
             
-            var pageData = twcBaseView.initPageData({ });
+            var pageData = twcBaseView.initPageData(context);
             var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocator');
             
             

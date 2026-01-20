@@ -132,6 +132,10 @@ span.twc-sub-title {
     display: inline-block;
 }
 
+.twc_action_icon {
+    display: inline-block;
+}
+
 .twc_action_text {
     text-align: center;
     color: var(--label-color);
@@ -327,6 +331,9 @@ div.twc-container-outer {
     border: 1px solid var(--grid-color);
     height: 80vh;
     overflow: hidden;
+}
+div.twc-container-inner {
+    padding: 3px 7px;
 }
 
 div.twc-container {
