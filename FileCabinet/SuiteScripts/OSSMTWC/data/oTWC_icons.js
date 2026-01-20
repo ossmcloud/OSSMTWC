@@ -451,9 +451,9 @@ define([],
         }
 
         const UNDER_CONSTRUCTION = `    
-            <div class="app-table-div">
+            <div class="twc-container-inner" style="width: 100%; text-align: center; padding-top: 17px;">
                 <div>
-                    <div style="width: 70px;">
+                    <div>
                         ${get('gear', 64)}
                     </div>
                     <div>

@@ -1,2 +1,21 @@
 TODO:
 -----
+
+
+
+
+
+
+
+ADD FEATURE:
+------------
+
+01. Create Files:
+    FileCabinet\SuiteScripts\OSSMTWC\ui\oTWC_{FEATURE_NAME}_sl.js
+    FileCabinet\SuiteScripts\OSSMTWC\ui\oTWC_{FEATURE_NAME}_cs.js
+    FileCabinet\SuiteScripts\OSSMTWC\ui\js\oTWC_{FEATURE_NAME}.js
+    FileCabinet\SuiteScripts\OSSMTWC\ui\modules\oTWC_{FEATURE_NAME}Utils.js
+
+02. Deploy suitelet (get script id)
+
+03. Add record to table: OSSMTWC - Role Feature List

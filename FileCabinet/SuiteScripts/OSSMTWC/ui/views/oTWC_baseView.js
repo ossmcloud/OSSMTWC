@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/email', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', '../../O/oTWC_themes.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_permissions.js'],
-    (email, file, core, https, b64, oStyles, twcThemes, twcIcons, twcConfig, dialog, twcUI, uiTable, permissions) => {
+define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', '../../O/oTWC_themes.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_permissions.js'],
+    (email, file, url, core, https, b64, oStyles, twcThemes, twcIcons, twcConfig, dialog, twcUI, uiTable, permissions) => {
 
         class TWCPageBase {
             #options = null;
@@ -20,6 +20,8 @@ define(['N/email', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundl
                 if (pageData) { pageData = b64.decode(pageData); }
                 if (pageData) { this.#data = JSON.parse(pageData || '{}'); }
                 console.log(this.#data)
+
+
 
             }
 
@@ -58,7 +60,18 @@ define(['N/email', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundl
                     var params = this.ui.getValues();
                     window.location.href = core.url.script(this.#options.scriptId, params);
                 })
-                this.ui.on('change', e => { refreshButton.addClass('twc-highlighted') })
+                this.ui.on('change', e => {
+                    if (e.id == 'twc-navigation-select') {
+                        location.href = url.resolveScript({
+                            scriptId: e.value,
+                            deploymentId: 1,    // @@HARDCODED: we should only have one deployment per script
+                        });
+
+
+                    } else {
+                        refreshButton.addClass('twc-highlighted')
+                    }
+                })
 
             }
 
@@ -184,13 +197,14 @@ define(['N/email', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundl
             var css = file.load('SuiteScripts/OSSMTWC/ui/css/oTWC.css').getContents();
             css += file.load('SuiteScripts/OSSMTWC/O/css/html.styles.css').getContents();
             css = css.replace('/*THEME*/', twcThemes.css(pageData.userPref.theme));
-            
-            var html = file.load(`SuiteScripts/OSSMTWC/ui/views/oTWC_pageBase.html`).getContents();           
+
+            var html = file.load(`SuiteScripts/OSSMTWC/ui/views/oTWC_pageBase.html`).getContents();
             html = html.replace('/** STYLES **/', css);
             html = html.replace('/** THEME **/', twcThemes.js());
             for (var k in twcIcons.ICONS) {
                 html = html.replaceAll(`{ICON_${k.toUpperCase()}}`, twcIcons.ICONS[k]);
             }
+
 
             var userInfo = pageData.userInfo;
             delete pageData.userInfo;
@@ -201,19 +215,23 @@ define(['N/email', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundl
             var htmlPage = '';
             if (userInfo.permission.lvl == permissions.LEVEL.NONE) {
                 htmlPage = file.load(`SuiteScripts/OSSMTWC/ui/views/oTWC_permissionError.html`).getContents();
-                htmlPage = htmlPage.replaceAll('{FEATURE_NAME}', userInfo.permission.feature);    
+                htmlPage = htmlPage.replaceAll('{FEATURE_NAME}', userInfo.permission.feature);
                 html = html.replaceAll('{PERMISSION_ICON}', twcIcons.ICONS.exclamation);
             } else {
-                // @@TODO: based on userInfo populate core page menus and similar
                 htmlPage = file.load(`SuiteScripts/OSSMTWC/ui/views/${viewName}.html`).getContents();
                 if (userInfo.permission.lvl == permissions.LEVEL.VIEW) {
-                    html = html.replaceAll('{PERMISSION_ICON}', twcIcons.ICONS.readOnly);   
+                    html = html.replaceAll('{PERMISSION_ICON}', twcIcons.ICONS.readOnly);
                 } else {
                     html = html.replaceAll('{PERMISSION_ICON}', '');
                 }
             }
             html = html.replaceAll('{PAGE_CONTENT}', htmlPage);
-            
+            html = html.replaceAll(`{UNDER_CONSTRUCTION}`, twcIcons.UNDER_CONSTRUCTION);
+
+
+            // @@TODO: based on userInfo populate core page menus and similar
+            html = html.replaceAll('{NAVIGATION_DROP_DOWN}', twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, id: 'twc-navigation-select', value: userInfo.permission.id, noEmpty: true, dataSource: userInfo.permission.permissions }));
+
 
             pageData.userInfo = userInfo;
             return html;

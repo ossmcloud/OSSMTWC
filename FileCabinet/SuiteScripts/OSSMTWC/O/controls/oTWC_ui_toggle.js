@@ -67,15 +67,15 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 var readOnly = this.#options.readOnly ? 'readonly' : '';
 
                 var marginLeft = parseInt(defaultWidth.replace('px', '')) - 30;
-                var checked = this.#options.value ? ` oTWC_toggle_inner_selected" style="margin-left: ${marginLeft}px;"` : '"';
-                var checkedOuter = this.#options.value ? ' oTWC_toggle_outer_selected' : '';
+                var checked = this.#options.value ? ` twc_toggle_inner_selected" style="margin-left: ${marginLeft}px;"` : '"';
+                var checkedOuter = this.#options.value ? ' twc_toggle_outer_selected' : '';
 
                 var html = `
-                    <div class="oTWC_ctrl" data-id="${this.#options.id}" data-type="${this.#options.type}" data-type="${this.#options.type}" data-value="${this.#options.value || 'false'}" style="width: ${defaultWidth}; text-align: center;">
+                    <div class="twc_ctrl" data-id="${this.#options.id}" data-type="${this.#options.type}" data-type="${this.#options.type}" data-value="${this.#options.value || 'false'}" style="width: ${defaultWidth}; text-align: center;">
                         ${label}
-                        <div class="oTWC_ctrl_table" style="border: 1px solid var(--grid-color); border-radius: 7px; margin-top: 3px">
-                            <div class="oTWC_toggle_outer${checkedOuter}">
-                                <div class="oTWC_toggle_inner${checked}>
+                        <div class="twc_ctrl_table" style="border: 1px solid var(--grid-color); border-radius: 7px; margin-top: 3px">
+                            <div class="twc_toggle_outer${checkedOuter}">
+                                <div class="twc_toggle_inner${checked}>
                                 </div>
                             </div>
                         </div>
@@ -102,8 +102,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
             initEvents() {
 
-                this.#toggle = this.#ui.find('.oTWC_toggle_inner');
-                this.#toggleOuter = this.#ui.find('.oTWC_toggle_outer');
+                this.#toggle = this.#ui.find('.twc_toggle_inner');
+                this.#toggleOuter = this.#ui.find('.twc_toggle_outer');
                 this.#toggleOuter.click(e => {
                     if (this.#options.disabled || this.#options.readOnly) { return; }
                     this.#options.value = !this.#options.value;
@@ -118,12 +118,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             toggle(value) {
                 if (value) {
                     this.#toggle.animate({ marginLeft: (this.#toggleOuter.width() - this.#toggle.outerWidth() - 3) + 'px' }, 150);
-                    this.#toggle.addClass('oTWC_toggle_inner_selected')
-                    this.#toggleOuter.addClass('oTWC_toggle_outer_selected')
+                    this.#toggle.addClass('twc_toggle_inner_selected')
+                    this.#toggleOuter.addClass('twc_toggle_outer_selected')
                 } else {
                     this.#toggle.animate({ marginLeft: '3px' }, 150);
-                    this.#toggle.removeClass('oTWC_toggle_inner_selected')
-                    this.#toggleOuter.removeClass('oTWC_toggle_outer_selected')
+                    this.#toggle.removeClass('twc_toggle_inner_selected')
+                    this.#toggleOuter.removeClass('twc_toggle_outer_selected')
                 }
             }
 

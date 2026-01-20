@@ -104,17 +104,17 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 if (this.#options.style?.width || this.#options.width) { defaultWidth = this.#options.style?.width || this.#options.width; }
 
                 var html = `
-                    <div class="oTWC_ctrl" data-id="${this.#options.id}" data-type="dropDown" data-value="${selectedValue}" style="width: ${defaultWidth};">
+                    <div class="twc_ctrl" data-id="${this.#options.id}" data-type="dropDown" data-value="${selectedValue}" style="width: ${defaultWidth};">
                         ${label}
-                        <div class="oTWC_ctrl_table" style="border: 1px solid var(--grid-color); border-radius: 7px;">
+                        <div class="twc_ctrl_table" style="border: 1px solid var(--grid-color); border-radius: 7px;">
                             <div>
-                                <input id="${this.#options.id}" type="text" class="oTWC oTWC-filter" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${selectedValueText}" />
+                                <input id="${this.#options.id}" type="text" class="twc twc-filter" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${selectedValueText}" />
                             </div>
                             <div style="vertical-align: bottom; width: 28px;">
                                 <span id="${this.#options.id}_arrow" style="cursor: pointer; display: inline-block; padding-left: 2px; margin-right: -4px;">${icons.ICONS.arrowDown}</span>
                             </div>
                         </div>
-                        <div id="${this.#options.id}_dropDown" class="oTWC_ctrl_dropDown">
+                        <div id="${this.#options.id}_dropDown" class="twc_ctrl_dropDown">
 
                         </div>
                         <data id="${this.#options.id}_data">
@@ -201,12 +201,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             showDropDownList(src) {
                 var content = '';
 
-                jQuery('.oTWC_ctrl_dropDown').css('display', 'none');
+                jQuery('.twc_ctrl_dropDown').css('display', 'none');
 
                 if (this.multiSelect) {
                     content += `
                         <div class="oTWC_dropdown_search">
-                            <input class="oTWC" id="oTWC_dropdown_search" type="text" placeholder="type to search" value="${src || ''}"/>
+                            <input class="twc" id="oTWC_dropdown_search" type="text" placeholder="type to search" value="${src || ''}"/>
                         </div>
                     `
                 }
@@ -240,10 +240,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 if (this.multiSelect) {
                     content += `
                         <div class="oTWC_dropdown_actions">
-                            <input id="oTWC_dropdown_checked" type="button" class="oTWC-button"value="checked"/>
+                            <input id="oTWC_dropdown_checked" type="button" class="twc-button"value="checked"/>
 
-                            <input id="oTWC_dropdown_confirm" type="button" class="oTWC-button"  style="float: right; background-color: var(--accent-fore-color) !important" value="confirm"/>
-                            <input id="oTWC_dropdown_cancel" type="button" class="oTWC-button"  style="float: right" value="cancel"/>
+                            <input id="oTWC_dropdown_confirm" type="button" class="twc-button"  style="float: right; background-color: var(--accent-fore-color) !important" value="confirm"/>
+                            <input id="oTWC_dropdown_cancel" type="button" class="twc-button"  style="float: right" value="cancel"/>
                             
                         </div>
                     `

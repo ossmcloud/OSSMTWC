@@ -15,9 +15,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         const TEST_ROLE = 1;
-
-
-
       
         function get(context) {
 
@@ -27,8 +24,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } else {
                 // @@NOTE: Role 3 is Administrator
                 if (core.env.role == 3) {
+
+
+                    // @@TODO: load all features
                     return {
+                        permissions: [],
                         lvl: PERMISSION_LEVEL.FULL,
+                        own: false,
                     };
                 }
 
@@ -39,22 +41,31 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
 
-            var p = coreSQL.first({
+            var permissions = coreSQL.run({
                 query: `
-                    select  custrecord_twc_role_perm_lvl as lvl, custrecord_twc_role_perm_own as own, f.name as feature
+                    select  f.id, custrecord_twc_role_perm_lvl as lvl, custrecord_twc_role_perm_own as own, f.name as text, f.custrecord_twc_role_feat_script as value
                     from    customrecord_twc_role_perm  p
                     join    customrecord_twc_role_feat  f on f.id = p.custrecord_twc_role_perm_feat
                     where   p.custrecord_twc_role_perm_role = ?
-                    and     f.custrecord_twc_role_feat_script = ?
+                    order by f.custrecord_twc_role_feat_sort
                 `,
                 params: [
                     roleId,
-                    context.request.parameters.script
+                    
                 ]
             })
 
-            
-            return p;
+            var currentPermission = permissions.find(p => { return p.value == context.request.parameters.script })
+
+            var permission = {
+                permissions: permissions,
+                id: currentPermission?.value || 0,
+                lvl: currentPermission?.lvl || 0,
+                own: currentPermission?.own || false,
+                feature: currentPermission?.text || 'no feature' 
+            }
+
+            return permission;
 
         }
 

@@ -46,7 +46,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
             render(container) {
                 var html = `
-                    <canvas id="${this.#options.id}" class="oTWC-chart"></canvas>
+                    <canvas id="${this.#options.id}" class="twc-chart"></canvas>
                 `;
 
                 html = ctrlBase.render(html, {
@@ -101,9 +101,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             drawChart() {
                 this.#chart = new Chart(this.#canvas[0], this.chartOptions());
 
-                if (!window.oTWC) { window.oTWC = {}; }
-                if (!window.oTWC.charts) { window.oTWC.charts = []; };
-                window.oTWC.charts.push(this.#chart);
+                if (!window.twc) { window.twc = {}; }
+                if (!window.twc.charts) { window.twc.charts = []; };
+                window.twc.charts.push(this.#chart);
             }
 
         }

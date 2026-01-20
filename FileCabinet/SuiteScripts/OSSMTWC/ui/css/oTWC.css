@@ -126,6 +126,18 @@ span.twc-sub-title {
     font-style: italic;
 }
 
+div.twc_action_menu {
+    display: inline-block;
+    position: fixed;
+    top: 120px;
+    right: 70px;
+    display: table;
+}
+div.twc_action_menu>div {
+    display: table-cell;
+    vertical-align: middle;
+    padding: 3px;
+}
 
 .twc_action {
     cursor: pointer;
@@ -332,6 +344,7 @@ div.twc-container-outer {
     height: 80vh;
     overflow: hidden;
 }
+
 div.twc-container-inner {
     padding: 3px 7px;
 }

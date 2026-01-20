@@ -34,14 +34,14 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 }
 
                 html += `
-                    <table class="oTWC-prop-table" id="${this.#tableId}">
+                    <table class="twc-prop-table" id="${this.#tableId}">
                         <tbody>
                             <tr>
                 `;
 
                 var colCount = (this.#options.colCount || 1);
                 for (var cx = 0; cx < colCount; cx++) {
-                    html += `<td style="width: ${100 / colCount}%"><div class="oTWC-div-table-r oTWC-div-table-lbl-val">`;
+                    html += `<td style="width: ${100 / colCount}%"><div class="twc-div-table-r twc-div-table-lbl-val">`;
 
                     for (var dx = 0; dx < this.#data[cx].length; dx++){
                         var colData = this.#data[cx][dx];

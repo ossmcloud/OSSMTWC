@@ -122,19 +122,19 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                             var checked = this.#filters ? '' : 'checked';
                             list += `
                                 <div>
-                                    <span class="o-table-filter-list-expand">+</span> <input class="oTWC" type="checkbox" style="min-width: 25px; width: 25px;" ${checked}>${y}`;
+                                    <span class="o-table-filter-list-expand">+</span> <input class="twc" type="checkbox" style="min-width: 25px; width: 25px;" ${checked}>${y}`;
 
                             for (var m in valueGrouped[y]) {
                                 list += `
                                     <div style="padding-left: 14px">
-                                        <span class="o-table-filter-list-expand">+</span> <input class="oTWC" type="checkbox" style="min-width: 25px; width: 25px;" ${checked}>${MONTHS[m]}`;
+                                        <span class="o-table-filter-list-expand">+</span> <input class="twc" type="checkbox" style="min-width: 25px; width: 25px;" ${checked}>${MONTHS[m]}`;
 
                                 for (var d in valueGrouped[y][m]) {
                                     var itemChecked = this.#filters ? this.#filters.indexOf(valueGrouped[y][m][d]) >= 0 : true;
 
                                     list += `
                                         <div style="padding-left: 28px; display: none;">
-                                            <input class="oTWC" type="checkbox" style="min-width: 25px; width: 25px;" data-value="${btoa(valueGrouped[y][m][d])}" ${itemChecked ? 'checked' : ''}>${d}
+                                            <input class="twc" type="checkbox" style="min-width: 25px; width: 25px;" data-value="${btoa(valueGrouped[y][m][d])}" ${itemChecked ? 'checked' : ''}>${d}
                                         </div>`;
                                 }
 
@@ -165,7 +165,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                             if (v.value == '(empty)') { vDisplay = `<span style="color: silver; font-style: italic;">${v.value}</span>` }
                             list += `
                                 <div class="o-table-col-filter-list-item">
-                                    <input class="oTWC" type="checkbox" style="min-width: 25px; width: 25px;" data-value="${btoa(v.value)}" ${checked}>${vDisplay} <span style="color: silver;">(${v.count})</span>
+                                    <input class="twc" type="checkbox" style="min-width: 25px; width: 25px;" data-value="${btoa(v.value)}" ${checked}>${vDisplay} <span style="color: silver;">(${v.count})</span>
                                 </div>
                             `;
                         });
@@ -174,7 +174,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     var clearFilter = '';
                     if (this.#filters) { clearFilter = '<span class="o-table-col-filter-link" data-action="clear">clear filter</span>' }
 
-                    var searchBox = '<input id="o-table-col-filter-search" class="oTWC" type="text" placeholder="search value to filter" />';
+                    var searchBox = '<input id="o-table-col-filter-search" class="twc" type="text" placeholder="search value to filter" />';
                     if (isDate) { searchBox = ''; }
 
                     this.#ui = jQuery(`
@@ -191,8 +191,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                                 
                             </div>
                             <div>
-                                <button data-action="ok" class="oTWC">Confirm</button>
-                                <button data-action="close" class="oTWC">Cancel</button>
+                                <button data-action="ok" class="twc">Confirm</button>
+                                <button data-action="close" class="twc">Cancel</button>
                                 
                             </div>
                         </div>
@@ -1150,7 +1150,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     <div style="background-color: rgba(0,0,0,0.5); position: absolute; z-index: 10000; display: none;">
                         <br />
                         <div style="width: 100%; text-align: center;">
-                            <span class="oTWC-wait-cursor">
+                            <span class="twc-wait-cursor">
                                 ${twcIcons.ICONS.waitWheel}
                             </span>
                         </div>

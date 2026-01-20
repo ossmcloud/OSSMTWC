@@ -23,7 +23,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             get id() {
-                return this.#options.id || 'oTWC-vnav';
+                return this.#options.id || 'twc-vnav';
             } set id(v) {
                 this.#options.id = v;
             }
@@ -46,9 +46,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
 
             #renderNavPanel() {
-                this.#tabsNavPanel = jQuery(`<div class="oTWC_vtab_nav_panel" id="${this.id}-nav-panel"></div>`);
+                this.#tabsNavPanel = jQuery(`<div class="twc_vtab_nav_panel" id="${this.id}-nav-panel"></div>`);
                 if (this.navAutoHide) {
-                    this.#tabsNavPanel.append('<span class="oTWC_vtab_nav_expand">»</span>')
+                    this.#tabsNavPanel.append('<span class="twc_vtab_nav_expand">»</span>')
                 }
 
                 var tabNavs = jQuery(`<div></div>`);
@@ -58,7 +58,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#tabsNavPanel.append(tabNavs);
                 this.#tabsNavPanel.height(this.#container.height());
 
-                this.#currentTabDescr = jQuery(`<div id="oTWC-vtab-description" style="max-width: 180px;"><div>`);
+                this.#currentTabDescr = jQuery(`<div id="twc-vtab-description" style="max-width: 180px;"><div>`);
                 this.#tabsNavPanel.append(this.#currentTabDescr);
 
                 if (this.navAutoHide) {
@@ -81,7 +81,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     styles += '"';
                 }
 
-                this.#tabsPanel = jQuery(`<div class="oTWC_vtab_panel" id="${this.id}-panel" ${styles}></div>`);
+                this.#tabsPanel = jQuery(`<div class="twc_vtab_panel" id="${this.id}-panel" ${styles}></div>`);
                 core.array.each(this.#tabs, tab => {
                     this.#tabsPanel.append(tab.render(this.#container.height()))
                 })
@@ -90,7 +90,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             render() {
-                this.#ui = jQuery(`<div class="oTWC_vtab" id="${this.id}"></div>`);
+                this.#ui = jQuery(`<div class="twc_vtab" id="${this.id}"></div>`);
                 this.#ui.append(this.#renderNavPanel());
                 this.#ui.append(this.#renderTabsPanel());
                 this.#container.html(this.#ui);
@@ -102,7 +102,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             initEvents() {
-                this.#tabsNavPanel.find('.oTWC_vtab_nav_expand').click(e => { this.showHide(); })
+                this.#tabsNavPanel.find('.twc_vtab_nav_expand').click(e => { this.showHide(); })
             }
 
             select(tab) {
@@ -125,16 +125,16 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     this.#currentTabDescr.css('display', 'table')
                     this.#tabsNavPanel.find('div').eq(0).css('min-width', '180px');
                     core.array.each(this.#tabs, tab => {
-                        tab.nav.addClass('oTWC_vtab_nav')
-                        tab.nav.removeClass('oTWC_vtab_nav_hide')
+                        tab.nav.addClass('twc_vtab_nav')
+                        tab.nav.removeClass('twc_vtab_nav_hide')
                     })
                 } else {
                     this.#tabsNavPanel.width(50);
                     this.#currentTabDescr.css('display', 'none')
                     this.#tabsNavPanel.find('div').eq(0).css('min-width', '30px');
                     core.array.each(this.#tabs, tab => {
-                        tab.nav.addClass('oTWC_vtab_nav_hide')
-                        tab.nav.removeClass('oTWC_vtab_nav')
+                        tab.nav.addClass('twc_vtab_nav_hide')
+                        tab.nav.removeClass('twc_vtab_nav')
                     })
                 }
                 this.#navHidden = !this.#navHidden;
@@ -162,7 +162,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get nav() { return this.#nav; }
 
             renderNav() {
-                var cls = this.#tabControl.navAutoHide ? 'oTWC_vtab_nav_hide' : 'oTWC_vtab_nav'
+                var cls = this.#tabControl.navAutoHide ? 'twc_vtab_nav_hide' : 'twc_vtab_nav'
 
                 this.#nav = jQuery(`<div class="${cls}" id="${this.#options.id}-nav"></div>`);
                 this.#nav.append(`
@@ -174,7 +174,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             render(containerHeight) {
-                this.#tabUi = jQuery(`<div class="oTWC_vtab_content">${this.#options.id} is empty</div>`);
+                this.#tabUi = jQuery(`<div class="twc_vtab_content">${this.#options.id} is empty</div>`);
                 if (this.renderTab) {
                     this.#tabUi.html(this.renderTab(this, containerHeight));
                 } else if (this.#options.render) {
@@ -187,7 +187,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             select(containerHeight) {
                 this.#tabUi.height(containerHeight - 25);
                 this.#tabUi.show();
-                this.#nav.addClass('oTWC_vtab_nav_selected');
+                this.#nav.addClass('twc_vtab_nav_selected');
                 if (this.#options.refreshTab) { this.#options.refreshTab(this.#tabUi); }
                 this.#tabControl.currentTabDescr.html('');
                 if (this.#options.description) {
@@ -199,7 +199,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
             unselect(callback) {
                 this.#tabUi.hide();
-                this.#nav.removeClass('oTWC_vtab_nav_selected');
+                this.#nav.removeClass('twc_vtab_nav_selected');
                 callback();
             }
 

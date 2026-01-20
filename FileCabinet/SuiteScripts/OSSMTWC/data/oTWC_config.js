@@ -10,6 +10,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', './oTWC_permissions.js'],
         function userInfo(context) {
             var p = permissions.get(context);
 
+            
+
             return {
                 permission: p,
             }

@@ -11,7 +11,7 @@ companies => these are the contractors (i.e.: vendors)
 
 
 
-https://radix.towercom.ie/files/download-file/28341
+https://radix.towercom.ie
 
 Username:   Requests@towercom.ie
 Password:	

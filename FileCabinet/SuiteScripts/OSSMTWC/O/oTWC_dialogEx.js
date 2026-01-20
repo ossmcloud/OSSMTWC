@@ -25,8 +25,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             wait() {
                 this.#waitPanel = jQuery(`
-                    <div class="oTWC-overlay" style="padding-top: 50px">
-                        <span class="oTWC-wait-cursor">
+                    <div class="twc-overlay" style="padding-top: 50px">
+                        <span class="twc-wait-cursor">
                             ${twcIcons.ICONS.waitWheel}
                         </span>
                     </div>
@@ -42,8 +42,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             showBanner(content, type) {
                 if (this.#pageBanner) { this.#pageBanner.remove(); }
                 this.#pageBanner = jQuery(`
-                    <div class="oTWC-dialog-wizard-page-banner oTWC-dialog-wizard-page-banner-${type || 'warning'}">
-                        <span class="oTWC-dialog-wizard-page-banner-close">X</span>
+                    <div class="twc-dialog-wizard-page-banner twc-dialog-wizard-page-banner-${type || 'warning'}">
+                        <span class="twc-dialog-wizard-page-banner-close">X</span>
                         <label>${(type || 'warning').toUpperCase()}</label>
                         
                     </div>`
@@ -51,7 +51,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#pageBanner.append(content);
                 this.#dlgContent.prepend(this.#pageBanner);
                 this.#pageBanner.slideDown();
-                this.#pageBanner.find('.oTWC-dialog-wizard-page-banner-close').click(e => { this.#pageBanner.remove(); })
+                this.#pageBanner.find('.twc-dialog-wizard-page-banner-close').click(e => { this.#pageBanner.remove(); })
             }
 
             start() {
@@ -116,7 +116,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 var dlgContent = jQuery(`
                     <div>
-                    <input type="text" class="oTWC" id="oTWC_transfer_site" placeholder="enter a site id..." />
+                    <input type="text" class="twc" id="oTWC_transfer_site" placeholder="enter a site id..." />
                     <div id="oTWC_transfer_site_list"></div>
                     </div>
                 `);
@@ -135,7 +135,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     inputTimer = window.setTimeout(async () => {
                         siteList.html(`
                             <div style="width: 100%; text-align: center;">
-                                <span class="oTWC-wait-cursor">
+                                <span class="twc-wait-cursor">
                                     ${twcIcons.ICONS.waitWheel}
                                 </span>
                             </div>
@@ -236,13 +236,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function iconPicker(options, callback) {
-            var content = jQuery(`<div class="oTWC-icon-picker"></div>`);
+            var content = jQuery(`<div class="twc-icon-picker"></div>`);
             for (var i in twcIcons.ICONS) {
                 if (i == 'menu') { continue; }
                 var selected = '';
-                if (options?.value == i) { selected = ' oTWC-icon-picker-selected'; }
+                if (options?.value == i) { selected = ' twc-icon-picker-selected'; }
                 content.append(`
-                    <span class="oTWC-icon-picker${selected}" data-icon="${i}">
+                    <span class="twc-icon-picker${selected}" data-icon="${i}">
                         ${twcIcons.get(i, 24)}
                     </span>
                 `)
@@ -258,7 +258,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 //ok: callback
             });
 
-            content.find('span.oTWC-icon-picker').on('dblclick', e => {
+            content.find('span.twc-icon-picker').on('dblclick', e => {
                 dlg.close();
                 callback(jQuery(e.currentTarget).data('icon'));
             })

@@ -15,12 +15,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             constructor(page, tabControl, doNotInit) {
                 this.#page = page;
 
-                this.#tabControl = tabControl || jQuery('.oTWC_tab_control_outer');
-                this.#tabControl.find('.oTWC_tab').click(e => {
+                this.#tabControl = tabControl || jQuery('.twc_tab_control_outer');
+                this.#tabControl.find('.twc_tab').click(e => {
                     //this.unselectTabs();
                 })
 
-                this.#jTabs = this.#tabControl.find('.oTWC_tab');
+                this.#jTabs = this.#tabControl.find('.twc_tab');
                 if (!doNotInit) { this.init(); }
             }
 
@@ -93,7 +93,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get inited() { return this.#inited; }
 
             get selected() {
-                return this.#tabTitle.hasClass('oTWC_tab_selected');
+                return this.#tabTitle.hasClass('twc_tab_selected');
             }
 
             get hidden() {
@@ -104,14 +104,14 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
             select() {
                 this.#tabControl.unselectTabs();
-                this.#tabTitle.addClass('oTWC_tab_selected');
-                this.#tab.addClass('oTWC_tab_page_selected');
+                this.#tabTitle.addClass('twc_tab_selected');
+                this.#tab.addClass('twc_tab_page_selected');
                 this.init();
             }
 
             unselect() {
-                this.#tabTitle.removeClass('oTWC_tab_selected');
-                this.#tab.removeClass('oTWC_tab_page_selected');
+                this.#tabTitle.removeClass('twc_tab_selected');
+                this.#tab.removeClass('twc_tab_page_selected');
             }
 
             init(options) {

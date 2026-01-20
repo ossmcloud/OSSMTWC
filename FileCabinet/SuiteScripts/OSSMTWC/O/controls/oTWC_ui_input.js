@@ -116,9 +116,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 var htmlInput = '';
                 if (this.#options.type == ctrlBase.CTRL_TYPE.TEXTAREA) {
-                    htmlInput = `<textarea id="${this.#options.id}" type="${this.#options.type}" class="oTWC" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" ${accept} ${disabled} ${readOnly} ${checked} ${rows}>${this.#options.value || ''}</textarea>`;
+                    htmlInput = `<textarea id="${this.#options.id}" type="${this.#options.type}" class="twc" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" ${accept} ${disabled} ${readOnly} ${checked} ${rows}>${this.#options.value || ''}</textarea>`;
                 } else if (this.#options.type == ctrlBase.CTRL_TYPE.SELECT) {
-                    htmlInput = `<select id="${this.#options.id}" class="oTWC" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${this.#options.value || ''}" ${accept} ${disabled} ${readOnly} ${checked}/>`;
+                    htmlInput = `<select id="${this.#options.id}" class="twc" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${this.#options.value || ''}" ${accept} ${disabled} ${readOnly} ${checked}/>`;
                     if (!this.#options.noEmpty) {
                         htmlInput += `<option value="">${this.#options.hint || ''}</option>`;
                     }
@@ -128,14 +128,14 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     htmlInput += '</select>';
                 } else {
                     var v = (this.#options.value == undefined || this.#options.value == null) ? '' : this.#options.value;
-                    htmlInput = `<input id="${this.#options.id}" type="${this.#options.type}" class="oTWC" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${v}" ${accept} ${disabled} ${readOnly} ${checked}/>`;
+                    htmlInput = `<input id="${this.#options.id}" type="${this.#options.type}" class="twc" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${v}" ${accept} ${disabled} ${readOnly} ${checked}/>`;
                 }
 
 
                 var html = `
-                    <div class="oTWC_ctrl" data-id="${this.#options.id}" data-type="${this.#options.type}" data-type="${this.#options.type}" data-value="${this.#options.value?.value || ''}" style="width: ${defaultWidth};">
+                    <div class="twc_ctrl" data-id="${this.#options.id}" data-type="${this.#options.type}" data-type="${this.#options.type}" data-value="${this.#options.value?.value || ''}" style="width: ${defaultWidth};">
                         ${label}
-                        <div class="oTWC_ctrl_table" style="border: 1px solid var(--grid-color); border-radius: 7px;">
+                        <div class="twc_ctrl_table" style="border: 1px solid var(--grid-color); border-radius: 7px;">
                             <div>
                                 ${htmlInput}
                             </div>

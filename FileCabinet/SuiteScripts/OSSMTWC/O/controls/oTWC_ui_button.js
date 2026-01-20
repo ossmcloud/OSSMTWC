@@ -50,10 +50,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     label = `<label class="inline">${this.#options.label || ''}</label>`;
                 }
                 var html = `
-                    <div class="oTWC_ctrl" data-type="button" data-id="${this.#options.id}">
+                    <div class="twc_ctrl" data-type="button" data-id="${this.#options.id}">
                         ${label}
-                        <div class="oTWC_ctrl_table" style="">
-                            <input type="button" class="oTWC-button" id="${this.#options.id}" value="${this.#options.value}" ${disabled}/>
+                        <div class="twc_ctrl_table" style="">
+                            <input type="button" class="twc-button" id="${this.#options.id}" value="${this.#options.value}" ${disabled}/>
                         </div>
                     </div>
                 `

@@ -59,7 +59,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             // }
 
             init() {
-                this.#container.find('.oTWC_ctrl').each((idx, ele) => {
+                this.#container.find('.twc_ctrl').each((idx, ele) => {
                     this.initCtrl(jQuery(ele));
                 })
             }
@@ -145,9 +145,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
         function renderCollection(controlGroup) {
             var id = controlGroup.id ? ` id="${controlGroup.id}"` : '';
-            var content = jQuery(`<div class="${controlGroup.title == undefined ? '' : 'oTWC-control-group'}" ${id}></div>`);
+            var content = jQuery(`<div class="${controlGroup.title == undefined ? '' : 'twc-control-group'}" ${id}></div>`);
             if (controlGroup.title) {
-                content.append(`<div class="oTWC-control-group-title">${controlGroup.title}</div>`);
+                content.append(`<div class="twc-control-group-title">${controlGroup.title}</div>`);
             }
             core.array.each(controlGroup.controls, ctrl => {
                 if (ctrl.controls) {
