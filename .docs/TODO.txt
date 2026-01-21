@@ -17,5 +17,17 @@ ADD FEATURE:
     FileCabinet\SuiteScripts\OSSMTWC\ui\modules\oTWC_{FEATURE_NAME}Utils.js
 
 02. Deploy suitelet (get script id)
+    NOTE: set external role: allow TWC Customer Center
 
 03. Add record to table: OSSMTWC - Role Feature List
+
+
+
+
+
+TO REVIEW:
+----------
+
+Radix Role is assigned to the NS Role
+    This means that a user could assign an 'Admin' radix role to a customer or vendor which should not be done under any circumstances
+    We need to figure out a way to avoid this (cannot use Sourcind on the custom field as 'Center Type' is not available as List/Record option)

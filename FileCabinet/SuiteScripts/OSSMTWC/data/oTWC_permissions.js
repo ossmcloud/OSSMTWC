@@ -14,8 +14,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
-        const TEST_ROLE = 1;
-      
+        const TEST_ROLE = 0;
+
         function get(context) {
 
             var roleId = null;
@@ -23,12 +23,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 roleId = TEST_ROLE;
             } else {
                 // @@NOTE: Role 3 is Administrator
-                if (core.env.role == 3) {
+                if (core.env.role() == 3) {
 
 
                     // @@TODO: load all features
+
+
                     return {
-                        permissions: [],
+                        permissions: coreSQL.run(`
+                            select  f.id, custrecord_twc_role_perm_lvl as lvl, custrecord_twc_role_perm_own as own, f.name as text, f.custrecord_twc_role_feat_script as value
+                            from    customrecord_twc_role_perm  p
+                            join    customrecord_twc_role_feat  f on f.id = p.custrecord_twc_role_perm_feat
+                            order by f.custrecord_twc_role_feat_sort
+                        `),
                         lvl: PERMISSION_LEVEL.FULL,
                         own: false,
                     };
@@ -36,8 +43,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 roleId = coreSQL.scalar({
                     query: `select custrecord_twc_role as r from role where id = ?`,
-                    params: [core.env.role]
+                    params: [core.env.role()]
                 })
+
+                // @@NOTE: if the field on role is not set we'll get null, set to zero tp avoid query below to fail 
+                if (!roleId) { roleId = 0; }
             }
 
 
@@ -51,7 +61,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 `,
                 params: [
                     roleId,
-                    
                 ]
             })
 
@@ -62,7 +71,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 id: currentPermission?.value || 0,
                 lvl: currentPermission?.lvl || 0,
                 own: currentPermission?.own || false,
-                feature: currentPermission?.text || 'no feature' 
+                feature: currentPermission?.text || 'no feature'
             }
 
             return permission;
@@ -74,7 +83,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LEVEL: PERMISSION_LEVEL,
 
             get: get,
-           
+
 
 
         }

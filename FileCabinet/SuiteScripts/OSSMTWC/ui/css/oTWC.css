@@ -1,11 +1,15 @@
 /*THEME*/
 
 #div__body,
+#main_form,
 #body {
     background-color: var(--main-bkgd-color) !important;
     color: var(--main-color) !important;
+    
 }
-
+#body {
+    overflow: hidden !important;
+}
 h1.uir-record-type {
     color: var(--title-color) !important;
 }

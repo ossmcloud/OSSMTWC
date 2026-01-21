@@ -46,6 +46,18 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             }
 
             init() {
+
+                if (window.NS.UI.Util.isRedwood) {
+                    // @@TODO: this would take effect after few moments the page is loaded, which is ok but looks a bit ugly, can we do better here
+                    jQuery('#main_form').find('.uir-form-header').css('background-color', 'var(--main-bkgd-color)');
+                    jQuery('#main_form').find('table').css('background-color', 'var(--main-bkgd-color)');
+                    jQuery('#main_form').find('.page-title-menu').css('display', 'none');
+                    jQuery('.twc_page').css('margin-top', '-39px');
+                }
+
+
+
+
                 this.#ui = twcUI.init({}, this.page);
 
                 this.#initEventsInternal();
@@ -207,7 +219,8 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
 
 
             var userInfo = pageData.userInfo;
-            delete pageData.userInfo;
+            // @@NOTE: we generally do not want user info in the client side, only allow on SB
+            if (!core.env.sb()) { delete pageData.userInfo; }
 
             html = html.replaceAll('{PAGE_DATA}', b64.encode(JSON.stringify(pageData)));
             html = html.replaceAll('{PAGE_VERSION}', pageVersion);
