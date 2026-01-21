@@ -1,7 +1,31 @@
 TODO:
 -----
 
+User Pref.
 
+Site Locator:
+    Update Results
+    Find by location
+    search coordinates or set search point manually
+
+
+
+
+
+
+
+
+
+
+
+
+
+TODO-DATA:
+----------
+    Set up IE counties
+    Site Table: 
+        Address should be expanded as 'Address 1, 2,3,4 County, ZIP...'
+        Add Region field
 
 
 

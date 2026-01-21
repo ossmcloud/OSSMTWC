@@ -58,9 +58,21 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
         }
 
+        // @@TODO: persist
+        var _cfg = null;
+        function getConfig() {
+            if (!_cfg) {
+                _cfg = {
+                    GOOGLE_API_KEY: 'AIzaSyDp4Q94jOBatEUcelAa0HWn12Cv7jyKk5o'
+                }
+            }
+            return _cfg;
+        }
+
 
         return {
             userInfo: userInfo,
-            getUserPref: getUserPref
+            getUserPref: getUserPref,
+            cfg: getConfig,
         }
     });
