@@ -6,16 +6,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, coreSQL) => {
 
         function getSiteNames() {
-            // @@TODO:
-
-
-            return [
-                { value: 1, text: 'site 1 name' },
-                { value: 2, text: 'site 2 name' },
-                { value: 3, text: 'site 3 name' },
-                { value: 4, text: 'site 4 name' },
-                { value: 5, text: 'site 5 name' },
-            ]
+            return coreSQL.run(`select id as value, name as text from customrecord_twc_site where isinactive = 'F' order by name`)
         }
 
         function getSiteTypes() {
@@ -23,7 +14,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getCounties() {
-            return coreSQL.run(`select id as value, fullname as text from state where country = 'IE' order by fullname`)
+            // @@TODO: county (on site table) should not be a free text field, uncomment below once fixed
+            //return coreSQL.run(`select id as value, fullname as text from state where country = 'IE' order by fullname`)
+            return coreSQL.run(`select distinct custrecord_twc_site_country as value, custrecord_twc_site_country as text from customrecord_twc_site order by custrecord_twc_site_country`)
         }
 
         function getRegions() {

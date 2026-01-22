@@ -163,7 +163,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     if (this.disabled) { return; }
 
                     if (this.multiSelect) {
-                        if (item.hasClass('oTWC_dropdown_item')) {
+                        if (item.hasClass('twc_dropdown_item')) {
                             item = item.find('input');
                             item.prop('checked', item.is(':checked') ? '' : 'checked');
                         }
@@ -205,15 +205,15 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 if (this.multiSelect) {
                     content += `
-                        <div class="oTWC_dropdown_search">
-                            <input class="twc" id="oTWC_dropdown_search" type="text" placeholder="type to search" value="${src || ''}"/>
+                        <div class="twc_dropdown_search">
+                            <input class="twc" id="twc_dropdown_search" type="text" placeholder="type to search" value="${src || ''}"/>
                         </div>
                     `
                 }
 
                 if (!src) {
                     if (this.multiSelect) {
-                        content += '<div id="oTWC_drop_down_all">show all</div>'
+                        content += '<div id="twc_drop_down_all">show all</div>'
                     } else {
                         if (this.allowAll) { content += `<div data-value="">${'- all -'}</div>`; }
                         if (this.allowNone) { content += `<div data-value="@@NONE@@">${'- none -'}</div>`; }
@@ -227,10 +227,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                         var value = this.value?.toString().split(',').filter(i => i);
                         var checked = value?.indexOf(item.value?.toString()) >= 0 ? 'checked' : '';
-                        content += `<div class="oTWC_dropdown_item"><input data-value="${item.value}" type="checkbox" ${checked}/>${item.text}</div>`
+                        content += `<div class="twc_dropdown_item"><input data-value="${item.value}" type="checkbox" ${checked}/>${item.text}</div>`
                     } else {
                         if (src && item.text.toLowerCase().indexOf(src.toLowerCase()) < 0) { return; }
-                        content += `<div class="oTWC_dropdown_item" data-value="${item.value}">${item.text}</div>`
+                        content += `<div class="twc_dropdown_item" data-value="${item.value}">${item.text}</div>`
                     }
                 })
                 if (!content) {
@@ -239,11 +239,11 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 if (this.multiSelect) {
                     content += `
-                        <div class="oTWC_dropdown_actions">
-                            <input id="oTWC_dropdown_checked" type="button" class="twc-button"value="checked"/>
+                        <div class="twc_dropdown_actions">
+                            <input id="twc_dropdown_checked" type="button" class="twc-button"value="checked"/>
 
-                            <input id="oTWC_dropdown_confirm" type="button" class="twc-button"  style="float: right; background-color: var(--accent-fore-color) !important" value="confirm"/>
-                            <input id="oTWC_dropdown_cancel" type="button" class="twc-button"  style="float: right" value="cancel"/>
+                            <input id="twc_dropdown_confirm" type="button" class="twc-button"  style="float: right; background-color: var(--accent-fore-color) !important" value="confirm"/>
+                            <input id="twc_dropdown_cancel" type="button" class="twc-button"  style="float: right" value="cancel"/>
                             
                         </div>
                     `
@@ -252,7 +252,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#dropDown.html(content);
 
                 if (this.multiSelect) {
-                    this.#dropDown.find('#oTWC_dropdown_confirm').click(e => {
+                    this.#dropDown.find('#twc_dropdown_confirm').click(e => {
                         e.stopPropagation();
 
                         var items = [];
@@ -264,13 +264,13 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         this.on('change');
                         this.closeDropDown();
                     })
-                    this.#dropDown.find('#oTWC_dropdown_cancel').click(e => {
+                    this.#dropDown.find('#twc_dropdown_cancel').click(e => {
                         e.stopPropagation();
 
                         this.setMultiTextValue();
                         this.closeDropDown();
                     })
-                    this.#dropDown.find('#oTWC_drop_down_all').click(e => {
+                    this.#dropDown.find('#twc_drop_down_all').click(e => {
                         e.stopPropagation();
                         this.#ui.attr('data-value', '');
                         this.setMultiTextValue();
@@ -278,7 +278,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         this.closeDropDown();
                     });
 
-                    var showCheckedButton = this.#dropDown.find('#oTWC_dropdown_checked');
+                    var showCheckedButton = this.#dropDown.find('#twc_dropdown_checked');
                     showCheckedButton.click(e => {
                         e.stopPropagation();
 
@@ -287,21 +287,21 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         showCheckedButton.data('checked', !showChecked);
                         if (showChecked) {
                             showCheckedButton.val('show all')
-                            this.#dropDown.find('.oTWC_dropdown_item').each((i, item) => {
+                            this.#dropDown.find('.twc_dropdown_item').each((i, item) => {
                                 var dropDownItem = jQuery(item);
                                 dropDownItem.css('display', (dropDownItem.find('input').is(':checked')) ? 'block' : 'none');
                             });
                         } else {
                             showCheckedButton.val('checked')
-                            this.#dropDown.find('.oTWC_dropdown_item').css('display', 'block');
+                            this.#dropDown.find('.twc_dropdown_item').css('display', 'block');
                         }
 
                     })
-                    this.#dropDown.find('#oTWC_dropdown_search').on('input', e => {
+                    this.#dropDown.find('#twc_dropdown_search').on('input', e => {
                         var src = jQuery(e.currentTarget).val().toLowerCase();
-                        this.#dropDown.find('.oTWC_dropdown_item').css('display', 'block');
+                        this.#dropDown.find('.twc_dropdown_item').css('display', 'block');
                         if (src) {
-                            this.#dropDown.find('.oTWC_dropdown_item').each((i, item) => {
+                            this.#dropDown.find('.twc_dropdown_item').each((i, item) => {
                                 var dropDownItem = jQuery(item);
                                 if (dropDownItem.text().toLowerCase().indexOf(src) >= 0) {
                                     dropDownItem.css('display', 'block')
@@ -312,7 +312,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         }
                     })
                     window.setTimeout(() => {
-                        var srcInput = this.#dropDown.find('#oTWC_dropdown_search');
+                        var srcInput = this.#dropDown.find('#twc_dropdown_search');
                         var strLength = srcInput.val().length * 2;
                         srcInput.focus();
                         srcInput[0].setSelectionRange(strLength, strLength);

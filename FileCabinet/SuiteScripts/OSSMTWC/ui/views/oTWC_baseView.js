@@ -213,10 +213,7 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             var html = file.load(`SuiteScripts/OSSMTWC/ui/views/oTWC_pageBase.html`).getContents();
             html = html.replace('/** STYLES **/', css);
             html = html.replace('/** THEME **/', twcThemes.js());
-            for (var k in twcIcons.ICONS) {
-                html = html.replaceAll(`{ICON_${k.toUpperCase()}}`, twcIcons.ICONS[k]);
-            }
-
+            
 
             var userInfo = pageData.userInfo;
             // @@NOTE: we generally do not want user info in the client side, only allow on SB
@@ -241,6 +238,9 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             html = html.replaceAll('{PAGE_CONTENT}', htmlPage);
             html = html.replaceAll(`{UNDER_CONSTRUCTION}`, twcIcons.UNDER_CONSTRUCTION);
 
+            for (var k in twcIcons.ICONS) {
+                html = html.replaceAll(`{ICON_${k.toUpperCase()}}`, twcIcons.ICONS[k]);
+            }
 
             // @@TODO: based on userInfo populate core page menus and similar
             html = html.replaceAll('{NAVIGATION_DROP_DOWN}', twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, id: 'twc-navigation-select', value: userInfo.permission.id, noEmpty: true, dataSource: userInfo.permission.permissions }));

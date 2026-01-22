@@ -4,7 +4,10 @@ TODO:
 User Pref.
 
 Site Locator:
-    Update Results
+    site table => 
+        add link to open SAF 
+        the list cannot be navigated very well as we only see few records, figure out a way to improve (possibly without scrolling the entire page)
+
     Find by location
     search coordinates or set search point manually
 
@@ -24,10 +27,17 @@ TODO-DATA:
 ----------
     Set up IE counties
     Site Table: 
+        LAT/LNG were inverted in import
+
         Address should be expanded as 'Address 1, 2,3,4 County, ZIP...'
         Add Region field
-
-
+        County should not be free text
+        What about fields:
+            Structure (we have a Structure List but that's wrong)
+            Building
+            Indoor Space
+            Region
+            
 
 
 
