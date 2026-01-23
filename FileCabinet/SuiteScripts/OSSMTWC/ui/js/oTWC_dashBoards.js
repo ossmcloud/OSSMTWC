@@ -7,10 +7,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, coreSql, b64, twcPageBase, twcConfig) => {
 
 
-        class TWCSiteAccessPage extends twcPageBase.TWCPageBase {
+        class TWCDashBoardsPage extends twcPageBase.TWCPageBase {
 
             constructor() {
-                super({ scriptId: 'otwc_siteAccess_sl' });
+                super({ scriptId: 'otwc_dashboards_sl' });
 
 
             }
@@ -21,7 +21,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
 
             init: function () {
-                twcPageBase.init(new TWCSiteAccessPage())
+                twcPageBase.init(new TWCDashBoardsPage())
             }
 
 

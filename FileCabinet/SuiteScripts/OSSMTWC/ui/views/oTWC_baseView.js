@@ -74,11 +74,15 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                 })
                 this.ui.on('change', e => {
                     if (e.id == 'twc-navigation-select') {
-                        location.href = url.resolveScript({
+                        var navigateTo = url.resolveScript({
                             scriptId: e.value,
                             deploymentId: 1,    // @@HARDCODED: we should only have one deployment per script
                         });
-
+                        if (this.#data.portlet) {
+                            window.open(navigateTo)
+                        } else {
+                            location.href = navigateTo;
+                        }
 
                     } else {
                         refreshButton.addClass('twc-highlighted')
@@ -195,11 +199,18 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
         }
 
         function initPageData(context, data) {
+            // @@NOTE: we have no context on portlets, main reason we need a context is for context.request.parameters.script which determines the permissions
+            //         so the portlet will ust send the portlet id and we'll create a dummy context object 
+            if (context?.constructor.name == 'String') { context = { request: { parameters: { script: twcConfig.getScriptId(context) } } } }
+
+            //throw new Error(JSON.stringify(context))
+
+            var userInfo = twcConfig.userInfo(context);
             return {
-                userInfo: twcConfig.userInfo(context),
+                userInfo: userInfo,
                 options: {},
                 themes: twcThemes.get(),
-                userPref: twcConfig.getUserPref(),
+                userPref: twcConfig.getUserPref(userInfo),
                 data: data || {},
                 icons: twcIcons.ICONS,
             }
@@ -213,7 +224,7 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             var html = file.load(`SuiteScripts/OSSMTWC/ui/views/oTWC_pageBase.html`).getContents();
             html = html.replace('/** STYLES **/', css);
             html = html.replace('/** THEME **/', twcThemes.js());
-            
+
 
             var userInfo = pageData.userInfo;
             // @@NOTE: we generally do not want user info in the client side, only allow on SB

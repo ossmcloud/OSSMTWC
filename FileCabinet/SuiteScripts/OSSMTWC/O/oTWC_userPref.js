@@ -10,9 +10,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         class OUserPref {
             #userPref = null;
             #data = null;
-            constructor(data) {
+            #scriptId = null;
+            constructor(data, suiteletScriptId) {
                 this.#userPref = data?.userPref;
                 this.#data = data;
+                this.#scriptId = suiteletScriptId;
             }
 
             open() {
@@ -30,7 +32,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.#userPref.gridBorder = dlg.dialog.find('#user-grid-border').find(":selected").val();
                         console.log(this.#userPref)
 
-                        var url = core.url.script('twc_microsvc_sl', { userPref: 'T' });
+                        var url = core.url.script(this.#scriptId, { userPref: 'T' });
                         https.promise.post({ url: url, body: this.#userPref }).then(r => {
                             dlg.dialog.remove();
                         });
@@ -48,7 +50,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var container = jQuery('.o-dialog');
                 container.find('#user-theme').change(e => {
                     setTheme(jQuery('#user-theme').find(":selected").val());
-                    setThemeCharts();
                 })
                 container.find('#user-font-size').change(e => {
                     setFontSize(jQuery('#user-font-size').find(":selected").val());
@@ -111,8 +112,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
         return {
 
-            get: (data) => {
-                return new OUserPref(data);
+            get: (data, suiteletScriptId) => {
+                return new OUserPref(data, suiteletScriptId);
             }
 
         }

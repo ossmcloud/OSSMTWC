@@ -25,7 +25,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             init: function (page) {
                 window.twc = {};
                 window.twc.page = page;
-                window.twc.userPref = userPref.get(window.twc.page.data)
+                window.twc.userPref = userPref.get(window.twc.page.data, 'otwc_microsvc_sl')
                 window.twc.page.init();
             }
 

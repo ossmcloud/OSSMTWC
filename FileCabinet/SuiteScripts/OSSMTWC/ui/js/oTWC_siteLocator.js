@@ -3,19 +3,50 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/oTWC_userPref.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_site.js', '../../O/controls/oTWC_ui_table.js'],
-    (core, coreSql, b64, twcPageBase, twcConfig, twcIcons, userPref, dialog, twcSite, uiTable) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_site.js', '../../O/controls/oTWC_ui_table.js'],
+    (core, coreSql, b64, twcPageBase, twcConfig, twcIcons, dialog, twcSite, uiTable) => {
+
+        const _radToKmUnit = 0.009009; // @@NOTE: in coordinates (lat/lng) this roughly equals 1km
 
         var _infoWindow = null;
-        async function initMap() {
+        async function initMap(searchByCoordInfo) {
             var data = window.twc.page.data.sites || [];
             const { Map } = await google.maps.importLibrary("maps");
             const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-            
+
             let mapOptions = { mapId: "TWC_MAP", zoom: 14, center: { lat: parseFloat(53.34213715161038), lng: parseFloat(-6.264517099266761) } }
+
+            if (searchByCoordInfo && data.length == 0) { mapOptions.center = searchByCoordInfo.center; }
+
             let map = new Map(document.getElementById("app-map"), mapOptions);
 
-            var markers = []; 
+            var markers = []; const parser = new DOMParser();
+
+            if (searchByCoordInfo) {
+                const pinSvg = parser.parseFromString(twcIcons.get('center', 24, 'red'), "image/svg+xml",).documentElement;
+                const marker = new AdvancedMarkerElement({
+                    map: map,
+                    position: { lat: parseFloat(searchByCoordInfo.center.lat), lng: parseFloat(searchByCoordInfo.center.lng) },
+                    content: pinSvg,
+                    anchorTop: '-45%'
+                });
+                markers.push(marker);
+
+                const radiusCircle = new google.maps.Circle({
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: "#FF0000",
+                    fillOpacity: 0.35,
+                    map,
+                    center: searchByCoordInfo.center,
+                    radius: searchByCoordInfo.radius * 1000,
+                });
+
+            }
+
+
+
             for (var dx = 0; dx < data.length; dx++) {
                 data[dx].latitude = data[dx][twcSite.Fields.LATITUDE];
                 data[dx].longitude = data[dx][twcSite.Fields.LONGITUDE];
@@ -23,7 +54,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (isNaN(data[dx].latitude) || isNaN(data[dx].longitude)) { continue; }
 
                 var color = data[dx].site_type_color || 'blue';
-                const parser = new DOMParser();
                 const pinSvg = parser.parseFromString(twcIcons.get('locationFill', 24, color), "image/svg+xml",).documentElement;
 
                 const infoWindow = new google.maps.InfoWindow({
@@ -57,8 +87,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 markers.push(marker);
             }
 
-            if (data.length > 0) {
+            var bounds = new google.maps.LatLngBounds();
+            if (searchByCoordInfo) {
                 var bounds = new google.maps.LatLngBounds();
+                bounds.extend(new window.google.maps.LatLng(searchByCoordInfo.center.lat - (searchByCoordInfo.radius * _radToKmUnit), searchByCoordInfo.center.lng - (searchByCoordInfo.radius * _radToKmUnit)));
+                bounds.extend(new window.google.maps.LatLng(searchByCoordInfo.center.lat + (searchByCoordInfo.radius * _radToKmUnit), searchByCoordInfo.center.lng + (searchByCoordInfo.radius * _radToKmUnit)));
+            }
+
+            if (data.length > 0) {
                 for (var i = 0; i < data.length; i++) {
                     try {
                         if (!data[i].latitude || !data[i].longitude) { continue; }
@@ -72,8 +108,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         console.log(error)
                     }
                 }
-                map.fitBounds(bounds);
+
             }
+
+            if (data.length > 0 || searchByCoordInfo) { map.fitBounds(bounds); }
+
+            map.addListener("dblclick", (e) => {
+                if (window.twc.initMapCallBack) { window.twc.initMapCallBack(e); }
+            });
 
         }
 
@@ -84,19 +126,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             constructor(page) {
                 this.#page = page;
 
-                var unboundCols = [];
-                // unboundCols.push({
-                //     id: 'checked', title: '<input type="checkbox" class="wkf-log-check-all" />', unbound: true,
-                //     styles: { 'text-align': 'center' },
-                //     noSort: true,
-                //     initValue: (d) => {
-                //         if (d.valid === 'NA') { return d.status; }
-                //         if (!d.valid) { return omtIcons.get('exclamation', 20); }
-                //         return `<input data-id="${d.id}" type="checkbox" class="wkf-log-checked" ${d.checked ? 'checked' : ''}/>`;
-                //     }
-                // })
+                var safLink = core.url.script('otwc_siteaccess_sl');
 
-                
+                var unboundCols = [];
+                unboundCols.push({
+                    id: 'open_saf', title: 'SAF', unbound: true,
+                    styles: { 'text-align': 'center' },
+                    noSort: true,
+                    sortIdx: 999,
+                    initValue: (d) => {
+                        return `<a href="${safLink}&site=${d.id}">view</a>`;
+                    }
+                })
+
+
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
                     id: 'omt_sites',
                     unboundCols: unboundCols,
@@ -125,7 +168,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (uf.listRecord && !col.id.endsWith('_text')) { return false; }
                 }
 
-                
+
 
                 if (col.id == twcSite.Fields.SITE_NAME) { col.addCount = true; }
                 if (col.id == twcSite.Fields.LATITUDE || col.id == twcSite.Fields.LONGITUDE) { col.styles = { 'text-align': 'right' }; }
@@ -163,8 +206,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             initEvents() {
                 this.ui.on('change', e => {
                     try {
-                        console.log(e);
-                        this.updateResults();
+                        if (e.id.startsWith('cust')) {
+                            this.updateResults();
+                        } else if (e.id.startsWith('twc-coord')) {
+                            this.updateResultsByCoord();
+                        }
+
                     } catch (error) {
                         dialog.error(error);
                     }
@@ -193,25 +240,72 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     for (var f in filters) {
                         if (!f.startsWith('cust')) { continue; }
                         if (!filters[f]) { continue; }
-
                         var values = filters[f].split(',').map(i => { return i?.toString() });
                         match = values.indexOf(s[f]?.toString()) >= 0;
-                        
-                        if (!match) { break ; }
-
+                        if (!match) { break; }
                     }
-                    
                     return match;
                 });
 
                 this.#sitesTable.refresh(window.twc.page.data.sites);
-                this.updateGoogleMap();
+                this.updateGoogleMap(null);
             }
 
-            updateGoogleMap() {
+            updateResultsByCoord(searchByCoordInfo) {
+
+
+                var filters = this.ui.getValues();
+
+                var radiusInKm = parseFloat(filters['twc-coord-radius']);
+                var radius = radiusInKm * _radToKmUnit;
+                var srcLat = parseFloat(filters['twc-coord-latitude'])
+                var srcLng = parseFloat(filters['twc-coord-longitude'])
+
+                if (searchByCoordInfo) {
+                    radiusInKm = searchByCoordInfo.radius / _radToKmUnit;
+                    radius = searchByCoordInfo.radius
+                    srcLat = searchByCoordInfo.center.lat;
+                    srcLng = searchByCoordInfo.center.lng;
+                    this.ui.getControl('twc-coord-latitude').value = searchByCoordInfo.center.lat;
+                    this.ui.getControl('twc-coord-longitude').value = searchByCoordInfo.center.lng;
+                }
+
+                if (isNaN(radius) || isNaN(srcLat) || isNaN(srcLng)) { return; }
+
+                window.twc.page.data.sites = window.twc.page.data.data.sitesInfo.sites.filter(s => {
+
+                    var lat = s[twcSite.Fields.LATITUDE];
+                    var lng = s[twcSite.Fields.LONGITUDE];
+
+                    if (!(lat >= (srcLat - radius) && lat <= (srcLat + radius))) {
+                        return false;
+                    }
+
+                    if (!(lng >= (srcLng - radius) && lng <= (srcLng + radius))) {
+                        return false;
+                    }
+
+                    return true;
+
+                });
+
+                this.#sitesTable.refresh(window.twc.page.data.sites);
+                this.updateGoogleMap({
+                    center: { lat: srcLat, lng: srcLng },
+                    radius: radiusInKm,
+                });
+            }
+
+            updateGoogleMap(searchByCoordInfo) {
 
                 if (!this.#map) {
                     window.twc.initMap = initMap;
+                    window.twc.initMapCallBack = e => {
+                        this.updateResultsByCoord({
+                            center: { lat: e.latLng.lat(), lng: e.latLng.lng() },
+                            radius: parseFloat(this.ui.getControl('twc-coord-radius').value) * _radToKmUnit,
+                        });
+                    }
                     this.#map = jQuery('<div id="twc-google-map"></div>')
                     jQuery('#twc-google-map-container').html(this.#map);
                     this.#map.html(`
@@ -219,18 +313,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         <script async defer src="https://maps.googleapis.com/maps/api/js?key=${twcConfig.cfg().GOOGLE_API_KEY}&callback=window.twc.initMap&loading=async"></script>
                     `);
                 } else {
-                    // @@TODO: update with results
-
-
-                    initMap();
+                    initMap(searchByCoordInfo);
                 }
 
-
-                
             }
-
-
-
 
         }
 

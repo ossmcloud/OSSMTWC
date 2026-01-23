@@ -292,7 +292,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 if (table.constructor.name != 'HtmlTable') { throw new err.OInvalidArgumentType('table', 'HtmlTable'); }
                 this.#table = table;
                 this.options = options;
-                //this.#filters = new HtmlTableColumnFilter(this);
+                if (this.options.sortIdx !== undefined) {
+                    this.#sortIdx = this.options.sortIdx;
+                }
                 this.#filters = new HtmlTableColumnFilter(this);
             }
 

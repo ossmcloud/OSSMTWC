@@ -2,11 +2,13 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_permissions.js'],
-    (runtime, core, coreSQL, permissions) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './oTWC_permissions.js'],
+    (runtime, core, coreSQL, recu, permissions) => {
+
+        const FIELD_ENTITY_USER_PREF = 'custentity_twc_userpref';
 
 
-        function userInfo(context) {
+        function getUserInfo(context) {
 
             var userInfo = coreSQL.first({
                 query: `
@@ -21,17 +23,22 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             if (userInfo.type.indexOf('Vendor') >= 0) {
                 userInfo.isVendor = true;
+                userInfo.recordType = 'vendor';
             } else if (userInfo.type.indexOf('CustJob') >= 0) {
                 userInfo.isCustomer = true;
+                userInfo.recordType = 'customer';
             } else {
                 userInfo.isEmployee = true;
+                userInfo.recordType = 'employee';
             }
+            userInfo.recordId = userInfo.id;
 
             if (!userInfo.isEmployee) {
                 // @@NOTE: the oly way to detect that the logged in user is not the main customer but a contact with access is if the email on runtime is different than what we loaded for the customer
                 //         in such case we get the contact details as well in case we need it for soe reason
                 var contactEmail = runtime.getCurrentUser().email;
                 if (userInfo.email != contactEmail) {
+
                     userInfo.contact = coreSQL.first({
                         query: `
                             select  id, email, entitytitle as name
@@ -45,16 +52,37 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         ]
                     })
 
+                    userInfo.recordType = 'contact';
+                    userInfo.recordId = userInfo.contact.id;
+
                 }
             }
 
             return userInfo;
         }
 
-        // @@TODO: persist
-        function getUserPref() {
-            return {
-                theme: 'dark'
+
+
+        function getUserPref(userInfo) {
+            try {
+                var userPref = recu.lookUp(userInfo.recordType, userInfo.recordId, FIELD_ENTITY_USER_PREF);
+                if (userPref) { userPref = JSON.parse(userPref); }
+                return userPref || {}
+            } catch (error) {
+                core.log.error('GET-USER-PREF', `${userInfo.recordType}:${userInfo.recordId} :: ${error.message}`);
+                return {};
+            }
+        }
+
+        function setUserPref(context, userPref) {
+            var userInfo = null;
+            try {
+                core.log.debug('setUserPref', userPref)
+                userInfo = getUserInfo(context);
+                recu.submit(userInfo.recordType, userInfo.recordId, FIELD_ENTITY_USER_PREF, userPref);
+
+            } catch (error) {
+                core.log.error('SET-USER-PREF', `${userInfo?.recordType}:${userInfo?.recordId} :: ${error.message}`);
             }
         }
 
@@ -70,9 +98,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
+
+        function getScriptId(scriptId) {
+            // @@NOTE: this will return the script id number based on the script id string
+            return coreSQL.scalar({
+                query: `select id from script where scriptid=?`,
+                params: [`customscript_${scriptId}`]
+            }) || 0;
+        }
+
         return {
-            userInfo: userInfo,
+            userInfo: getUserInfo,
             getUserPref: getUserPref,
+            setUserPref: setUserPref,
+            getScriptId: getScriptId,
             cfg: getConfig,
         }
     });

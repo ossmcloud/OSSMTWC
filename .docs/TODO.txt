@@ -1,15 +1,13 @@
 TODO:
 -----
 
-User Pref.
-
 Site Locator:
     site table => 
-        add link to open SAF 
         the list cannot be navigated very well as we only see few records, figure out a way to improve (possibly without scrolling the entire page)
 
-    Find by location
-    search coordinates or set search point manually
+    map: on info window include link to site info page (target blank or open on dialog)
+    
+    customer portal dashboard: fix rendering
 
 
 

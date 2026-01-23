@@ -24,16 +24,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } else {
                 // @@NOTE: Role 3 is Administrator
                 if (core.env.role() == 3) {
-
-
-                    // @@TODO: load all features
-
-
                     return {
                         permissions: coreSQL.run(`
-                            select  f.id, custrecord_twc_role_perm_lvl as lvl, custrecord_twc_role_perm_own as own, f.name as text, f.custrecord_twc_role_feat_script as value
-                            from    customrecord_twc_role_perm  p
-                            join    customrecord_twc_role_feat  f on f.id = p.custrecord_twc_role_perm_feat
+                            select  f.id, ${PERMISSION_LEVEL.FULL} as lvl, 'F' as own, f.name as text, f.custrecord_twc_role_feat_script as value
+                            from    customrecord_twc_role_feat  f 
                             order by f.custrecord_twc_role_feat_sort
                         `),
                         lvl: PERMISSION_LEVEL.FULL,
