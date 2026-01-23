@@ -222,6 +222,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             // @@TODO:
                             //dialog.message('under development');
                             window.open(core.url.record(twcSite.Type));
+                        } else if (e.id == 'twc-action-clear-filter') {
+                            this.clearFilters();
                         } else {
                             throw new Error(`Invalid Action ${e.id}`)
                         }
@@ -229,6 +231,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         dialog.error(error);
                     }
                 })
+            }
+
+            clearFilters() {
+                core.array.each(this.ui.controls, c => {
+                    if (c.id.startsWith('twc-coord') || c.id.startsWith('cust')) {
+                        c.value = (c.id == 'twc-coord-radius') ? 5 : null;
+                    }
+                })
+                this.updateResults();
             }
 
             updateResults() {
