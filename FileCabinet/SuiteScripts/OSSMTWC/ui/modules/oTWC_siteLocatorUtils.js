@@ -37,13 +37,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return siteFields;
         }
 
-        function sanitizeFieldAlias(label) {
-            var invalidChars = ['(', ')'];
-            core.array.each(invalidChars, c => {
-                label = label.replaceAll(c, '');
-            })
-            return label.replaceAll(' ', '_');
-        }
+        // function sanitizeFieldAlias(label) {
+        //     var invalidChars = ['(', ')'];
+        //     core.array.each(invalidChars, c => {
+        //         label = label.replaceAll(c, '');
+        //     })
+        //     return label.replaceAll(' ', '_');
+        // }
 
         function getSites(options) {
             var sqlFields = 's.id, s.id as cust_id, s.name';

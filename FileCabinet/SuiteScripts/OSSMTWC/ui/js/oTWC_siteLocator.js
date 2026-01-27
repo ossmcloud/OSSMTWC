@@ -45,7 +45,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             }
 
-
+            var siteLink = core.url.script('otwc_siteinfo_sl');
 
             for (var dx = 0; dx < data.length; dx++) {
                 data[dx].latitude = data[dx][twcSite.Fields.LATITUDE];
@@ -62,6 +62,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         ${data[dx].name || ('lat: ' + data[dx].latitude.toString().substring(0, 7))}
                         <br />
                         ${data[dx].address || ('lng: ' + data[dx].longitude.toString().substring(0, 7))}
+                        <br /><br />
+                        <a class="twc" href="${siteLink}&site=${data[dx].id}" target="_blank">view site info</a>
                     </div>`,
                     ariaLabel: data[dx].name,
                 });
@@ -80,8 +82,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     infoWindow.setHeaderContent(jQuery(`<div style="color: black; font-weight: bold;">${marker.title}</div>`)[0])
                     infoWindow.open(marker.map, marker);
                     _infoWindow = infoWindow;
-                    // @@TODO:  marker.id is the site internal id, use it to find the site
-                    //window.omt.page.selectSite(marker.map.dataIdx);
                 });
 
                 markers.push(marker);
@@ -126,8 +126,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             constructor(page) {
                 this.#page = page;
 
-                var safLink = core.url.script('otwc_siteaccess_sl');
+                
 
+                var safLink = core.url.script('otwc_siteaccess_sl');
                 var unboundCols = [];
                 unboundCols.push({
                     id: 'open_saf', title: 'SAF', unbound: true,
@@ -138,8 +139,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         return `<a href="${safLink}&site=${d.id}">view</a>`;
                     }
                 })
-
-
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
                     id: 'omt_sites',
                     unboundCols: unboundCols,
@@ -160,17 +159,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (col.id == 'name') { return false; }
                 if (col.id == 'site_type_color') { return false; }
 
-                //col.noFilter = true;
-
+                
                 var uf = window.twc.page.data.data.sitesInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
                 if (uf) {
                     col.title = uf.label;
                     if (uf.listRecord && !col.id.endsWith('_text')) { return false; }
                 }
 
-
-
-                if (col.id == twcSite.Fields.SITE_NAME) { col.addCount = true; }
+                if (col.id == twcSite.Fields.SITE_NAME || col.id == twcSite.Fields.SITE_ID) {
+                    col.addCount = col.id == twcSite.Fields.SITE_NAME;
+                    col.link = {
+                        url: core.url.script('otwc_siteinfo_sl') + '&site=${id}',
+                        valueField: 'id'
+                    }
+                }
                 if (col.id == twcSite.Fields.LATITUDE || col.id == twcSite.Fields.LONGITUDE) { col.styles = { 'text-align': 'right' }; }
             }
 

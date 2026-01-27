@@ -5,11 +5,13 @@
 #body {
     background-color: var(--main-bkgd-color) !important;
     color: var(--main-color) !important;
-    
+
 }
+
 #body {
     overflow: hidden !important;
 }
+
 h1.uir-record-type {
     color: var(--title-color) !important;
 }
@@ -36,6 +38,10 @@ div.twc_page {
     background-color: var(--main-bkgd-color) !important;
     color: var(--main-color) !important;
     font-size: var(--font-size);
+}
+
+div.twc_page_loading>div {
+    display: none;
 }
 
 div.twc_tab_control_outer {
@@ -137,6 +143,7 @@ div.twc_action_menu {
     right: 70px;
     display: table;
 }
+
 div.twc_action_menu>div {
     display: table-cell;
     vertical-align: middle;
@@ -437,12 +444,20 @@ div.twc-div-table-r>div>div {
     padding: 3px;
     vertical-align: middle;
 }
+div.twc-div-table-r-compact>div>div {
+    padding: 1px 3px;
+    vertical-align: top !important;
+}
+div.twc-div-table-r-compact>div>div>label {
+    margin-top: 0px;
+}
 
 div.twc-div-table-r-nowrap>div>div {
     white-space: nowrap;
     padding: 7px;
     border: var(--grid-border) solid var(--grid-color);
 }
+
 
 div.twc-div-table-rh>div:first-child>div {
     background-color: var(--accent-bkgd-color);

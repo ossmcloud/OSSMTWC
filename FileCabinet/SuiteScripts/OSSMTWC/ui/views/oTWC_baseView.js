@@ -5,6 +5,11 @@
 define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', '../../O/oTWC_themes.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_permissions.js'],
     (email, file, url, core, https, b64, oStyles, twcThemes, twcIcons, twcConfig, dialog, twcUI, uiTable, permissions) => {
 
+        //
+        const PORTLET_STYLES_PROPS = {
+            Height: '600px'
+        }
+
         class TWCPageBase {
             #options = null;
             #page = null;
@@ -52,17 +57,26 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                     jQuery('#main_form').find('.uir-form-header').css('background-color', 'var(--main-bkgd-color)');
                     jQuery('#main_form').find('table').css('background-color', 'var(--main-bkgd-color)');
                     jQuery('#main_form').find('.page-title-menu').css('display', 'none');
-                    jQuery('.twc_page').css('margin-top', '-39px');
+                    if (!this.#data.portlet) { jQuery('.twc_page').css('margin-top', '-39px'); }
                 }
 
-
-
-
+                if (this.#data.portlet) {
+                    jQuery('.twc_page').css('height', PORTLET_STYLES_PROPS.Height);
+                    jQuery('.twc-container-outer').css('height', '99vh');
+                    jQuery('.twc_action_menu ').css('top', '5px');
+                    jQuery('.twc_action_menu ').css('right', '5px');
+                    jQuery('.twc_page').removeClass('twc_page_loading');
+                }
                 this.#ui = twcUI.init({}, this.page);
+
+
 
                 this.#initEventsInternal();
 
                 if (!this.#data) { return; }
+
+                // @@NOTE: this means the user has no permission so we will not continue as the page should not be interacted with anyway
+                if (this.#data.permission.lvl == 0) { return; }
 
                 if (this.initPage) { this.initPage(); }
                 if (this.initEvents) { this.initEvents(); }
@@ -208,6 +222,7 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             var userInfo = twcConfig.userInfo(context);
             return {
                 userInfo: userInfo,
+                permission: userInfo.permission,
                 options: {},
                 themes: twcThemes.get(),
                 userPref: twcConfig.getUserPref(userInfo),
@@ -254,7 +269,15 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             }
 
             // @@TODO: based on userInfo populate core page menus and similar
-            html = html.replaceAll('{NAVIGATION_DROP_DOWN}', twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, id: 'twc-navigation-select', value: userInfo.permission.id, noEmpty: true, dataSource: userInfo.permission.permissions }));
+            html = html.replaceAll('{NAVIGATION_DROP_DOWN}', twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, id: 'twc-navigation-select', value: userInfo.permission.id, noEmpty: true, dataSource: userInfo.permission.menuItems }));
+
+            if (pageData.portlet) {
+                html = html.replace('{TWC_PAGE_STYLE}', `style="height: ${PORTLET_STYLES_PROPS.Height}; width: 100%;" `);
+                html = html.replace('{TWC_PAGE_CLASS}', 'twc_page_loading');
+            } else {
+                html = html.replace('{TWC_PAGE_STYLE}', '');
+                html = html.replace('{TWC_PAGE_CLASS}', '');
+            }
 
 
             pageData.userInfo = userInfo;

@@ -16,52 +16,59 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         const TEST_ROLE = 0;
 
+        function loadPermissions(roleId) {
+            var sql = {
+                query: `
+                    select  f.id, ${roleId == 3 ? PERMISSION_LEVEL.FULL : 'custrecord_twc_role_perm_lvl'} as lvl, custrecord_twc_role_perm_own as own, f.name as text, f.custrecord_twc_role_feat_script as value, f.custrecord_twc_role_feat_nomenu as no_menu
+                    from    customrecord_twc_role_feat  f
+                    left join    customrecord_twc_role_perm p on f.id = p.custrecord_twc_role_perm_feat
+                    ${roleId == 3 ? '' : 'where   p.custrecord_twc_role_perm_role = ?'}
+                    order by f.custrecord_twc_role_feat_sort
+                `,
+            }
+
+            //throw new Error(roleId)
+
+            if (roleId != 3) { sql.params = [roleId] }
+
+
+
+            var permissions = coreSQL.run(sql);
+            var menuItems = [];
+            core.array.each(permissions, p => {
+                if (p.no_menu == 'T') { return; }
+                menuItems.push(p);
+            })
+
+            return {
+                permissions: permissions,
+                menuItems: menuItems
+            }
+        }
+
         function get(context) {
 
-            var roleId = null;
+            var roleId = core.env.role();
             if (TEST_ROLE) {
                 roleId = TEST_ROLE;
             } else {
-                // @@NOTE: Role 3 is Administrator
-                if (core.env.role() == 3) {
-                    return {
-                        permissions: coreSQL.run(`
-                            select  f.id, ${PERMISSION_LEVEL.FULL} as lvl, 'F' as own, f.name as text, f.custrecord_twc_role_feat_script as value
-                            from    customrecord_twc_role_feat  f 
-                            order by f.custrecord_twc_role_feat_sort
-                        `),
-                        lvl: PERMISSION_LEVEL.FULL,
-                        own: false,
-                    };
+                if (roleId != 3) {
+                    roleId = coreSQL.scalar({
+                        query: `select custrecord_twc_role as r from role where id = ?`,
+                        params: [roleId]
+                    })
                 }
-
-                roleId = coreSQL.scalar({
-                    query: `select custrecord_twc_role as r from role where id = ?`,
-                    params: [core.env.role()]
-                })
 
                 // @@NOTE: if the field on role is not set we'll get null, set to zero tp avoid query below to fail 
                 if (!roleId) { roleId = 0; }
+
             }
 
-
-            var permissions = coreSQL.run({
-                query: `
-                    select  f.id, custrecord_twc_role_perm_lvl as lvl, custrecord_twc_role_perm_own as own, f.name as text, f.custrecord_twc_role_feat_script as value
-                    from    customrecord_twc_role_perm  p
-                    join    customrecord_twc_role_feat  f on f.id = p.custrecord_twc_role_perm_feat
-                    where   p.custrecord_twc_role_perm_role = ?
-                    order by f.custrecord_twc_role_feat_sort
-                `,
-                params: [
-                    roleId,
-                ]
-            })
-
-            var currentPermission = permissions.find(p => { return p.value == context.request.parameters.script })
-
+            var p = loadPermissions(roleId);
+            var currentPermission = p.permissions.find(p => { return p.value == context.request.parameters.script })
             var permission = {
-                permissions: permissions,
+                menuItems: p.menuItems,
+                permissions: p.permissions,
                 id: currentPermission?.value || 0,
                 lvl: currentPermission?.lvl || 0,
                 own: currentPermission?.own || false,

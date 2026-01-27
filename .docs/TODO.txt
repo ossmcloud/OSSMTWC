@@ -5,9 +5,6 @@ Site Locator:
     site table => 
         the list cannot be navigated very well as we only see few records, figure out a way to improve (possibly without scrolling the entire page)
 
-    map: on info window include link to site info page (target blank or open on dialog)
-    
-    customer portal dashboard: fix rendering
 
 
 
