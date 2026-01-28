@@ -50,9 +50,20 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 }
             }
 
+            get readOnly() {
+                return this.#input.attr("readonly") !== undefined;
+            } set readOnly(val) {
+                if (val) {
+                    this.#input.attr('readonly', 'readonly');
+                } else {
+                    this.#input.removeAttr('readonly');
+                }
+            }
+
             get value() {
                 return this.#ui.attr('data-value');
             } set value(val) {
+                if (this.disabled) { return; }
                 var v = this.#dataSource.find(vv => { return vv.value == val; })
                 if (v) {
                     this.#ui.attr('data-value', v.value);
@@ -81,6 +92,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             render(container) {
+                var disabled = this.#options.disabled ? 'disabled' : '';
+                var readOnly = this.#options.readOnly ? 'readonly' : '';
+
                 // @@TODO: we need to implement the disabled attr 
                 var label = '';
                 if (this.#options.label) {
@@ -108,7 +122,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         ${label}
                         <div class="twc_ctrl_table" style="border: 1px solid var(--grid-color); border-radius: 7px;">
                             <div>
-                                <input id="${this.#options.id}" type="text" class="twc twc-filter" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${selectedValueText}" />
+                                <input id="${this.#options.id}" type="text" class="twc twc-filter" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${selectedValueText}" ${disabled} ${readOnly} />
                             </div>
                             <div style="vertical-align: bottom; width: 28px;">
                                 <span id="${this.#options.id}_arrow" style="cursor: pointer; display: inline-block; padding-left: 2px; margin-right: -4px;">${icons.ICONS.arrowDown}</span>
@@ -141,7 +155,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#dropDown = this.#ui.find(`#${this.#options.id}_dropDown`);
 
                 this.#ui.find(`#${this.#options.id}_arrow`).click(e => {
-                    if (this.disabled) { return; }
+                    if (this.readOnly || this.disabled) { return; }
                     if (this.#dropDown.css('display') == 'none') {
                         this.showDropDownList().css('display', 'block');
                     } else {
@@ -160,7 +174,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 this.#dropDown.click(e => {
                     var item = jQuery(e.target);
-                    if (this.disabled) { return; }
+                    if (this.readOnly || this.disabled) { return; }
 
                     if (this.multiSelect) {
                         if (item.hasClass('twc_dropdown_item')) {
@@ -199,6 +213,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             showDropDownList(src) {
+                
                 var content = '';
 
                 jQuery('.twc_ctrl_dropDown').css('display', 'none');

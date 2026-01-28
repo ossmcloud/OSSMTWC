@@ -5,6 +5,9 @@ Site Locator:
     site table => 
         the list cannot be navigated very well as we only see few records, figure out a way to improve (possibly without scrolling the entire page)
 
+Site Info Page: 
+    add 'edit / save' buttons (if permission)
+    field configurations: move to different file
 
 
 

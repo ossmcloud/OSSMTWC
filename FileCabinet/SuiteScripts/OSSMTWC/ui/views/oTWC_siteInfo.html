@@ -4,24 +4,17 @@
 
     <div class="twc-div-table-t">
 
-        <div style="width: 20%; min-width: 450px; border: 1px solid var(--grid-color);">
-            <div>
-                <h1>{SITE_NAME}</h1>
-            </div>
-            
-            <div id="twc-google-map-container" class="twc-border" style="height: 250px; width: 100%;"></div>
-
-            <div>
-                {SITE_MAIN_INFO}
-            </div>
-        </div>
-
+        {SITE_MAIN_INFO_PANEL}
 
         <div>
-            {SITE_DETAILS}
+            <div id="twc-site-details-panel" style="overflow: auto;">
+                {SITE_DETAILS}
+            </div>
+            <script>
+                jQuery('#twc-site-details-panel').height(jQuery('.twc-container-outer').height() - 14)
+            </script>
         </div>
-
-
+       
     </div>
 
 </div>

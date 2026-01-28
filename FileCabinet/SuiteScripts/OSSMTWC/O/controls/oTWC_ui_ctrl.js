@@ -62,6 +62,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#container.find('.twc_ctrl').each((idx, ele) => {
                     this.initCtrl(jQuery(ele));
                 })
+
+                this.#container.find('.twc-control-panel-expand').click(e => {
+                    jQuery(e.currentTarget).closest('.twc-control-panel').find('.twc-control-panel-fields').eq(0).slideToggle('fast');
+                })
             }
 
             initCtrl(ctrl) {
@@ -175,7 +179,26 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
 
 
-            render: render
+            render: render,
+
+
+            nsTypeToCtrlType: (nsType) => {
+                if (nsType == 'Integer Number' || nsType == 'Decimal Number') {
+                    return ctrlBase.CTRL_TYPE.NUMBER;
+                } else if (nsType == 'Free-Form Text') {
+                    return ctrlBase.CTRL_TYPE.TEXT;
+                } else if (nsType == 'Long Text') {
+                    return ctrlBase.CTRL_TYPE.TEXTAREA;
+                } else if (nsType == 'Date') {
+                    return ctrlBase.CTRL_TYPE.DATE;
+                } else if (nsType == 'Check Box') {
+                    return ctrlBase.CTRL_TYPE.TOGGLE;
+                } else if (nsType == 'List/Record' || nsType == 'Multiple Select') {
+                    return ctrlBase.CTRL_TYPE.DROPDOWN;
+                } else {
+                    return ctrlBase.CTRL_TYPE.TEXT;
+                }
+            }
 
         }
     })

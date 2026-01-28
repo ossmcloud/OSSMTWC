@@ -6,16 +6,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, coreSQL, twcSite) => {
 
 
-        function getSiteFields() {
-            return coreSQL.run(`
-                select  cf.fieldvaluetype as field_type, LOWER(cf.scriptid) as field_id, cf.name as field_label
-                from    customfield cf
-                join    customrecordtype c on c.internalid = cf.recordtype
-                where   c.scriptid = UPPER('${twcSite.Type}')
-                order by id
-            `);
-        }
-
+        
 
         function getUserSiteFields() {
             // @@TODO: this list of fields to display can be set by user
@@ -48,7 +39,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSites(options) {
             var sqlFields = 's.id, s.id as cust_id, s.name';
 
-            var siteFields = getSiteFields();
+            var siteFields = twcSite.getFields();
             var userFields = getUserSiteFields();
 
             core.array.each(userFields, uf => {
