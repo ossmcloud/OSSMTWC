@@ -2525,3 +2525,8 @@ span.twc-control-panel-expand {
 }
 
 div.twc-control-panel-fields {}
+
+
+div.twc-animate-height {
+    /* transition: height 1s ease; */
+}

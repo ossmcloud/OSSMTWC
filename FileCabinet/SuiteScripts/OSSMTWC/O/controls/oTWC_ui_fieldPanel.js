@@ -43,7 +43,17 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
         return {
 
-            render: renderCollection
+            render: function (fieldGroup, readOnly) {
+                var content = '';
+                if (Array.isArray(fieldGroup)) {
+                    core.array.each(fieldGroup, fg => {
+                        content += renderCollection(fg, readOnly);
+                    })
+                } else {
+                    content = renderCollection(fieldGroup, readOnly);
+                }
+                return content;
+            }
 
         }
 

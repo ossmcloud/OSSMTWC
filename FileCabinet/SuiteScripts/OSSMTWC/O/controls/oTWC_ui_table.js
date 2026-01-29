@@ -1191,6 +1191,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 if (this.#table == null) {
                     this.init(data);
                     this.#table.on('rowSelection', e => { this.rowSelection(e); })
+                    
                 } else {
                     this.#table.render(data, resetCols);
                 }

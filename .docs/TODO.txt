@@ -1,15 +1,16 @@
 TODO:
 -----
 
-Site Locator:
-    does not show well on 100% with wide screen
-    site table => 
-        the list cannot be navigated very well as we only see few records, figure out a way to improve (possibly without scrolling the entire page)
+UI Panels:
+    implement support for tables (add/edit/delete)
 
 Site Info Page: 
-    add 'edit / save' buttons (if permission)
-    field configurations: move to different file
+    implement onSave
+    // @@TODO: I want a single function the returns an array
+    // @@TODO: we need to cater for data changed on a linked table
 
+Site Finder
+    move to component (as site info panel)
 
 
 
@@ -31,12 +32,16 @@ TODO-DATA:
         Address should be expanded as 'Address 1, 2,3,4 County, ZIP...'
         Add Region field
         County should not be free text
-        What about fields:
-            Structure (we have a Structure List but that's wrong)
-            Building
-            Indoor Space
-            Region
-            
+        
+        Fields to delete:
+            custrecord_twc_site_str_list
+            custrecord_twc_site_ac_list
+            custrecord_twc_site_fibre_list
+            custrecord_twc_site_generator
+
+        Tables to delete:
+            customrecord_twc_str_ is replaced by customrecord_twc_infra
+
 
 
 

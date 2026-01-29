@@ -63,7 +63,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         <br />
                         ${data[dx].address || ('lng: ' + data[dx].longitude.toString().substring(0, 7))}
                         <br /><br />
-                        <a class="twc" href="${siteLink}&site=${data[dx].id}" target="_blank">view site info</a>
+                        <a class="twc" href="${siteLink}&recId=${data[dx].id}" target="_blank">view site info</a>
                     </div>`,
                     ariaLabel: data[dx].name,
                 });
@@ -126,8 +126,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             constructor(page) {
                 this.#page = page;
 
-                
-
                 var safLink = core.url.script('otwc_siteaccess_sl');
                 var unboundCols = [];
                 unboundCols.push({
@@ -136,7 +134,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     noSort: true,
                     sortIdx: 999,
                     initValue: (d) => {
-                        return `<a href="${safLink}&site=${d.id}">view</a>`;
+                        return `<a href="${safLink}&recId=${d.id}">view</a>`;
                     }
                 })
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
@@ -147,7 +145,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 });
 
                 this.#table.onInitEvents = (tbl) => {
-
+                    // @@TODO: this deows not work
+                    // tbl.table.on('scroll', e => {
+                    //     console.log('scrll', e)
+                    // })
                 }
             }
 
@@ -159,7 +160,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (col.id == 'name') { return false; }
                 if (col.id == 'site_type_color') { return false; }
 
-                
+
                 var uf = window.twc.page.data.data.sitesInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
                 if (uf) {
                     col.title = uf.label;
@@ -169,7 +170,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (col.id == twcSite.Fields.SITE_NAME || col.id == twcSite.Fields.SITE_ID) {
                     col.addCount = col.id == twcSite.Fields.SITE_NAME;
                     col.link = {
-                        url: core.url.script('otwc_siteinfo_sl') + '&site=${id}',
+                        url: core.url.script('otwc_siteinfo_sl') + '&recId=${id}',
                         valueField: 'id'
                     }
                 }
@@ -189,6 +190,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         class TWCSiteLocatorPage extends twcPageBase.TWCPageBase {
             #map = null;
             #sitesTable = null;
+            #sitesTableExpanded = false;
             constructor() {
                 super({ scriptId: 'otwc_siteLocator_sl' });
             }
@@ -231,6 +233,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         }
                     } catch (error) {
                         dialog.error(error);
+                    }
+                })
+
+
+                // @@TODO: @@REVIEW: we should hook this to this.#sitesTable object
+                var table = jQuery('ossm[data-type="table"]');
+                table.on('scroll', e => {
+                    if (!this.#sitesTableExpanded) {
+                        this.expandSiteTable();
+                    } else {
+                        if (table.scrollTop() == 0 && this.#sitesTableExpanded) {
+                            this.expandSiteTable();
+                        }
                     }
                 })
             }
@@ -322,13 +337,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#map = jQuery('<div id="twc-google-map"></div>')
                     jQuery('#twc-google-map-container').html(this.#map);
                     this.#map.html(`
-                        <div id="app-map" style="border: 1px solid var(--grid-color); width: 100%; height: ${jQuery('#twc-google-map-container').height()}px"></div>
+                        <div id="app-map" style="border: 1px solid var(--grid-color); width: 100%; height: ${jQuery('#twc-google-map-container').parent().height()}px"></div>
                         <script async defer src="https://maps.googleapis.com/maps/api/js?key=${twcConfig.cfg().GOOGLE_API_KEY}&callback=window.twc.initMap&loading=async"></script>
                     `);
                 } else {
                     initMap(searchByCoordInfo);
                 }
 
+            }
+
+            expandSiteTable() {
+                var deltaHeight = 250;
+                if (this.#sitesTableExpanded) { deltaHeight *= -1; }
+                this.#sitesTableExpanded = !this.#sitesTableExpanded;
+                var topRowHeight = jQuery('#twc-google-map-container').height();
+                var tableHeight = jQuery('#omt_sites').closest('ossm').height();
+
+                jQuery('#twc-google-map-container').animate({ height: topRowHeight - deltaHeight }, 350, 'swing');
+                jQuery('#twc-google-map-filters').animate({ height: topRowHeight - deltaHeight }, 350, 'swing');
+                jQuery('#omt_sites').closest('ossm').animate({ height: tableHeight + deltaHeight }, 350, 'swing');
             }
 
         }

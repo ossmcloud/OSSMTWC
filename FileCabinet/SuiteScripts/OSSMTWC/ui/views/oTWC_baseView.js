@@ -69,8 +69,6 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                 }
                 this.#ui = twcUI.init({}, this.page);
 
-
-
                 this.#initEventsInternal();
 
                 if (!this.#data) { return; }
@@ -100,6 +98,33 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
 
                     } else {
                         refreshButton.addClass('twc-highlighted')
+                    }
+                })
+
+                this.ui.on('click', e => {
+                    if (e.id == 'edit-button') {
+                        if (this.onEdit) {
+                            this.onEdit(e);
+                        } else {
+                            location.href = location.href + "&edit=T";
+                        }
+                    } else if (e.id == 'save-button') {
+                        // @@NOTE: we need this implemented as async
+                    } else if (e.id == 'cancel-button') {
+                        if (this.onCancel) {
+                            this.onCancel(e);
+                        } else {
+                            location.href = location.href.replace('&edit=T', '');
+                        }
+                    }
+                })
+
+                this.ui.getControl('save-button')?.ui.on('click', async e => {
+                    // @@NOTE: for save operations we rely on the derived class
+                    if (this.onSave) {
+                        await this.onSave(e);
+                    } else {
+                        await dialog.errorAsync(`<b>Developer Error</b>:<br /><br />function 'onSave' was not implemented in derived class`);
                     }
                 })
 
@@ -220,6 +245,7 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             //throw new Error(JSON.stringify(context))
 
             var userInfo = twcConfig.userInfo(context);
+
             return {
                 userInfo: userInfo,
                 permission: userInfo.permission,
@@ -228,6 +254,8 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                 userPref: twcConfig.getUserPref(userInfo),
                 data: data || {},
                 icons: twcIcons.ICONS,
+                recId: context.request.parameters.recId,
+                editMode: context.request.parameters.edit == 'T',
             }
         }
 
@@ -249,10 +277,15 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             html = html.replaceAll('{PAGE_VERSION}', pageVersion);
 
             var htmlPage = '';
-            if (userInfo.permission.lvl == permissions.LEVEL.NONE) {
+            if (userInfo.permission.lvl == permissions.LEVEL.NONE || (userInfo.permission.lvl == permissions.LEVEL.VIEW && pageData.editMode)) {
                 htmlPage = file.load(`SuiteScripts/OSSMTWC/ui/views/oTWC_permissionError.html`).getContents();
-                htmlPage = htmlPage.replaceAll('{FEATURE_NAME}', userInfo.permission.feature);
+                if (userInfo.permission.lvl == permissions.LEVEL.VIEW) {
+                    htmlPage = htmlPage.replaceAll('{MESSAGE}', `You do not have permission to edit this record (<i>${userInfo.permission.feature}</i>)`);
+                } else {
+                    htmlPage = htmlPage.replaceAll('{MESSAGE}', `You do not have permission to access this feature (<i>${userInfo.permission.feature}</i>)`);
+                }
                 html = html.replaceAll('{PERMISSION_ICON}', twcIcons.ICONS.exclamation);
+
             } else {
                 htmlPage = file.load(`SuiteScripts/OSSMTWC/ui/views/${viewName}.html`).getContents();
                 if (userInfo.permission.lvl == permissions.LEVEL.VIEW) {
@@ -278,6 +311,16 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                 html = html.replace('{TWC_PAGE_STYLE}', '');
                 html = html.replace('{TWC_PAGE_CLASS}', '');
             }
+
+            var buttons = '';
+            if (pageData.recId !== undefined && userInfo.permission.lvl > 1) {
+                buttons += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: pageData.editMode ? 'Save' : 'Edit', id: pageData.editMode ? 'save-button' : 'edit-button' })
+                if (pageData.editMode) {
+                    buttons += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel', id: 'cancel-button' })
+                }
+
+            }
+            html = html.replace('{SAVE_EDIT_BUTTONS}', buttons);
 
 
             pageData.userInfo = userInfo;

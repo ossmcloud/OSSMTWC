@@ -12,7 +12,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         suiteLet.get = (context, s) => {
 
             var pageData = twcBaseView.initPageData(context);
-            pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(context.request.parameters.site);
+            pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(context.request.parameters.recId);
 
             var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteInfo');
             html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
@@ -22,15 +22,27 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             // @@NOTE: if permission lvl is 1 it means view only so even if parameter passed force to read only
             if (pageData.userInfo.permission.lvl == 1) { readOnly = true; }
 
-            var fieldGroup = twcSiteInfoUtils.getPanelFields_summary(pageData.siteInfo.site);
-            html = html.replaceAll('{SITE_DETAILS}', twcUIPanel.render(fieldGroup, readOnly));
+            // @@TODO: I want a single function the returns an array
+            var fieldGroups = [];
+            fieldGroups.push(twcSiteInfoUtils.getPanelFields_summary(pageData.siteInfo.site));
+            fieldGroups.push(twcSiteInfoUtils.getPanelFields_estates(pageData.siteInfo.site));
+            html = html.replaceAll('{SITE_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
 
 
             s.form.fieldHtml(html);
         };
 
 
+        suiteLet.post = (context, s) => {
 
+            if (context.request.parameters.action == 'save') {
+                var payload = JSON.parse(context.request.body);
+                twcSiteInfoUtils.saveSiteInfo(payload);
+            } else {
+                throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);
+            }
+
+        };
 
         return {
             onRequest: uis.onRequest

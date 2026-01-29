@@ -1,55 +1,47 @@
 <div class="twc-container-inner">
 
-    <div style="max-height: 70vh; overflow: auto;">
-        <div class="twc-div-table-t">
-            <div id="twc-google-map-container" class="twc-border" style="height: 50vh; width: 50%;">
-
-
-
+    <div style="max-height: 60vh; overflow: hidden;">
+        <div id="site-finder-table" class="twc-div-table-t">
+            <div class="twc-border" style="width: 50%;">
+                <div id="twc-google-map-container" class="twc-animate-height"></div>
             </div>
             <div class="twc-border">
+                <div id="twc-google-map-filters"  class="twc-animate-height" style="max-height: 59vh; overflow: auto;">
+                    <h3 class="twc">Site Locator</h3>
+                    <div class="twc-div-table-r">
+                        <div>
+                            {FILTER_NAME}
+                        </div>
+                        <div>
+                            {FILTER_SITE_TYPE}
+                        </div>
+                        <div>
+                            {FILTER_COUNTIES}
+                        </div>
+                        <div>
+                            {FILTER_REGION}
+                        </div>
+                        <div>
+                            {FILTER_PORTFOLIO}
+                        </div>
+                    </div>
 
-                <h3 class="twc">Site Locator</h3>
-                <div class="twc-div-table-r">
-                    <div>
-                        {FILTER_NAME}
+                    <h3 class="twc">Filter by Location</h3>
+                    <div class="twc-div-table-r">
+                        <div>
+                            {FILTER_LAT} {FILTER_LNG} {FILTER_RADIUS}
+                        </div>
                     </div>
-                    <div>
-                        {FILTER_SITE_TYPE}
-                    </div>
-                    <div>
-                        {FILTER_COUNTIES}
-                    </div>
-                    <div>
-                        {FILTER_REGION}
-                    </div>
-                    <div>
-                        {FILTER_PORTFOLIO}
+
+
+                    <h3 class="twc">Site Actions</h3>
+                    <div class="twc-div-table-r">
+                        <div>
+                            {ACTION_CLEAR_FILTERS}
+                            {ACTION_NEW_SITE}
+                        </div>
                     </div>
                 </div>
-
-                <h3 class="twc">Filter by Location</h3>
-                <div class="twc-div-table-r">
-                    <div>
-                        {FILTER_LAT}
-                    </div>
-                    <div>
-                        {FILTER_LNG}
-                    </div>
-                    <div>
-                        {FILTER_RADIUS}
-                    </div>
-                </div>
-
-
-                <h3 class="twc">Site Actions</h3>
-                <div class="twc-div-table-r">
-                    <div>
-                        {ACTION_CLEAR_FILTERS}
-                        {ACTION_NEW_SITE}
-                    </div>
-                </div>
-
             </div>
         </div>
     </div>
