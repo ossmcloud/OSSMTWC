@@ -3,14 +3,16 @@ TODO:
 
 UI Panels:
     implement support for tables (add/edit/delete)
+        MAYBE would be wise to have the sub list lazy loading on screen
+        user TableControl here
+        also, need to load events
+        
 
 Site Info Page: 
-    implement onSave
-    // @@TODO: I want a single function the returns an array
     // @@TODO: we need to cater for data changed on a linked table
 
 Site Finder
-    move to component (as site info panel)
+    move to component (as site info panel) and test on site access locator
 
 
 
@@ -42,7 +44,17 @@ TODO-DATA:
         Tables to delete:
             customrecord_twc_str_ is replaced by customrecord_twc_infra
 
-
+    wherever we have the OOSMTWC - Structur or OSSMTWC - Accomodation or OSSMTWC - Generator table we need to replace it with the OSSMTWC - Infrastructure table
+         select      c.scriptid, c.name, cf.fieldvaluetype as field_type, LOWER(cf.scriptid) as field_id, cf.name as field_label, lower(l.scriptid) as field_foreign_table
+        from        customfield cf
+        join        customrecordtype c on c.internalid = cf.recordtype
+        left join   customrecordtype l on l.internalid = cf.fieldvaluetyperecord
+        where       (
+                    l.scriptid = UPPER('customrecord_twc_ac')
+              or    l.scriptid = UPPER('customrecord_twc_str_')
+              or    l.scriptid = UPPER('customrecord_twc_gen')
+        )
+        order by id
 
 
 ADD FEATURE:

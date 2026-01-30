@@ -278,7 +278,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
         }
 
-        
+
         class HtmlTableColumn {
             #table = null;
             #total = null;
@@ -1191,7 +1191,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 if (this.#table == null) {
                     this.init(data);
                     this.#table.on('rowSelection', e => { this.rowSelection(e); })
-                    
+
                 } else {
                     this.#table.render(data, resetCols);
                 }
@@ -1226,7 +1226,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
         }
 
         function render(options, dataSource) {
-            var ctrl = new HtmlTable(options, dataSource);
+            var ctrl = new HtmlTable(options, options.dataSource || dataSource);
             return ctrl.render();
         }
 

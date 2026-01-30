@@ -2,8 +2,15 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_site.js', './oTWC_row.js', '../O/controls/oTWC_ui_ctrl.js'],
-    (runtime, core, coreSQL, twcSite, twcRow, twcUI) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_row.js', '../O/controls/oTWC_ui_ctrl.js'],
+    (runtime, core, coreSQL, twcSite, twcLock, twcRow, twcUI) => {
+
+        // @@TODO: need to find a way to make this as handy as possible
+        function getDataObject(recordType) {
+            if (recordType == twcLock.Type) { return twcLock; }
+            throw new Error(`Unrecognised record type: ${recordType}`);
+        }
+
 
         var _fieldDefinitions = {};
         function getFieldDefinitions(tableName) {
@@ -99,8 +106,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             locations.fields.push({ id: twcSite.Fields.LONGITUDE, label: 'Longitude' })
             // @@TODO: this is just a sample, remove later
             locations.fields.push({ id: 'site-directions', type: twcUI.CTRL_TYPE.BUTTON, label: '', value: 'Directions', lineBreak: true })
-            
-
 
             var locations = { id: 'site-summary-access', title: 'Access Track / Safety Info', fields: [] };
             fieldGroup.controls.push(locations);
@@ -121,13 +126,35 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var basicInfo = { id: 'site-estates-title', title: 'Title', fields: [] };
             fieldGroup.controls.push(basicInfo);
-
+            
             basicInfo.fields.push({ id: `${twcSite.Fields.CURRENT_ROW}.${twcRow.Fields.ROW_TYPE}`, label: 'R.O.W. Type' })
+           
+            formatPanelFields(dataSource || {}, fieldGroup);
+
+            return fieldGroup;
+        }
+
+
+        function getSitePanelFields_assets(dataSource) {
+            var fieldGroup = { id: 'site-assets', title: 'Assets', collapsed: false, controls: [] };
+
+            var basicInfo = { id: 'site-assets-struct', title: 'Structure', fields: [] };
+            fieldGroup.controls.push(basicInfo);
+
+            basicInfo.fields.push({ id: twcSite.Fields.ADJACENT_GROUND_OWNER, label: 'Adiacent ground Owner' })
+            basicInfo.fields.push({
+                id: `${twcLock.Type}`, label: 'Locks',
+                fields: { [twcLock.Fields.LOCK_ID]: 'Lock Id', [twcLock.Fields.LOCK_LOCATION_CATEGORY]: 'Category' },
+                where: { [twcLock.Fields.SITE]: dataSource.id }
+            })
+
 
             formatPanelFields(dataSource || {}, fieldGroup);
 
             return fieldGroup;
         }
+
+
 
 
 
@@ -142,6 +169,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             core.array.each(panelFields.fields, field => {
                 if (field.type == twcUI.CTRL_TYPE.BUTTON) {
                     panelFields.controls.push(field)
+                    return;
+                }
+
+                // @@NOTE: this means the field is a sub list
+                if (field.fields) {
+                    var dataObj = getDataObject(field.id);
+
+                    var control = {
+                        type: twcUI.CTRL_TYPE.TABLE,
+                        id: field.id,
+                        dataSource: dataObj.select({ fields: field.fields, where: field.where })
+                    };
+
+                    panelFields.controls.push(control);
                     return;
                 }
 
@@ -186,12 +227,21 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             })
         }
 
+        function getSiteInfoPanels(dataSource) {
+            var fieldGroups = [];
+            fieldGroups.push(getSitePanelFields_summary(dataSource));
+            fieldGroups.push(getSitePanelFields_estates(dataSource));
+            fieldGroups.push(getSitePanelFields_assets(dataSource));
+            // @@TODO: implement all required panels
+            return fieldGroups;
+        }
 
         return {
             getSiteTableFields: getSiteTableFields,
             getSiteMainInfoFields: getSiteMainInfoFields,
-            getSitePanelFields_summary: getSitePanelFields_summary,
-            getSitePanelFields_estates: getSitePanelFields_estates
+            getSiteInfoPanels: getSiteInfoPanels,
+
+            getSiteInfoPanels_Assets: getSitePanelFields_assets
         }
     });
 

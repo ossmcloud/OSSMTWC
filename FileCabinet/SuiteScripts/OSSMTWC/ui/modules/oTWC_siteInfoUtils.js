@@ -88,6 +88,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function saveSiteInfo(payload) {
             // @@TODO: we need to cater for data changed on a linked table
+            //          call twcConfigUIFields.getSiteInfoPanels (no data source)
+            //          this way we detect linked tables
             var submitFields = []; var submitValues = [];
             for (var k in payload) {
                 if (k == 'id') { continue; }
@@ -117,8 +119,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             saveSiteInfo: saveSiteInfo,
 
-            // @@TODO: I want a single function the returns an array
-            getPanelFields_summary: twcConfigUIFields.getSitePanelFields_summary,
-            getPanelFields_estates: twcConfigUIFields.getSitePanelFields_estates
+            getSiteInfoPanels: twcConfigUIFields.getSiteInfoPanels,
+
         }
     });

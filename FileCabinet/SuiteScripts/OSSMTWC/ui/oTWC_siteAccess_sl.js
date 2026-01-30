@@ -3,8 +3,8 @@
  * @NScriptType Suitelet
  
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js'],
-    function (core, cored, coreSql, uis, twcBaseView) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteAccessUtils.js'],
+    function (core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteAccessUtils) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -12,7 +12,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         suiteLet.get = (context, s) => {
 
             var pageData = twcBaseView.initPageData(context);
-            var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteAccess');
+
+            var html = '';
+            if (context.request.parameters.recId) {
+                // @@TODO:
+                pageData.siteAccessInfo = twcSiteAccessUtils.getSiteAccessInfo(context.request.parameters.recId);
+                pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteAccessInfo.site);
+
+                html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteAccess');
+                html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
+
+                
+            } else {
+                html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteAccessLocator');
+            }
+
+           
+
 
 
             s.form.fieldHtml(html);
