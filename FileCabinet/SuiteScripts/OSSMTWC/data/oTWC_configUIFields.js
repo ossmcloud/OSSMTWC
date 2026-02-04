@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_row.js', '../O/controls/oTWC_ui_ctrl.js'],
-    (runtime, core, coreSQL, twcSite, twcLock, twcRow, twcUI) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcSiteLevel, twcUI) => {
 
         // @@TODO: need to find a way to make this as handy as possible
         function getDataObject(recordType) {
@@ -15,14 +15,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         var _fieldDefinitions = {};
         function getFieldDefinitions(tableName) {
             if (!_fieldDefinitions[tableName]) {
-                _fieldDefinitions[tableName] = coreSQL.run(`
-                    select      cf.fieldvaluetype as field_type, LOWER(cf.scriptid) as field_id, cf.name as field_label, lower(l.scriptid) as field_foreign_table
-                    from        customfield cf
-                    join        customrecordtype c on c.internalid = cf.recordtype
-                    left join   customrecordtype l on l.internalid = cf.fieldvaluetyperecord
-                    where       c.scriptid = UPPER('${tableName}')
-                    order by id
-                `);
+                _fieldDefinitions[tableName] = twcUtils.getFields(tableName);
             }
             return _fieldDefinitions[tableName];
         }
@@ -40,7 +33,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 { field: twcSite.Fields.SITE_TYPE },
                 { field: twcSite.Fields.HEIGHT_ASL_M },
                 { field: twcSite.Fields.ADDRESS },
-                { field: twcSite.Fields.COUNTY },
+                { field: twcSite.Fields.ADDRESS_COUNTY },
                 { field: twcSite.Fields.PORTFOLIO },
                 { field: twcSite.Fields.LATITUDE },
                 { field: twcSite.Fields.LONGITUDE },
@@ -99,7 +92,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var locations = { id: 'site-summary-location', title: 'Location', fields: [] };
             fieldGroup.controls.push(locations);
             locations.fields.push({ id: twcSite.Fields.ADDRESS, label: 'Address', width: '75%', lineBreak: true })
-            locations.fields.push({ id: twcSite.Fields.COUNTY, label: 'County', lineBreak: true })
+            locations.fields.push({ id: twcSite.Fields.ADDRESS_COUNTY, label: 'County', lineBreak: true })
             locations.fields.push({ id: twcSite.Fields.EASTING, label: 'Easting' })
             locations.fields.push({ id: twcSite.Fields.NORTHING, label: 'Northing', lineBreak: true })
             locations.fields.push({ id: twcSite.Fields.LATITUDE, label: 'Latitude' })
@@ -127,7 +120,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var basicInfo = { id: 'site-estates-title', title: 'Title', fields: [] };
             fieldGroup.controls.push(basicInfo);
             
-            basicInfo.fields.push({ id: `${twcSite.Fields.CURRENT_ROW}.${twcRow.Fields.ROW_TYPE}`, label: 'R.O.W. Type' })
+            // @@TODO: this is just for test
+            basicInfo.fields.push({ id: `${twcSite.Fields.SITE_LEVEL}.${twcSiteLevel.Fields.NAME}`, label: 'Site Level' })
            
             formatPanelFields(dataSource || {}, fieldGroup);
 
@@ -218,8 +212,23 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
 
                 if (dataField.field_type == 'List/Record' || dataField.field_type == 'Multiple Select') {
-                    control.dataSource = coreSQL.run(`select id as value, name as text from ${dataField.field_foreign_table} where isinactive = 'F' order by name`)
-                    control.multiSelect = (dataField.field_type == 'Multiple Select');
+
+                  try {
+                      var whereClause = "where isinactive = 'F'";
+                      var nameField = "name"; var idField = 'id';
+
+                      if (dataField.ns_table) {
+                          // @@NOTE: this is a standard NS table, some of them have no isinactive field and some other have no name field
+                          if (!dataField.ns_table.isInactive) { whereClause = ''; }
+                          nameField = dataField.ns_table.nameField;
+                          idField = dataField.ns_table.pk;
+                      }
+
+                      control.dataSource = coreSQL.run(`select ${idField} as value, ${nameField} as text from ${dataField.field_foreign_table} ${whereClause} order by ${nameField}`)
+                      control.multiSelect = (dataField.field_type == 'Multiple Select');
+                  } catch (error) {
+                    console.log(error)
+                  }
                 }
 
                 panelFields.controls.push(control)

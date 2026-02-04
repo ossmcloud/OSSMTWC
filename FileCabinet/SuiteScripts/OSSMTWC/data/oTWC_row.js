@@ -27,22 +27,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
-        function getFields() {
-            return coreSQL.run(`
-                select      cf.fieldvaluetype as field_type, LOWER(cf.scriptid) as field_id, cf.name as field_label, lower(l.scriptid) as field_foreign_table
-                from        customfield cf
-                join        customrecordtype c on c.internalid = cf.recordtype
-                left join   customrecordtype l on l.internalid = cf.fieldvaluetyperecord
-                where       c.scriptid = UPPER('${RECORD_TYPE}')
-                order by id
-            `);
-        }
-
 
         return {
             Type: RECORD_TYPE,
             Fields: _recordFields,
 
-            getFields: getFields
+            
         }
     });

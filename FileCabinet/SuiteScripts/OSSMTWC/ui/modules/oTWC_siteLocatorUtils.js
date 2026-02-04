@@ -2,13 +2,13 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_site.js', '../../data/oTWC_configUIFields.js'],
-    (core, coreSQL, twcSite, twcConfigUIFields) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_site.js', '../../data/oTWC_configUIFields.js'],
+    (core, coreSQL, twcUtils, twcSite, twcConfigUIFields) => {
 
         function getSites(options) {
             var sqlFields = 's.id, s.id as cust_id, s.name';
 
-            var siteFields = twcSite.getFields();
+            var siteFields = twcUtils.getFields(twcSite.Type);
             var userFields = twcConfigUIFields.getSiteTableFields();
 
             core.array.each(userFields, uf => {
@@ -25,6 +25,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             })
 
+            
             // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSite.Fields.NAME}`;
@@ -32,7 +33,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sites = coreSQL.run(`
                 select  ${sqlFields}, st.custrecord_twc_site_types_color as site_type_color
                 from    ${twcSite.Type} s
-                left join    customrecord_twc_site_types st on st.id = s.${twcSite.Fields.SITE_TYPE}
+                left join    customrecord_twc_site_type st on st.id = s.${twcSite.Fields.SITE_TYPE}
                 ${whereClause} 
                 ${orderBy}
             `)

@@ -10,11 +10,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (!siteId) { throw new Error('No site id provided!'); }
 
             // @@TODO: find a more dynamic way to do this
+
+            var siteFields = twcSite.getFields();
+            var joins = '';
+            core.array.each(siteFields, f => {
+                if (f.field_type != 'List/Record') { return; }
+                var tblAlias = f.field_foreign_table.replace('customrecord_', '');
+                joins += `
+                    left join ${f.field_foreign_table} as ${tblAlias} on ${tblAlias}.id = s.${f.field_id}
+                `
+            })
+
             var siteInfo = coreSQL.first({
                 query: `
                     select  *
                     from    ${twcSite.Type} s
-                    left join  customrecord_twc_row r on r.id = s.custrecord_twc_site_curr_row
+                    ${joins}
                     where   s.id = ?
                 `,
                 params: [siteId]
