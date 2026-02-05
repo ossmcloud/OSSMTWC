@@ -53,7 +53,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (!data[dx].latitude || !data[dx].longitude) { continue; }
                 if (isNaN(data[dx].latitude) || isNaN(data[dx].longitude)) { continue; }
 
-                var color = data[dx].site_type_color || 'blue';
+                var color = data[dx].site_level_color || 'blue';
                 const pinSvg = parser.parseFromString(twcIcons.get('locationFill', 24, color), "image/svg+xml",).documentElement;
 
                 const infoWindow = new google.maps.InfoWindow({
@@ -159,7 +159,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (col.id == 'cust_id') { return false; }
                 if (col.id == 'name') { return false; }
                 if (col.id == 'site_type_color') { return false; }
-
+                if (col.id == 'site_type_color') { return false; }
 
                 var uf = window.twc.page.data.data.sitesInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
                 if (uf) {

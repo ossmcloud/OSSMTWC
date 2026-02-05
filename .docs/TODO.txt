@@ -28,20 +28,54 @@ ________________________________________________________________________________
 TODO-DATA:
 ----------
     SEE: C:\e_drive\OSSM Developments\OSSMTWC\.docs\data\Sites Objects Schemas REV7 ISSUED (NetSuite Actions).xlsx
-        SITE Fields => create fields
+        SITE Fields              => create fields
+        INFRASTRUCTURE Fields    => create fields
+        LOCK Fields              => create fields
 
-    wherever we have the OOSMTWC - Structur or OSSMTWC - Accomodation or OSSMTWC - Generator table we need to replace it with the OSSMTWC - Infrastructure table
-        select      c.scriptid, c.name, cf.fieldvaluetype as field_type, LOWER(cf.scriptid) as field_id, cf.name as field_label, lower(l.scriptid) as field_foreign_table
-        from        customfield cf
-        join        customrecordtype c on c.internalid = cf.recordtype
-        left join   customrecordtype l on l.internalid = cf.fieldvaluetyperecord
-        where       (
-                    l.scriptid = UPPER('customrecord_twc_ac')
-              or    l.scriptid = UPPER('customrecord_twc_str_')
-              or    l.scriptid = UPPER('customrecord_twc_gen')
-        )
-        order by id
+        INSPECTION Fields           => check fields
+        FACILITIES SERVICE Fields   => check fields
+        GENERATOR Service Fields    => check fields
+        E&LP SERVICE Fields         => check fields
+        AWL Fields                  => check fields
+        POWER SUPPLY Fields         => check fields
+        POWER READING Fields        => check fields
+        POWER BILL Fields           => check fields
+        PLANNING Fields             => check fields
+        Local Authority List        => check fields
+        LAND Fields                 => check fields
+        ROW Fields                  => check fields
+        CAPACITY REVIEW Fields      => check fields
+        CUSTOMER PRESENCE Fields    => check fields
 
+
+
+
+TEST-DATA:
+----------
+
+    Boolean Fields: use T/F not 1/0
+    Date Fields: make sure they are all in dd/MM/yyyy and not numeric excel format
+
+    Site :: 
+        Public :: use name not id
+        Portfolio :: What is 108 ???
+        Latitude and Longitude are inverted
+    Infra ::
+        Year of Build cannot be an integer, eventually we want to fields from/to if we ned the to be int
+        Public :: use name not id
+        Fall Arrest Status :: use name not id
+        TLM :: use name not id
+
+        Ground Water (BGL) :: something is wrong here, supposed to be a number
+
+        Customers:
+            Vodafone => 43 Vodafone Ireland
+            Eircom   => 6 Eir
+            Obelisk  => 33 Obelisk Communications	
+            KTL => 27 KTL
+            Towercom => 46 Towercom
+
+    
 
     
 ________________________________________________________________________________________________________________________________________________________________

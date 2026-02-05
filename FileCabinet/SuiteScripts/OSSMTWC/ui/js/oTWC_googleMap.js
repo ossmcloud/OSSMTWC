@@ -40,7 +40,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 var markers = []; const parser = new DOMParser();
 
-                var color = data.site_type_color || 'blue';
+                var color = data.site_level_color || 'blue';
                 const pinSvg = parser.parseFromString(twcIcons.get('locationFill', 24, color), "image/svg+xml",).documentElement;
 
                 const marker = new AdvancedMarkerElement({

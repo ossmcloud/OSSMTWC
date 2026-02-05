@@ -34,7 +34,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             var permissions = coreSQL.run(sql);
-            var menuItems = [];
+            var menuItems = [{value: '', text: '-- menu items --'}];
             core.array.each(permissions, p => {
                 if (p.no_menu == 'T') { return; }
                 menuItems.push(p);

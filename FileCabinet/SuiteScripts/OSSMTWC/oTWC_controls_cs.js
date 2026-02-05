@@ -49,6 +49,11 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
                 try {
                     //throw new Error('no test')
 
+                    coreSQL.each('select id, custrecord_twc_site_longitude as lng, custrecord_twc_site_latitude as lat from customrecord_twc_site order by id', s => {
+                        console.log(s)
+                        recu.submit('customrecord_twc_site', s.id, ['custrecord_twc_site_latitude', 'custrecord_twc_site_longitude'], [s.lng, s.lat])
+                    })
+
                     // console.log(twcUtils.getFields(twcSite.Type));
 
 
@@ -85,7 +90,7 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
                     //     where  s.id = 2
                     // `)
 
-                    console.log(configUIFields.getSiteInfoPanels(getSiteInfo(2).site));
+                    //console.log(configUIFields.getSiteInfoPanels(getSiteInfo(2).site));
 
                     //console.log(rolePermission.get(1))
 

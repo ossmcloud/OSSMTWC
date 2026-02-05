@@ -31,6 +31,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 { field: twcSite.Fields.SITE_ID },
                 { field: twcSite.Fields.SITE_NAME },
                 { field: twcSite.Fields.SITE_TYPE },
+                { field: twcSite.Fields.SITE_LEVEL },
                 { field: twcSite.Fields.HEIGHT_ASL_M },
                 { field: twcSite.Fields.ADDRESS },
                 { field: twcSite.Fields.ADDRESS_COUNTY },

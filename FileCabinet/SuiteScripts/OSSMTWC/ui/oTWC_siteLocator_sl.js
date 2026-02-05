@@ -19,7 +19,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocator');
            
             html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Name', width: '75%', id: 'cust_id', noEmpty: true, dataSource: twcUtils.getSiteNames() }));
-            html = html.replace('{FILTER_SITE_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Type', width: '50%', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));
+            html = html.replace('{FILTER_SITE_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Type', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));
+            html = html.replace('{FILTER_SITE_LEVEL}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Level', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_LEVEL, noEmpty: true, dataSource: twcUtils.getSiteLevels() }));
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'County', width: '50%', multiSelect: true, id: twcSite.Fields.COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
             html = html.replace('{FILTER_REGION}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Region', width: '50%', multiSelect: true, id: twcSite.Fields.REGION, noEmpty: true, dataSource: twcUtils.getRegions() }));
             html = html.replace('{FILTER_PORTFOLIO}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Portfolio', width: '50%', multiSelect: true, id: twcSite.Fields.PORTFOLIO, noEmpty: true, dataSource: twcUtils.getPortfolios() }));

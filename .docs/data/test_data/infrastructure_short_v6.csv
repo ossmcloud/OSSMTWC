@@ -1,0 +1,16 @@
+Error,Site,Site ID,Infrastructure Type,Infrastructure ID,Legacy ID,Schedule,Status,Infrastructure Ownership,O&M Ownership,Insurance Ownership,Marketing Status,SRF Status,SAF Status,Public,Comments,Structure Type,Tower Family,Structure Height (m),Future Planned Structure Height (m),Rooftop Height (m),SAF Auto Approve,Fall Arrest Status,Fall Arrest Type,Anti Climb,Easting,Northing,Longitude,Latitude,Next Site Inspection Date,Next Fall Arrest Certification Date,Tower Last Painted Date,Scheduled Next Painting Date,Painting Warranty Expiry Date,Structure Design,Year of Build,Geotype,Proximity to Body of Water (km),Land Topology,"Wind Map Vb,map (m/s)",Foundation Type,Foundation Design,Foundation Dimensions,Foundation Contractor,Soil Bearing DCP/SI (kN/m),Ground Water (BGL),Foundation FOS,Foundation Overturning (kN/m),Structure   Capacity S ESA_(m²),Structure  Capacity S E-BM_(m².m),Structure  Equipment loading S E-BM_(m².m),% Capacity used,% Capacity remaining,TLM,Accomodation Type,Accommodation Dimensions,Rack Spaces Available,Units,Model,Installed,AC Feed Phase,Loadings,Noise Level,Next Aircon Service,Intruder Alarm Present,Intruder Code,Fire Alarm Present,Next Fire Service,Next Alarm Service,Generator Model,Power Capacity,Tank Capacity (l),Next Generator Service,Next Generator Service Type,Fibre Infrastructure Status,Fibre Duct Installed,Fibre Infrastructure Type,Fibre Service Providers,Fibre Priority,Fibre Phase,Fibre Partner Priority,Fibre Comments
+Invalid custrecord_twc_infra_land_topo reference key valley.,49,TKY6030,Structure,TKY6030-T01,,Schedule 3f,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Monopole,Del_4 - 25,25,,,T,Certified,Metreel,T,113297,118691,52.31347,-9.27207,14/04/2026,,,,,FL134,2008-2010,town,118,valley,26.5,Slab,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",4.7 x 4.7 x 1.25,27 KTL,0,0,-281,0,4662.036667,-5050.926667,-878.4555556,0.45,0.55,green,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_geotype reference key "0".,95,TLS6037,Structure,TLS6037-T01,,Schedule 3f,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Monopole,Del_4 - 20,20,,,T,Certified,Metreel,T,232818,181720,52.8857,-7.51322,15/04/2027,,,,,DEL-6 A-E,2008-2010,,197,0,25,Pile ,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",4.0 x 4.0 x 1.0,33 Obelisk Communications,0,0,-636.5,0,8544.807667,-9380.126667,-1650.548889,0.45,0.55,green,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_geotype reference key Urban.,316,TDU8001,Structure,TDU8001-R01,,TALA,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Rooftop,Ballast Mount,29.9,,26.28,F,Certified,Metreel,F,314539,234429,53.347905,-6.280595,19/01/2026,,,,,FL232,2021,Urban,314,0,25,Pile ,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",0,27 KTL,0,0,-1163,0,14295.24067,-15791.72667,-2794.028889,0.9,0.1,Amber,,,,,,,,,,,,,,,,,,,,,,,,,,,,

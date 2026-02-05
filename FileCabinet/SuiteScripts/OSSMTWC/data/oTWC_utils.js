@@ -89,25 +89,43 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return customFields;
         }
 
+        function getLookUpTableValues(recordType, additionalFilters) {
+            var idField = 'id'; var nameField = 'name'; var isInactive = "and isinactive = 'F'";
+            if (!recordType.startsWith('customrecord')) {
+                var nsTable = getNsTable(recordType);
+                idField = nsTable.pk;
+                nameField = nsTable.nameField;
+                if (!nsTable.isInactive) { isInactive = ''; }
+            }
+
+
+            return coreSQL.run(`select ${idField} as value, ${nameField} as text from ${recordType} where 1 = 1 ${isInactive} ${additionalFilters || ''} order by ${nameField}`);
+
+        }
 
         function getSiteNames() {
-            return coreSQL.run(`select id as value, name as text from customrecord_twc_site where isinactive = 'F' order by name`)
+            return getLookUpTableValues('customrecord_twc_site');
         }
 
         function getSiteTypes() {
-            return coreSQL.run(`select id as value, name as text from customrecord_twc_site_type where isinactive = 'F' order by name`)
+            return getLookUpTableValues('customrecord_twc_site_type');
+        }
+
+        function getSiteLevels() {
+            return getLookUpTableValues('customrecord_twc_site_level');
         }
 
         function getCounties() {
-            return coreSQL.run(`select id as value, fullname as text from state where country = 'IE' order by fullname`)
+            return getLookUpTableValues('state', "and country = 'IE'");
+            //return coreSQL.run(`select id as value, fullname as text from state where country = 'IE' order by fullname`)
         }
 
         function getRegions() {
-            return coreSQL.run(`select id as value, name as text from customrecord_twc_region where isinactive = 'F' order by name`)
+            return getLookUpTableValues('customrecord_twc_region');
         }
 
         function getPortfolios() {
-            return coreSQL.run(`select id as value, name as text from customrecord_twc_site_portfolio where isinactive = 'F' order by name`)
+            return getLookUpTableValues('customrecord_twc_site_portfolio');
         }
 
         //
@@ -117,6 +135,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             getSiteNames: getSiteNames,
             getSiteTypes: getSiteTypes,
+            getSiteLevels: getSiteLevels,
             getCounties: getCounties,
             getRegions: getRegions,
             getPortfolios: getPortfolios,

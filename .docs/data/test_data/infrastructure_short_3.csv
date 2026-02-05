@@ -1,0 +1,76 @@
+Error,Error,Site,Site ID,Infrastructure Type,Infrastructure ID,Legacy ID,Schedule,Status,Infrastructure Ownership,O&M Ownership,Insurance Ownership,Marketing Status,SRF Status,SAF Status,Public,Comments,Structure Type,Tower Family,Structure Height (m),Future Planned Structure Height (m),Rooftop Height (m),SAF Auto Approve,Fall Arrest Status,Fall Arrest Type,Anti Climb,Easting,Northing,Longitude,Latitude,Next Site Inspection Date,Next Fall Arrest Certification Date,Tower Last Painted Date,Scheduled Next Painting Date,Painting Warranty Expiry Date,Structure Design,Year of Build,Geotype,Proximity to Body of Water (km),Land Topology,"Wind Map Vb,map (m/s)",Foundation Type,Foundation Design,Foundation Dimensions,Foundation Contractor,Soil Bearing DCP/SI (kN/m),Ground Water (BGL),Foundation FOS,Foundation Overturning (kN/m),Structure   Capacity S ESA_(m²),Structure  Capacity S E-BM_(m².m),Structure  Equipment loading S E-BM_(m².m),% Capacity used,% Capacity remaining,TLM,Accomodation Type,Accommodation Dimensions,Rack Spaces Available,Units,Model,Installed,AC Feed Phase,Loadings,Noise Level,Next Aircon Service,Intruder Alarm Present,Intruder Code,Fire Alarm Present,Next Fire Service,Next Alarm Service,Generator Model,Power Capacity,Tank Capacity (l),Next Generator Service,Next Generator Service Type,Fibre Infrastructure Status,Fibre Duct Installed,Fibre Infrastructure Type,Fibre Service Providers,Fibre Priority,Fibre Phase,Fibre Partner Priority,Fibre Comments
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,1,TKY6028,Structure,TKY6028-T01,,Schedule 3f,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Monopole,Type - 25m - 03,25,,,T,Certified,Metreel,T,102505,96387,52.11128,-9.42384,14/04/2026,,,,,DEL-6 A-E,2008-2010,country,27,flat,26.5,Pad,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",5.3 x 5.3 x 1.0,33 Obelisk Communications,0,0,128.5,0,189.4776667,-64.12666667,10.91777778,0.45,0.55,green,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,2,TWW3001,Structure,TWW3001-T01,,Schedule 3a,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Lattice Tower,Type - JCM - 4,12,,,T,Not Present,,T,324473,173563,52.799062,-6.155261,27/07/2027,21/07/2026,,,,FL90,0,town,30,flat,25,Pad,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",0,27 KTL,0,0,115,0,336.9246667,-228.5266667,-18.40222222,0.86,0.14,Amber,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,403,TDL2001,Structure,TDL2001-T01,,Schedule 2,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Guyed Mast,Type - P&T - 4,20,,,F,Not Present,,F,168195,415600,54.986888,-8.49757,24/06/2026,,,,,DEL-6 A-E,0,country,33,hill,27,Pad,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",0,33 Obelisk Communications,0,0,101.5,0,484.3716667,-392.9266667,-47.72222222,0.85,0.15,Amber,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,6,TMH6457,Structure,TMH6457-T01,TMH6057,Schedule 3b,UTS,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,,,,,,F,Not Present,,F,271766,264326,53.62401,-6.91612,02/06/2027,,,,,FL93,,,36,,,Pad,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",,27 KTL,,,88,,631.8186667,-557.3266667,-77.04222222,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,8,TWH4001,Structure,TWH4001-T01,,Schedule 3b,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Lattice Tower,Type - JCM - 6,37,,,F,Not Present,,F,203705,241477,53.423629,-7.945005,16/01/2026,,01/08/2024,,01/08/2034,DEL-6 A-E,0,town,41,flat,25.5,Pile ,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",Strengthening works 2024,33 Obelisk Communications,0,0,65.5,0,877.5636667,-831.3266667,-125.9088889,0.85,0.15,Amber,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,10,TGY6318,Structure,TGY6318-T01,TGY6018,Schedule 3a,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,,,,,,F,Not Present,,F,178899,228106,53.30307,-8.31724,14/05/2025,,,,,DEL-6 A-E,,,43,,,Slab,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",,33 Obelisk Communications,,,56.5,,975.8616667,-940.9266667,-145.4555556,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,12,TMO6047,Structure,TMO6047-T01,,Schedule 3f,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Monopole,Del_3 - 15,15,,,T,Certified,Metreel,T,107088,281651,53.77629,-9.41005,11/03/2027,,,,,DEL-6 A-E,2008-2010,country,45,flat,26.5,Pad,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",3.5 x 3.5 x 1.25,33 Obelisk Communications,0,0,47.5,0,1074.159667,-1050.526667,-165.0022222,0.45,0.55,green,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,15,TMO1001,Structure,TMO1001-T01,,Schedule 1,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Guyed Mast,Type - FLI  - 1,106,,,T,Not Present,,F,123826,318432,54.109386,-9.165398,04/02/2027,,25/04/2017,,25/04/2027,FL100,0,town,50,flat,26.5,Pile ,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",0,27 KTL,0,0,25,0,1319.904667,-1324.526667,-213.8688889,0.95,0.05,Amber,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,405,TCK6005,Structure,TCK6005-T01,,Schedule 3f,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Monopole,Type - 25m - 03,25,,,T,Certified,Metreel,T,169290,53776,51.73608,-8.44525,20/06/2026,,,,,DEL-6 A-E,2008-2010,country,53,flat,26,Pile ,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",5.3 x 5.3 x 1.0,33 Obelisk Communications,0,0,11.5,0,1467.351667,-1488.926667,-243.1888889,0.45,0.55,green,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,18,TMO2002,Structure,TMO2002-T01,,Schedule 2,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Lattice Tower,Type - ARU - 1,83,,,T,Not Present,,T,118921,264516,53.624354,-9.226138,21/08/2027,,,,,DEL-6 A-E,0,town,57,flat,26,Pad,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",0,33 Obelisk Communications,0,0,-6.5,0,1663.947667,-1708.126667,-282.2822222,0.65,0.35,Green,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,20,TKY6029,Structure,TKY6029-T01,,Schedule 3f,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Monopole,Del_3 - 15,15,,,T,Certified,Metreel,T,38864,106875,52.19059,-10.35707,02/07/2027,,,,,DEL-6 A-E,2008-2010,country,63,base of hill,27.5,Pad,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",3.5 x 3.5 x 1.25,33 Obelisk Communications,0,0,-33.5,0,1958.841667,-2036.926667,-340.9222222,0.6,0.4,green,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,21,TGY6419,Structure,TGY6419-T01,TGY6019,Schedule 3b,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,,,,,,T,Certified,Metreel,T,178262,252490,53.52213,-8.32848,31/07/2027,,,,,FL108,,,66,,,Pad,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",,27 KTL,,,-47,,2106.288667,-2201.326667,-370.2422222,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,22,TCK6006,Structure,TCK6006-T01,,Schedule 3f,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Monopole,Type - 25m - 03,25,,,T,Certified,Metreel,T,167465,63707,51.82523,-8.4726,20/06/2026,,,,,DEL-6 A-E,2008-2010,country,67,hill,25.5,Slab,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",5.3 x 5.3 x 1.0,33 Obelisk Communications,0,0,-51.5,0,2155.437667,-2256.126667,-380.0155556,0.45,0.55,green,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,23,TWW1002,Structure,TWW1002-T01,,Schedule 1,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Lattice Tower,Type - WAT - 3,52,,,F,Not Present,,T,331119,192539,52.967899,-6.049156,04/06/2026,,11/06/2013,,11/06/2023,FL109,0,town,68,hill,25,Pile ,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",0,27 KTL,0,0,-56,0,2204.586667,-2310.926667,-389.7888889,0.7,0.3,Green,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Invalid custrecord_twc_infra_insur_ownshp reference key Towercom.,Invalid custrecord_twc_infra_ownshp reference key Towercom.,24,TMO6048,Structure,TMO6048-T01,,Schedule 3f,Active,46 Towercom,46 Towercom,46 Towercom,T,Full SRF,Full SAF,Tenant Customer only,,Lattice Tower,Eve Type 6,15,,,T,Certified,Latchway,T,149388,279749,53.76503,-8.76822,25/09/2027,,,,,DEL-6 A-E,1993-1996,town,71,flat,26,Pile ,"Concrete Grade:
+Main Rebar:
+Corner/Secondary Rebar:
+Concrete Quantity (m3):
+Reinforcement Quantity (kg): ",0,33 Obelisk Communications,0,0,-69.5,0,2352.033667,-2475.326667,-419.1088889,0.5,0.5,green,,,,,,,,,,,,,,,,,,,,,,,,,,,,
