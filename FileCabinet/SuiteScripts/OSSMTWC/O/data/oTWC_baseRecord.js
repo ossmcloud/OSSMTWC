@@ -28,6 +28,55 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             DOCUMENT: 'document',
         }
 
+        const sanitizeString = (value) => {
+            var invalidChars = [
+                { c: ' ', r: '' },
+                { c: '-', r: '_' },
+                { c: '-', r: '_' },
+                { c: ',', r: '_' },
+                { c: '.', r: '_' },
+                { c: ':', r: '_' },
+                { c: ';', r: '_' },
+                { c: '(', r: '' },
+                { c: ')', r: '' },
+                { c: '[', r: '' },
+                { c: ']', r: '' },
+                { c: '{', r: '' },
+                { c: '}', r: '' },
+                { c: '\'', r: '' },
+                { c: '"', r: '' },
+                { c: '%', r: '_pc' },
+                { c: '&', r: '_and_' },
+                { c: '+', r: '' },
+                { c: '/', r: '' },
+                { c: '\\', r: '' },
+            ]
+            var target = value;
+            for (var xx = 0; xx < invalidChars.length; xx++) {
+                target = target.replaceAll(invalidChars[xx].c, invalidChars[xx].r);
+            }
+
+            // cannot start with a number
+            var numbers = {
+                48: 'Zero',
+                49: 'One',
+                50: 'Two',
+                51: 'Three',
+                52: 'Four',
+                53: 'Five',
+                54: 'Six',
+                55: 'Seven',
+                56: 'Eight',
+                57: 'Nine',
+            }
+            var firstChar = value.charCodeAt(0);
+            if (firstChar >= 48 && firstChar <= 57) {
+                target = `${numbers[firstChar]}${target.substring(1)}`;
+            }
+
+            return target;
+        }
+
         class RecordBase {
             #id = null;
             #type = null;
@@ -148,12 +197,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 var selectFormat = (field, alias) => {
                     var fieldAlias = alias || field.alias;
+                    if (fieldAlias) { fieldAlias = sanitizeString(fieldAlias); }
                     var fieldAliasName = `as ${fieldAlias || field.name}_name`;
-                    if (fieldAlias) {
-                        fieldAlias = `as ${fieldAlias}`;
-                        // @@TODO: we should be better sanitize the alias here
-                        fieldAlias = fieldAlias.replaceAll(' ', '_');
-                    }
 
                     var sql = '';
                     if (field.type == FIELD_TYPE.DATE) {
@@ -238,7 +283,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             }
                         }
                     }
-                    
+
                 } else {
                     sql += `\norder by name`
                 }

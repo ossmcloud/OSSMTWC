@@ -53,13 +53,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getCustomTableFields(recordType) {
             var customFields = [];
+
+            var whereClause = '';
+            if (Array.isArray(recordType)) {
+                whereClause = `c.scriptid in (${recordType.map(rt => { return `UPPER('${rt}')`; }).join(',') })`;
+            } else {
+                whereClause = `c.scriptid = UPPER('${recordType}')`;
+            }
+
             coreSQL.each(`
                 select      cf.fieldvaluetype as field_type, LOWER(cf.scriptid) as field_id, cf.name as field_label, 
-                            NVL(lower(l.scriptid), cf.fieldvaluetyperecord) as field_foreign_table, c.includename as include_name
+                            NVL(lower(l.scriptid), cf.fieldvaluetyperecord) as field_foreign_table, c.includename as include_name, LOWER(c.scriptid) as table_name
                 from        customfield cf
                 join        customrecordtype c on c.internalid = cf.recordtype
                 left join   customrecordtype l on l.internalid = cf.fieldvaluetyperecord
-                where       c.scriptid = UPPER('${recordType}')
+                where       ${whereClause}
                 order by id
             `, cf => {
                 var nsTableId = parseInt(cf.field_foreign_table);
@@ -76,14 +84,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 customFields.push(cf);
             });
 
-            if (customFields.length == 0 || customFields[0].include_name == 'T') {
-                customFields.push({
-                    field_type: 'Free-Form Text',
-                    field_id: 'name',
-                    field_label: 'name',
-                    field_foreign_table: null,
-                    include_name: 'T'
-                })
+            if (!Array.isArray(recordType)) {
+                // @@NOTE: if we have an array of recordType then it means we want to get fields for multiple tables
+                //         in which case we cannot add the 'name' field just once
+                // @@REVIEW: we could probably loop the recordType array and add a 'name' field for all the record types
+                if (customFields.length == 0 || customFields[0].include_name == 'T') {
+                    customFields.push({
+                        field_type: 'Free-Form Text',
+                        field_id: 'name',
+                        field_label: 'name',
+                        field_foreign_table: null,
+                        include_name: 'T',
+                        table_name: recordType
+                    })
+                }
             }
 
             return customFields;

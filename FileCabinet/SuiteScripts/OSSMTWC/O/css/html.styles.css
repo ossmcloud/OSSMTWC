@@ -268,3 +268,12 @@ dialog.o-dialog-maximized {
     max-width: calc(100% - 10px);
     max-height: calc(100% - 10px);
 }
+
+
+
+div.o-table-toolbar {
+    text-align: right;
+}
+div.o-table-toolbar>span {
+    cursor: pointer;
+}

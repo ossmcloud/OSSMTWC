@@ -2,20 +2,39 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_configUIFields.js'],
-    (core, coreSQL, recu, twcSite, twcConfig, twcIcons, twcUI, twcConfigUIFields) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_utils.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_configUIFields.js'],
+    (core, coreSQL, recu, twcSite, twcUtils, twcConfig, twcIcons, twcUI, twcConfigUIFields) => {
 
 
         function getSiteInfo(siteId) {
             if (!siteId) { throw new Error('No site id provided!'); }
 
-            // @@TODO: find a more dynamic way to do this
+            // @@TODO: move to rec.custom.js
 
             var siteFields = twcSite.getFields();
-            var joins = '';
+
+            var joinTables = [];
             core.array.each(siteFields, f => {
                 if (f.field_type != 'List/Record') { return; }
+                joinTables.push(f.field_foreign_table);
+            })
+
+            var foreignFields = twcUtils.getFields(joinTables);
+
+            var joins = ''; var selectList = 's.id, ';
+            core.array.each(siteFields, f => {
+                selectList += `s.${f.field_id}, `
+                if (f.field_type != 'List/Record') { return; }
+
                 var tblAlias = f.field_foreign_table.replace('customrecord_', '');
+                selectList += `BUILTIN.DF(s.${f.field_id}) as ${f.field_id}_name, `
+
+                var foreignTableFields = foreignFields.filter(ff => { return ff.table_name == f.field_foreign_table; })
+                core.array.each(foreignTableFields, ff => {
+                    if (!ff.field_id.startsWith('cust')) { return; }
+                    selectList += `${ff.field_id}, `
+                })
+                
                 joins += `
                     left join ${f.field_foreign_table} as ${tblAlias} on ${tblAlias}.id = s.${f.field_id}
                 `
@@ -23,13 +42,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var siteInfo = coreSQL.first({
                 query: `
-                    select  *
+                    select  ${selectList}
                     from    ${twcSite.Type} s
                     ${joins}
                     where   s.id = ?
                 `,
                 params: [siteId]
             })
+
+
+
+
+
+
+
             var mainFields = twcConfigUIFields.getSiteMainInfoFields();
             return {
                 site: siteInfo,

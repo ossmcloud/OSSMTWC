@@ -59,7 +59,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         return {
             get: (mapContainer, data) => {
-                return new GoogleMap(mapContainer, data)
+                return new Promise(function (resolve, reject) {
+                    try {
+                        resolve(new GoogleMap(mapContainer, data));
+                    } catch (error) {
+                        reject(error);
+                    }
+                })
+                
             }
         }
     });

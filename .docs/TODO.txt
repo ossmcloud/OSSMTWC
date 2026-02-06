@@ -3,10 +3,6 @@ TODO:
 
 UI Panels:
     implement support for tables (add/edit/delete)
-        MAYBE would be wise to have the sub list lazy loading on screen
-        user TableControl here
-        also, need to load events
-        
 
 Site Info Page: 
     // @@TODO: we need to cater for data changed on a linked table
@@ -28,8 +24,8 @@ ________________________________________________________________________________
 TODO-DATA:
 ----------
     SEE: C:\e_drive\OSSM Developments\OSSMTWC\.docs\data\Sites Objects Schemas REV7 ISSUED (NetSuite Actions).xlsx
-        INFRASTRUCTURE Fields    => create fields
-        LOCK Fields              => create fields
+        INFRASTRUCTURE Fields      => create fields
+        LOCK Fields                => create fields
 
         INSPECTION Fields           => check fields
         FACILITIES SERVICE Fields   => check fields
@@ -77,6 +73,23 @@ TEST-DATA:
 
     
 
+TODO-NEXT:
+----------
+    01. Finalise the site info left panel: place all fields as per Radix system
+    02. Finalise the site info page panels: add missing fields/panels
+    03. implement functionalities:
+            Space Request (SRF)
+            Space Access Request (SAF)
+            ...
+
+
+
+
+
+
+
+
+
     
 ________________________________________________________________________________________________________________________________________________________________
 
@@ -101,6 +114,10 @@ ________________________________________________________________________________
 
 TO REVIEW:
 ----------
+
+UI Panels:
+    Tables: MAYBE would be wise to have the sub list lazy loading on screen (user TableControl in this case)
+
 
 Radix Role is assigned to the NS Role
     This means that a user could assign an 'Admin' radix role to a customer or vendor which should not be done under any circumstances

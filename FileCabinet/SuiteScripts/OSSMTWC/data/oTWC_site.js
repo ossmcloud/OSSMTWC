@@ -2,7 +2,7 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_sitePersistent.js', './oTWC_utils.js'],
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './persistent/oTWC_sitePersistent.js', './oTWC_utils.js'],
     (core, coreSQL, twcSite, twcUtils) => {
 
 

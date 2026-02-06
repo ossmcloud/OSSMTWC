@@ -3,44 +3,14 @@
  *@NScriptType ClientScript
  *@NModuleScope public
  */
-define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js'],
-    function (core, coreSQL, dialog, recu, twcUtils, twcSite, siteInfoUtils, twcConfig, configUIFields, rolePermission, twcConfigUIFields) {
+define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_infrastructure.js'],
+    function (core, coreSQL, dialog, recu, twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields, siteInfoUtils, twcInfra) {
 
         function pageInit(context) {
             console.log('debug -------------> ' + core.env.live())
 
         }
 
-        function getSiteInfo(siteId) {
-            if (!siteId) { throw new Error('No site id provided!'); }
-
-            // @@TODO: find a more dynamic way to do this
-
-            var siteFields = twcSite.getFields();
-            var joins = '';
-            core.array.each(siteFields, f => {
-                if (f.field_type != 'List/Record') { return; }
-                var tblAlias = f.field_foreign_table.replace('customrecord_', '');
-                joins += `
-                    left join ${f.field_foreign_table} as ${tblAlias} on ${tblAlias}.id = s.${f.field_id}
-                `
-            })
-
-            var siteInfo = coreSQL.first({
-                query: `
-                    select  *
-                    from    ${twcSite.Type} s
-                    ${joins}
-                    where   s.id = ?
-                `,
-                params: [siteId]
-            })
-            var mainFields = twcConfigUIFields.getSiteMainInfoFields();
-            return {
-                site: siteInfo,
-                mainFields: mainFields,
-            };
-        }
 
 
         return {
@@ -49,10 +19,10 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
                 try {
                     //throw new Error('no test')
 
-                    coreSQL.each('select id, custrecord_twc_site_longitude as lng, custrecord_twc_site_latitude as lat from customrecord_twc_site order by id', s => {
-                        console.log(s)
-                        recu.submit('customrecord_twc_site', s.id, ['custrecord_twc_site_latitude', 'custrecord_twc_site_longitude'], [s.lng, s.lat])
-                    })
+                    // coreSQL.each('select id, custrecord_twc_site_longitude as lng, custrecord_twc_site_latitude as lat from customrecord_twc_site order by id', s => {
+                    //     console.log(s)
+                    //     recu.submit('customrecord_twc_site', s.id, ['custrecord_twc_site_latitude', 'custrecord_twc_site_longitude'], [s.lng, s.lat])
+                    // })
 
                     // console.log(twcUtils.getFields(twcSite.Type));
 
@@ -90,7 +60,21 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
                     //     where  s.id = 2
                     // `)
 
-                    //console.log(configUIFields.getSiteInfoPanels(getSiteInfo(2).site));
+                    //console.log(siteInfoUtils.getSiteInfo(2).site);
+                    console.log(configUIFields.getSitePanelFields_estates(siteInfoUtils.getSiteInfo(2).site));
+
+                    // console.log(twcInfra.select({
+                    //     fields: {
+                    //         [twcInfra.Fields.INFRASTRUCTURE_ID]: 'Infra Id',
+                    //         [twcInfra.Fields.INFRASTRUCTURE_TYPE]: 'Type',
+                    //         [twcInfra.Fields.STATUS]: 'Status',
+                    //         [twcInfra.Fields.INFRASTRUCTURE_OWNERSHIP]: 'Ownership',
+                    //         [twcInfra.Fields.STRUCTURE_TYPE]: 'Struct. Type',
+                    //         [twcInfra.Fields.TOWER_FAMILY]: 'Family',
+                    //     },
+                    //     where: { [twcInfra.Fields.SITE]: 2 }
+                    // }))
+                    
 
                     //console.log(rolePermission.get(1))
 

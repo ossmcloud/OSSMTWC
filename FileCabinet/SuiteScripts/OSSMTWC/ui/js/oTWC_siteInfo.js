@@ -19,7 +19,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
           
             initPage() {
 
-                this.#map = googleMap.get(jQuery('#twc-google-map-container'), window.twc.page.data.siteInfo.site);
+                googleMap.get(jQuery('#twc-google-map-container'), window.twc.page.data.siteInfo.site).then(map => {
+                    this.#map = map;
+                });
 
                 this.ui.on('change', e => {
                     this.#changes[e.id] = e.value;
@@ -33,6 +35,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         // @@TODO: this is just a sample, remove later
                         window.open(`https://www.google.com/maps?q=${this.ui.getControl(twcSite.Fields.LATITUDE).value},${this.ui.getControl(twcSite.Fields.LONGITUDE).value}`);
 
+                    }
+                })
+
+                core.array.each(this.ui.controls, c => {
+                    if (c.type != 'table') { return; }
+                    c.onToolbarClick = (action, tbl) => {
+                        if (action == 'add-new') {
+                            alert(' add new record ??? ')
+                            return false;
+                        }
                     }
                 })
 

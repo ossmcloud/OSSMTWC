@@ -2,12 +2,13 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcSiteLevel, twcUI) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI) => {
 
         // @@TODO: need to find a way to make this as handy as possible
         function getDataObject(recordType) {
             if (recordType == twcLock.Type) { return twcLock; }
+            if (recordType == twcInfra.Type) { return twcInfra; }
             throw new Error(`Unrecognised record type: ${recordType}`);
         }
 
@@ -116,14 +117,28 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getSitePanelFields_estates(dataSource) {
-            var fieldGroup = { id: 'site-estates', title: 'Estates', collapsed: true, controls: [] };
+            var fieldGroup = { id: 'site-estates', title: 'Estates', collapsed: false, controls: [] };
 
             var basicInfo = { id: 'site-estates-title', title: 'Title', fields: [] };
             fieldGroup.controls.push(basicInfo);
-            
+
             // @@TODO: this is just for test
             basicInfo.fields.push({ id: `${twcSite.Fields.SITE_LEVEL}.${twcSiteLevel.Fields.NAME}`, label: 'Site Level' })
-           
+
+            basicInfo.fields.push({
+                id: `${twcInfra.Type}`, label: 'Infrastructure',
+                fields: {
+                    [twcInfra.Fields.INFRASTRUCTURE_ID]: 'Infra Id',
+                    [twcInfra.Fields.INFRASTRUCTURE_TYPE]: 'Type',
+                    [twcInfra.Fields.STATUS]: 'Status',
+                    [twcInfra.Fields.INFRASTRUCTURE_OWNERSHIP]: 'Ownership',
+                    [twcInfra.Fields.STRUCTURE_TYPE]: 'Struct. Type',
+                    [twcInfra.Fields.TOWER_FAMILY]: 'Family',
+                },
+                where: { [twcInfra.Fields.SITE]: dataSource.id }
+            })
+
+
             formatPanelFields(dataSource || {}, fieldGroup);
 
             return fieldGroup;
@@ -131,7 +146,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
         function getSitePanelFields_assets(dataSource) {
-            var fieldGroup = { id: 'site-assets', title: 'Assets', collapsed: false, controls: [] };
+            var fieldGroup = { id: 'site-assets', title: 'Assets', collapsed: true, controls: [] };
 
             var basicInfo = { id: 'site-assets-struct', title: 'Structure', fields: [] };
             fieldGroup.controls.push(basicInfo);
@@ -153,6 +168,23 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
         function formatPanelFields(dataSource, panelFields) {
             if (panelFields.controls) {
                 core.array.each(panelFields.controls, control => { formatPanelFields(dataSource, control); })
@@ -172,16 +204,28 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     var dataObj = getDataObject(field.id);
 
                     var control = {
+                        label: 'Site Infrastructures',
                         type: twcUI.CTRL_TYPE.TABLE,
                         id: field.id,
-                        dataSource: dataObj.select({ fields: field.fields, where: field.where })
-                    };
+                        dataSource: dataObj.select({ fields: field.fields, where: field.where }),
+                        showToolbar: true,
+                        onColumnInit: (tbl, col) => {
+                            // @@NOTE: if we have fxFields the framework would return the field_name (with id) and field_name_name (with BUILTIN.DF value)
+                            //         we do not want to show the id
+                            if (tbl.data.length > 0) {
+                                if (tbl.data[0][`${col.id}_name`] != undefined) { return false; }
+                            }
+                        }
+                    }
 
                     panelFields.controls.push(control);
                     return;
                 }
 
                 var fieldId = field.id; var dataField = null; var dataFields = null;
+
+
+
                 if (field.id.indexOf('.') < 0) {
                     dataFields = getFieldDefinitions(twcSite.Type);
 
@@ -201,6 +245,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 // @@TODO: what ????
                 if (!dataField) { return; }
 
+                // @@NOTE: if we have the name of a foreign table we would have retrieved it using BUILTIN.DF and just appended _name to the field id
+                //         so the data-source would have the value as dataSource.[fkFieldName]_name
+                if (fieldId == 'name' && field.id.indexOf('.') > 0) { fieldId = `${field.id.split('.')[0]}_name`; }
+
                 var control = {
                     type: twcUI.nsTypeToCtrlType(dataField.field_type),
                     value: dataSource[fieldId],
@@ -214,22 +262,22 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 if (dataField.field_type == 'List/Record' || dataField.field_type == 'Multiple Select') {
 
-                  try {
-                      var whereClause = "where isinactive = 'F'";
-                      var nameField = "name"; var idField = 'id';
+                    try {
+                        var whereClause = "where isinactive = 'F'";
+                        var nameField = "name"; var idField = 'id';
 
-                      if (dataField.ns_table) {
-                          // @@NOTE: this is a standard NS table, some of them have no isinactive field and some other have no name field
-                          if (!dataField.ns_table.isInactive) { whereClause = ''; }
-                          nameField = dataField.ns_table.nameField;
-                          idField = dataField.ns_table.pk;
-                      }
+                        if (dataField.ns_table) {
+                            // @@NOTE: this is a standard NS table, some of them have no isinactive field and some other have no name field
+                            if (!dataField.ns_table.isInactive) { whereClause = ''; }
+                            nameField = dataField.ns_table.nameField;
+                            idField = dataField.ns_table.pk;
+                        }
 
-                      control.dataSource = coreSQL.run(`select ${idField} as value, ${nameField} as text from ${dataField.field_foreign_table} ${whereClause} order by ${nameField}`)
-                      control.multiSelect = (dataField.field_type == 'Multiple Select');
-                  } catch (error) {
-                    console.log(error)
-                  }
+                        control.dataSource = coreSQL.run(`select ${idField} as value, ${nameField} as text from ${dataField.field_foreign_table} ${whereClause} order by ${nameField}`)
+                        control.multiSelect = (dataField.field_type == 'Multiple Select');
+                    } catch (error) {
+                        console.log(error)
+                    }
                 }
 
                 panelFields.controls.push(control)
@@ -251,7 +299,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             getSiteMainInfoFields: getSiteMainInfoFields,
             getSiteInfoPanels: getSiteInfoPanels,
 
-            getSiteInfoPanels_Assets: getSitePanelFields_assets
+            getSitePanelFields_assets: getSitePanelFields_assets,
+            getSitePanelFields_estates: getSitePanelFields_estates
         }
     });
 

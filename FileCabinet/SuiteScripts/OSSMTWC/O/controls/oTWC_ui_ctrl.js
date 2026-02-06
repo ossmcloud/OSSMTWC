@@ -83,6 +83,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     ctrl.on('click', e => { this.#onInt(ctrl, e, 'click'); })
                 } else if (ctrlType == ctrlBase.CTRL_TYPE.TOGGLE) {
                     ctrl = uiToggle.ui(ctrl);
+                } else if (ctrlType == ctrlBase.CTRL_TYPE.TABLE) {
+                    ctrl = uiTable.ui(ctrl);
                 } else {
                     ctrl = uiInput.ui(ctrl);
                 }

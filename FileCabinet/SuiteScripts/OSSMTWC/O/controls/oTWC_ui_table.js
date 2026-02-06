@@ -645,6 +645,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             #events = {};
             #colResize = null;
             #filters = [];
+            #toolBar = null;
             constructor(options, data) {
                 if (core.utils.isEmpty(options)) { throw new err.ONullArgument('options'); }
 
@@ -652,7 +653,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     // @@NOTE: this means we are running on client side and 'options' is actually the jQuery element of this table control
                     this.#j = options;
                     // get options / data from serialized data element within the control
-                    var pageData = ctrlBase.data(options);
+                    var pageData = ctrlBase.data(options.parent());
                     options = pageData.options;
                     data = pageData.data;
                 }
@@ -670,6 +671,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.init();
                 this.initEvents();  // @@NOTE: this will only work if this.#j is not empty
             }
+
+            get type() { return ctrlBase.CTRL_TYPE.TABLE; }
 
             get ui() {
                 return this.#j;
@@ -781,6 +784,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
             init(options) {
                 if (!options) { options = {}; }
+
+
                 // @@NOTE: the init routine is called more than once but we only want to initialize the columns once
                 if (this.#columns == null || options.resetCols) {
                     this.#columns = [];
@@ -843,13 +848,34 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     this.#j.height(this.#j.parent().innerHeight());
                 }
 
-                if (this.#options.noSort) { return; }
-                //this.#j.find('.o-row-header>div').css('cursor', 'pointer');
-                this.#j.find('.o-row-header').click(e => {
-                    if (this.#colResize.resizing) { return; }
-                    if (jQuery(e.target).closest('.o-table-column-filter').length > 0) { return; }
-                    this.sort({ id: jQuery(e.target).closest('div[data-id]').data('id') });
-                })
+                if (this.#options.showToolbar) {
+                    this.#toolBar = this.#j.parent().find(`#${this.#options.id}_toolBar`);
+                    this.#toolBar.find('span').click(e => {
+                        var action = jQuery(e.currentTarget).data('action');
+
+                        if (this.onToolbarClick) {
+                            if (this.onToolbarClick(action, this) === false) { return; }
+                        }
+
+                        if (action == 'copy') {
+                            this.export(true);
+                            var icon = jQuery(e.currentTarget).html()
+                            jQuery(e.currentTarget).html('👍')
+                            window.setTimeout(() => { jQuery(e.currentTarget).html(icon) }, 1000)
+                        } else if (action == 'export') {
+                            this.export();
+                        }
+                    })
+                }
+
+
+                if (!this.#options.noSort) {
+                    this.#j.find('.o-row-header').click(e => {
+                        if (this.#colResize.resizing) { return; }
+                        if (jQuery(e.target).closest('.o-table-column-filter').length > 0) { return; }
+                        this.sort({ id: jQuery(e.target).closest('div[data-id]').data('id') });
+                    })
+                }
                 this.#j.find('.o-table-column-filter').click(e => {
                     if (this.#colResize.resizing) { return; }
                     var col = core.array.find(this.columns, 'id', jQuery(e.currentTarget).closest('div[data-id]').data('id'));
@@ -1025,11 +1051,30 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     this.init({ resetRows: true, resetCols: resetCols });
                 }
 
+
+
                 // @@REVIEW: the 'render' function is called from both server/client
                 //              when called from the client re-rendering the data as well may be time consuming, we could only re-render the table itself
                 //              however, if we call render(data) from client then the data changes and should be re-rendered in the data tag.
                 //              for now we leave this as is and always re-render the whole lot
-                var html = `<div class="o-table" id="${this.#tableId}">`;
+                var toolBar = '';
+                if (this.#options.showToolbar) {
+                    var label = this.#options.label ? `<div><label>${this.#options.label}</label></div>` : '';
+                    var toolBarNew = this.#options.readOnly ? '' : `<span title="add new" data-action="add-new">${twcIcons.get('addNew', 16)}</span>`;
+                    toolBar = `
+                        <div id="${this.#options.id}_toolBar" class="o-table-toolbar">
+                            ${toolBarNew}
+                            <span title="copy into clipboard..." data-action="copy">
+                                ${twcIcons.get('copy', 16)}
+                            </span>
+                            <span title="export to csv..." data-action="export">
+                                ${twcIcons.get('export', 16)}
+                            </span>
+                        </div>
+                    `;
+                    toolBar = `<div class="twc-div-table">${label}${toolBar}</div>`;
+                }
+                var html = `${toolBar}<div class="o-table twc_ctrl" data-type="table" id="${this.#tableId}">`;
                 this.#rowCount = 0;
 
                 if (this.#data.length == 0) {
@@ -1115,7 +1160,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 if (forCopy) {
                     navigator.clipboard.writeText(csv);
                 } else {
-                    this.saveFile(`${fileName || this.tableId || 'table'}.csv`, csv);
+                    this.saveFile(`${fileName || this.#options.label || this.#tableId || 'table'}.csv`, csv);
                 }
                 return csv;
             }
