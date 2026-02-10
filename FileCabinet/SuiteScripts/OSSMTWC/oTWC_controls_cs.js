@@ -12,6 +12,8 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
         }
 
 
+    
+
 
         return {
             pageInit: pageInit,
@@ -60,8 +62,8 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
                     //     where  s.id = 2
                     // `)
 
-                    //console.log(siteInfoUtils.getSiteInfo(2).site);
-                    console.log(configUIFields.getSitePanelFields_estates(siteInfoUtils.getSiteInfo(2).site));
+                    console.log(siteInfoUtils.getSiteInfo(40));
+                    // console.log(configUIFields.getSitePanelFields_estates(siteInfoUtils.getSiteInfo(2).site));
 
                     // console.log(twcInfra.select({
                     //     fields: {

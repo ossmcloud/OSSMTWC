@@ -19,7 +19,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function loadPermissions(roleId) {
             var sql = {
                 query: `
-                    select  f.id, ${roleId == 3 ? PERMISSION_LEVEL.FULL : 'custrecord_twc_role_perm_lvl'} as lvl, custrecord_twc_role_perm_own as own, f.name as text, f.custrecord_twc_role_feat_script as value, f.custrecord_twc_role_feat_nomenu as no_menu
+                    select  f.id, ${roleId == 3 ? PERMISSION_LEVEL.FULL : 'custrecord_twc_role_perm_lvl'} as lvl, custrecord_twc_role_perm_own as own, f.name as text, 
+                            f.custrecord_twc_role_feat_script as value, f.custrecord_twc_role_feat_nomenu as no_menu, f.custrecord_twc_role_feat_id as feature_id,
                     from    customrecord_twc_role_feat  f
                     left join    customrecord_twc_role_perm p on f.id = p.custrecord_twc_role_perm_feat
                     ${roleId == 3 ? '' : 'where   p.custrecord_twc_role_perm_role = ?'}
@@ -72,7 +73,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 id: currentPermission?.value || 0,
                 lvl: currentPermission?.lvl || 0,
                 own: currentPermission?.own || false,
-                feature: currentPermission?.text || 'no feature'
+                feature: currentPermission?.text || 'no feature',
+                featureId: currentPermission?.feature_id || ''
             }
 
             return permission;

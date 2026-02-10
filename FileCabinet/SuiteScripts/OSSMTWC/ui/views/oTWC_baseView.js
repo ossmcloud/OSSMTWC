@@ -51,83 +51,88 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             }
 
             init() {
+                try {
 
-                if (window.NS.UI.Util.isRedwood) {
-                    // @@TODO: this would take effect after few moments the page is loaded, which is ok but looks a bit ugly, can we do better here
-                    jQuery('#main_form').find('.uir-form-header').css('background-color', 'var(--main-bkgd-color)');
-                    jQuery('#main_form').find('table').css('background-color', 'var(--main-bkgd-color)');
-                    jQuery('#main_form').find('.page-title-menu').css('display', 'none');
-                    if (!this.#data.portlet) { jQuery('.twc_page').css('margin-top', '-39px'); }
+                    if (window.NS.UI.Util.isRedwood) {
+                        // @@TODO: this would take effect after few moments the page is loaded, which is ok but looks a bit ugly, can we do better here
+                        jQuery('#main_form').find('.uir-form-header').css('background-color', 'var(--main-bkgd-color)');
+                        jQuery('#main_form').find('table').css('background-color', 'var(--main-bkgd-color)');
+                        jQuery('#main_form').find('.page-title-menu').css('display', 'none');
+                        if (!this.#data.portlet) { jQuery('.twc_page').css('margin-top', '-39px'); }
+                    }
+
+                    if (this.#data.portlet) {
+                        jQuery('.twc_page').css('height', PORTLET_STYLES_PROPS.Height);
+                        jQuery('.twc-container-outer').css('height', '99vh');
+                        jQuery('.twc_action_menu ').css('top', '5px');
+                        jQuery('.twc_action_menu ').css('right', '5px');
+                        jQuery('.twc_page').removeClass('twc_page_loading');
+                    }
+                    this.#ui = twcUI.init({}, this.page);
+
+                    this.#initEventsInternal();
+
+                    if (!this.#data) { return; }
+
+                    // @@NOTE: this means the user has no permission so we will not continue as the page should not be interacted with anyway
+                    if (this.#data.permission.lvl == 0) { return; }
+
+                    if (this.initPage) { this.initPage(); }
+                    if (this.initEvents) { this.initEvents(); }
+
+                    var refreshButton = this.page.find('#twc-page-refresh');
+                    refreshButton.click(e => {
+                        var params = this.ui.getValues();
+                        window.location.href = core.url.script(this.#options.scriptId, params);
+                    })
+                    this.ui.on('change', e => {
+                        if (e.id == 'twc-navigation-select') {
+                            var navigateTo = url.resolveScript({
+                                scriptId: e.value,
+                                deploymentId: 1,    // @@HARDCODED: we should only have one deployment per script
+                            });
+                            if (this.#data.portlet) {
+                                window.open(navigateTo)
+                            } else {
+                                location.href = navigateTo;
+                            }
+
+                        } else {
+                            refreshButton.addClass('twc-highlighted')
+                        }
+                    })
+
+                    this.ui.on('click', e => {
+                        if (e.id == 'edit-button') {
+                            if (this.onEdit) {
+                                this.onEdit(e);
+                            } else {
+                                location.href = location.href + "&edit=T";
+                            }
+                        } else if (e.id == 'save-button') {
+                            // @@NOTE: we need this implemented as async
+                        } else if (e.id == 'cancel-button') {
+                            if (this.onCancel) {
+                                this.onCancel(e);
+                            } else {
+                                location.href = location.href.replace('&edit=T', '');
+                            }
+                        }
+                    })
+
+                    this.ui.getControl('save-button')?.ui.on('click', async e => {
+                        // @@NOTE: for save operations we rely on the derived class
+                        if (this.onSave) {
+                            await this.onSave(e);
+                        } else {
+                            await dialog.errorAsync(`<b>Developer Error</b>:<br /><br />function 'onSave' was not implemented in derived class`);
+                        }
+                    })
+                } catch (error) {
+                    throw error
+                } finally {
+                    jQuery('.twc-overlay').remove();
                 }
-
-                if (this.#data.portlet) {
-                    jQuery('.twc_page').css('height', PORTLET_STYLES_PROPS.Height);
-                    jQuery('.twc-container-outer').css('height', '99vh');
-                    jQuery('.twc_action_menu ').css('top', '5px');
-                    jQuery('.twc_action_menu ').css('right', '5px');
-                    jQuery('.twc_page').removeClass('twc_page_loading');
-                }
-                this.#ui = twcUI.init({}, this.page);
-
-                this.#initEventsInternal();
-
-                if (!this.#data) { return; }
-
-                // @@NOTE: this means the user has no permission so we will not continue as the page should not be interacted with anyway
-                if (this.#data.permission.lvl == 0) { return; }
-
-                if (this.initPage) { this.initPage(); }
-                if (this.initEvents) { this.initEvents(); }
-
-                var refreshButton = this.page.find('#twc-page-refresh');
-                refreshButton.click(e => {
-                    var params = this.ui.getValues();
-                    window.location.href = core.url.script(this.#options.scriptId, params);
-                })
-                this.ui.on('change', e => {
-                    if (e.id == 'twc-navigation-select') {
-                        var navigateTo = url.resolveScript({
-                            scriptId: e.value,
-                            deploymentId: 1,    // @@HARDCODED: we should only have one deployment per script
-                        });
-                        if (this.#data.portlet) {
-                            window.open(navigateTo)
-                        } else {
-                            location.href = navigateTo;
-                        }
-
-                    } else {
-                        refreshButton.addClass('twc-highlighted')
-                    }
-                })
-
-                this.ui.on('click', e => {
-                    if (e.id == 'edit-button') {
-                        if (this.onEdit) {
-                            this.onEdit(e);
-                        } else {
-                            location.href = location.href + "&edit=T";
-                        }
-                    } else if (e.id == 'save-button') {
-                        // @@NOTE: we need this implemented as async
-                    } else if (e.id == 'cancel-button') {
-                        if (this.onCancel) {
-                            this.onCancel(e);
-                        } else {
-                            location.href = location.href.replace('&edit=T', '');
-                        }
-                    }
-                })
-
-                this.ui.getControl('save-button')?.ui.on('click', async e => {
-                    // @@NOTE: for save operations we rely on the derived class
-                    if (this.onSave) {
-                        await this.onSave(e);
-                    } else {
-                        await dialog.errorAsync(`<b>Developer Error</b>:<br /><br />function 'onSave' was not implemented in derived class`);
-                    }
-                })
-
             }
 
             #initEventsInternal() {
