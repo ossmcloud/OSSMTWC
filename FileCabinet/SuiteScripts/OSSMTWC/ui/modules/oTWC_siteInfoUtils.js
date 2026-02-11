@@ -102,7 +102,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         </div>
 
                         <div id="twc-google-map-container" class="twc-border" style="height: 250px; width: 100%; text-align: center;">
-                            <span class="twc-wait-cursor">
+                            <span class="twc-wait-cursor" style="margin-top: calc((250px - 64px) / 2);">
                                 ${twcIcons.ICONS.waitWheel}
                             </span>
                         </div>

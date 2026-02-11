@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_site.js', '../../data/oTWC_configUIFields.js', '../../O/controls/oTWC_ui_ctrl.js'],
-    (core, coreSQL, twcUtils, twcSite, twcConfigUIFields, twcUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_icons.js', '../../data/oTWC_site.js', '../../data/oTWC_configUIFields.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js'],
+    (core, coreSQL, twcUtils, twcIcons, twcSite, twcConfigUIFields, twcUI, twcConfig) => {
 
         function getSites(options) {
             var sqlFields = 's.id, s.id as cust_id, s.name';
@@ -31,7 +31,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var orderBy = `order by s.${twcSite.Fields.NAME}`;
 
             var sites = coreSQL.run(`
-                select  ${sqlFields}, st.custrecord_twc_site_types_color as site_type_color, sl.custrecord_twc_site_level_color as site_level_color
+                select  ${sqlFields}, st.custrecord_twc_site_types_color as site_type_color, sl.custrecord_twc_site_level_color as site_level_color,
                 from    ${twcSite.Type} s
                 left join    customrecord_twc_site_type st on st.id = s.${twcSite.Fields.SITE_TYPE}
                 left join    customrecord_twc_site_level sl on sl.id = s.${twcSite.Fields.SITE_LEVEL}
@@ -54,10 +54,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             // @@TODO: featureId will determine some change on fields in the criteria
 
             var html = `
+                <script async defer src="https://maps.googleapis.com/maps/api/js?key=${twcConfig.cfg().GOOGLE_API_KEY}&loading=async"></script>
                 <div style="max-height: 60vh; overflow: hidden;">
                 <div id="site-finder-table" class="twc-div-table-t">
                     <div class="twc-border" style="width: 50%;">
-                        <div id="twc-google-map-container" class="twc-animate-height"></div>
+                        <div id="twc-google-map-container" class="twc-animate-height">
+                            
+                        </div>
                     </div>
                     <div class="twc-border">
                         <div id="twc-google-map-filters"  class="twc-animate-height" style="max-height: 59vh; overflow: auto;">

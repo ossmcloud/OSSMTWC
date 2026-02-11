@@ -7,8 +7,6 @@ UI Panels:
 Site Info Page: 
     // @@TODO: we need to cater for data changed on a linked table
 
-Site Finder
-    move to component (as site info panel) and test on site access locator
 
 
 

@@ -3,10 +3,10 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js'],
-    (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteLocatorPanel, uiTable, twcSite) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js'],
+    (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, uiTable, twcSite) => {
 
-      
+
 
         // @@TODO: this should be from site access table
         class TWCSiteTable {
@@ -79,24 +79,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         class TWCSiteAccessPage extends twcPageBase.TWCPageBase {
             #map = null;
             #sitesTable = null;
-            #siteLocatorPanel = null;
+            #sitePanel = null;
             constructor() {
                 super({ scriptId: 'otwc_siteAccess_sl' });
-
-
             }
 
             initPage() {
 
                 if (this.data.siteAccessInfo) {
                     // @@NOTE: this is record view mode
-                    this.#map = googleMap.get(jQuery('#twc-google-map-container'), window.twc.page.data.siteInfo.site);
+                    this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
+
                 } else {
                     // @@NOTE: this is site locator mode
-
                     this.#sitesTable = new TWCSiteTable(this);
-                    this.#siteLocatorPanel = twcSiteLocatorPanel.get(this, this.#sitesTable);
-                    this.#siteLocatorPanel.updateResults();
+                    this.#sitePanel = twcSiteLocatorPanel.get({ page: this, table: this.#sitesTable, data: window.twc.page.data.data.sitesInfo.sites });
+
                 }
             }
 

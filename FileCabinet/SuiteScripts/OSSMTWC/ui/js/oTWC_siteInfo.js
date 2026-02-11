@@ -3,14 +3,14 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../data/oTWC_site.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js'],
-    (core, coreSql, b64, twcPageBase, twcConfig, twcIcons, twcSite, googleMap, dialog) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../data/oTWC_site.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js'],
+    (core, coreSql, b64, twcPageBase, twcConfig, twcIcons, twcSite, dialog, twcSiteInfoPanel) => {
 
 
 
         class TWCSiteInfoPage extends twcPageBase.TWCPageBase {
-            #map = null;
             #changes = {};
+            #sitePanel = null;
             constructor() {
                 super({ scriptId: 'otwc_siteInfo_sl' });
 
@@ -19,11 +19,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
           
             initPage() {
 
-                googleMap.get(jQuery('#twc-google-map-container'), window.twc.page.data.siteInfo.site).then(map => {
-                    this.#map = map;
-                });
+                this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
 
                 this.ui.on('change', e => {
+                    if (e.id.startsWith('twc-navigation')) { return; }
                     this.#changes[e.id] = e.value;
                     console.log(this.#changes)
                     this.dirty = true
