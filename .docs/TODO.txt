@@ -9,6 +9,18 @@ UI Panels:
 
 
 
+TODO-NEXT:
+----------
+    01. Finalise the site info left panel: place all fields as per Radix system
+    02. Finalise the site info page panels: add missing fields/panels
+    03. implement functionalities:
+            Space Request (SRF)
+            Space Access Request (SAF)
+            ...
+
+
+
+
 
 
 
@@ -18,30 +30,6 @@ UI Panels:
 
 
 ________________________________________________________________________________________________________________________________________________________________
-
-TODO-DATA:
-----------
-    SEE: C:\e_drive\OSSM Developments\OSSMTWC\.docs\data\Sites Objects Schemas REV7 ISSUED (NetSuite Actions).xlsx
-        INFRASTRUCTURE Fields      => create fields
-        LOCK Fields                => create fields
-
-        INSPECTION Fields           => check fields
-        FACILITIES SERVICE Fields   => check fields
-        GENERATOR Service Fields    => check fields
-        E&LP SERVICE Fields         => check fields
-        AWL Fields                  => check fields
-        POWER SUPPLY Fields         => check fields
-        POWER READING Fields        => check fields
-        POWER BILL Fields           => check fields
-        PLANNING Fields             => check fields
-        Local Authority List        => check fields
-        LAND Fields                 => check fields
-        ROW Fields                  => check fields
-        CAPACITY REVIEW Fields      => check fields
-        CUSTOMER PRESENCE Fields    => check fields
-
-
-
 
 TEST-DATA:
 ----------
@@ -70,18 +58,6 @@ TEST-DATA:
             Towercom => 46 Towercom
 
     
-
-TODO-NEXT:
-----------
-    01. Finalise the site info left panel: place all fields as per Radix system
-    02. Finalise the site info page panels: add missing fields/panels
-    03. implement functionalities:
-            Space Request (SRF)
-            Space Access Request (SAF)
-            ...
-
-
-
 
 
 
