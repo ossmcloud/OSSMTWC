@@ -39,10 +39,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 core.array.each(this.ui.controls, c => {
                     if (c.type != 'table') { return; }
-                    c.onToolbarClick = (action, tbl) => {
-                        if (action == 'add-new') {
-                            alert(' add new record ??? ')
+                    c.onToolbarClick = e => {
+                        console.log(e)
+                        if (e.action == 'add-new') {
+                            alert('add new record ??? ')
                             return false;
+                        } else if (e.action == 'edit') {
+                            alert('edit stuff dude')
+                        } else if (e.action == 'delete') {
+                            dialog.confirm('Are you sure you wish to delete this record', () => {
+                                alert('delete stuff dude')
+                            })
                         }
                     }
                 })

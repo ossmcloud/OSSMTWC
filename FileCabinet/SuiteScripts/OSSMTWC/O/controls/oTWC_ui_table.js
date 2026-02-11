@@ -668,11 +668,39 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 this.#colResize = new HtmlColResizeEngine(this);
 
+                if (this.#options.showEditDelete && !this.#options.readOnly) {
+                    if (!this.#unboundCols) { this.#unboundCols = []; }
+                    this.#unboundCols = [
+                        {
+                            id: 'action_edit_delete', title: '', unbound: true,
+                            styles: { 'text-align': 'center', 'min-width': '34px', 'max-width': '50px' },
+                            sticky: { left: '-1px' },
+                            noResize: true, noSort: true, after: true,
+                            initValue: (d) => {
+                                return `
+                                    <span class="o-table-action" data-action="edit" data-id="${d.id}">&#x270E;</span>
+                                    <span class="o-table-action" data-action="delete" data-id="${d.id}">&#x274C;</span>
+                                `;
+                            }
+                        },
+                        // {
+                        //     id: 'action_delete', title: '', unbound: true,
+                        //     styles: { 'text-align': 'center', 'min-width': '34px', 'max-width': '34px' },
+                        //     sticky: { left: '-1px' },
+                        //     noResize: true, noSort: true,
+                        //     initValue: (d) => {
+                        //         return `<span class="o-table-action" data-action="delete" data-id="${d.id}">&#x274C;</span>`;
+                        //     }
+                        // },
+                    ]
+                }
+
                 this.init();
                 this.initEvents();  // @@NOTE: this will only work if this.#j is not empty
             }
 
             get type() { return ctrlBase.CTRL_TYPE.TABLE; }
+            get id() { return this.#tableId; }
 
             get ui() {
                 return this.#j;
@@ -790,8 +818,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 if (this.#columns == null || options.resetCols) {
                     this.#columns = [];
                     core.array.each(this.#unboundCols, c => {
+                        if (c.after) { return; }
                         c.unbound = true;
                         c.id = `unbound_${c.id}`;
+                        c.sortIdx = this.#columns.length * 10;
                         this.#columns.push(new HtmlTableColumn(this, c));
                     });
 
@@ -815,6 +845,15 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                             if (col.sortIdx == null) { col.sortIdx = this.#columns.length * 10; }
                         }
                     }
+
+                    core.array.each(this.#unboundCols, c => {
+                        if (!c.after) { return; }
+                        c.unbound = true;
+                        c.id = `unbound_${c.id}`;
+                        c.sortIdx = this.#columns.length * 10;
+                        this.#columns.push(new HtmlTableColumn(this, c));
+                    });
+
                 }
 
                 // @@NOTE: the init routine is called more than once but we only want to initialize the rows once
@@ -854,7 +893,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         var action = jQuery(e.currentTarget).data('action');
 
                         if (this.onToolbarClick) {
-                            if (this.onToolbarClick(action, this) === false) { return; }
+                            if (this.onToolbarClick({ action: action, table: this }) === false) { return; }
                         }
 
                         if (action == 'copy') {
@@ -921,6 +960,15 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     e.stopPropagation();
                     this.#trigger('dblclick', this.getSelectedRows())
                 })
+
+                this.#j.find('.o-table-action').click(e => {
+                    var actionSpan = jQuery(e.currentTarget);
+                    var tableRow = actionSpan.closest('.o-row');
+                    var tableRowData = this.#data[jQuery(tableRow).data('idx')];
+                    if (this.onToolbarClick) {
+                        this.onToolbarClick({ action: actionSpan.data('action'), table: this, row: tableRow, rowData: tableRowData, id: actionSpan.data('id') })
+                    }
+                });
 
                 this.#j.scroll(e => { this.closeAllFilters(); })
 

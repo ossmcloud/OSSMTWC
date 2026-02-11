@@ -34,7 +34,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (!ff.field_id.startsWith('cust')) { return; }
                     selectList += `${ff.field_id}, `
                 })
-                
+
                 joins += `
                     left join ${f.field_foreign_table} as ${tblAlias} on ${tblAlias}.id = s.${f.field_id}
                 `
@@ -124,16 +124,60 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         function saveSiteInfo(payload) {
-            // @@TODO: we need to cater for data changed on a linked table
-            //          call twcConfigUIFields.getSiteInfoPanels (no data source)
-            //          this way we detect linked tables
-            var submitFields = []; var submitValues = [];
+            // @@NOTE: @@REVIEW: this routine could be generalised to be used with different record types, not only twcSite
+
+            var submitInfo = {};
+            submitInfo[twcSite.Type] = { id: payload.id, fields: [], values: [] };
+
             for (var k in payload) {
                 if (k == 'id') { continue; }
-                submitFields.push(k);
-                submitValues.push(payload[k])
+                // @@NOTE: fields with '___' means they are linked record fields, we first update the site info, then the linked records
+                var fieldPath = k.split('___');
+                if (fieldPath.length == 1) {
+                    submitInfo[twcSite.Type].fields.push(k);
+                    submitInfo[twcSite.Type].values.push(payload[k])
+                }
             }
-            recu.submit(twcSite.Type, payload.id, submitFields, submitValues);
+
+            recu.submit(twcSite.Type, payload.id, submitInfo[twcSite.Type].fields, submitInfo[twcSite.Type].values);
+
+            // @@NOTE: now we load the linked record fields changes into submitInfo object as we could have more than one
+            var siteFields = twcSite.getFields();
+            var site = twcSite.get(payload.id);
+            for (var k in payload) {
+                if (k == 'id') { continue; }
+                var fieldPath = k.split('___');
+                if (fieldPath.length > 1) {
+                    var siteField = siteFields.find(sf => { return sf.field_id == fieldPath[0]; })
+                    if (!siteField || !siteField.field_foreign_table) {
+                        // @@TODO: this should not happen really ???
+                    } else {
+                        // @@NOTE: @@IMPORTANT: we use fieldPath[0] as object property and NOT siteField.field_foreign_table because we could have more than one field linking to the same record type
+                        if (!submitInfo[fieldPath[0]]) {
+                            submitInfo[fieldPath[0]] = { id: site.get(fieldPath[0]), type: siteField.field_foreign_table, fields: [], values: [] };
+                        }
+                        submitInfo[fieldPath[0]].fields.push(fieldPath[1]);
+                        submitInfo[fieldPath[0]].values.push(payload[k])
+                    }
+                }
+            }
+
+
+            var errors = [];
+            for (var recType in submitInfo) {
+                if (recType == twcSite.Type) { continue; }
+                try {
+                    recu.submit(submitInfo[recType].type, submitInfo[recType].id, submitInfo[recType].fields, submitInfo[recType].values);
+                } catch (error) {
+                    core.logError('SAVE-SITE-INFO', `${JSON.stringify(submitInfo[recType])}: ${error.message}`);
+                    submitInfo[recType].error = error.message;
+                    errors.push(submitInfo[recType])
+                }
+
+            }
+
+            // @@TODO: better error message
+            if (errors.length > 0) { throw new Error(JSON.stringify(errors)); }
         }
 
 

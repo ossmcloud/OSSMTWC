@@ -277,3 +277,7 @@ div.o-table-toolbar {
 div.o-table-toolbar>span {
     cursor: pointer;
 }
+
+span.o-table-action {
+    cursor: pointer;
+}

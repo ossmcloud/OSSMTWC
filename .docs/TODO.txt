@@ -3,9 +3,9 @@ TODO:
 
 UI Panels:
     implement support for tables (add/edit/delete)
-
-Site Info Page: 
-    // @@TODO: we need to cater for data changed on a linked table
+        for new/edit open pop-up window with NetSuite form there    [preferred for now]
+        - OR -
+        let user add/edit/delete on screen and then save
 
 
 

@@ -124,6 +124,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             // @@TODO: this is just for test
             basicInfo.fields.push({ id: `${twcSite.Fields.SITE_LEVEL}.${twcSiteLevel.Fields.NAME}`, label: 'Site Level' })
+            basicInfo.fields.push({ id: twcSite.Fields.SITE_LEVEL, label: 'Site Level (2)' })
 
             basicInfo.fields.push({
                 id: `${twcInfra.Type}`, label: 'Infrastructure',
@@ -209,6 +210,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         id: field.id,
                         dataSource: dataObj.select({ fields: field.fields, where: field.where }),
                         showToolbar: true,
+                        showEditDelete: true,
                         onColumnInit: (tbl, col) => {
                             // @@NOTE: if we have fxFields the framework would return the field_name (with id) and field_name_name (with BUILTIN.DF value)
                             //         we do not want to show the id
@@ -252,7 +254,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 var control = {
                     type: twcUI.nsTypeToCtrlType(dataField.field_type),
                     value: dataSource[fieldId],
-                    id: fieldId
+                    id: field.id.replaceAll('.', '___') // @@IMPORTANT: the 3 underscore are needed to be compatible with jQuery and we use split('___') to get to the field path again, so do not change or if we do change the split('___') too
                 };
 
                 for (var k in field) {

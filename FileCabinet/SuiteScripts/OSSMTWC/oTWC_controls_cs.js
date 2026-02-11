@@ -12,13 +12,26 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
         }
 
 
-    
+
 
 
         return {
             pageInit: pageInit,
             testFunction() {
                 try {
+
+
+                    var payload = {
+                        
+                        "custrecord_twc_site_level": "1",
+                        "custrecord_twc_site_level___name": "Premium (TEST)",
+                        "custrecord_twc_site_alias": "peppo",
+                        "custrecord_twc_site_type": "1",
+                        "id": 417
+                    }
+
+                    siteInfoUtils.saveSiteInfo(payload)
+
                     //throw new Error('no test')
 
                     // coreSQL.each('select id, custrecord_twc_site_longitude as lng, custrecord_twc_site_latitude as lat from customrecord_twc_site order by id', s => {
@@ -62,7 +75,7 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
                     //     where  s.id = 2
                     // `)
 
-                    console.log(siteInfoUtils.getSiteInfo(40));
+                    //console.log(siteInfoUtils.getSiteInfo(40));
                     // console.log(configUIFields.getSitePanelFields_estates(siteInfoUtils.getSiteInfo(2).site));
 
                     // console.log(twcInfra.select({
@@ -76,7 +89,7 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
                     //     },
                     //     where: { [twcInfra.Fields.SITE]: 2 }
                     // }))
-                    
+
 
                     //console.log(rolePermission.get(1))
 
