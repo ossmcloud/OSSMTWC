@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_utils.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_configUIFields.js'],
-    (core, coreSQL, recu, twcSite, twcUtils, twcConfig, twcIcons, twcUI, twcConfigUIFields) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_utils.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_siteUI.js'],
+    (core, coreSQL, recu, twcSite, twcUtils, twcConfig, twcIcons, twcUI, twcSiteUI) => {
 
 
         function getSiteInfo(siteId) {
@@ -56,7 +56,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
 
-            var mainFields = twcConfigUIFields.getSiteMainInfoFields();
+            var mainFields = twcSiteUI.getSiteMainInfoFields();
             return {
                 site: siteInfo,
                 mainFields: mainFields,
@@ -200,7 +200,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             saveSiteInfo: saveSiteInfo,
 
-            getSiteInfoPanels: twcConfigUIFields.getSiteInfoPanels,
+            getSiteInfoPanels: twcSiteUI.getSiteInfoPanels,
 
         }
     });

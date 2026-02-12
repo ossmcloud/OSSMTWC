@@ -260,6 +260,7 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                 data: data || {},
                 icons: twcIcons.ICONS,
                 recId: context.request.parameters.recId,
+                siteId: context.request.parameters.siteId,
                 editMode: context.request.parameters.edit == 'T',
             }
         }
@@ -318,7 +319,7 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             }
 
             var buttons = '';
-            if (pageData.recId !== undefined && userInfo.permission.lvl > 1) {
+            if ((pageData.recId !== undefined || pageData.editMode) && userInfo.permission.lvl > 1) {
                 buttons += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: pageData.editMode ? 'Save' : 'Edit', id: pageData.editMode ? 'save-button' : 'edit-button' })
                 if (pageData.editMode) {
                     buttons += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel', id: 'cancel-button' })

@@ -2,14 +2,14 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_icons.js', '../../data/oTWC_site.js', '../../data/oTWC_configUIFields.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js'],
-    (core, coreSQL, twcUtils, twcIcons, twcSite, twcConfigUIFields, twcUI, twcConfig) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_icons.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js'],
+    (core, coreSQL, twcUtils, twcIcons, twcSite, twcSiteUI, twcUI, twcConfig) => {
 
         function getSites(options) {
             var sqlFields = 's.id, s.id as cust_id, s.name';
 
             var siteFields = twcUtils.getFields(twcSite.Type);
-            var userFields = twcConfigUIFields.getSiteTableFields();
+            var userFields = twcSiteUI.getSiteTableFields();
 
             core.array.each(userFields, uf => {
                 var nsField = siteFields.find(nsf => { return nsf.field_id == uf.field });

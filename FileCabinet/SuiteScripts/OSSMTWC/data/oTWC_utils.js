@@ -11,7 +11,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } else if (tableId == -23 || tableId == 'case') {
                 return { pk: 'id', name: 'case', nameField: 'casenumber', isInactive: '', alias: '' }
             } else if (tableId == -2 || tableId == 'customer') {
-                return { pk: 'id', name: 'customer', nameField: 'entityid', isInactive: '', alias: 'cust' }
+                return { pk: 'id', name: 'customer', nameField: 'companyname', isInactive: '', alias: 'cust' }
             } else if (tableId == -4 || tableId == 'employee') {
                 return { pk: 'id', name: 'employee', nameField: 'entityid', isInactive: '', alias: 'emp' }
             } else if (tableId == -7 || tableId == 'job' || tableId == 'project') {

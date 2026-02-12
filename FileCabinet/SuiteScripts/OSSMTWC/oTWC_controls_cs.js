@@ -3,8 +3,8 @@
  *@NScriptType ClientScript
  *@NModuleScope public
  */
-define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_infrastructure.js'],
-    function (core, coreSQL, dialog, recu, twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields, siteInfoUtils, twcInfra) {
+define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_infrastructure.js', './data/oTWC_srfUI.js'],
+    function (core, coreSQL, dialog, recu, twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields, siteInfoUtils, twcInfra, twcSrfUI) {
 
         function pageInit(context) {
             console.log('debug -------------> ' + core.env.live())
@@ -19,18 +19,21 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             pageInit: pageInit,
             testFunction() {
                 try {
+                    var rec = {};
+                    rec['custrecord_twc_srf_cust'] = 210;
+                    console.log(twcSrfUI.getSRFInfoPanels(rec, {}))
 
 
-                    var payload = {
+                    // var payload = {
                         
-                        "custrecord_twc_site_level": "1",
-                        "custrecord_twc_site_level___name": "Premium (TEST)",
-                        "custrecord_twc_site_alias": "peppo",
-                        "custrecord_twc_site_type": "1",
-                        "id": 417
-                    }
+                    //     "custrecord_twc_site_level": "1",
+                    //     "custrecord_twc_site_level___name": "Premium (TEST)",
+                    //     "custrecord_twc_site_alias": "peppo",
+                    //     "custrecord_twc_site_type": "1",
+                    //     "id": 417
+                    // }
 
-                    siteInfoUtils.saveSiteInfo(payload)
+                    // siteInfoUtils.saveSiteInfo(payload)
 
                     //throw new Error('no test')
 

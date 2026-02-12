@@ -22,6 +22,15 @@ TODO-NEXT:
 
 
 
+TEST DATA WE NEED:
+------------------
+
+OSSMTWC - Equipment List
+OSSMTWC - Customer Presence => HAS NO CUSTOMER SET
+OSSMTWC - Company => add 'Entity' field as this records should be one-to-one with customer or vendor
+We should have a table that tells us what customers a vendor can work on behalf of
+
+
 
 
 

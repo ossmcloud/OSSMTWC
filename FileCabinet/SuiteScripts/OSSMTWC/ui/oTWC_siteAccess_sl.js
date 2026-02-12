@@ -14,9 +14,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var pageData = twcBaseView.initPageData(context);
 
             var html = '';
-            if (context.request.parameters.recId) {
-                pageData.siteAccessInfo = twcSiteAccessUtils.getSiteAccessInfo(context.request.parameters.recId);
-                pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteAccessInfo.site);
+            if (context.request.parameters.siteId) {
+                pageData.siteAccessInfo = twcSiteAccessUtils.getSiteAccessInfo(context.request.parameters.siteId);
+                pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(context.request.parameters.siteId);
 
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteAccess');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
@@ -27,15 +27,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 pageData.data.sitesInfo = twcSiteLocatorUtils.getSites();
 
 
-                html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteAccessLocator');
+                html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
                 // @@TODO: 
                 html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteLocatorUtils.renderSiteLocatorPanel(pageData.permission.featureId));
 
             }
-
-           
-
-
 
             s.form.fieldHtml(html);
         };

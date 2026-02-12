@@ -21,178 +21,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return _fieldDefinitions[tableName];
         }
 
-
-        function getSiteTableFields() {
-            // @@TODO: this list of fields to display can be set by user
-            // @@IMPORTANT: we should make sure some fields are there as they are needed by the ui:
-            //      id, name
-            //      lat/lng
-            //      site address
-            var siteFields = [
-                { field: twcSite.Fields.SITE_ID },
-                { field: twcSite.Fields.SITE_NAME },
-                { field: twcSite.Fields.SITE_TYPE },
-                { field: twcSite.Fields.SITE_LEVEL },
-                { field: twcSite.Fields.HEIGHT_ASL_M },
-                { field: twcSite.Fields.ADDRESS },
-                { field: twcSite.Fields.ADDRESS_COUNTY },
-                { field: twcSite.Fields.PORTFOLIO },
-                { field: twcSite.Fields.LATITUDE },
-                { field: twcSite.Fields.LONGITUDE },
-            ];
-            return siteFields;
-        }
-
-        function getSiteMainInfoFields() {
-
-            var mainInfoFieldGroups = [];
-
-            var overview = { id: 'site-overview', title: 'Overview', fields: [] };
-            overview.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Site Code' })
-            overview.fields.push({ id: twcSite.Fields.SITE_NAME, label: 'Site Name' })
-            overview.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type' })
-            // @@TODO: Site Info :: Structure Type
-            //                   :: Structure Height
-            overview.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL' })
-            mainInfoFieldGroups.push(overview);
-
-            var location = { id: 'site-location', title: 'Location', fields: [] };
-            location.fields.push({ id: twcSite.Fields.ADDRESS, label: 'Address' })
-            location.fields.push({ id: twcSite.Fields.COUNTY, label: 'County' })
-            // @@TODO: Site Info :: Region
-            location.fields.push({ id: twcSite.Fields.EASTING, label: 'Easting' })
-            location.fields.push({ id: twcSite.Fields.NORTHING, label: 'Northing' })
-            location.fields.push({ id: twcSite.Fields.LATITUDE, label: 'Latitude' })
-            location.fields.push({ id: twcSite.Fields.LONGITUDE, label: 'Longitude' })
-            mainInfoFieldGroups.push(location);
-
-            var access = { id: 'site-access', title: 'Access', fields: [] };
-            access.fields.push({ id: twcSite.Fields.EASTING_ACCESS, label: 'Easting' })
-            access.fields.push({ id: twcSite.Fields.NORTHING_ACCESS, label: 'Northing' })
-            access.fields.push({ id: twcSite.Fields.LATITUDE_ACCESS, label: 'Latitude' })
-            access.fields.push({ id: twcSite.Fields.LONGITUDE_ACCESS, label: 'Longitude' })
-            access.fields.push({ id: twcSite.Fields.DIRECTIONS, label: 'Directions' })
-            access.fields.push({ id: twcSite.Fields.INSTRUCTIONS, label: 'Instructions' })
-
-            mainInfoFieldGroups.push(access);
-
-            return mainInfoFieldGroups;
-        }
-
-
-
-        function getSitePanelFields_summary(dataSource) {
-            var fieldGroup = { id: 'site-summary', title: 'Summary', collapsed: true, controls: [] };
-
-            var basicInfo = { id: 'site-summary-basic', title: 'Basic Information', fields: [] };
-            fieldGroup.controls.push(basicInfo);
-            basicInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Site Code' })
-            basicInfo.fields.push({ id: twcSite.Fields.SITE_NAME, label: 'Site Name' })
-            basicInfo.fields.push({ id: twcSite.Fields.ALIAS, label: 'Alias', lineBreak: true })
-            basicInfo.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type' })
-
-            var locations = { id: 'site-summary-location', title: 'Location', fields: [] };
-            fieldGroup.controls.push(locations);
-            locations.fields.push({ id: twcSite.Fields.ADDRESS, label: 'Address', width: '75%', lineBreak: true })
-            locations.fields.push({ id: twcSite.Fields.ADDRESS_COUNTY, label: 'County', lineBreak: true })
-            locations.fields.push({ id: twcSite.Fields.EASTING, label: 'Easting' })
-            locations.fields.push({ id: twcSite.Fields.NORTHING, label: 'Northing', lineBreak: true })
-            locations.fields.push({ id: twcSite.Fields.LATITUDE, label: 'Latitude' })
-            locations.fields.push({ id: twcSite.Fields.LONGITUDE, label: 'Longitude' })
-            // @@TODO: this is just a sample, remove later
-            locations.fields.push({ id: 'site-directions', type: twcUI.CTRL_TYPE.BUTTON, label: '', value: 'Directions', lineBreak: true })
-
-            var locations = { id: 'site-summary-access', title: 'Access Track / Safety Info', fields: [] };
-            fieldGroup.controls.push(locations);
-            locations.fields.push({ id: twcSite.Fields.EASTING_ACCESS, label: 'Easting' })
-            locations.fields.push({ id: twcSite.Fields.NORTHING_ACCESS, label: 'Northing', lineBreak: true })
-            locations.fields.push({ id: twcSite.Fields.LATITUDE_ACCESS, label: 'Latitude' })
-            locations.fields.push({ id: twcSite.Fields.LONGITUDE_ACCESS, label: 'Longitude', lineBreak: true })
-            locations.fields.push({ id: twcSite.Fields.DIRECTIONS, label: 'Directions', width: '75%', rows: 5, lineBreak: true })
-            locations.fields.push({ id: twcSite.Fields.INSTRUCTIONS, label: 'Instructions', width: '75%', rows: 5, lineBreak: true })
-
-            formatPanelFields(dataSource || {}, fieldGroup);
-
-            return fieldGroup;
-        }
-
-        function getSitePanelFields_estates(dataSource) {
-            var fieldGroup = { id: 'site-estates', title: 'Estates', collapsed: false, controls: [] };
-
-            var basicInfo = { id: 'site-estates-title', title: 'Title', fields: [] };
-            fieldGroup.controls.push(basicInfo);
-
-            // @@TODO: this is just for test
-            basicInfo.fields.push({ id: `${twcSite.Fields.SITE_LEVEL}.${twcSiteLevel.Fields.NAME}`, label: 'Site Level' })
-            basicInfo.fields.push({ id: twcSite.Fields.SITE_LEVEL, label: 'Site Level (2)' })
-
-            basicInfo.fields.push({
-                id: `${twcInfra.Type}`, label: 'Infrastructure',
-                fields: {
-                    [twcInfra.Fields.INFRASTRUCTURE_ID]: 'Infra Id',
-                    [twcInfra.Fields.INFRASTRUCTURE_TYPE]: 'Type',
-                    [twcInfra.Fields.STATUS]: 'Status',
-                    [twcInfra.Fields.INFRASTRUCTURE_OWNERSHIP]: 'Ownership',
-                    [twcInfra.Fields.STRUCTURE_TYPE]: 'Struct. Type',
-                    [twcInfra.Fields.TOWER_FAMILY]: 'Family',
-                },
-                where: { [twcInfra.Fields.SITE]: dataSource.id }
-            })
-
-
-            formatPanelFields(dataSource || {}, fieldGroup);
-
-            return fieldGroup;
-        }
-
-
-        function getSitePanelFields_assets(dataSource) {
-            var fieldGroup = { id: 'site-assets', title: 'Assets', collapsed: true, controls: [] };
-
-            var basicInfo = { id: 'site-assets-struct', title: 'Structure', fields: [] };
-            fieldGroup.controls.push(basicInfo);
-
-            basicInfo.fields.push({ id: twcSite.Fields.ADJACENT_GROUND_OWNER, label: 'Adiacent ground Owner' })
-            basicInfo.fields.push({
-                id: `${twcLock.Type}`, label: 'Locks',
-                fields: { [twcLock.Fields.LOCK_ID]: 'Lock Id', [twcLock.Fields.LOCK_LOCATION_CATEGORY]: 'Category' },
-                where: { [twcLock.Fields.SITE]: dataSource.id }
-            })
-
-
-            formatPanelFields(dataSource || {}, fieldGroup);
-
-            return fieldGroup;
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
         function formatPanelFields(dataSource, panelFields) {
+
+            if (!dataSource.Type) { throw new Error('configUIFields :: dataSource.Type cannot be empty'); }
+
             if (panelFields.controls) {
                 core.array.each(panelFields.controls, control => { formatPanelFields(dataSource, control); })
                 return;
             }
 
-            var siteFields = getFieldDefinitions(twcSite.Type);
+            var siteFields = getFieldDefinitions(dataSource.Type);
             if (!panelFields.controls) { panelFields.controls = []; }
             core.array.each(panelFields.fields, field => {
                 if (field.type == twcUI.CTRL_TYPE.BUTTON) {
@@ -229,7 +67,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
                 if (field.id.indexOf('.') < 0) {
-                    dataFields = getFieldDefinitions(twcSite.Type);
+                    dataFields = getFieldDefinitions(dataSource.Type);
 
                 } else {
                     // @@NOTE: in this case we have the field path (i.e.: foreignKeyFieldOnSiteTable.foreignTableFieldWeWant )
@@ -265,20 +103,33 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 if (dataField.field_type == 'List/Record' || dataField.field_type == 'Multiple Select') {
 
                     try {
-                        var whereClause = "where isinactive = 'F'";
-                        var nameField = "name"; var idField = 'id';
-
-                        if (dataField.ns_table) {
-                            // @@NOTE: this is a standard NS table, some of them have no isinactive field and some other have no name field
-                            if (!dataField.ns_table.isInactive) { whereClause = ''; }
-                            nameField = dataField.ns_table.nameField;
-                            idField = dataField.ns_table.pk;
+                        if (!control.dataSource) {
+                            
+                            if (dataField.ns_table && (dataField.ns_table.name == 'customer' || dataField.ns_table.name == 'vendor')) {
+                                // @@NOTE
+                                control.dataSource = coreSQL.run(`
+                                    select  c.id as value, c.companyname as text
+                                    from    customer c
+                                    join    entity e on e.id = c.id and LOWER(BUILTIN.DF(e.type)) = '${dataField.ns_table.name}'
+                                    where   c.isinactive = 'F'
+                                    order by c.companyname
+                                `)   
+                            } else {
+                                var whereClause = "where isinactive = 'F'";
+                                var nameField = "name"; var idField = 'id';
+                                if (dataField.ns_table) {
+                                    // @@NOTE: this is a standard NS table, some of them have no isinactive field and some other have no name field
+                                    if (!dataField.ns_table.isInactive) { whereClause = ''; }
+                                    nameField = dataField.ns_table.nameField;
+                                    idField = dataField.ns_table.pk;
+                                }
+                                control.dataSource = coreSQL.run(`select ${idField} as value, ${nameField} as text from ${dataField.field_foreign_table} ${whereClause} order by ${nameField}`)
+                            }
                         }
-
-                        control.dataSource = coreSQL.run(`select ${idField} as value, ${nameField} as text from ${dataField.field_foreign_table} ${whereClause} order by ${nameField}`)
                         control.multiSelect = (dataField.field_type == 'Multiple Select');
                     } catch (error) {
-                        console.log(error)
+                        core.logError('GET-DATA-SOURCE', error);
+                        throw error;
                     }
                 }
 
@@ -287,22 +138,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             })
         }
 
-        function getSiteInfoPanels(dataSource) {
-            var fieldGroups = [];
-            fieldGroups.push(getSitePanelFields_summary(dataSource));
-            fieldGroups.push(getSitePanelFields_estates(dataSource));
-            fieldGroups.push(getSitePanelFields_assets(dataSource));
-            // @@TODO: implement all required panels
-            return fieldGroups;
-        }
 
         return {
-            getSiteTableFields: getSiteTableFields,
-            getSiteMainInfoFields: getSiteMainInfoFields,
-            getSiteInfoPanels: getSiteInfoPanels,
-
-            getSitePanelFields_assets: getSitePanelFields_assets,
-            getSitePanelFields_estates: getSitePanelFields_estates
+            formatPanelFields: formatPanelFields
         }
     });
 
