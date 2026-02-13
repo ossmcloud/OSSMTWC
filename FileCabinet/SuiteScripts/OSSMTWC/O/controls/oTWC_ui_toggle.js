@@ -56,8 +56,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             render(container) {
                 var label = '';
                 if (this.#options.label) {
-                    //var mandatory = (this.#options.mandatory) ? ' *' : '';
-                    label = `<label class="inline">${this.#options.label}</label>`;
+
+                    label = `<label class="inline" ${this.#options.labelNoWrap ? ' style="white-space: nowrap"' : ''}>${this.#options.label}</label>`;
                 }
 
                 var defaultWidth = '60px';

@@ -53,6 +53,11 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     content = renderCollection(fieldGroup, readOnly);
                 }
                 return content;
+            },
+
+            ui: function (fieldGroup, readOnly) {
+                var html = jQuery(this.render(fieldGroup, readOnly));
+                return ui.init({}, html);
             }
 
         }

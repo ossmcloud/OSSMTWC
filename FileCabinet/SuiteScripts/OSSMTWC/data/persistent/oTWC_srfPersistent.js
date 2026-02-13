@@ -7,8 +7,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordType = 'customrecord_twc_srf';
         var _recordFields = {
             NAME: 'name',
-            PHOTO_ASSESSMENT_CATEGORY: 'custrecord_twc_srf_photo_asses_cat',
             SRF_TYPE: 'custrecord_twc_srf_type',
+            PHOTO_ASSESSMENT_CATEGORY: 'custrecord_twc_srf_photo_asses_cat',
             OPERATOR_SITE_ID: 'custrecord_twc_srf_op_site_id',
             COMPLETION_PHOTOS_REQUESTED: 'custrecord_twc_srf_completion_photo_req',
             COMPLETION_PHOTOS_RECEIVED: 'custrecord_twc_srf_completion_photo_rec',
@@ -20,8 +20,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             RELATED_EQUIPMENT_ACTIONS: 'custrecord_twc_srf_related_eqip_actions',
             APPLICATION_DATE: 'custrecord_twc_srf_app_date',
             SRF_DRAWINGS: 'custrecord_twc_srf_drg',
-            POWER_SUPPLY_REQUESTED_FROM_TL: 'custrecord_twc_srf_pwr_supp_req_from_tl',
             APPLICATION_REFERENCE: 'custrecord_twc_srf_app_reference',
+            POWER_SUPPLY_REQUESTED_FROM_TL: 'custrecord_twc_srf_pwr_supp_req_from_tl',
             ALTERNATE_POWER_SUPPLIER: 'custrecord_twc_srf_alternate_pwr_supp',
             APPLICATION_FOR_OWN_SUPPLY_MADE_TO_ESB: 'custrecord_twc_srf_app_supp_made_esb',
             POWER_NOTES: 'custrecord_twc_srf_power_notes',
@@ -31,7 +31,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CUSTOMER_PLANNED_INSTALL_DATE: 'custrecord_twc_srf_cust_plan_ins_date',
             TL_DRAWING_REQUESTED: 'custrecord_twc_srf_tl_drg_req',
             FEEDBACK_LOOP_ITERATIONS: 'custrecord_twc_srf_fdbk_loop_iter',
-            SRF_REVIEWS: 'custrecord_twc_srf_review',
             SRF_APPROVAL_DATE: 'custrecord_twc_srf_approval_date',
             WORKS_PERMITTED_DATE: 'custrecord_twc_srf_permit_date',
             TO_BE_BILLED: 'custrecord_twc_srf_to_be_billed',
@@ -55,8 +54,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
-            PHOTO_ASSESSMENT_CATEGORY: { name: 'custrecord_twc_srf_photo_asses_cat', type: 'select', alias: 'photoAssessmentCategory', display: 'normal', mandatory: false, recordType: 'customrecord_twc_photo_assessment_cat,' },
             SRF_TYPE: { name: 'custrecord_twc_srf_type', type: 'select', alias: 'sRFType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_type,' },
+            PHOTO_ASSESSMENT_CATEGORY: { name: 'custrecord_twc_srf_photo_asses_cat', type: 'select', alias: 'photoAssessmentCategory', display: 'normal', mandatory: false, recordType: 'customrecord_twc_photo_assessment_cat,' },
             OPERATOR_SITE_ID: { name: 'custrecord_twc_srf_op_site_id', type: 'text', alias: 'operatorSiteID', display: 'normal', mandatory: false },
             COMPLETION_PHOTOS_REQUESTED: { name: 'custrecord_twc_srf_completion_photo_req', type: 'date', alias: 'completionPhotosRequested', display: 'normal', mandatory: false },
             COMPLETION_PHOTOS_RECEIVED: { name: 'custrecord_twc_srf_completion_photo_rec', type: 'date', alias: 'completionPhotosReceived', display: 'normal', mandatory: false },
@@ -68,18 +67,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             RELATED_EQUIPMENT_ACTIONS: { name: 'custrecord_twc_srf_related_eqip_actions', type: 'select', alias: 'relatedEquipmentActions', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action,' },
             APPLICATION_DATE: { name: 'custrecord_twc_srf_app_date', type: 'date', alias: 'applicationDate', display: 'normal', mandatory: false },
             SRF_DRAWINGS: { name: 'custrecord_twc_srf_drg', type: 'document', alias: 'sRFDrawings', display: 'normal', mandatory: false },
-            POWER_SUPPLY_REQUESTED_FROM_TL: { name: 'custrecord_twc_srf_pwr_supp_req_from_tl', type: 'checkbox', alias: 'powerSupplyRequestedfromTL', display: 'normal', mandatory: false },
             APPLICATION_REFERENCE: { name: 'custrecord_twc_srf_app_reference', type: 'text', alias: 'applicationReference', display: 'normal', mandatory: false },
+            POWER_SUPPLY_REQUESTED_FROM_TL: { name: 'custrecord_twc_srf_pwr_supp_req_from_tl', type: 'checkbox', alias: 'powerSupplyRequestedfromTL', display: 'normal', mandatory: false },
             ALTERNATE_POWER_SUPPLIER: { name: 'custrecord_twc_srf_alternate_pwr_supp', type: 'text', alias: 'alternatePowerSupplier', display: 'normal', mandatory: false },
-            APPLICATION_FOR_OWN_SUPPLY_MADE_TO_ESB: { name: 'custrecord_twc_srf_app_supp_made_esb', type: 'date', alias: 'applicationforownsupplymadetoESB', display: 'normal', mandatory: false },
-            POWER_NOTES: { name: 'custrecord_twc_srf_power_notes', type: 'text', alias: 'powerNotes', display: 'normal', mandatory: false },
+            APPLICATION_FOR_OWN_SUPPLY_MADE_TO_ESB: { name: 'custrecord_twc_srf_app_supp_made_esb', type: 'checkbox', alias: 'applicationforownsupplymadetoESB', display: 'normal', mandatory: false },
+            POWER_NOTES: { name: 'custrecord_twc_srf_power_notes', type: 'clobtext', alias: 'powerNotes', display: 'normal', mandatory: false },
             SRF_STATUS: { name: 'custrecord_twc_srf_status', type: 'select', alias: 'sRFStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_status,' },
             SRF_REQUESTED_DATE: { name: 'custrecord_twc_srf_req_date', type: 'date', alias: 'sRFRequestedDate', display: 'normal', mandatory: false },
             INITIAL_REVIEW_COMMENTS: { name: 'custrecord_twc_srf_init_rev_comm', type: 'textarea', alias: 'initialReviewComments', display: 'normal', mandatory: false },
             CUSTOMER_PLANNED_INSTALL_DATE: { name: 'custrecord_twc_srf_cust_plan_ins_date', type: 'date', alias: 'customerPlannedInstallDate', display: 'normal', mandatory: false },
             TL_DRAWING_REQUESTED: { name: 'custrecord_twc_srf_tl_drg_req', type: 'checkbox', alias: 'tLDrawingRequested', display: 'normal', mandatory: false },
             FEEDBACK_LOOP_ITERATIONS: { name: 'custrecord_twc_srf_fdbk_loop_iter', type: 'integer', alias: 'feedbackLoopIterations', display: 'normal', mandatory: false },
-            SRF_REVIEWS: { name: 'custrecord_twc_srf_review', type: 'select', alias: 'sRFReviews', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_rev,' },
             SRF_APPROVAL_DATE: { name: 'custrecord_twc_srf_approval_date', type: 'date', alias: 'sRFApprovalDate', display: 'normal', mandatory: false },
             WORKS_PERMITTED_DATE: { name: 'custrecord_twc_srf_permit_date', type: 'date', alias: 'worksPermittedDate', display: 'normal', mandatory: false },
             TO_BE_BILLED: { name: 'custrecord_twc_srf_to_be_billed', type: 'checkbox', alias: 'tobeBilled', display: 'normal', mandatory: false },
@@ -112,19 +110,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set('name', value)
             }
             
-            get photoAssessmentCategory() {
-                return this.get(_recordFields.PHOTO_ASSESSMENT_CATEGORY);
-            } set photoAssessmentCategory(value) {
-                this.set(_recordFields.PHOTO_ASSESSMENT_CATEGORY, value)
-            }
-            get photoAssessmentCategoryName() { return this.getText(_recordFields.PHOTO_ASSESSMENT_CATEGORY); }
-            
             get sRFType() {
                 return this.get(_recordFields.SRF_TYPE);
             } set sRFType(value) {
                 this.set(_recordFields.SRF_TYPE, value)
             }
             get sRFTypeName() { return this.getText(_recordFields.SRF_TYPE); }
+            
+            get photoAssessmentCategory() {
+                return this.get(_recordFields.PHOTO_ASSESSMENT_CATEGORY);
+            } set photoAssessmentCategory(value) {
+                this.set(_recordFields.PHOTO_ASSESSMENT_CATEGORY, value)
+            }
+            get photoAssessmentCategoryName() { return this.getText(_recordFields.PHOTO_ASSESSMENT_CATEGORY); }
             
             get operatorSiteID() {
                 return this.get(_recordFields.OPERATOR_SITE_ID);
@@ -196,16 +194,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.SRF_DRAWINGS, value)
             }
             
-            get powerSupplyRequestedfromTL() {
-                return this.get(_recordFields.POWER_SUPPLY_REQUESTED_FROM_TL);
-            } set powerSupplyRequestedfromTL(value) {
-                this.set(_recordFields.POWER_SUPPLY_REQUESTED_FROM_TL, value)
-            }
-            
             get applicationReference() {
                 return this.get(_recordFields.APPLICATION_REFERENCE);
             } set applicationReference(value) {
                 this.set(_recordFields.APPLICATION_REFERENCE, value)
+            }
+            
+            get powerSupplyRequestedfromTL() {
+                return this.get(_recordFields.POWER_SUPPLY_REQUESTED_FROM_TL);
+            } set powerSupplyRequestedfromTL(value) {
+                this.set(_recordFields.POWER_SUPPLY_REQUESTED_FROM_TL, value)
             }
             
             get alternatePowerSupplier() {
@@ -262,13 +260,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set feedbackLoopIterations(value) {
                 this.set(_recordFields.FEEDBACK_LOOP_ITERATIONS, value)
             }
-            
-            get sRFReviews() {
-                return this.get(_recordFields.SRF_REVIEWS);
-            } set sRFReviews(value) {
-                this.set(_recordFields.SRF_REVIEWS, value)
-            }
-            get sRFReviewsName() { return this.getText(_recordFields.SRF_REVIEWS); }
             
             get sRFApprovalDate() {
                 return this.get(_recordFields.SRF_APPROVAL_DATE);

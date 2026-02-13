@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js'],
-    (runtime, core, coreSQL, twcUtils, twcSrf, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItemUI.js', './oTWC_configUIFields.js'],
+    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItemUI, configUIFields) => {
 
 
         function getSRFInfoPanels_new(dataSource, userInfo) {
@@ -14,7 +14,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var customers = null;
             if (userInfo.isVendor) {
-                
                 customers = coreSQL.run(`
                     select  c.id as value, c.companyname as text
                     from    customer c
@@ -28,6 +27,25 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: userInfo.isCustomer, dataSource: customers })
             basicInfo.fields.push({ id: twcSrf.Fields.OPERATOR_SITE_ID, label: 'Operator Site ID' })
+
+            fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrfItemUI.StepType.TME)] });
+            fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrfItemUI.StepType.ATME)] });
+            fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 3 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrfItemUI.StepType.GIE)] });
+            
+            fieldGroup.controls.push({ id: 'site-request-step-4', title: 'Step 4 of 5', fields: [twcSrfItemUI.getFileTableUIControl(dataSource)] });
+
+            var step5 = {
+                id: 'site-request-step-5', title: 'Step 5 of 5: Power Supply', fields: [
+                    { id: twcSrf.Fields.POWER_SUPPLY_REQUESTED_FROM_TL, label: 'Power Requested from TC', labelNoWrap: true, lineBreak: true },
+                    { id: twcSrf.Fields.ALTERNATE_POWER_SUPPLIER, label: 'Alternate Supplier', lineBreak: true },
+                    { id: twcSrf.Fields.POWER_NOTES, label: 'Notes / Comments', width: '75%', rows: 3, lineBreak: true },
+                    { id: twcSrf.Fields.APPLICATION_FOR_OWN_SUPPLY_MADE_TO_ESB, label: 'Application for own supply made to ESB', labelNoWrap: true, lineBreak: true },
+                    { id: twcSrf.Fields.APPLICATION_DATE, label: 'Application Date' },
+                    { id: twcSrf.Fields.APPLICATION_REFERENCE, label: 'Application Reference' },
+                ]
+            }
+
+            fieldGroup.controls.push(step5);
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
 
@@ -48,9 +66,17 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroups;
         }
 
+        function getSrfChildRecord(srf, childRecord) {
+            var fieldGroup = twcSrfItemUI.getUIFields(srf, childRecord);
+            configUIFields.formatPanelFields(childRecord, fieldGroup);
+            return fieldGroup;
+        }
+
         return {
-            getSRFInfoPanels: getSRFInfoPanels
-            
+            getSRFInfoPanels: getSRFInfoPanels,
+
+            getSrfChildRecord: getSrfChildRecord
+
         }
     });
 

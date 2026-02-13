@@ -2,13 +2,26 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js'],
-    (core, coreSQL, recu, twcSrf, twcSrfUI, twcConfig, twcIcons, twcUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js'],
+    (core, coreSQL, recu, twcSrf, twcSrfItem, twcSrfUI, twcConfig, twcIcons, twcUI) => {
 
 
         return {
 
             getSRFInfoPanels: twcSrfUI.getSRFInfoPanels,
+            getSrfChildRecord: (options) => {
+                //throw new Error(JSON.stringify(options.item))
+
+                var srf = twcSrf.get(options.srf.id);
+                var childRecord = twcSrfItem.get(options.item.id);
+                for (var k in options.item) {
+                    if (k == 'id') { return; }
+                    childRecord.set(k, options.item[k]);
+                }
+                
+                
+                return twcSrfUI.getSrfChildRecord(srf, childRecord);
+            },
 
             getSiteRequestInfo: (pageData) => {
                 

@@ -46,6 +46,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             s.form.fieldHtml(html);
         };
 
+
+        suiteLet.post = (context, s) => {
+
+            if (context.request.parameters.action == 'child-record') {
+                var payload = JSON.parse(context.request.body);
+                
+                var fields = twcSiteRequestUtils.getSrfChildRecord(payload);
+
+                return fields;  
+
+
+            } else {
+                throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);
+            }
+
+        };
+
         return {
             onRequest: uis.onRequest
         }

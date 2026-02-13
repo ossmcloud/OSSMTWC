@@ -19,9 +19,9 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             pageInit: pageInit,
             testFunction() {
                 try {
-                    var rec = {};
-                    rec['custrecord_twc_srf_cust'] = 210;
-                    console.log(twcSrfUI.getSRFInfoPanels(rec, {}))
+                     var rec = {};
+                     rec['custrecord_twc_srf_cust'] = 210;
+                     console.log(twcSrfUI.getSRFInfoPanels(rec, {}))
 
 
                     // var payload = {

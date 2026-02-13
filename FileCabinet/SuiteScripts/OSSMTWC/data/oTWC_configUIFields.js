@@ -2,16 +2,17 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_srfItem.js', './oTWC_file.js', '../O/controls/oTWC_ui_ctrl.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSrfItem, twcFile, twcUI) => {
 
         // @@TODO: need to find a way to make this as handy as possible
-        function getDataObject(recordType) {
+        function getDataObject(recordType, callback) {
             if (recordType == twcLock.Type) { return twcLock; }
             if (recordType == twcInfra.Type) { return twcInfra; }
+            if (recordType == twcSrfItem.Type) { return twcSrfItem; }
+            if (recordType == twcFile.Type) { return twcFile; }
             throw new Error(`Unrecognised record type: ${recordType}`);
         }
-
 
         var _fieldDefinitions = {};
         function getFieldDefinitions(tableName) {
@@ -23,7 +24,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function formatPanelFields(dataSource, panelFields) {
 
-            if (!dataSource.Type) { throw new Error('configUIFields :: dataSource.Type cannot be empty'); }
+            if (!dataSource.Type) {
+                if (dataSource.type) {
+                    dataSource.Type = dataSource.type
+                } else {
+                    throw new Error('configUIFields :: dataSource.Type cannot be empty');
+                }
+            }
 
             if (panelFields.controls) {
                 core.array.each(panelFields.controls, control => { formatPanelFields(dataSource, control); })
@@ -40,13 +47,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 // @@NOTE: this means the field is a sub list
                 if (field.fields) {
-                    var dataObj = getDataObject(field.id);
+                    var dataObj = getDataObject(field.recordType || field.id);
 
                     var control = {
-                        label: 'Site Infrastructures',
+                        label: field.label,
                         type: twcUI.CTRL_TYPE.TABLE,
                         id: field.id,
                         dataSource: dataObj.select({ fields: field.fields, where: field.where }),
+                        dataSourceType: field.recordType,
                         showToolbar: true,
                         showEditDelete: true,
                         onColumnInit: (tbl, col) => {
@@ -104,7 +112,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                     try {
                         if (!control.dataSource) {
-                            
+
                             if (dataField.ns_table && (dataField.ns_table.name == 'customer' || dataField.ns_table.name == 'vendor')) {
                                 // @@NOTE
                                 control.dataSource = coreSQL.run(`
@@ -113,7 +121,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                                     join    entity e on e.id = c.id and LOWER(BUILTIN.DF(e.type)) = '${dataField.ns_table.name}'
                                     where   c.isinactive = 'F'
                                     order by c.companyname
-                                `)   
+                                `)
                             } else {
                                 var whereClause = "where isinactive = 'F'";
                                 var nameField = "name"; var idField = 'id';

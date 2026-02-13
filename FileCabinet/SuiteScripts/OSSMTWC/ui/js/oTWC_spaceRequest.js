@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js'],
-    (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, uiTable, twcSite) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../O/controls/oTWC_ui_fieldPanel.js'],
+    (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, uiTable, twcSite, twcUIPanel) => {
 
 
 
@@ -92,11 +92,48 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // @@NOTE: this is record view mode
                     this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
 
+                    core.array.each(this.ui.controls, c => {
+                        if (c.type != 'table') { return; }
+                        c.onToolbarClick = e => {
+                            console.log(e)
+                            if (e.action == 'add-new') {
+                                this.manageSRFItem({ custrecord_twc_srf_itm_stype: e.table.id.replace('customrecord_twc_srf_itm_', '')});
+                                
+                                return false;
+                            } else if (e.action == 'edit') {
+                                alert('edit stuff dude')
+                            } else if (e.action == 'delete') {
+                                dialog.confirm('Are you sure you wish to delete this record', () => {
+                                    alert('delete stuff dude')
+                                })
+                            }
+                        }
+                    })
+
                 } else {
                     // @@NOTE: this is site locator mode
                     this.#sitesTable = new TWCSiteTable(this);
                     this.#sitePanel = twcSiteLocatorPanel.get({ page: this, table: this.#sitesTable, data: window.twc.page.data.data.sitesInfo.sites });
 
+                }
+            }
+
+
+            async manageSRFItem(srfItem) {
+                try {
+
+                    var res = await this.post({ action: 'child-record' }, { srf: this.data.siteRequestInfo, item: srfItem });
+                    var form = twcUIPanel.ui(res);
+                    await dialog.confirmAsync({
+                        title: 'manage record',
+                        message: form.ui,
+                        width: '75%',
+                        height: '75vh'
+                    })
+
+
+                } catch (error) {
+                    dialog.error(error);
                 }
             }
 

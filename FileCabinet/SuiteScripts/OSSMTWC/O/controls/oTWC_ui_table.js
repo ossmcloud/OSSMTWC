@@ -716,6 +716,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get rowCount() { return this.#rowCount; }
             get dataCount() { return this.#data.length; }
             get data() { return this.#data; }
+            get dataType() { return this.#options.dataSourceType; }
 
             get noResize() {
                 return this.#options.noResize;

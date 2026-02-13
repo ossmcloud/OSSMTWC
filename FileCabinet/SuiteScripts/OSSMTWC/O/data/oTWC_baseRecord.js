@@ -95,7 +95,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             get type() { return this.#type; }
             get fields() { return this.#fields; }
             get static() { return this.#static; }
-            get r() { return this.#r }
+            get r() {
+                if (!this.#r) { this.load(this.id); }
+                return this.#r
+            }
             get state() { return this.#state; }
 
             load(id) {
@@ -105,20 +108,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             get(fieldName) {
-                return this.#r.get(fieldName);
+                return this.r.get(fieldName);
             }
             getText(fieldName) {
-                return this.#r.getText(fieldName);
+                return this.r.getText(fieldName);
             }
 
             set(fieldName, value) {
                 this.validateFieldValue(fieldName, value);
-                this.#r.set(fieldName, value);
+                this.r.set(fieldName, value);
                 this.#state = RECORD_STATE.DIRTY;
             }
             setText(fieldName, value) {
                 this.validateFieldValue(fieldName, value);
-                this.#r.setText(fieldName, value);
+                this.r.setText(fieldName, value);
                 this.#state = RECORD_STATE.DIRTY;
             }
 
@@ -157,13 +160,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         break;
                     }
                 }
-                if (!field) { throw new Error(`You are trying to set a field that does not exists: ${fieldName}`); }
+                if (!field) { throw new Error(`You are trying to reference a field that does not exists: ${fieldName}`); }
                 return field;
             }
 
 
             save(ignoreMandatory) {
-                this.#id = this.#r.save(ignoreMandatory);
+                this.#id = this.r.save(ignoreMandatory);
                 this.#state = RECORD_STATE.UNCHANGED;
             }
 

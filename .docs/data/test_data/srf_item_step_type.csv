@@ -1,0 +1,17 @@
+Name,Step Type
+Dish,TME
+Omni,TME
+Other,TME
+Panel,TME
+Coupler,ATME
+Diplexer,ATME
+MHA,ATME
+ODU,ATME
+Other,ATME
+RRU,ATME
+Splitter,ATME
+TMA,ATME
+TMA with Diplexer,ATME
+Triplexer,ATME
+Indoor,GIE
+Outdoor,GIE

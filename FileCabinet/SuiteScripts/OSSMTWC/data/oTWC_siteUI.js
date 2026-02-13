@@ -108,7 +108,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcSite.Fields.SITE_LEVEL, label: 'Site Level (2)' })
 
             basicInfo.fields.push({
-                id: `${twcInfra.Type}`, label: 'Infrastructure',
+                id: `${twcInfra.Type}`, label: 'Site Infrastructure',
                 fields: {
                     [twcInfra.Fields.INFRASTRUCTURE_ID]: 'Infra Id',
                     [twcInfra.Fields.INFRASTRUCTURE_TYPE]: 'Type',
