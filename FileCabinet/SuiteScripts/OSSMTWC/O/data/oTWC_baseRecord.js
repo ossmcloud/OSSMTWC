@@ -125,6 +125,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#state = RECORD_STATE.DIRTY;
             }
 
+            copyFromObject(obj) {
+                for (var k in obj) {
+                    if (k == 'id') { return; }
+                    this.set(k, obj[k]);
+                }
+            }
+
             validateFieldValue(fieldName, value) {
                 if (fieldName == 'isinactive') { return; }
                 if (fieldName == 'name') {
@@ -149,9 +156,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             findField(fieldName) {
-                if (fieldName == 'name') {
-                    return { name: 'name', type: 'text' };
-                }
+                if (fieldName == 'name') { return { name: 'name', type: 'text' }; }
+                if (fieldName == 'id') { return { name: 'id', type: 'int' }; }
                 var field = this.#fields[fieldName.toUpperCase()];
                 if (field) { return field; }
                 for (var f in this.#fields) {
@@ -163,7 +169,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (!field) { throw new Error(`You are trying to reference a field that does not exists: ${fieldName}`); }
                 return field;
             }
-
 
             save(ignoreMandatory) {
                 this.#id = this.r.save(ignoreMandatory);
@@ -205,9 +210,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     var sql = '';
                     if (field.type == FIELD_TYPE.DATE) {
-                        sql += `        TO_CHAR(${field.name}, 'YYYY-MM-DD') ${fieldAlias}, `
+                        sql += `        TO_CHAR(${field.name}, 'YYYY-MM-DD') as ${fieldAlias}, `
                     } else if (field.type == FIELD_TYPE.DATE_TIME) {
-                        sql += `        TO_CHAR(${field.name}, 'YYYY-MM-DD HH24:Mi:ss') ${fieldAlias}, `
+                        sql += `        TO_CHAR(${field.name}, 'YYYY-MM-DD HH24:Mi:ss') as ${fieldAlias}, `
                     } else {
                         sql += `        ${field.name} ${fieldAlias}, `
                         if (field.type == FIELD_TYPE.SELECT || field.type == FIELD_TYPE.MULTISELECT) { sql += `BUILTIN.DF(${field.name}) ${fieldAliasName}, ` }
@@ -277,7 +282,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         sql += `\norder by `
                         if (Array.isArray(options.orderBy)) {
                             core.array.each(options.orderBy, (orderBy, idx) => {
-                                sql += ` ${orderBy},`;
+                                if (idx > 0) {
+                                    sql += ', ';
+                                }
+                                sql += ` ${orderBy}`;
                             })
                         } else {
                             for (var f in options.orderBy) {

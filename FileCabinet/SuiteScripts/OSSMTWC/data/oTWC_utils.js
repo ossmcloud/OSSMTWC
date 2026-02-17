@@ -5,6 +5,20 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js'],
     (core, coreSQL) => {
 
+        const SRF_ITEM_STEP_TYPE = {
+            TME: 1,
+            ATME: 2,
+            GIE: 3
+        }
+
+        const SRF_ITEM_REQUEST_TYPE = {
+            INSTALL: 1,
+            REMOVE: 2,
+            SWAP: 3
+        }
+
+
+
         function getNsTable(tableId) {
             if (tableId == -242 || tableId == 'bin') {
                 return { pk: 'id', name: 'bin', nameField: 'binnumber', isInactive: '', alias: '' }
@@ -145,6 +159,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         //
 
         return {
+            StepType: SRF_ITEM_STEP_TYPE,
+            RequestType: SRF_ITEM_REQUEST_TYPE,
+
+            
             getFields: getCustomTableFields,
 
             getSiteNames: getSiteNames,

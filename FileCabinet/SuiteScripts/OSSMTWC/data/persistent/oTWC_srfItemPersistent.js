@@ -2,7 +2,7 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js'],
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/data/rec.custom.js'],
     (core, coreSQL, recu, customRec) => {
         var _recordType = 'customrecord_twc_srf_itm';
         var _recordFields = {
@@ -42,7 +42,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             REQUEST_TYPE: { name: 'custrecord_twc_srf_itm_req_type', type: 'select', alias: 'requestType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_req_type,' },
             STEP_TYPE: { name: 'custrecord_twc_srf_itm_stype', type: 'select', alias: 'stepType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_stype,' },
             ITEM_TYPE: { name: 'custrecord_twc_srf_itm_type', type: 'select', alias: 'itemType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_type,' },
-            EQUIPMENT_ID: { name: 'custrecord_twc_srf_itm_equip_id', type: 'text', alias: 'equipmentID', display: 'normal', mandatory: false },
+            EQUIPMENT_ID: { name: 'custrecord_twc_srf_itm_equip_id', type: 'select', alias: 'equipmentID', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip,' },
             DESCRIPTION: { name: 'custrecord_twc_srf_itm_desc', type: 'text', alias: 'description', display: 'normal', mandatory: false },
             LOCATION: { name: 'custrecord_twc_srf_itm_loc', type: 'select', alias: 'location', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type,' },
             LENGTH_MM: { name: 'custrecord_twc_srf_itm_length_mm', type: 'text', alias: 'lengthmm', display: 'normal', mandatory: false },
@@ -58,7 +58,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             INVENTORY_FLAG: { name: 'custrecord_twc_srf_itm_invent_flag', type: 'select', alias: 'inventoryFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_inv_flag,' },
             FEEDER_COUNT: { name: 'custrecord_twc_srf_itm_feeder_count', type: 'text', alias: 'feederCount', display: 'normal', mandatory: false },
             TYPE_OPT: { name: 'custrecord_twc_srf_itm_type_opt', type: 'select', alias: 'typeopt', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_typ_opt,' },
-            TME_ID: { name: 'custrecord_twc_srf_itm_tme_id', type: 'text', alias: 'tMEID', display: 'normal', mandatory: false },
+            TME_ID: { name: 'custrecord_twc_srf_itm_tme_id', type: 'select', alias: 'tMEID', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip,' },
             FILENAME: { name: 'custrecord_twc_srf_itm_filename', type: 'document', alias: 'filename', display: 'normal', mandatory: false },
             POWER_REQUESTED_FROM_TC: { name: 'custrecord_twc_srf_itm_pwr_req_from_tc', type: 'checkbox', alias: 'powerrequestedfromTC', display: 'normal', mandatory: false },
             ALTERNATE_SUPPLIER: { name: 'custrecord_twc_srf_itm_alt_sup', type: 'text', alias: 'alternateSupplier', display: 'normal', mandatory: false },
@@ -107,6 +107,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set equipmentID(value) {
                 this.set(_recordFields.EQUIPMENT_ID, value)
             }
+            get equipmentIDName() { return this.getText(_recordFields.EQUIPMENT_ID); }
             
             get description() {
                 return this.get(_recordFields.DESCRIPTION);
@@ -208,6 +209,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set tMEID(value) {
                 this.set(_recordFields.TME_ID, value)
             }
+            get tMEIDName() { return this.getText(_recordFields.TME_ID); }
             
             get filename() {
                 return this.get(_recordFields.FILENAME);

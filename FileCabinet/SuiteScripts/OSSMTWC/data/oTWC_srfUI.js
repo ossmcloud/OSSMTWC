@@ -7,6 +7,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
         function getSRFInfoPanels_new(dataSource, userInfo) {
+            //throw new Error(JSON.stringify(twcUtils.StepType))
             var fieldGroup = { id: 'site-request', title: 'Create New Space Request', collapsed: false, controls: [] };
 
             var basicInfo = { id: 'site-request-struct', title: 'Customer Information', fields: [] };
@@ -28,9 +29,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: userInfo.isCustomer, dataSource: customers })
             basicInfo.fields.push({ id: twcSrf.Fields.OPERATOR_SITE_ID, label: 'Operator Site ID' })
 
-            fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrfItemUI.StepType.TME)] });
-            fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrfItemUI.StepType.ATME)] });
-            fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 3 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrfItemUI.StepType.GIE)] });
+            fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcUtils.StepType.TME)] });
+            fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcUtils.StepType.ATME)] });
+            fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 3 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcUtils.StepType.GIE)] });
             
             fieldGroup.controls.push({ id: 'site-request-step-4', title: 'Step 4 of 5', fields: [twcSrfItemUI.getFileTableUIControl(dataSource)] });
 

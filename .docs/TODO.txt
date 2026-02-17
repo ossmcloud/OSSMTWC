@@ -32,7 +32,10 @@ We should have a table that tells us what customers a vendor can work on behalf 
 
 
 
-
+OSSMTWC - SRF Item Step Type => shpuld rename to something more meaningful:
+    TME     Tower Mounted Eq
+    ATME    Additional Tower Mounted Eq
+    GIE     Ground & Indoor Eq
 
 
 

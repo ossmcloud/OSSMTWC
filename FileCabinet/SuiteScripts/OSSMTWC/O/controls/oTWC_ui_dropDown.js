@@ -45,6 +45,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             } set disabled(val) {
                 if (val) {
                     this.#input.attr('disabled', 'disabled');
+                    
                 } else {
                     this.#input.removeAttr('disabled');
                 }
@@ -72,6 +73,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     this.#ui.attr('data-value', '');
                     this.#input.val('');
                 }
+                this.on('change');
             }
 
             get valueObj() {

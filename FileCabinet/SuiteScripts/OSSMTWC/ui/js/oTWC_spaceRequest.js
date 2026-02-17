@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../O/controls/oTWC_ui_fieldPanel.js'],
-    (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, uiTable, twcSite, twcUIPanel) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../O/controls/oTWC_ui_fieldPanel.js'],
+    (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, uiTable, twcSite, twcSrf, twcSrfItem, twcUIPanel) => {
 
 
 
@@ -92,13 +92,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // @@NOTE: this is record view mode
                     this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
 
+                    this.ui.on('change', e => {
+                        if (e.target.type != 'table') {
+                            this.data.siteRequestInfo[e.id] = e.value;
+                        }
+                    })
                     core.array.each(this.ui.controls, c => {
-                        if (c.type != 'table') { return; }
                         c.onToolbarClick = e => {
                             console.log(e)
                             if (e.action == 'add-new') {
                                 this.manageSRFItem({ custrecord_twc_srf_itm_stype: e.table.id.replace('customrecord_twc_srf_itm_', '')});
-                                
                                 return false;
                             } else if (e.action == 'edit') {
                                 alert('edit stuff dude')
@@ -109,6 +112,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             }
                         }
                     })
+
+
+                    // @@TODO: test only
+                    if (core.ossm()) {
+                        this.ui.getControl(twcSrf.Fields.CUSTOMER).value = 219;
+                    }
+
 
                 } else {
                     // @@NOTE: this is site locator mode
@@ -122,14 +132,38 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             async manageSRFItem(srfItem) {
                 try {
 
+                    if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER]) { throw new Error('You need to specify a customer'); }
+
                     var res = await this.post({ action: 'child-record' }, { srf: this.data.siteRequestInfo, item: srfItem });
                     var form = twcUIPanel.ui(res);
+
+                    form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).disabled = true;
+
+                    form.on('change', e => {
+                        if (e.id == twcSrfItem.Fields.REQUEST_TYPE) {
+                            form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).disabled = (e.value == twcSrfItem.RequestType.INSTALL);
+                        }
+
+                        srfItem[e.id] = e.value;
+                    })
+
+
                     await dialog.confirmAsync({
                         title: 'manage record',
                         message: form.ui,
                         width: '75%',
                         height: '75vh'
                     })
+
+                    console.log(srfItem)
+                    
+                    // @@NOTE: if we have anew item then add it to the collection 
+                    if (this.data.siteRequestInfo.items.indexOf(srfItem) < 0) {
+                        this.data.siteRequestInfo.items.push(srfItem);
+                    }
+
+                    
+
 
 
                 } catch (error) {

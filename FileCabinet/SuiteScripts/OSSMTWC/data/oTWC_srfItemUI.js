@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItem.js', './oTWC_file.js'],
-    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItem, twcFile) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItem.js', './oTWC_srfItemType.js', './oTWC_file.js', './oTWC_equipment.js'],
+    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItem, twcSrfItemType, twcFile, twcEquipment) => {
 
         function getUIFields(srf, srfItem) {
 
@@ -13,10 +13,43 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push(basicInfo);
 
             basicInfo.fields.push({ id: twcSrfItem.Fields.REQUEST_TYPE, label: 'Request Type' })
-            basicInfo.fields.push({ id: twcSrfItem.Fields.ITEM_TYPE, label: 'Item Type', dataSource: coreSQL.run(`select id as value, name as text from customrecord_twc_srf_itm_type where isinactive='F' and custrecord_twc_srf_itm_type_stype = ${srfItem.stepType} order by name`) })
-            basicInfo.fields.push({ id: twcSrfItem.Fields.DESCRIPTION, label: 'Description' })
+            basicInfo.fields.push({ id: twcSrfItem.Fields.EQUIPMENT_ID, label: 'Equipment', dataSource: twcEquipment.lookUp({ customer: srf.customer, stepType: srfItem.stepType }) })
+            if (srfItem.stepType == twcSrfItem.StepType.ATME) {
+                basicInfo.fields.push({ id: twcSrfItem.Fields.TME_ID, label: 'TME', dataSource: twcEquipment.lookUp({ customer: srf.customer, stepType: twcSrfItem.StepType.TME }) })
+            }
+            basicInfo.fields.push({ id: twcSrfItem.Fields.ITEM_TYPE, label: 'Item Type', lineBreak: true, dataSource: twcSrfItemType.lookUp(srfItem.stepType) })
+            basicInfo.fields.push({ id: twcSrfItem.Fields.DESCRIPTION, label: 'Description', width: '100%' })
+            if (srfItem.stepType != twcSrfItem.StepType.GIE) {
+                basicInfo.fields.push({ id: twcSrfItem.Fields.LOCATION, label: 'Location' })
+            }
 
+            var dimensionInfo = { id: 'srf-item-dimension', title: 'Dimensions / Location', fields: [] };
+            fieldGroup.controls.push(dimensionInfo);
+            dimensionInfo.fields.push({ id: twcSrfItem.Fields.LENGTH_MM, label: 'Length (mm)' })
+            dimensionInfo.fields.push({ id: twcSrfItem.Fields.WIDTH_MM, label: 'Width (mm)' })
+            dimensionInfo.fields.push({ id: twcSrfItem.Fields.DEPTH_MM, label: 'Depth (mm)' })
+            dimensionInfo.fields.push({ id: twcSrfItem.Fields.HEIGHT_ON_TOWER, label: 'Height on Tower' })
+            dimensionInfo.fields.push({ id: twcSrfItem.Fields.WEIGHT_KG, label: 'Weight (kg)' })
 
+            if (srfItem.stepType == twcSrfItem.StepType.TME) {
+                var specInfo = { id: 'srf-item-spec', title: 'Specifications', fields: [] };
+                fieldGroup.controls.push(specInfo);
+
+                specInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_TYPE, label: 'Voltage Type' })
+                specInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_RANGE, label: 'Voltage Range' })
+                specInfo.fields.push({ id: twcSrfItem.Fields.AZIMUTH, label: 'Azimuth' })
+                specInfo.fields.push({ id: twcSrfItem.Fields.B_END, label: 'B-End' })
+                specInfo.fields.push({ id: twcSrfItem.Fields.CUSTOMER_REF, label: 'Customer Ref.' })
+                specInfo.fields.push({ id: twcSrfItem.Fields.INVENTORY_FLAG, label: 'Inventory Flag' })
+
+            } else {
+                dimensionInfo.fields.push({ id: twcSrfItem.Fields.INVENTORY_FLAG, label: 'Inventory Flag' })
+
+            }
+
+            if (srfItem.stepType != twcSrfItem.StepType.GIE) {
+                // @@TODO: FEEDERS
+            }
 
             return fieldGroup;
         }

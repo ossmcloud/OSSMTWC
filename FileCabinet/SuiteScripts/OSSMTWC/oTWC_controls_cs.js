@@ -3,8 +3,8 @@
  *@NScriptType ClientScript
  *@NModuleScope public
  */
-define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_infrastructure.js', './data/oTWC_srfUI.js'],
-    function (core, coreSQL, dialog, recu, twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields, siteInfoUtils, twcInfra, twcSrfUI) {
+define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_infrastructure.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js'],
+    function (core, coreSQL, dialog, recu, twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields, siteInfoUtils, twcInfra, twcSrfUI, twcEquipment) {
 
         function pageInit(context) {
             console.log('debug -------------> ' + core.env.live())
@@ -19,9 +19,22 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             pageInit: pageInit,
             testFunction() {
                 try {
-                     var rec = {};
-                     rec['custrecord_twc_srf_cust'] = 210;
-                     console.log(twcSrfUI.getSRFInfoPanels(rec, {}))
+
+                    console.log(twcUtils.StepType)
+                    // var options = { fields: { id: 'value' } };
+                    // options.fields[twcEquipment.Fields.EQUIPMENT_ID] = 'text';
+
+                    // options.where = {};
+                    // options.where[twcEquipment.Fields.CUSTOMER] = 219;
+
+                    // options.orderBy = [twcEquipment.Fields.EQUIPMENT_ID];
+
+                    // console.log(twcEquipment.select(options));
+
+                    
+                    //  var rec = {};
+                    //  rec['custrecord_twc_srf_cust'] = 210;
+                    //  console.log(twcSrfUI.getSRFInfoPanels(rec, {}))
 
 
                     // var payload = {
