@@ -34,15 +34,21 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             overview.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Site Code' })
             overview.fields.push({ id: twcSite.Fields.SITE_NAME, label: 'Site Name' })
             overview.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type' })
+           
             // @@TODO: Site Info :: Structure Type
             //                   :: Structure Height
+            overview.fields.push({ id: twcInfra.Fields.STRUCTURE_TYPE, label: 'Structure' })  //new
+            overview.fields.push({ id: twcInfra.Fields.STRUCTURE_HEIGHT_M, label: 'Height (m)' })  //new
             overview.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL' })
+             
             mainInfoFieldGroups.push(overview);
 
             var location = { id: 'site-location', title: 'Location', fields: [] };
             location.fields.push({ id: twcSite.Fields.ADDRESS, label: 'Address' })
             location.fields.push({ id: twcSite.Fields.COUNTY, label: 'County' })
             // @@TODO: Site Info :: Region
+            location.fields.push({ id: twcSite.Fields.ADDRESS_REGION, label: 'Region' })  //new
+
             location.fields.push({ id: twcSite.Fields.EASTING, label: 'Easting' })
             location.fields.push({ id: twcSite.Fields.NORTHING, label: 'Northing' })
             location.fields.push({ id: twcSite.Fields.LATITUDE, label: 'Latitude' })
@@ -70,12 +76,37 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Site Code' })
             basicInfo.fields.push({ id: twcSite.Fields.SITE_NAME, label: 'Site Name' })
             basicInfo.fields.push({ id: twcSite.Fields.ALIAS, label: 'Alias', lineBreak: true })
-            basicInfo.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type' })
+            basicInfo.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type', lineBreak: true}) //added line break
+
+             basicInfo.fields.push({ id: twcInfra.Fields.STRUCTURE_TYPE, label: 'Structure Type' }) //new
+             basicInfo.fields.push({ id: twcInfra.Fields.STRUCTURE_HEIGHT_M, label: 'Height (m)' })  //new
+             basicInfo.fields.push({ id: twcInfra.Fields.ROOFTOP_HEIGHT_M, label: 'Height Rooftop', lineBreak: true }) //new
+             basicInfo.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL' }) //new
+
+            // basicInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'TC Building/Cabin' }) //new
+           // basicInfo.fields.push({ id: twcSite.Fields.SITE_NAME, label: 'Indoor Accommodation' }) //new
+
+             basicInfo.fields.push({ id: twcSite.Fields.SITE_LEVEL, label: 'Site Level', lineBreak: true }) //new
+             basicInfo.fields.push({ id: twcSite.Fields.PORTFOLIO, label: 'Portfolio' }) //new
+             basicInfo.fields.push({ id: twcSite.Fields.SAF_AUTO_APPROVE, label: 'SAF Auto Approve' }) //new
+            // basicInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Public' }) //new
+           
+
+            var structures = { id: 'site-summary-structure', title: 'Structure', fields: [] };  //new
+            fieldGroup.controls.push(structures);  //new
+            structures.fields.push({ id: twcInfra.Fields.STRUCTURE_TYPE, label: 'Structure Type', width: '75%', lineBreak: true })  //new
+            structures.fields.push({ id: twcInfra.Fields.STRUCTURE_HEIGHT_M, label: 'Height (m)', lineBreak: true })  //new
+            structures.fields.push({ id:  twcInfra.Fields.ROOFTOP_HEIGHT_M, label: 'Height Rooftop' })  //new
+            structures.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL', lineBreak: true })  //new
+           // structures.fields.push({ id: twcSite.Fields.LATITUDE, label: 'Fall Arrest' })
+
+
 
             var locations = { id: 'site-summary-location', title: 'Location', fields: [] };
             fieldGroup.controls.push(locations);
             locations.fields.push({ id: twcSite.Fields.ADDRESS, label: 'Address', width: '75%', lineBreak: true })
             locations.fields.push({ id: twcSite.Fields.ADDRESS_COUNTY, label: 'County', lineBreak: true })
+            locations.fields.push({ id: twcSite.Fields.ADDRESS_REGION, label: 'Region' }) //new
             locations.fields.push({ id: twcSite.Fields.EASTING, label: 'Easting' })
             locations.fields.push({ id: twcSite.Fields.NORTHING, label: 'Northing', lineBreak: true })
             locations.fields.push({ id: twcSite.Fields.LATITUDE, label: 'Latitude' })
@@ -85,6 +116,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var locations = { id: 'site-summary-access', title: 'Access Track / Safety Info', fields: [] };
             fieldGroup.controls.push(locations);
+            locations.fields.push({ id: twcSite.Fields.TRACK_TYPE, label: 'Track Type' })  //New
             locations.fields.push({ id: twcSite.Fields.EASTING_ACCESS, label: 'Easting' })
             locations.fields.push({ id: twcSite.Fields.NORTHING_ACCESS, label: 'Northing', lineBreak: true })
             locations.fields.push({ id: twcSite.Fields.LATITUDE_ACCESS, label: 'Latitude' })
@@ -92,6 +124,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             locations.fields.push({ id: twcSite.Fields.DIRECTIONS, label: 'Directions', width: '75%', rows: 5, lineBreak: true })
             locations.fields.push({ id: twcSite.Fields.INSTRUCTIONS, label: 'Instructions', width: '75%', rows: 5, lineBreak: true })
 
+              locations.fields.push({ id: twcSite.Fields.TENANT_CARD_REQUIRED, label: 'Tenant Card Required' })  //New
+            //locations.fields.push({ id: twcSite.Fields.LONGITUDE_ACCESS, label: 'Dual Lock Installed', lineBreak: true })  //New
+             locations.fields.push({ id: twcSite.Fields.FOURX4_REQUIRED, label: '4x4 Required', lineBreak: true })  //New
+             locations.fields.push({ id: twcSite.Fields.PARKING_RESTRICTIONS, label: 'Parking Restrictions', width: '50%', lineBreak: true })  //New
+            locations.fields.push({ id: twcSite.Fields.CRANEMEWP_ACCESS, label: 'Crane/Mewp Access', lineBreak: true })  //New
+            locations.fields.push({ id: twcInfra.Fields.FALL_ARREST_TYPE, label: 'Fall Arrest Type',  lineBreak: true })  //New
+             locations.fields.push({ id: twcSite.Fields.SAFETY__SPECIAL_NOTES, label: 'Safety / Special Notes',width: '50%',  lineBreak: true })  //New
+
+           
             configUIFields.formatPanelFields(dataSource, fieldGroup);
 
             return fieldGroup;
