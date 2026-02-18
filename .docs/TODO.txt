@@ -26,13 +26,9 @@ TEST DATA WE NEED:
 ------------------
 
 OSSMTWC - Equipment List
-OSSMTWC - Customer Presence => HAS NO CUSTOMER SET
-OSSMTWC - Company => add 'Entity' field as this records should be one-to-one with customer or vendor
 We should have a table that tells us what customers a vendor can work on behalf of
 
-
-
-OSSMTWC - SRF Item Step Type => shpuld rename to something more meaningful:
+OSSMTWC - SRF Item Step Type => should rename to something more meaningful:
     TME     Tower Mounted Eq
     ATME    Additional Tower Mounted Eq
     GIE     Ground & Indoor Eq

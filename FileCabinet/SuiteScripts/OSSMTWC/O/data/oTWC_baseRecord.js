@@ -82,8 +82,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #type = null;
             #fields = null;
             #static = false;
-            #r = null;
             #state = null;
+            #r = null;
             constructor(type, fields, id, staticLoad) {
                 this.#type = type;
                 this.#fields = fields;
@@ -95,11 +95,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             get type() { return this.#type; }
             get fields() { return this.#fields; }
             get static() { return this.#static; }
+            get state() { return this.#state; }
             get r() {
                 if (!this.#r) { this.load(this.id); }
                 return this.#r
             }
-            get state() { return this.#state; }
 
             load(id) {
                 if (!id) { id = this.#id; }
