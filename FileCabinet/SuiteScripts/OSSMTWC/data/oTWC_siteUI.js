@@ -158,7 +158,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcInfra.Fields.STRUCTURE_TYPE]: 'Struct. Type',
                     [twcInfra.Fields.TOWER_FAMILY]: 'Family',
                 },
-                where: { [twcInfra.Fields.SITE]: dataSource.id }
+                where: { [twcInfra.Fields.SITE]: dataSource.id },
+                FieldsInfo: twcInfra.FieldsInfo,
             })
 
 
@@ -177,7 +178,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({
                 id: `${twcLock.Type}`, label: 'Locks',
                 fields: { [twcLock.Fields.LOCK_ID]: 'Lock Id', [twcLock.Fields.LOCK_LOCATION_CATEGORY]: 'Category' },
-                where: { [twcLock.Fields.SITE]: dataSource.id }
+                where: { [twcLock.Fields.SITE]: dataSource.id },
+                FieldsInfo: twcLock.FieldsInfo,
             })
 
 

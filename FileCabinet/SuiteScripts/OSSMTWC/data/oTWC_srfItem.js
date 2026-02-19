@@ -17,6 +17,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             Type: twcSrfItem.Type,
             Fields: twcSrfItem.Fields,
+            FieldsInfo: twcSrfItem.FieldsInfo,
             StepType: twcUtils.StepType,
             RequestType: twcUtils.RequestType,
 

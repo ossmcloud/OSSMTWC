@@ -88,7 +88,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 where: {
                     [twcSrfItem.Fields.SRF]: srf.id || 0,
                     [twcSrfItem.Fields.STEP_TYPE]: stepType,
-                }
+                },
+                FieldsInfo: twcSrfItem.FieldsInfo
             }
 
         }

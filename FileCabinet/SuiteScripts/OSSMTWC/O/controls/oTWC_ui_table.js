@@ -489,7 +489,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     colTitleWidth = 'width: calc(100% - 7px);';
                 }
 
-                var title = this.options.title;
+                var title = this.options.title || '';
                 if (title.indexOf('<') >= 0) { title = ''; }
 
                 return `
@@ -653,7 +653,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     // @@NOTE: this means we are running on client side and 'options' is actually the jQuery element of this table control
                     this.#j = options;
                     // get options / data from serialized data element within the control
-                    var pageData = ctrlBase.data(options.parent());
+                    var pageData = ctrlBase.data(options);
                     options = pageData.options;
                     data = pageData.data;
                 }
@@ -826,7 +826,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         this.#columns.push(new HtmlTableColumn(this, c));
                     });
 
-                    if (this.#options.columns && !options.resetCols) {
+                    if (this.#options.columns && options.resetCols) {
                         // if we have a column collection then we use it
                         core.array.each(this.#options.columns, c => {
                             var col = new HtmlTableColumn(this, c.options || c);

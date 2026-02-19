@@ -2,7 +2,7 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/data/rec.custom.js'],
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js'],
     (core, coreSQL, recu, customRec) => {
         var _recordType = 'customrecord_twc_srf_itm';
         var _recordFields = {
@@ -270,6 +270,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             Type: _recordType,
             Fields: _recordFields,
+            FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_SRFItem,
 
             get: function (id) {

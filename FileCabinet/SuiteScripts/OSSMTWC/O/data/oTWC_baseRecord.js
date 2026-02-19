@@ -128,6 +128,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             copyFromObject(obj) {
                 for (var k in obj) {
                     if (k == 'id') { return; }
+                    // @@NOTE: if we are copying from an object we could have fields that do not map to a persistent field, we just ignore these
+                    if (!this.findField(k, true)) { continue; }
                     this.set(k, obj[k]);
                 }
             }
@@ -155,7 +157,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@TODO: validate other types
             }
 
-            findField(fieldName) {
+            findField(fieldName, doNotThrowError) {
                 if (fieldName == 'name') { return { name: 'name', type: 'text' }; }
                 if (fieldName == 'id') { return { name: 'id', type: 'int' }; }
                 var field = this.#fields[fieldName.toUpperCase()];
@@ -166,7 +168,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         break;
                     }
                 }
-                if (!field) { throw new Error(`You are trying to reference a field that does not exists: ${fieldName}`); }
+                if (!field) {
+                    for (var f in this.#fields) {
+                        if (this.#fields[f].alias == fieldName) {
+                            field = this.#fields[f];
+                            break;
+                        }
+                    }
+                }
+                if (!field) {
+                    if (doNotThrowError) { return null; }
+                    throw new Error(`You are trying to reference a field that does not exists: ${fieldName}`);
+                }
                 return field;
             }
 
@@ -236,7 +249,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             } else {
                                 for (var f in options.fields) {
                                     var field = this.findField(f);
-                                    sql += selectFormat(field, options.fields[f]);
+                                    var alias = options.fields[f];
+                                    if (options.useAlias) { alias = field.alias; }
+                                    if (options.useNames) { alias = field.name; }
+                                    sql += selectFormat(field, alias);
 
                                 }
                             }

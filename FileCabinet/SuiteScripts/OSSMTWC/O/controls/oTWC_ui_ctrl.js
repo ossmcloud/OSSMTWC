@@ -74,17 +74,14 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 var ctrlType = ctrl.data('type');
                 if (ctrlType == ctrlBase.CTRL_TYPE.DROPDOWN) {
                     ctrl = uiDropDown.ui(ctrl);
-
-                    // } else if (ctrlType == ctrlBase.CTRL_TYPE.DATE || ctrlType == ctrlBase.CTRL_TYPE.FILE || ctrlType == ctrlBase.CTRL_TYPE.TEXT) {
-                    //     ctrl = uiInput.ui(ctrl);
-
                 } else if (ctrlType == ctrlBase.CTRL_TYPE.BUTTON) {
                     ctrl = uiButton.ui(ctrl);
                     ctrl.on('click', e => { this.#onInt(ctrl, e, 'click'); })
                 } else if (ctrlType == ctrlBase.CTRL_TYPE.TOGGLE) {
                     ctrl = uiToggle.ui(ctrl);
                 } else if (ctrlType == ctrlBase.CTRL_TYPE.TABLE) {
-                    ctrl = uiTable.ui(ctrl);
+
+                    ctrl = uiTable.ui(ctrl.closest('ossm'));
                 } else {
                     ctrl = uiInput.ui(ctrl);
                 }

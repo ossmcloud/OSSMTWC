@@ -14,6 +14,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             throw new Error(`Unrecognised record type: ${recordType}`);
         }
 
+        function getDataFieldInfo(field, fieldName) {
+            var f = null;
+            if (field.FieldsInfo) {
+                for (var fi in field.FieldsInfo) {
+                    if (field.FieldsInfo[fi].name == fieldName) {
+                        f = field.FieldsInfo[fi];
+                        break;
+                    }
+                }
+            }
+            return f;
+        }
+
         var _fieldDefinitions = {};
         function getFieldDefinitions(tableName) {
             if (!_fieldDefinitions[tableName]) {
@@ -49,11 +62,23 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 if (field.fields) {
                     var dataObj = getDataObject(field.recordType || field.id);
 
+                    var columns = [];
+                    for (var k in field.fields) {
+                        var f = getDataFieldInfo(field, k);
+                        if (f) {
+                            columns.push({ id: f.name.toLowerCase(), title: field.fields[k] })
+                            if (f.type == 'select') { columns.push({ id: f.name.toLowerCase() + '_name', title: field.fields[k] }); }
+                        } else {
+                            columns.push({ id: k.toLowerCase(), title: field.fields[k] })
+                        }
+                    }
+
                     var control = {
                         label: field.label,
                         type: twcUI.CTRL_TYPE.TABLE,
                         id: field.id,
-                        dataSource: dataObj.select({ fields: field.fields, where: field.where }),
+                        columns: columns,
+                        dataSource: dataObj.select({ fields: field.fields, where: field.where, useNames: true }),
                         dataSourceType: field.recordType,
                         showToolbar: true,
                         showEditDelete: true,
@@ -61,7 +86,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             // @@NOTE: if we have fxFields the framework would return the field_name (with id) and field_name_name (with BUILTIN.DF value)
                             //         we do not want to show the id
                             if (tbl.data.length > 0) {
-                                if (tbl.data[0][`${col.id}_name`] != undefined) { return false; }
+                                if (tbl.data[0][`${col.id}_name`] !== undefined) { return false; }
                             }
                         }
                     }

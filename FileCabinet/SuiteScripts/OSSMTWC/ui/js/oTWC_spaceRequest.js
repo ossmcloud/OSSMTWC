@@ -87,21 +87,34 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             initPage() {
-
+                console.log('TWCSpaceRequestPage => InitPage')
                 if (this.data.siteRequestInfo) {
                     // @@NOTE: this is record view mode
                     this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
 
+                    core.array.each(this.ui.controls, c => {
+                        if (c.type == 'table') {
+                            c.onColumnInit = (tbl, col) => {
+                                // @@NOTE: if we have fxFields the framework would return the field_name (with id) and field_name_name (with BUILTIN.DF value)
+                                //         we do not want to show the id
+                                if (tbl.data.length > 0) {
+                                    if (tbl.data[0][`${col.id}_name`] !== undefined) { return false; }
+                                }
+                            }
+                        }
+                    })
+
                     this.ui.on('change', e => {
                         if (e.target.type != 'table') {
                             this.data.siteRequestInfo[e.id] = e.value;
+                            this.dirty = true
                         }
                     })
                     core.array.each(this.ui.controls, c => {
                         c.onToolbarClick = e => {
                             console.log(e)
                             if (e.action == 'add-new') {
-                                this.manageSRFItem({ custrecord_twc_srf_itm_stype: e.table.id.replace('customrecord_twc_srf_itm_', '')});
+                                this.manageSRFItem({ custrecord_twc_srf_itm_stype: e.table.id.replace('customrecord_twc_srf_itm_', '') }, e.table);
                                 return false;
                             } else if (e.action == 'edit') {
                                 alert('edit stuff dude')
@@ -129,41 +142,53 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
 
-            async manageSRFItem(srfItem) {
+            manageSRFItem(srfItem, table) {
                 try {
 
                     if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER]) { throw new Error('You need to specify a customer'); }
 
-                    var res = await this.post({ action: 'child-record' }, { srf: this.data.siteRequestInfo, item: srfItem });
-                    var form = twcUIPanel.ui(res);
+                    this.post({ action: 'child-record' }, { srf: this.data.siteRequestInfo, item: srfItem }).then(res => {
 
-                    form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).disabled = true;
+                        var form = twcUIPanel.ui(res);
+                        form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).disabled = true;
+                        form.on('change', e => {
+                            srfItem[e.id] = e.value;
+                            if (e.target.valueObj) { srfItem[e.id + '_name'] = e.target.valueObj.text; }
+                            if (e.id == twcSrfItem.Fields.REQUEST_TYPE) { form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).disabled = (!e.value || e.value == twcSrfItem.RequestType.INSTALL); }
+                        })
 
-                    form.on('change', e => {
-                        if (e.id == twcSrfItem.Fields.REQUEST_TYPE) {
-                            form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).disabled = (e.value == twcSrfItem.RequestType.INSTALL);
-                        }
+                        dialog.confirm({
+                            title: 'manage record',
+                            message: form.ui,
+                            width: '75%',
+                            height: '75vh'
+                        }, () => {
 
-                        srfItem[e.id] = e.value;
-                    })
+                            try {
+
+                                if (!srfItem.custrecord_twc_srf_itm_req_type) { throw new Error('nope') }
+
+                                // @@NOTE: if we have anew item then add it to the collection 
+                                var itemList = `items_${srfItem.custrecord_twc_srf_itm_stype}`;
+                                if (!this.data.siteRequestInfo[itemList]) { this.data.siteRequestInfo[itemList] = []; }
+                                if (this.data.siteRequestInfo[itemList].indexOf(srfItem) < 0) {
+                                    this.data.siteRequestInfo[itemList].push(srfItem);
+                                }
+
+                                table.render(this.data.siteRequestInfo[itemList], true)
+
+                                this.dirty = true
 
 
-                    await dialog.confirmAsync({
-                        title: 'manage record',
-                        message: form.ui,
-                        width: '75%',
-                        height: '75vh'
-                    })
+                            } catch (error) {
+                                dialog.error(error);
+                                return false;
+                            }
+                        })
 
-                    console.log(srfItem)
-                    
-                    // @@NOTE: if we have anew item then add it to the collection 
-                    if (this.data.siteRequestInfo.items.indexOf(srfItem) < 0) {
-                        this.data.siteRequestInfo.items.push(srfItem);
-                    }
 
-                    
 
+                    });
 
 
                 } catch (error) {

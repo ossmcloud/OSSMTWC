@@ -608,6 +608,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             Type: _recordType,
             Fields: _recordFields,
+            FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_Infrastructure,
 
             get: function (id) {
