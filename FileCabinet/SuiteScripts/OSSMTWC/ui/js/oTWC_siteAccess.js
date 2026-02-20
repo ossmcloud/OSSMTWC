@@ -45,7 +45,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             colInit(tbl, col) {
                 if (col.id == 'id') { return false; }
-                if (col.id == 'cust_id') { return false; }
+                if (col.id == 'record_id') { return false; }
                 if (col.id == 'name') { return false; }
                 if (col.id == 'site_type_color') { return false; }
                 if (col.id == 'site_type_color') { return false; }

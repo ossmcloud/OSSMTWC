@@ -5,16 +5,31 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js'],
     (core, coreSQL) => {
 
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SRF_ITEM_STEP_TYPE = {
             TME: 1,
             ATME: 2,
             GIE: 3
         }
-
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SRF_ITEM_REQUEST_TYPE = {
             INSTALL: 1,
             REMOVE: 2,
             SWAP: 3
+        }
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const SRF_STATUS = {
+            Draft: 11,
+            Submitted: 1,
+            UnderReview: 2,
+            FeedbackIssued: 3,
+            Resubmitted: 4,
+            SRFApproved: 5,
+            LicenceRequested: 6,
+            WorksPermitted: 7,
+            LicenceIssued: 8,
+            LicenceExecuted: 9,
+            SRFCancelled: 10
         }
 
 
@@ -156,11 +171,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getLookUpTableValues('customrecord_twc_site_portfolio');
         }
 
+
+        
         //
 
         return {
-            StepType: SRF_ITEM_STEP_TYPE,
-            RequestType: SRF_ITEM_REQUEST_TYPE,
+            SrfStepType: SRF_ITEM_STEP_TYPE,
+            SrfRequestType: SRF_ITEM_REQUEST_TYPE,
+            SrfStatus: SRF_STATUS,
 
             
             getFields: getCustomTableFields,

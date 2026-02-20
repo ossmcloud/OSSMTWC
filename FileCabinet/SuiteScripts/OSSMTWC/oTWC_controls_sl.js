@@ -12,6 +12,7 @@ define(['O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js
             // if (!core.env.ossm()) { throw new Error('You do not have permission to access the TWC Controls Page'); }
             
             s.form.buttonAdd('Test', 'testFunction');
+            s.form.buttonAdd('Delete all SRF', 'deleteAllSrf')
             s.form.fieldHtml(htmlStyles.all());
 
 

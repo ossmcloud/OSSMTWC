@@ -5,10 +5,27 @@
 define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItemUI.js', './oTWC_configUIFields.js'],
     (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItemUI, configUIFields) => {
 
+        function getSrfTableFields() {
+            // @@TODO: this list of fields to display can be set by user
+            // @@IMPORTANT: we should make sure some fields are there as they are needed by the ui:
+            //      id, name
+            //      lat/lng
+            //      site address
+            var siteFields = [
+                { field: twcSrf.Fields.NAME },
+                { field: twcSrf.Fields.SITE },
+                { field: twcSrf.Fields.OPERATOR_SITE_ID },
+                { field: twcSrf.Fields.SRF_STATUS },
+                { field: twcSrf.Fields.CUSTOMER },
+                { field: twcSrf.Fields.SRF_SUBMITTED_BY },
+                { field: twcSrf.Fields.SRF_REQUESTED_DATE },
+                
+            ];
+            return siteFields;
+        }
 
-        function getSRFInfoPanels_new(dataSource, userInfo) {
-            //throw new Error(JSON.stringify(twcUtils.StepType))
-            var fieldGroup = { id: 'site-request', title: 'Create New Space Request', collapsed: false, controls: [] };
+        function getSRFInfoPanels(dataSource, userInfo) {
+            var fieldGroup = { id: 'site-request', title: (dataSource.id)?`Space Request [${dataSource.name}]`: 'Create New Space Request', collapsed: false, controls: [] };
 
             var basicInfo = { id: 'site-request-struct', title: 'Customer Information', fields: [] };
             fieldGroup.controls.push(basicInfo);
@@ -29,9 +46,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: userInfo.isCustomer, dataSource: customers })
             basicInfo.fields.push({ id: twcSrf.Fields.OPERATOR_SITE_ID, label: 'Operator Site ID' })
 
-            fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcUtils.StepType.TME)] });
-            fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcUtils.StepType.ATME)] });
-            fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 3 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcUtils.StepType.GIE)] });
+            fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.TME)] });
+            fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.ATME)] });
+            fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 3 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.GIE)] });
             
             fieldGroup.controls.push({ id: 'site-request-step-4', title: 'Step 4 of 5', fields: [twcSrfItemUI.getFileTableUIControl(dataSource)] });
 
@@ -53,16 +70,24 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroup;
         }
 
+        function getSRFWorkFlowPanels(dataSource, userInfo) {
 
-        function getSRFInfoPanels(dataSource, userInfo) {
+        }
+
+
+        function getSRFUIPanels(dataSource, userInfo) {
             if (!dataSource) { dataSource = {}; }
             dataSource.Type = twcSrf.Type;
 
             var fieldGroups = [];
             if (dataSource.id) {
-                // @@TODO : this is an existing SRP
+                fieldGroups.push(getSRFInfoPanels(dataSource, userInfo));
+                if (dataSource[twcSrf.Fields.SRF_STATUS] != twcSrf.Status.Draft) {
+                    // @@TODO : these fields should only be editable by TWC staff I suppose
+                    // fieldGroups.push(getSRFWorkFlowPanels(dataSource, userInfo));
+                }
             } else {
-                fieldGroups.push(getSRFInfoPanels_new(dataSource, userInfo));
+                fieldGroups.push(getSRFInfoPanels(dataSource, userInfo));
             }
             return fieldGroups;
         }
@@ -74,8 +99,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         return {
-            getSRFInfoPanels: getSRFInfoPanels,
-
+            getSrfTableFields: getSrfTableFields,
+            getSRFInfoPanels: getSRFUIPanels,
             getSrfChildRecord: getSrfChildRecord
 
         }

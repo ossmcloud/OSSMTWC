@@ -3,8 +3,8 @@
  * @NScriptType Suitelet
  
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_fieldPanel.js'],
-    function (core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUIPanel) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js'],
+    function (core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUIPanel, twcConfig) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -33,8 +33,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             } else {
                 // @@TODO: this should actually be the site access info
-                pageData.data.sitesInfo = twcSiteLocatorUtils.getSites();
-
+                pageData.data.srfInfo = twcSiteLocatorUtils.getSiteSrf();
 
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
                 html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteLocatorUtils.renderSiteLocatorPanel(pageData.permission.featureId));
@@ -48,15 +47,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         suiteLet.post = (context, s) => {
+            var userInfo = twcConfig.userInfo(context);
+            
 
             if (context.request.parameters.action == 'child-record') {
                 var payload = JSON.parse(context.request.body);
-                
                 var fields = twcSiteRequestUtils.getSrfChildRecord(payload);
-
-                return fields;  
-
-
+                return fields;
+            } else if (context.request.parameters.action == 'save') {
+                var payload = JSON.parse(context.request.body);
+                
+                return { id: twcSiteRequestUtils.saveSiteSrf(userInfo, payload) };
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);
             }

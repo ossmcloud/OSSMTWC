@@ -17,6 +17,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             Type: twcSrf.Type,
             Fields: twcSrf.Fields,
+            StepType: twcUtils.SrfStepType,
+            Status: twcUtils.SrfStatus,
 
             get: function (id) {
                 var rec = new OSSMTWC_SRF(id);

@@ -18,8 +18,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Type: twcSrfItem.Type,
             Fields: twcSrfItem.Fields,
             FieldsInfo: twcSrfItem.FieldsInfo,
-            StepType: twcUtils.StepType,
-            RequestType: twcUtils.RequestType,
+            StepType: twcUtils.SrfStepType,
+            RequestType: twcUtils.SrfRequestType,
 
             get: function (id) {
                 var rec = new OSSMTWC_SRFItem(id);

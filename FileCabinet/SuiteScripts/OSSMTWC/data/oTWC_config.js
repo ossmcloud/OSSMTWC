@@ -58,6 +58,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
             }
 
+            userInfo.profile = coreSQL.first(`select id from customrecord_twc_prof where custrecord_twc_prof_username = ${userInfo.recordId}`)?.id || null;
+
             return userInfo;
         }
 

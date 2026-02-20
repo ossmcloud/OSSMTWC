@@ -658,6 +658,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     data = pageData.data;
                 }
 
+
+
                 this.#options = options;
                 this.#data = data;
                 this.#tableId = options.id || options.tableId || 'o_table';
@@ -695,7 +697,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     ]
                 }
 
-                this.init();
+                this.init({ resetCols: this.#options.columns?.length > 0 });
                 this.initEvents();  // @@NOTE: this will only work if this.#j is not empty
             }
 
@@ -826,6 +828,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         this.#columns.push(new HtmlTableColumn(this, c));
                     });
 
+
                     if (this.#options.columns && options.resetCols) {
                         // if we have a column collection then we use it
                         core.array.each(this.#options.columns, c => {
@@ -834,6 +837,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                             this.#columns.push(col);
                             if (col.sortIdx == null) { col.sortIdx = this.#columns.length * 10; }
                         })
+
+
+
                     } else if (this.#data && this.#data.length > 0) {
                         // if we do not have a column collection then we use the 1st data row
                         this.#options.columns = [];

@@ -2,11 +2,56 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_icons.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js'],
-    (core, coreSQL, twcUtils, twcIcons, twcSite, twcSiteUI, twcUI, twcConfig) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_icons.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js'],
+    (core, coreSQL, twcUtils, twcIcons, twcSrf, twcSrfUI, twcSite, twcSiteUI, twcUI, twcConfig) => {
+
+        function getSiteSrf(options) {
+            var sqlFields = 's.id, s.id as record_id, s.name, s.custrecord_twc_srf_site as site_id, BUILTIN.DF(s.custrecord_twc_srf_site) as site_id_text';
+
+            var srfFields = twcUtils.getFields(twcSrf.Type);
+            var userFields = twcSrfUI.getSrfTableFields();
+
+            core.array.each(userFields, uf => {
+                if (uf.field == 'name' || uf.field == 'custrecord_twc_srf_site') { return; }
+                var nsField = srfFields.find(nsf => { return nsf.field_id == uf.field });
+                var sqlField = uf.field;
+                uf.type = nsField.field_type;
+                if (nsField.field_type == 'Date') {
+                    sqlFields += `, TO_CHAR(s.${sqlField}, 'yyyy-MM-dd') as ${sqlField}`;
+                } else if (nsField.field_type == 'DateTimeZ') {
+                    sqlFields += `, TO_CHAR(s.${sqlField}, 'yyyy-MM-dd HH24:mm') as ${sqlField}`;
+                } else {
+                    if (nsField.field_type == 'List/Record') {
+                        uf.listRecord = true;
+                        sqlField = `${sqlField} as ${sqlField}, BUILTIN.DF(${sqlField}) as ${sqlField}_text`;
+                    }
+                    sqlFields += `, s.${sqlField}`;
+                }
+                if (!uf.label) { uf.label = nsField.field_label; }
+            })
+            
+            // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
+            var whereClause = 'where 1 = 1 ';
+            var orderBy = `order by s.${twcSrf.Fields.SRF_REQUESTED_DATE} desc`;
+
+            var srfs = coreSQL.run(`
+                select  ${sqlFields}
+                from    ${twcSrf.Type} s
+                ${whereClause} 
+                ${orderBy}
+            `)
+
+
+            return {
+                srfFields: srfFields,
+                userFields: userFields,
+                srfs: srfs,
+                sites: getSites(options).sites
+            }
+        }
 
         function getSites(options) {
-            var sqlFields = 's.id, s.id as cust_id, s.name';
+            var sqlFields = 's.id, s.id as record_id, s.name';
 
             var siteFields = twcUtils.getFields(twcSite.Type);
             var userFields = twcSiteUI.getSiteTableFields();
@@ -14,18 +59,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             core.array.each(userFields, uf => {
                 var nsField = siteFields.find(nsf => { return nsf.field_id == uf.field });
                 var sqlField = uf.field;
+                uf.type = nsField.field_type;
                 if (nsField.field_type == 'List/Record') {
                     uf.listRecord = true;
                     sqlField = `${sqlField} as ${sqlField}, BUILTIN.DF(${sqlField}) as ${sqlField}_text`;
                 }
-
                 sqlFields += `, s.${sqlField}`;
 
                 if (!uf.label) { uf.label = nsField.field_label; }
 
             })
 
-            
+
             // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSite.Fields.NAME}`;
@@ -104,7 +149,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 </div>
             </div>`;
 
-            html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Name', width: '75%', id: 'cust_id', noEmpty: true, dataSource: twcUtils.getSiteNames() }));
+            html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Name', width: '75%', id: 'record_id', noEmpty: true, dataSource: twcUtils.getSiteNames() }));
             html = html.replace('{FILTER_SITE_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Type', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));
             html = html.replace('{FILTER_SITE_LEVEL}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Level', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_LEVEL, noEmpty: true, dataSource: twcUtils.getSiteLevels() }));
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'County', width: '50%', multiSelect: true, id: twcSite.Fields.COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
@@ -125,6 +170,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
 
             getSites: getSites,
+            getSiteSrf: getSiteSrf,
             renderSiteLocatorPanel: renderSiteLocatorPanel
 
         }

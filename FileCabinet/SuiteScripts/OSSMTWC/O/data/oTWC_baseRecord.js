@@ -157,6 +157,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@TODO: validate other types
             }
 
+            hasField(fieldName) {
+                return this.findField(fieldName, true) != null;
+            }
             findField(fieldName, doNotThrowError) {
                 if (fieldName == 'name') { return { name: 'name', type: 'text' }; }
                 if (fieldName == 'id') { return { name: 'id', type: 'int' }; }
@@ -186,6 +189,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             save(ignoreMandatory) {
                 this.#id = this.r.save(ignoreMandatory);
                 this.#state = RECORD_STATE.UNCHANGED;
+                return this.#id;
             }
 
             del() {

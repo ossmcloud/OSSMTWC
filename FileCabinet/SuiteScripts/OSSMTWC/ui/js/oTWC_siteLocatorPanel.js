@@ -13,10 +13,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #sitesTableExpanded = false;
             #data = null;
             #dataFiltered = null;
+            #tableData = null;
+            #tableDataFiltered = null;
             constructor(options) {
                 this.#page = options.page;
                 this.#sitesTable = options.table;
                 this.#data = options.data;
+                this.#tableData = options.tableData;
             }
 
             get ui() { return this.#page.ui; }
@@ -39,7 +42,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             initEvents() {
                 this.#page.ui.on('change', e => {
                     try {
-                        if (e.id.startsWith('cust')) {
+                        if (e.id.startsWith('cust') || e.id == 'record_id') {
                             this.updateResults();
                         } else if (e.id.startsWith('twc-coord')) {
                             this.updateResultsByCoord();
@@ -80,7 +83,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             clearFilters() {
                 core.array.each(this.ui.controls, c => {
-                    if (c.id.startsWith('twc-coord') || c.id.startsWith('cust')) {
+                    if (c.id.startsWith('twc-coord') || c.id.startsWith('cust') || c.id=='record_id') {
                         c.value = (c.id == 'twc-coord-radius') ? 5 : null;
                     }
                 })
@@ -91,19 +94,30 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@TODO: filter sites on memory OR load filtered list
                 var filters = this.ui.getValues();
                 console.log(filters)
+
+                var siteIds = [];
                 this.#dataFiltered = this.#data.filter(s => {
                     var match = true;
                     for (var f in filters) {
-                        if (!f.startsWith('cust')) { continue; }
+                        if (!f.startsWith('cust') && f != 'record_id') { continue; }
                         if (!filters[f]) { continue; }
                         var values = filters[f].split(',').map(i => { return i?.toString() });
                         match = values.indexOf(s[f]?.toString()) >= 0;
                         if (!match) { break; }
                     }
+                    if (match) { siteIds.push(s.id) }
                     return match;
                 });
 
-                this.#sitesTable.refresh(this.#dataFiltered);
+                if (this.#tableData) {
+                    this.#tableDataFiltered = this.#tableData.filter(s => {
+                        return siteIds.indexOf(s.site_id) >= 0;
+                    });
+                    this.#sitesTable.refresh(this.#tableDataFiltered);
+                } else {
+
+                    this.#sitesTable.refresh(this.#dataFiltered);
+                }
                 this.updateGoogleMap(null);
             }
 
@@ -126,16 +140,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 if (isNaN(radius) || isNaN(srcLat) || isNaN(srcLng)) { return; }
 
+                var siteIds = [];
                 this.#dataFiltered = this.#data.filter(s => {
                     var lat = s[twcSite.Fields.LATITUDE];
                     var lng = s[twcSite.Fields.LONGITUDE];
                     if (!(lat >= (srcLat - radius) && lat <= (srcLat + radius))) { return false; }
                     if (!(lng >= (srcLng - radius) && lng <= (srcLng + radius))) { return false; }
+                    siteIds.push(s.id);
                     return true;
 
                 });
-
-                this.#sitesTable.refresh(this.#dataFiltered);
+                if (this.#tableData) {
+                    this.#tableDataFiltered = this.#tableData.filter(s => {
+                        return siteIds.indexOf(s.site_id) >= 0;
+                    });
+                    this.#sitesTable.refresh(this.#tableDataFiltered);
+                } else {
+                    this.#sitesTable.refresh(this.#dataFiltered);
+                }
                 this.updateGoogleMap({
                     center: { lat: srcLat, lng: srcLng },
                     radius: radiusInKm,

@@ -11,16 +11,54 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
 
         }
 
+        function deleteAllSrf() {
+            if (!confirm('sure ??????')) { return; }
+            coreSQL.each(`select id from customrecord_twc_srf`, srf => {
+                console.log(srf);
+                deleteSrf(srf.id);
+            })
+
+        }
+    
 
 
+
+        function deleteSrf(id) {
+    
+            coreSQL.each(`select id from customrecord_twc_srf_itm where custrecord_twc_srf_itm_srf = ${id}`, srfItem => {
+                recu.del('customrecord_twc_srf_itm', srfItem.id)
+            })
+
+            recu.del('customrecord_twc_srf', id)
+
+        }
 
 
         return {
             pageInit: pageInit,
+            deleteAllSrf: deleteAllSrf,
             testFunction() {
                 try {
-
-                    console.log(twcUtils.StepType)
+                    var testData = {
+                        type: 'customrecord_twc_srf_itm',
+                        "custrecord_twc_srf_itm_req_type": "1",
+                        "custrecord_twc_srf_itm_equip_id": "",
+                        "custrecord_twc_srf_itm_type": "1",
+                        "custrecord_twc_srf_itm_desc": "Test Dish Install",
+                        "custrecord_twc_srf_itm_loc": "1",
+                        "custrecord_twc_srf_itm_length_mm": "60",
+                        "custrecord_twc_srf_itm_width_mm": "60",
+                        "custrecord_twc_srf_itm_depth_mm": "60",
+                        "custrecord_twc_srf_itm_ht_on_twr": "5",
+                        "custrecord_twc_srf_itm_weight_kg": "1",
+                        "custrecord_twc_srf_itm_volt_type": "1",
+                        "custrecord_twc_srf_itm_volt_range": "1",
+                        "custrecord_twc_srf_itm_azimuth": "0",
+                        "custrecord_twc_srf_itm_b_end": "0",
+                        "custrecord_twc_srf_itm_cust_ref": "XXX",
+                        "custrecord_twc_srf_itm_invent_flag": "18"
+                    }
+                    console.log(twcSrfUI.getSrfChildRecord({}, testData))
                     // var options = { fields: { id: 'value' } };
                     // options.fields[twcEquipment.Fields.EQUIPMENT_ID] = 'text';
 

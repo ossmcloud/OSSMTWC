@@ -26,11 +26,15 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 } else {
                     this.#options = options || {};
+                    if (this.#options.value == 'F' || this.#options.value == 'T') {
+                        this.#options.value = this.#options.value == 'T'
+                    }
                 }
             }
 
             get id() { return this.#options.id; }
             get type() { { return this.#options?.type; } }
+            get label() { { return this.#options?.label; } }
             get mandatory() { return this.#options.mandatory; }
 
             get disabled() {

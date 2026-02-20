@@ -6,44 +6,45 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
     (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItem, twcSrfItemType, twcFile, twcEquipment) => {
 
         function getUIFields(srf, srfItem) {
+            
 
             var fieldGroup = { id: 'srf-item', title: 'Main', collapsed: false, controls: [] };
 
             var basicInfo = { id: 'srf-item-info', title: 'Basic Info', fields: [] };
             fieldGroup.controls.push(basicInfo);
 
-            basicInfo.fields.push({ id: twcSrfItem.Fields.REQUEST_TYPE, label: 'Request Type' })
-            basicInfo.fields.push({ id: twcSrfItem.Fields.EQUIPMENT_ID, label: 'Equipment', dataSource: twcEquipment.lookUp({ customer: srf.customer, stepType: srfItem.stepType }) })
+            basicInfo.fields.push({ id: twcSrfItem.Fields.REQUEST_TYPE, label: 'Request Type', mandatory: true })
+            basicInfo.fields.push({ id: twcSrfItem.Fields.EQUIPMENT_ID, label: 'Equipment', mandatory: true, dataSource: twcEquipment.lookUp({ customer: srf.customer, stepType: srfItem.stepType }) })
             if (srfItem.stepType == twcSrfItem.StepType.ATME) {
-                basicInfo.fields.push({ id: twcSrfItem.Fields.TME_ID, label: 'TME', dataSource: twcEquipment.lookUp({ customer: srf.customer, stepType: twcSrfItem.StepType.TME }) })
+                basicInfo.fields.push({ id: twcSrfItem.Fields.TME_ID, label: 'TME', mandatory: true, dataSource: twcEquipment.lookUp({ customer: srf.customer, stepType: twcSrfItem.StepType.TME }) })
             }
-            basicInfo.fields.push({ id: twcSrfItem.Fields.ITEM_TYPE, label: 'Item Type', lineBreak: true, dataSource: twcSrfItemType.lookUp(srfItem.stepType) })
-            basicInfo.fields.push({ id: twcSrfItem.Fields.DESCRIPTION, label: 'Description', width: '100%' })
+            basicInfo.fields.push({ id: twcSrfItem.Fields.ITEM_TYPE, label: 'Item Type', mandatory: true, lineBreak: true, dataSource: twcSrfItemType.lookUp(srfItem.stepType) })
+            basicInfo.fields.push({ id: twcSrfItem.Fields.DESCRIPTION, label: 'Description', mandatory: true, width: '100%' })
             if (srfItem.stepType != twcSrfItem.StepType.GIE) {
-                basicInfo.fields.push({ id: twcSrfItem.Fields.LOCATION, label: 'Location' })
+                basicInfo.fields.push({ id: twcSrfItem.Fields.LOCATION, label: 'Location', mandatory: true })
             }
 
             var dimensionInfo = { id: 'srf-item-dimension', title: 'Dimensions / Location', fields: [] };
             fieldGroup.controls.push(dimensionInfo);
-            dimensionInfo.fields.push({ id: twcSrfItem.Fields.LENGTH_MM, label: 'Length (mm)' })
-            dimensionInfo.fields.push({ id: twcSrfItem.Fields.WIDTH_MM, label: 'Width (mm)' })
-            dimensionInfo.fields.push({ id: twcSrfItem.Fields.DEPTH_MM, label: 'Depth (mm)' })
-            dimensionInfo.fields.push({ id: twcSrfItem.Fields.HEIGHT_ON_TOWER, label: 'Height on Tower' })
-            dimensionInfo.fields.push({ id: twcSrfItem.Fields.WEIGHT_KG, label: 'Weight (kg)' })
+            dimensionInfo.fields.push({ id: twcSrfItem.Fields.LENGTH_MM, label: 'Length (mm)', mandatory: true })
+            dimensionInfo.fields.push({ id: twcSrfItem.Fields.WIDTH_MM, label: 'Width (mm)', mandatory: true })
+            dimensionInfo.fields.push({ id: twcSrfItem.Fields.DEPTH_MM, label: 'Depth (mm)', mandatory: true })
+            dimensionInfo.fields.push({ id: twcSrfItem.Fields.HEIGHT_ON_TOWER, label: 'Height on Tower', mandatory: true })
+            dimensionInfo.fields.push({ id: twcSrfItem.Fields.WEIGHT_KG, label: 'Weight (kg)', mandatory: true })
 
             if (srfItem.stepType == twcSrfItem.StepType.TME) {
                 var specInfo = { id: 'srf-item-spec', title: 'Specifications', fields: [] };
                 fieldGroup.controls.push(specInfo);
 
-                specInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_TYPE, label: 'Voltage Type' })
-                specInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_RANGE, label: 'Voltage Range' })
-                specInfo.fields.push({ id: twcSrfItem.Fields.AZIMUTH, label: 'Azimuth' })
-                specInfo.fields.push({ id: twcSrfItem.Fields.B_END, label: 'B-End' })
-                specInfo.fields.push({ id: twcSrfItem.Fields.CUSTOMER_REF, label: 'Customer Ref.' })
-                specInfo.fields.push({ id: twcSrfItem.Fields.INVENTORY_FLAG, label: 'Inventory Flag' })
+                specInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_TYPE, label: 'Voltage Type', mandatory: true })
+                specInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_RANGE, label: 'Voltage Range', mandatory: true })
+                specInfo.fields.push({ id: twcSrfItem.Fields.AZIMUTH, label: 'Azimuth', mandatory: true })
+                specInfo.fields.push({ id: twcSrfItem.Fields.B_END, label: 'B-End', mandatory: true })
+                specInfo.fields.push({ id: twcSrfItem.Fields.CUSTOMER_REF, label: 'Customer Ref.', mandatory: true })
+                specInfo.fields.push({ id: twcSrfItem.Fields.INVENTORY_FLAG, label: 'Inventory Flag', mandatory: true })
 
             } else {
-                dimensionInfo.fields.push({ id: twcSrfItem.Fields.INVENTORY_FLAG, label: 'Inventory Flag' })
+                dimensionInfo.fields.push({ id: twcSrfItem.Fields.INVENTORY_FLAG, label: 'Inventory Flag', mandatory: true })
 
             }
 

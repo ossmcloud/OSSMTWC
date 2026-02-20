@@ -16,7 +16,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             COMPLETION_PHOTOS_REVIEWED: 'custrecord_twc_srf_completion_photo_rev',
             CUSTOMER: 'custrecord_twc_srf_cust',
             SRF_SUBMITTED_BY: 'custrecord_twc_srf_sub_by',
-            SRF_ID: 'custrecord_twc_srf_id',
             RELATED_EQUIPMENT_ACTIONS: 'custrecord_twc_srf_related_eqip_actions',
             APPLICATION_DATE: 'custrecord_twc_srf_app_date',
             SRF_DRAWINGS: 'custrecord_twc_srf_drg',
@@ -63,7 +62,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             COMPLETION_PHOTOS_REVIEWED: { name: 'custrecord_twc_srf_completion_photo_rev', type: 'date', alias: 'completionPhotosReviewed', display: 'normal', mandatory: false },
             CUSTOMER: { name: 'custrecord_twc_srf_cust', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: '-2' },
             SRF_SUBMITTED_BY: { name: 'custrecord_twc_srf_sub_by', type: 'select', alias: 'sRFSubmittedBy', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
-            SRF_ID: { name: 'custrecord_twc_srf_id', type: 'text', alias: 'sRFID', display: 'normal', mandatory: false },
             RELATED_EQUIPMENT_ACTIONS: { name: 'custrecord_twc_srf_related_eqip_actions', type: 'select', alias: 'relatedEquipmentActions', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action,' },
             APPLICATION_DATE: { name: 'custrecord_twc_srf_app_date', type: 'date', alias: 'applicationDate', display: 'normal', mandatory: false },
             SRF_DRAWINGS: { name: 'custrecord_twc_srf_drg', type: 'document', alias: 'sRFDrawings', display: 'normal', mandatory: false },
@@ -168,13 +166,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.SRF_SUBMITTED_BY, value)
             }
             get sRFSubmittedByName() { return this.getText(_recordFields.SRF_SUBMITTED_BY); }
-            
-            get sRFID() {
-                return this.get(_recordFields.SRF_ID);
-            } set sRFID(value) {
-                this.set(_recordFields.SRF_ID, value)
-            }
-            
+       
             get relatedEquipmentActions() {
                 return this.get(_recordFields.RELATED_EQUIPMENT_ACTIONS);
             } set relatedEquipmentActions(value) {

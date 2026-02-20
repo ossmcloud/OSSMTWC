@@ -70,6 +70,20 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                     }
                     this.#ui = twcUI.init({}, this.page);
 
+                    // @@REVIEW: this should apply to all tables on the UI
+                    //           if it does not we can still overwrite this on the derived pageInit method
+                    core.array.each(this.ui.controls, c => {
+                        if (c.type == 'table') {
+                            c.onColumnInit = (tbl, col) => {
+                                // @@NOTE: if we have fxFields the framework would return the field_name (with id) and field_name_name (with BUILTIN.DF value)
+                                //         we do not want to show the id
+                                if (tbl.data.length > 0) {
+                                    if (tbl.data[0][`${col.id}_name`] !== undefined) { return false; }
+                                }
+                            }
+                        }
+                    })
+
                     this.#initEventsInternal();
 
                     if (!this.#data) { return; }
@@ -128,6 +142,9 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                             await dialog.errorAsync(`<b>Developer Error</b>:<br /><br />function 'onSave' was not implemented in derived class`);
                         }
                     })
+
+
+
                 } catch (error) {
                     throw error
                 } finally {
@@ -239,6 +256,17 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                         dialog.error(err);
                     })
                 })
+            }
+
+            postSync(params, body) {
+                if (!this.#options.scriptId) { throw new Error('cannot post as this.#options.scriptId is empty'); }
+                var url = core.url.script(this.#options.scriptId, params?.params || params || {});
+                var res = https.post({ url: url, body: params?.body || body || {} });
+                if (res.error !== undefined) {
+                    console.log(res);
+                    throw res.error || 'NO ERROR MESSAGE';
+                }
+                return res;
             }
         }
 

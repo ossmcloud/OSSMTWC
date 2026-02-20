@@ -2,15 +2,18 @@ TODO:
 -----
 
 UI Panels:
-    implement support for tables (add/edit/delete)
-        for new/edit open pop-up window with NetSuite form there    [preferred for now]
-        - OR -
-        let user add/edit/delete on screen and then save
+    tables:
+        edit
+        delete
 
+    locator panel:
+        apply yo access request
 
+    
 
 TODO-NEXT:
 ----------
+    00. SRF Type => what is this??? we do not have oit in Radix
     01. Finalise the site info left panel: place all fields as per Radix system
     02. Finalise the site info page panels: add missing fields/panels
     03. implement functionalities:
@@ -18,6 +21,14 @@ TODO-NEXT:
             Space Access Request (SAF)
             ...
 
+    04. OSSMTWC - Profile   
+        each employee or customer or customer contact must be associated with a profile
+        we should automate this as follow:
+            new employees => create the profile record on save and ask user to complete 
+            new customers => create the profile record on save and ask user to complete 
+            new contact => if possible do same as above
+            new vendors => create the profile record on save and ask user to complete 
+            
 
 
 
@@ -33,6 +44,8 @@ OSSMTWC - SRF Item Step Type => should rename to something more meaningful:
     ATME    Additional Tower Mounted Eq
     GIE     Ground & Indoor Eq
 
+OSSMTWC - Profile
+Map to employees / customers|vendors / customer|vendorS contact
 
 
 
