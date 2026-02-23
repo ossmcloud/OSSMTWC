@@ -7,8 +7,38 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, uiTable, twcSite, twcSrf, twcSrfItem, twcUIPanel) => {
 
 
+        function builtTestObjects(srfItem) {
+            // @@TODO: test only
+            if (core.ossm()) {
+                var testData = {
+                    "custrecord_twc_srf_itm_req_type": "1",
+                    "custrecord_twc_srf_itm_desc": "Test Dish Install",
+                    "custrecord_twc_srf_itm_loc": "1",
+                    "custrecord_twc_srf_itm_length_mm": "60",
+                    "custrecord_twc_srf_itm_width_mm": "60",
+                    "custrecord_twc_srf_itm_depth_mm": "60",
+                    "custrecord_twc_srf_itm_ht_on_twr": "5",
+                    "custrecord_twc_srf_itm_weight_kg": "1",
+                    "custrecord_twc_srf_itm_invent_flag": "18"
+                }
+                if (srfItem.custrecord_twc_srf_itm_stype == 1) {
+                    testData.custrecord_twc_srf_itm_equip_id = "";
+                    testData.custrecord_twc_srf_itm_type = "1";
+                    testData.custrecord_twc_srf_itm_volt_type = "1";
+                    testData.custrecord_twc_srf_itm_volt_range = "1";
+                    testData.custrecord_twc_srf_itm_azimuth = "0";
+                    testData.custrecord_twc_srf_itm_b_end = "0";
+                    testData.custrecord_twc_srf_itm_cust_ref = "XXX";
 
-        // @@TODO: this should be from site request table
+                }
+                for (var k in testData) {
+                    srfItem[k] = testData[k];
+                }
+            }
+
+        }
+
+
         class TWCSiteSrfTable {
             #page = null;
             #table = null;
@@ -40,7 +70,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (col.id == 'id') { return false; }
                 if (col.id == 'record_id') { return false; }
                 if (col.id == 'site_id') { return false; }
-                if (col.id == 'name') { col.title = 'SRF ID'; }
+                if (col.id == 'name') {
+                    col.title = 'SRF ID';
+                    col.addCount = true;
+                    col.link = {
+                        url: core.url.script('otwc_spacerequest_sl') + '&recId=${id}',
+                        valueField: 'id'
+                    }
+                }
 
                 var uf = window.twc.page.data.data.srfInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
                 if (uf) {
@@ -50,12 +87,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
 
                 if (col.id == 'site_id_text') {
-                    col.addCount = true;
                     col.link = {
                         url: core.url.script('otwc_siteinfo_sl') + '&recId=${site_id}',
                         valueField: 'site_id'
                     }
                 }
+
+
                 if (col.id == twcSite.Fields.LATITUDE || col.id == twcSite.Fields.LONGITUDE) { col.styles = { 'text-align': 'right' }; }
             }
 
@@ -75,8 +113,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #sitePanel = null;
             constructor() {
                 super({ scriptId: 'otwc_spaceRequest_sl' });
-
-
             }
 
             initPage() {
@@ -96,14 +132,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         c.onToolbarClick = e => {
                             console.log(e)
                             if (e.action == 'add-new') {
-                                this.manageSRFItem({ custrecord_twc_srf_itm_stype: e.table.id.replace('customrecord_twc_srf_itm_', '') }, e.table);
-                                return false;
+                                this.manageSRFItem(null, e.table);
+                                
                             } else if (e.action == 'edit') {
-                                alert('edit stuff dude')
+                                this.manageSRFItem(e.rowData, e.table);
+                                
                             } else if (e.action == 'delete') {
                                 dialog.confirm('Are you sure you wish to delete this record', () => {
-                                    alert('delete stuff dude')
+                                    e.rowData.delete = true;
+                                    this.manageSRFItem(e.rowData, e.table);
                                 })
+                                
                             }
                         }
                     })
@@ -125,53 +164,39 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
-
+            
             manageSRFItem(srfItem, table) {
                 try {
                     if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER]) { throw new Error('You need to specify a customer'); }
 
-                    // @@TODO: test only
-                    if (core.ossm()) {
-                        var testData = {
-                            "custrecord_twc_srf_itm_req_type": "1",
-                            "custrecord_twc_srf_itm_desc": "Test Dish Install",
-                            "custrecord_twc_srf_itm_loc": "1",
-                            "custrecord_twc_srf_itm_length_mm": "60",
-                            "custrecord_twc_srf_itm_width_mm": "60",
-                            "custrecord_twc_srf_itm_depth_mm": "60",
-                            "custrecord_twc_srf_itm_ht_on_twr": "5",
-                            "custrecord_twc_srf_itm_weight_kg": "1",
-                            "custrecord_twc_srf_itm_invent_flag": "18"
-                        }
-                        if (srfItem.custrecord_twc_srf_itm_stype == 1) {
-                            testData.custrecord_twc_srf_itm_equip_id = "";
-                            testData.custrecord_twc_srf_itm_type = "1";
-                            testData.custrecord_twc_srf_itm_volt_type = "1";
-                            testData.custrecord_twc_srf_itm_volt_range = "1";
-                            testData.custrecord_twc_srf_itm_azimuth = "0";
-                            testData.custrecord_twc_srf_itm_b_end = "0";
-                            testData.custrecord_twc_srf_itm_cust_ref = "XXX";
+                    // @@TODO: dev only
 
+                    if (!srfItem) { srfItem = {}; }
+                    srfItem.custrecord_twc_srf_itm_stype = table.id.replace('customrecord_twc_srf_itm_', '');
+                    if (srfItem.delete) {
+                        if (srfItem.id) {
+                            if (!this.data.siteRequestInfo.items_deleted) { this.data.siteRequestInfo.items_deleted = []; }
+                            this.data.siteRequestInfo.items_deleted.push(srfItem);
                         }
-                        for (var k in testData) {
-                            srfItem[k] = testData[k];
-                        }
+                        table.data.splice(table.data.indexOf(srfItem), 1);
+                        table.render(table.data, true);
+                        this.dirty = true
+                        return;
                     }
 
-                    var res = this.postSync({ action: 'child-record' }, { srf: this.data.siteRequestInfo, item: srfItem })
 
+                    if (!srfItem.id) { builtTestObjects(srfItem); }
+
+                    var res = this.postSync({ action: 'child-record' }, { srf: this.data.siteRequestInfo, item: srfItem })
                     var form = twcUIPanel.ui(res);
                     form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).disabled = true;
                     form.on('change', e => {
-                        // srfItem[e.id] = e.value;
-                        // if (e.target.valueObj) { srfItem[e.id + '_name'] = e.target.valueObj.text; }
                         if (e.id == twcSrfItem.Fields.REQUEST_TYPE) { form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).disabled = (!e.value || e.value == twcSrfItem.RequestType.INSTALL); }
                     })
 
                     dialog.confirm({ title: 'manage record', message: form.ui, width: '75%', height: '75vh' }, () => {
                         try {
                             var obj = form.getValues(true);
-                            console.log(obj);
 
                             for (var k in obj) {
                                 if (obj[k]?.value !== undefined) {
@@ -181,28 +206,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     srfItem[k] = obj[k];
                                 }
                             }
-
                             srfItem.dirty = true;
 
                             // @@NOTE: if we have anew item then add it to the collection 
                             var itemList = `items_${srfItem.custrecord_twc_srf_itm_stype}`;
-                            if (!this.data.siteRequestInfo[itemList]) { this.data.siteRequestInfo[itemList] = []; }
-                            if (this.data.siteRequestInfo[itemList].indexOf(srfItem) < 0) {
-                                this.data.siteRequestInfo[itemList].push(srfItem);
-                            }
-
+                            if (!this.data.siteRequestInfo[itemList]) { this.data.siteRequestInfo[itemList] = table.data; }
+                            if (this.data.siteRequestInfo[itemList].indexOf(srfItem) < 0) { this.data.siteRequestInfo[itemList].push(srfItem); }
                             table.render(this.data.siteRequestInfo[itemList], true)
 
                             this.dirty = true
-
-
                         } catch (error) {
                             dialog.error(error);
                             return false;
                         }
                     })
-
-
 
                 } catch (error) {
                     dialog.error(error);

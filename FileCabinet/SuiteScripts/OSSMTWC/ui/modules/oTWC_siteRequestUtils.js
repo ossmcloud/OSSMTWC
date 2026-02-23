@@ -8,6 +8,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function saveSiteSrf(userInfo, payload) {
             // @@NOTE: @@REVIEW: this routine could be generalised to be used with different record types, not only twcSite
 
+            // @@TODO: run validations on srf and srfItems records
+
             // @@TODO: error handling????
             var submitInfo = {};
             submitInfo[twcSrf.Type] = { id: payload.id, fields: [], values: [] };
@@ -38,10 +40,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             //
+            deleteSitesSrfItem(payload);
+
+            //
             saveSiteSrfItem(payload, twcSrfItem.StepType.TME);
             saveSiteSrfItem(payload, twcSrfItem.StepType.ATME);
             saveSiteSrfItem(payload, twcSrfItem.StepType.GIE);
-
 
             return payload.id;
 
@@ -54,13 +58,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var srfItem = twcSrfItem.get(item.id);
                 srfItem.sRF = payload.id;
                 srfItem.stepType = stepType;
+
                 for (var k in item) {
+                    if (k == 'name') { continue; }
+                    // @@IMPORTANT: field itemType is dependent on the stepType field
+                    //              when stepTypeField is set the itemType is reset since we set the step type above make sure we skip it from here
+                    if (k == 'custrecord_twc_srf_itm_stype') { continue; }
                     if (!srfItem.hasField(k)) { continue; }
                     srfItem.set(k, item[k])
                 }
+
                 srfItem.save();
             })
-
+        }
+        function deleteSitesSrfItem(payload) {
+            core.array.each(payload.items_deleted, item => {
+                recu.del(twcSrfItem.Type, item.id);
+            })
         }
 
         return {
@@ -80,8 +94,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var srf = {};
 
                 if (pageData.recId) {
-                    // @@TODO: this is an existing SRF
                     srf = coreSQL.first(`select * from ${twcSrf.Type} where id = ${pageData.recId}`);
+                    srf.siteId = srf[twcSrf.Fields.SITE];
 
                     // for (var k in twcSrfItem.StepType) {
                     //     srf[`items_${twcSrfItem.StepType[k]}`] = coreSQL.run(`

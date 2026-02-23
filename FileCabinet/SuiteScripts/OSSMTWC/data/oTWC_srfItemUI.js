@@ -59,6 +59,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getStepTableUIControl(srf, stepType) {
             var label = '';
             var fields = {
+                //[twcSrfItem.Fields.STEP_TYPE]: 'Step Type',
                 [twcSrfItem.Fields.REQUEST_TYPE]: 'Request Type',
                 [twcSrfItem.Fields.ITEM_TYPE]: 'Type',
                 [twcSrfItem.Fields.DESCRIPTION]: 'Description',

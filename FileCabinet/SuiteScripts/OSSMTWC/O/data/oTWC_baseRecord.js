@@ -77,6 +77,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return target;
         }
 
+        function parseDate(value) {
+            // @@NOTE: we assume: dd/MM/yyyy or yyyy-MM-dd
+            var d = null;
+            if (value.indexOf('-') >= 0) {
+                var dateParts = value.split('-');
+                d = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+            } else if (value.indexOf('/') >= 0) {
+                var dateParts = value.split('/');
+                d = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+            } else {
+                throw new Error(`Invalid date format: ${value}`)
+            }
+            // @@NOTE: the +12 hours is to handle US servers
+            // @@TODO: this won't really work if we have a date time
+            return d.addHours(12);
+        }
+
         class RecordBase {
             #id = null;
             #type = null;
@@ -115,12 +132,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             set(fieldName, value) {
-                this.validateFieldValue(fieldName, value);
+                if (fieldName == 'id') { return; }
+                value = this.validateFieldValue(fieldName, value);
                 this.r.set(fieldName, value);
                 this.#state = RECORD_STATE.DIRTY;
             }
             setText(fieldName, value) {
-                this.validateFieldValue(fieldName, value);
+                value = this.validateFieldValue(fieldName, value);
                 this.r.setText(fieldName, value);
                 this.#state = RECORD_STATE.DIRTY;
             }
@@ -135,10 +153,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             validateFieldValue(fieldName, value) {
+                if (fieldName == 'id') { return; }
                 if (fieldName == 'isinactive') { return; }
                 if (fieldName == 'name') {
                     value = value.substring(300);
-                    return;
+                    return value;
                 }
 
                 var field = null;
@@ -153,8 +172,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     value = value?.substring(0, 300);
                 } else if (field.type == FIELD_TYPE.TEXTAREA) {
                     value = value?.substring(0, 4000);
+                } else if (field.type == FIELD_TYPE.DATE || field.type == FIELD_TYPE.DATE_TIME) {
+                    if (value && value.constructor.name != 'Date') {
+                        if (value.constructor.name != 'String') { throw new Error(`Invalid value type, expected Date or String got ${value.constructor.name} : value: [${value}]`); }
+                        value = parseDate(value);
+
+                    }
+                } else if (field.type == FIELD_TYPE.BOOL) {
+                    if (value === 'T' || value === 'F') {
+                        value = (value === 'T');
+                    }
                 }
                 // @@TODO: validate other types
+
+                return value;
             }
 
             hasField(fieldName) {
