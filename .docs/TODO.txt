@@ -7,6 +7,7 @@ TODO-NEXT:
 ----------
     00. SRF Type => what is this??? we do not have oit in Radix
     01. Finalise the site info left panel: place all fields as per Radix system
+        inventory panel
     02. Finalise the site info page panels: add missing fields/panels
     03. Space Request: 
         implement file add/edit/delete
