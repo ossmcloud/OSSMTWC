@@ -169,8 +169,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 try {
                     if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER]) { throw new Error('You need to specify a customer'); }
 
-                    // @@TODO: dev only
-
+                    
                     if (!srfItem) { srfItem = {}; }
                     srfItem.custrecord_twc_srf_itm_stype = table.id.replace('customrecord_twc_srf_itm_', '');
                     if (srfItem.delete) {
@@ -184,7 +183,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         return;
                     }
 
-
+                    // @@TODO: dev only
                     if (!srfItem.id) { builtTestObjects(srfItem); }
 
                     var res = this.postSync({ action: 'child-record' }, { srf: this.data.siteRequestInfo, item: srfItem })
@@ -233,6 +232,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.wait();
 
                     if (!this.dirty) { throw new Error('The record has not changed'); }
+
+                    // @@TODO: if status is 'Draft' ask user if the request has to be submitted
 
                     var payload = this.data.siteRequestInfo;
                     var res = await this.post({ action: 'save' }, payload);

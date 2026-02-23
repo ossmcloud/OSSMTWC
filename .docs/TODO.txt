@@ -10,6 +10,9 @@ TODO-NEXT:
     02. Finalise the site info page panels: add missing fields/panels
     03. Space Request: 
         implement file add/edit/delete
+        add submit button if status is 'Draft' or 'FeedbackIssued'
+            NOTE: if status is FeedbackIssued then set to 'Resubmitted'
+        if status not 'Draft' or 'FeedbackIssued' then the user should no longer be able to edit the request
     03. Locator Panel => Access Request => the table should show site access requests (i.e.: work lite the space request page)
     04. implement functionalities:
             Space Request (SRF)
