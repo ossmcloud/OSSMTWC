@@ -18,7 +18,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             get ui() { return this.#page.ui; }
 
             initPanel() {
-                googleMap.get(jQuery('#twc-google-map-container'), this.#data).then(map => {
+
+                var siteInfos = [];
+                
+                var siteAccessInfo = JSON.parse(JSON.stringify(this.#data));
+                siteAccessInfo[twcSite.Fields.LATITUDE] = siteAccessInfo[twcSite.Fields.LATITUDE_ACCESS]
+                siteAccessInfo[twcSite.Fields.LONGITUDE] = siteAccessInfo[twcSite.Fields.LONGITUDE_ACCESS]
+                siteAccessInfo.site_level_color = 'magenta';
+                if (siteAccessInfo[twcSite.Fields.LATITUDE] && siteAccessInfo[twcSite.Fields.LONGITUDE]) {
+                    siteInfos.push(siteAccessInfo);
+                }
+                
+                siteInfos.push(this.#data);
+
+                googleMap.get(jQuery('#twc-google-map-container'), siteInfos, true).then(map => {
                     this.#map = map;
                 });
             }

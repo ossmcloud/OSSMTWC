@@ -51,7 +51,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EQUIPMENT_ID: { name: 'custrecord_twc_equip_id', type: 'text', alias: 'equipmentID', display: 'normal', mandatory: false },
             RADIX_EQUIPMENT_TABLE_ROW: { name: 'custrecord_twc_equip_radix_tbl_row', type: 'integer', alias: 'rADIXEquipmentTableRow', display: 'normal', mandatory: false },
             SITE: { name: 'custrecord_twc_equip_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site,' },
-            EQ_TYPE: { name: 'custrecord_twc_equip_type', type: 'select', alias: 'eqType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_stype,' },
+            EQ_TYPE: { name: 'custrecord_twc_equip_type', type: 'select', alias: 'eqType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_eqtype,' },
             INFRASTRUCTURE: { name: 'custrecord_twc_equip_str', type: 'select', alias: 'infrastructure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra,' },
             ACCOMMODATION: { name: 'custrecord_twc_equip_ac', type: 'select', alias: 'accommodation', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra,' },
             LOCATION: { name: 'custrecord_twc_equip_location', type: 'text', alias: 'location', display: 'normal', mandatory: false },

@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_utils.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_siteUI.js'],
-    (core, coreSQL, recu, twcSite, twcUtils, twcConfig, twcIcons, twcUI, twcSiteUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_utils.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_siteUI.js', '../../data/oTWC_infrastructure.js'],
+    (core, coreSQL, recu, twcSite, twcUtils, twcConfig, twcIcons, twcUI, twcSiteUI, twcInfra) => {
 
 
         function getSiteInfo(siteId) {
@@ -50,13 +50,46 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 params: [siteId]
             })
 
-
-
-
-
-
-
             var mainFields = twcSiteUI.getSiteMainInfoFields();
+
+            core.array.each(mainFields, mfg => {
+                core.array.each(mfg.fields, mf => {
+                    if (mf.childTable) {
+                        siteInfo[mf.id] = '';
+
+                        var url = core.url.record(mf.childTable.table)
+                        var fields = '';
+                        if (mf.childTable.fields) {
+                            core.array.each(mf.childTable.fields, mff => {
+                                fields += mff.isForeignKey ? `BUILTIN.DF(${mff.id}) as ${mff.id}, ` : `${mff.id}, `;
+                            })
+                        } else {
+                            fields = mf.childTable.isForeignKey ? `BUILTIN.DF(${mf.id}) as ${mf.id}` : `${mf.id}`;
+                        }
+
+                        coreSQL.each(`select id, ${fields} from ${mf.childTable.table} where ${mf.childTable.siteField} = ${siteId}`, childRecord => {
+                            var fieldValue = childRecord[mf.id];
+                            if (mf.childTable.mask) {
+                                fieldValue = mf.childTable.mask;
+                                core.array.each(mf.childTable.fields, mff => {
+                                    var value = childRecord[mff.id];
+                                    if (value === null || value === undefined) {
+                                        value = mff.nullText;
+                                    } else {
+                                        if (mff.mask) {
+                                            value = mff.mask.replaceAll(mff.id, value)
+                                        }
+                                    }
+                                    fieldValue = fieldValue.replaceAll(mff.id, value);
+                                });
+                            }
+                            siteInfo[mf.id] += `<a href="${url}&id=${childRecord.id}" target="_blank">${fieldValue}</a><br />`;
+                        })
+                    }
+                })
+            })
+
+
             return {
                 site: siteInfo,
                 mainFields: mainFields,
@@ -73,13 +106,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 `;
 
                 core.array.each(fieldGroup.fields, field => {
+                    var value = siteInfo.site[field.id];
+                    // @@NOTE: if we have same field name as _name then use it as the field.id would just get the internal id
+                    if (siteInfo.site[field.id + '_name'] !== undefined) { value = siteInfo.site[field.id + '_name'] }
+
                     fieldGroupHtml += `
                         <div>
                             <div style="width: 20%;">
                                 <label>${field.label}</label>
                             </div>
                             <div>
-                                ${siteInfo.site[field.id] || '---'}
+                                ${value || '---'}
                             </div>
                         </div>
                     `

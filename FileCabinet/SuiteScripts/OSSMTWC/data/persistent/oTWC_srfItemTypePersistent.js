@@ -7,11 +7,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordType = 'customrecord_twc_srf_itm_type';
         var _recordFields = {
             NAME: 'name',
-            STEP_TYPE: 'custrecord_twc_srf_itm_type_stype',
+            EQ_TYPE: 'custrecord_twc_srf_itm_type_eqtype',
         }
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
-            STEP_TYPE: { name: 'custrecord_twc_srf_itm_type_stype', type: 'select', alias: 'steptype', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_stype,' },
+            EQ_TYPE: { name: 'custrecord_twc_srf_itm_type_eqtype', type: 'select', alias: 'eqType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_eqtype,' },
         }
 
         class OSSMTWC_SRFItemType extends customRec.RecordBase {
@@ -24,12 +24,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set('name', value)
             }
             
-            get steptype() {
-                return this.get(_recordFields.STEP_TYPE);
-            } set steptype(value) {
-                this.set(_recordFields.STEP_TYPE, value)
+            get eqType() {
+                return this.get(_recordFields.EQ_TYPE);
+            } set eqType(value) {
+                this.set(_recordFields.EQ_TYPE, value)
             }
-            get steptypeName() { return this.getText(_recordFields.STEP_TYPE); }
+            get eqTypeName() { return this.getText(_recordFields.EQ_TYPE); }
             
         }
 

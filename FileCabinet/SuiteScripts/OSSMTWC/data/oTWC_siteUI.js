@@ -34,20 +34,26 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             overview.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Site Code' })
             overview.fields.push({ id: twcSite.Fields.SITE_NAME, label: 'Site Name' })
             overview.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type' })
-           
-            // @@TODO: Site Info :: Structure Type
-            //                   :: Structure Height
-            overview.fields.push({ id: twcInfra.Fields.STRUCTURE_TYPE, label: 'Structure' })  //new
-            overview.fields.push({ id: twcInfra.Fields.STRUCTURE_HEIGHT_M, label: 'Height (m)' })  //new
+            overview.fields.push({
+                id: twcInfra.Fields.STRUCTURE_TYPE,
+                childTable: {
+                    table: twcInfra.Type, siteField: twcInfra.Fields.SITE,
+                    fields: [
+                        { id: twcInfra.Fields.INFRASTRUCTURE_TYPE, isForeignKey: true, nullText: 'no type' },
+                        { id: twcInfra.Fields.STRUCTURE_TYPE, isForeignKey: true, nullText: 'no struct type' },
+                        { id: twcInfra.Fields.STRUCTURE_HEIGHT_M, nullText: '', mask: `<span style="color: var(--accent-fore-color);">(${twcInfra.Fields.STRUCTURE_HEIGHT_M}m)</span>`},
+                    ],
+                    mask: `[${twcInfra.Fields.INFRASTRUCTURE_TYPE}] <b>${twcInfra.Fields.STRUCTURE_TYPE}</b> ${twcInfra.Fields.STRUCTURE_HEIGHT_M}`
+                },
+                label: 'Structure'
+            })  
             overview.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL' })
-             
             mainInfoFieldGroups.push(overview);
 
             var location = { id: 'site-location', title: 'Location', fields: [] };
             location.fields.push({ id: twcSite.Fields.ADDRESS, label: 'Address' })
-            location.fields.push({ id: twcSite.Fields.COUNTY, label: 'County' })
-            // @@TODO: Site Info :: Region
-            location.fields.push({ id: twcSite.Fields.ADDRESS_REGION, label: 'Region' })  //new
+            location.fields.push({ id: twcSite.Fields.ADDRESS_COUNTY, label: 'County' })
+            location.fields.push({ id: twcSite.Fields.ADDRESS_REGION, label: 'Region' }) 
 
             location.fields.push({ id: twcSite.Fields.EASTING, label: 'Easting' })
             location.fields.push({ id: twcSite.Fields.NORTHING, label: 'Northing' })
@@ -69,70 +75,74 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getSitePanelFields_summary(dataSource) {
-            var fieldGroup = { id: 'site-summary', title: 'Summary', collapsed: true, controls: [] };
+            var fieldGroup = { id: 'site-summary', title: 'Summary', collapsed: false, controls: [] };
 
             var basicInfo = { id: 'site-summary-basic', title: 'Basic Information', fields: [] };
             fieldGroup.controls.push(basicInfo);
             basicInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Site Code' })
             basicInfo.fields.push({ id: twcSite.Fields.SITE_NAME, label: 'Site Name' })
             basicInfo.fields.push({ id: twcSite.Fields.ALIAS, label: 'Alias', lineBreak: true })
-            basicInfo.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type', lineBreak: true}) //added line break
+            basicInfo.fields.push({ id: twcSite.Fields.SITE_LEVEL, label: 'Site Level' })
+            basicInfo.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type' }) //added line break           
+            basicInfo.fields.push({ id: twcSite.Fields.PORTFOLIO, label: 'Portfolio', lineBreak: true    }) //new
+            basicInfo.fields.push({ id: twcSite.Fields.SAF_AUTO_APPROVE, label: 'SAF Auto Approve' }) //new
+            basicInfo.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL' }) //new
+            basicInfo.fields.push({ id: twcSite.Fields.PUBLIC, label: 'Public' }) 
 
-             basicInfo.fields.push({ id: twcInfra.Fields.STRUCTURE_TYPE, label: 'Structure Type' }) //new
-             basicInfo.fields.push({ id: twcInfra.Fields.STRUCTURE_HEIGHT_M, label: 'Height (m)' })  //new
-             basicInfo.fields.push({ id: twcInfra.Fields.ROOFTOP_HEIGHT_M, label: 'Height Rooftop', lineBreak: true }) //new
-             basicInfo.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL' }) //new
+            var structures = { id: 'site-summary-structure', title: 'Site Structures', fields: [] };  
+            fieldGroup.controls.push(structures);  
+            structures.fields.push({
+                id: `${twcInfra.Type}`, label: 'Site Infrastructures',
+                fields: {
+                    [twcInfra.Fields.INFRASTRUCTURE_ID]: 'Infra Id',
+                    [twcInfra.Fields.INFRASTRUCTURE_TYPE]: 'Type',
+                    [twcInfra.Fields.STATUS]: 'Status',
+                    [twcInfra.Fields.INFRASTRUCTURE_OWNERSHIP]: 'Ownership',
+                    [twcInfra.Fields.STRUCTURE_TYPE]: 'Struct. Type',
+                    [twcInfra.Fields.TOWER_FAMILY]: 'Family',
+                    [twcInfra.Fields.STRUCTURE_HEIGHT_M]: 'Height (m)',
+                    [twcInfra.Fields.ROOFTOP_HEIGHT_M]: 'Height Rooftop',
 
-            // basicInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'TC Building/Cabin' }) //new
-           // basicInfo.fields.push({ id: twcSite.Fields.SITE_NAME, label: 'Indoor Accommodation' }) //new
-
-             basicInfo.fields.push({ id: twcSite.Fields.SITE_LEVEL, label: 'Site Level', lineBreak: true }) //new
-             basicInfo.fields.push({ id: twcSite.Fields.PORTFOLIO, label: 'Portfolio' }) //new
-             basicInfo.fields.push({ id: twcSite.Fields.SAF_AUTO_APPROVE, label: 'SAF Auto Approve' }) //new
-            // basicInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Public' }) //new
-           
-
-            var structures = { id: 'site-summary-structure', title: 'Structure', fields: [] };  //new
-            fieldGroup.controls.push(structures);  //new
-            structures.fields.push({ id: twcInfra.Fields.STRUCTURE_TYPE, label: 'Structure Type', width: '75%', lineBreak: true })  //new
-            structures.fields.push({ id: twcInfra.Fields.STRUCTURE_HEIGHT_M, label: 'Height (m)', lineBreak: true })  //new
-            structures.fields.push({ id:  twcInfra.Fields.ROOFTOP_HEIGHT_M, label: 'Height Rooftop' })  //new
-            structures.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL', lineBreak: true })  //new
-           // structures.fields.push({ id: twcSite.Fields.LATITUDE, label: 'Fall Arrest' })
+                },
+                where: { [twcInfra.Fields.SITE]: dataSource.id },
+                FieldsInfo: twcInfra.FieldsInfo,
+            });
 
 
 
             var locations = { id: 'site-summary-location', title: 'Location', fields: [] };
             fieldGroup.controls.push(locations);
             locations.fields.push({ id: twcSite.Fields.ADDRESS, label: 'Address', width: '75%', lineBreak: true })
-            locations.fields.push({ id: twcSite.Fields.ADDRESS_COUNTY, label: 'County', lineBreak: true })
-            locations.fields.push({ id: twcSite.Fields.ADDRESS_REGION, label: 'Region' }) //new
-            locations.fields.push({ id: twcSite.Fields.EASTING, label: 'Easting' })
-            locations.fields.push({ id: twcSite.Fields.NORTHING, label: 'Northing', lineBreak: true })
+            locations.fields.push({ id: twcSite.Fields.ADDRESS_COUNTY, label: 'County' })
+            locations.fields.push({ id: twcSite.Fields.ADDRESS_REGION, label: 'Region', lineBreak: true })
             locations.fields.push({ id: twcSite.Fields.LATITUDE, label: 'Latitude' })
             locations.fields.push({ id: twcSite.Fields.LONGITUDE, label: 'Longitude' })
+            locations.fields.push({ id: twcSite.Fields.EASTING, label: 'Easting' })
+            locations.fields.push({ id: twcSite.Fields.NORTHING, label: 'Northing' })
+
             // @@TODO: this is just a sample, remove later
             locations.fields.push({ id: 'site-directions', type: twcUI.CTRL_TYPE.BUTTON, label: '', value: 'Directions', lineBreak: true })
 
             var locations = { id: 'site-summary-access', title: 'Access Track / Safety Info', fields: [] };
             fieldGroup.controls.push(locations);
             locations.fields.push({ id: twcSite.Fields.TRACK_TYPE, label: 'Track Type' })  //New
+            locations.fields.push({ id: twcSite.Fields.LATITUDE_ACCESS, label: 'Latitude' })
+            locations.fields.push({ id: twcSite.Fields.LONGITUDE_ACCESS, label: 'Longitude' })
             locations.fields.push({ id: twcSite.Fields.EASTING_ACCESS, label: 'Easting' })
             locations.fields.push({ id: twcSite.Fields.NORTHING_ACCESS, label: 'Northing', lineBreak: true })
-            locations.fields.push({ id: twcSite.Fields.LATITUDE_ACCESS, label: 'Latitude' })
-            locations.fields.push({ id: twcSite.Fields.LONGITUDE_ACCESS, label: 'Longitude', lineBreak: true })
+
             locations.fields.push({ id: twcSite.Fields.DIRECTIONS, label: 'Directions', width: '75%', rows: 5, lineBreak: true })
             locations.fields.push({ id: twcSite.Fields.INSTRUCTIONS, label: 'Instructions', width: '75%', rows: 5, lineBreak: true })
 
-              locations.fields.push({ id: twcSite.Fields.TENANT_CARD_REQUIRED, label: 'Tenant Card Required' })  //New
+            locations.fields.push({ id: twcSite.Fields.TENANT_CARD_REQUIRED, label: 'Tenant Card Required', labelNoWrap: false })  //New
             //locations.fields.push({ id: twcSite.Fields.LONGITUDE_ACCESS, label: 'Dual Lock Installed', lineBreak: true })  //New
-             locations.fields.push({ id: twcSite.Fields.FOURX4_REQUIRED, label: '4x4 Required', lineBreak: true })  //New
-             locations.fields.push({ id: twcSite.Fields.PARKING_RESTRICTIONS, label: 'Parking Restrictions', width: '50%', lineBreak: true })  //New
+            locations.fields.push({ id: twcSite.Fields.FOURX4_REQUIRED, label: '4x4 Required', labelNoWrap: false, lineBreak: true })  //New
+            locations.fields.push({ id: twcSite.Fields.PARKING_RESTRICTIONS, label: 'Parking Restrictions', width: '50%', lineBreak: true })  //New
             locations.fields.push({ id: twcSite.Fields.CRANEMEWP_ACCESS, label: 'Crane/Mewp Access', lineBreak: true })  //New
-            locations.fields.push({ id: twcInfra.Fields.FALL_ARREST_TYPE, label: 'Fall Arrest Type',  lineBreak: true })  //New
-             locations.fields.push({ id: twcSite.Fields.SAFETY__SPECIAL_NOTES, label: 'Safety / Special Notes',width: '50%',  lineBreak: true })  //New
+            locations.fields.push({ id: twcInfra.Fields.FALL_ARREST_TYPE, label: 'Fall Arrest Type', lineBreak: true })  //New
+            locations.fields.push({ id: twcSite.Fields.SAFETY__SPECIAL_NOTES, label: 'Safety / Special Notes', width: '50%', lineBreak: true })  //New
 
-           
+
             configUIFields.formatPanelFields(dataSource, fieldGroup);
 
             return fieldGroup;
@@ -144,24 +154,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var basicInfo = { id: 'site-estates-title', title: 'Title', fields: [] };
             fieldGroup.controls.push(basicInfo);
 
-            // @@TODO: this is just for test
-            basicInfo.fields.push({ id: `${twcSite.Fields.SITE_LEVEL}.${twcSiteLevel.Fields.NAME}`, label: 'Site Level' })
-            basicInfo.fields.push({ id: twcSite.Fields.SITE_LEVEL, label: 'Site Level (2)' })
-
-            basicInfo.fields.push({
-                id: `${twcInfra.Type}`, label: 'Site Infrastructure',
-                fields: {
-                    [twcInfra.Fields.INFRASTRUCTURE_ID]: 'Infra Id',
-                    [twcInfra.Fields.INFRASTRUCTURE_TYPE]: 'Type',
-                    [twcInfra.Fields.STATUS]: 'Status',
-                    [twcInfra.Fields.INFRASTRUCTURE_OWNERSHIP]: 'Ownership',
-                    [twcInfra.Fields.STRUCTURE_TYPE]: 'Struct. Type',
-                    [twcInfra.Fields.TOWER_FAMILY]: 'Family',
-                },
-                where: { [twcInfra.Fields.SITE]: dataSource.id },
-                FieldsInfo: twcInfra.FieldsInfo,
-            })
-
+          
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
 

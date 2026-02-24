@@ -11,14 +11,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #map = null;
             #mapContainer = null;
             #infoWindow = null;
-            constructor(mapContainer, data) {
+            #singleSiteMap = false;
+            constructor(mapContainer, data, singleSiteMap) {
                 this.#mapContainer = mapContainer;
+                this.#singleSiteMap = singleSiteMap;
                 if (data !== undefined) {
-                    this.initMap(data);
+                    this.initMap(data, singleSiteMap);
                 }
             }
 
-            initMap(data) {
+            initMap(data, singleSiteMap) {
                 var mapHeight = this.#mapContainer.height();
                 if (!mapHeight) { mapHeight = this.#mapContainer.parent().height(); }
                 this.#map = jQuery(`<div id="twc-google-map"></div>`)
@@ -30,6 +32,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         </span>
                     </div>
                 `);
+                
                 this.refreshMap(core.utils.toArray(data) || []);
             }
 
@@ -59,7 +62,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (searchByCoordInfo) {
                     if (data.length == 0) { mapOptions.center = searchByCoordInfo.center; }
                 } else {
-                    if (data.length == 1) {
+                    if (data.length == 1 || this.#singleSiteMap) {
                         if (this.getDataCoordinates(data[0])) { mapOptions.center = data[0].coord; }
                     }
                 }
@@ -137,7 +140,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     markers.push(marker);
                 }
 
-                if (data.length > 1 || searchByCoordInfo) {
+                if ((data.length > 1 || searchByCoordInfo) && !this.#singleSiteMap) {
                     var bounds = new google.maps.LatLngBounds();
                     if (searchByCoordInfo) {
                         bounds.extend(new window.google.maps.LatLng(searchByCoordInfo.center.lat - (searchByCoordInfo.radius * _radToKmUnit), searchByCoordInfo.center.lng - (searchByCoordInfo.radius * _radToKmUnit)));
@@ -172,10 +175,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         return {
             RadToKmUnit: _radToKmUnit,
-            get: (mapContainer, data) => {
+            get: (mapContainer, data, singleSiteMap) => {
                 return new Promise(function (resolve, reject) {
                     try {
-                        resolve(new GoogleMap(mapContainer, data));
+                        resolve(new GoogleMap(mapContainer, data, singleSiteMap));
                     } catch (error) {
                         reject(error);
                     }
