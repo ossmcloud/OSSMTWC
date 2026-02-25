@@ -6,8 +6,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
     (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItem, twcSrfItemType, twcFile, twcEquipment) => {
 
         function getUIFields(srf, srfItem) {
-            
-
             var fieldGroup = { id: 'srf-item', title: 'Main', collapsed: false, controls: [] };
 
             var basicInfo = { id: 'srf-item-info', title: 'Basic Info', fields: [] };
@@ -102,9 +100,17 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return {
                 id: `${twcFile.Type}`, label: 'Step 4 of 5: Drawings/GAD & Documents',
                 fields: {
-                    [twcFile.Fields.NAME]: 'Name',
+                    [twcFile.Fields.NAME]: {
+                        title: 'Name',
+                        link: {
+                            url: 'onclick="twc.page.previewFile(${id})"',
+                            valueField: 'id',
+                            target: '_self'
+                        }
+                    },
                     [twcFile.Fields.DESCRIPTION]: 'Description',
-                    [twcFile.Fields.STATUS]: 'Status',
+                    [twcFile.Fields.REVISION]: 'Revision',
+
                 },
                 where: {
                     [twcFile.Fields.RECORD_TYPE]: twcSrf.Type,
@@ -118,6 +124,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
         return {
+            RecordType: twcSrfItem.Type,
             StepType: twcSrfItem.StepType,
             getStepTableUIControl: getStepTableUIControl,
             getFileTableUIControl: getFileTableUIControl,

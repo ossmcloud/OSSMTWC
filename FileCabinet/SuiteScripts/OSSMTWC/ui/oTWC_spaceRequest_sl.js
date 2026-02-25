@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js'],
-    function (core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUIPanel, twcConfig) {
+define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js'],
+    function (nsFile, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUIPanel, twcConfig) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -15,7 +15,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var html = '';
             if (context.request.parameters.siteId || context.request.parameters.recId) {
                 pageData.siteRequestInfo = twcSiteRequestUtils.getSiteRequestInfo(pageData);
-                pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteRequestInfo.siteId);
+                pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteRequestInfo.siteId || context.request.parameters.siteId);
 
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_spaceRequest');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
@@ -49,8 +49,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return fields;
             } else if (context.request.parameters.action == 'save') {
                 var payload = JSON.parse(context.request.body);
-                
                 return { id: twcSiteRequestUtils.saveSiteSrf(userInfo, payload) };
+            } else if (context.request.parameters.action == 'get-file') {
+                var srfFle = twcSiteRequestUtils.getFile(JSON.parse(context.request.body).file);
+                if (!srfFle) { throw new Error(`TWC File record not found [${JSON.parse(context.request.body).file}]`); }
+                var file = nsFile.load(srfFle.file_id);
+                return { fileContent: file.getContents(), name: file.name, type: file.fileType }
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);
             }

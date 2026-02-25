@@ -180,6 +180,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SrfRequestType: SRF_ITEM_REQUEST_TYPE,
             SrfStatus: SRF_STATUS,
 
+            ROOT_FILE_FOLDER: 'TWC Files',
             
             getFields: getCustomTableFields,
 

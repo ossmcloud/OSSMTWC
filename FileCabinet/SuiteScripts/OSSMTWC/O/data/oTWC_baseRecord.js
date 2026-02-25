@@ -121,7 +121,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             load(id) {
                 if (!id) { id = this.#id; }
                 this.#r = (id) ? recu.load(this.type, id, this.static) : recu.new(this.type, this.static);
-                this.#state = (id) ? RECORD_STATE.NEW : this.#state = RECORD_STATE.UNCHANGED;
+                this.#state = (id) ? RECORD_STATE.UNCHANGED : RECORD_STATE.NEW;
             }
 
             get(fieldName) {
@@ -132,15 +132,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             set(fieldName, value) {
-                if (fieldName == 'id') { return; }
-                value = this.validateFieldValue(fieldName, value);
-                this.r.set(fieldName, value);
-                this.#state = RECORD_STATE.DIRTY;
+                try {
+                    if (fieldName == 'id') { return; }
+                    value = this.validateFieldValue(fieldName, value);
+                    this.r.set(fieldName, value);
+                    this.#state = RECORD_STATE.DIRTY;
+                } catch (error) {
+                    throw new Error(`${fieldName} [${value}]: ${error.message}`);
+                }
             }
             setText(fieldName, value) {
-                value = this.validateFieldValue(fieldName, value);
-                this.r.setText(fieldName, value);
-                this.#state = RECORD_STATE.DIRTY;
+                try {
+                    value = this.validateFieldValue(fieldName, value);
+                    this.r.setText(fieldName, value);
+                    this.#state = RECORD_STATE.DIRTY;
+                } catch (error) {
+                    throw new Error(`${fieldName}: ${error.message}`);
+                }
             }
 
             copyFromObject(obj) {
@@ -156,7 +164,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (fieldName == 'id') { return; }
                 if (fieldName == 'isinactive') { return; }
                 if (fieldName == 'name') {
-                    value = value.substring(300);
+                    value = value.substring(0, 300);
                     return value;
                 }
 
@@ -249,7 +257,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             */
 
             select(options) {
-                var sql = `select  id, name, \n`;
+                var sql = `select  id, \n`;
 
                 var selectFormat = (field, alias) => {
                     var fieldAlias = alias || field.alias;
@@ -269,7 +277,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     return sql;
                 }
 
-                if (!options?.minimal) {
+                if (options?.minimal) {
+                    sql += `name, \n`;
+                } else {
 
                     if (options?.fields) {
 

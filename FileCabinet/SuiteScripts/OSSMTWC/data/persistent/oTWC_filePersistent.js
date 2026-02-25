@@ -10,7 +10,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             RECORD_TYPE: 'custrecord_twc_file_rectype',
             RECORD_ID: 'custrecord_twc_file_recid',
             DESCRIPTION: 'custrecord_twc_file_description',
-            STATUS: 'custrecord_twc_file_status',
+            REVISION: 'custrecord_twc_file_revision',
             FILE: 'custrecord_twc_file_doc',
         }
         var _recordFieldInfo = {
@@ -18,7 +18,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             RECORD_TYPE: { name: 'custrecord_twc_file_rectype', type: 'text', alias: 'recordType', display: 'normal', mandatory: false },
             RECORD_ID: { name: 'custrecord_twc_file_recid', type: 'integer', alias: 'recordID', display: 'normal', mandatory: false },
             DESCRIPTION: { name: 'custrecord_twc_file_description', type: 'text', alias: 'description', display: 'normal', mandatory: false },
-            STATUS: { name: 'custrecord_twc_file_status', type: 'text', alias: 'status', display: 'normal', mandatory: false },
+            REVISION: { name: 'custrecord_twc_file_revision', type: 'integer', alias: 'status', display: 'normal', mandatory: false },
             FILE: { name: 'custrecord_twc_file_doc', type: 'document', alias: 'file', display: 'normal', mandatory: false },
         }
 
@@ -50,10 +50,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.DESCRIPTION, value)
             }
             
-            get status() {
-                return this.get(_recordFields.STATUS);
-            } set status(value) {
-                this.set(_recordFields.STATUS, value)
+            get revision() {
+                return this.get(_recordFields.REVISION);
+            } set revision(value) {
+                this.set(_recordFields.REVISION, value)
             }
             
             get file() {

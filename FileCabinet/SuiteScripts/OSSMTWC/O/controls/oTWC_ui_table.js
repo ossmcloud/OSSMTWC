@@ -457,14 +457,18 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 }
 
-                if (this.options.link) {
+                if (this.options.link && this.options.link.url) {
                     var url = '';
                     if (this.options.link.url.indexOf('${value}') > 0) {
                         url = this.options.link.url.replace('${value}', value);
                     } else {
                         url = this.options.link.url.replace('${' + this.options.link.valueField + '}', data[this.options.link.valueField]);
                     }
-                    formattedValue = `<a class="o-table-link" href="${url}" target="${this.options.link.target || '_blank'}">${formattedValue}</a>`;
+                    if (url.startsWith('onclick')) {
+                        formattedValue = `<a class="o-table-link" ${url} href="#" target="${this.options.link.target || '_blank'}">${formattedValue}</a>`;   
+                    } else {
+                        formattedValue = `<a class="o-table-link" href="${url}" target="${this.options.link.target || '_blank'}">${formattedValue}</a>`;
+                    }
                 }
 
                 return `<div style="${this.baseStyles('cell')}">${formattedValue}</div>`;
@@ -675,7 +679,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     this.#unboundCols = [
                         {
                             id: 'action_edit_delete', title: '', unbound: true,
-                            styles: { 'text-align': 'center', 'min-width': '34px', 'max-width': '50px' },
+                            styles: { 'text-align': 'center', 'min-width': '34px', 'max-width': '75px', 'width': '75px' },
                             sticky: { left: '-1px' },
                             noResize: true, noSort: true, after: true,
                             initValue: (d) => {

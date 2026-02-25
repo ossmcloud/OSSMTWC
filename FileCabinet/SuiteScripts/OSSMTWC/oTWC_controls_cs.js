@@ -3,8 +3,8 @@
  *@NScriptType ClientScript
  *@NModuleScope public
  */
-define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_infrastructure.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js'],
-    function (core, coreSQL, dialog, recu, twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields, siteInfoUtils, twcInfra, twcSrfUI, twcEquipment) {
+define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_srf.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js', './O/oTWC_nsFileUtils.js'],
+    function (core, coreSQL, dialog, recu, twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields, siteInfoUtils, twcSrf, twcSrfUI, twcEquipment, nsFileUtils) {
 
         function pageInit(context) {
             console.log('debug -------------> ' + core.env.live())
@@ -39,26 +39,38 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             deleteAllSrf: deleteAllSrf,
             testFunction() {
                 try {
-                    var testData = {
-                        type: 'customrecord_twc_srf_itm',
-                        "custrecord_twc_srf_itm_req_type": "1",
-                        "custrecord_twc_srf_itm_equip_id": "",
-                        "custrecord_twc_srf_itm_type": "1",
-                        "custrecord_twc_srf_itm_desc": "Test Dish Install",
-                        "custrecord_twc_srf_itm_loc": "1",
-                        "custrecord_twc_srf_itm_length_mm": "60",
-                        "custrecord_twc_srf_itm_width_mm": "60",
-                        "custrecord_twc_srf_itm_depth_mm": "60",
-                        "custrecord_twc_srf_itm_ht_on_twr": "5",
-                        "custrecord_twc_srf_itm_weight_kg": "1",
-                        "custrecord_twc_srf_itm_volt_type": "1",
-                        "custrecord_twc_srf_itm_volt_range": "1",
-                        "custrecord_twc_srf_itm_azimuth": "0",
-                        "custrecord_twc_srf_itm_b_end": "0",
-                        "custrecord_twc_srf_itm_cust_ref": "XXX",
-                        "custrecord_twc_srf_itm_invent_flag": "18"
-                    }
-                    console.log(twcSrfUI.getSrfChildRecord({}, testData))
+
+
+                    console.log(coreSQL.first(`
+                        select  s.name, site.${twcSite.Fields.SITE_ID} as site_id
+                        from    ${twcSrf.Type} s
+                        join    ${twcSite.Type} site on site.id = s.${twcSrf.Fields.SITE}
+                        where   s.id = 13
+                        
+                    `));
+
+                    console.log(recu.lookUp(twcSrf.Type, 13, ['name', twcSrf.Fields.SITE]));
+
+                    // var testData = {
+                    //     type: 'customrecord_twc_srf_itm',
+                    //     "custrecord_twc_srf_itm_req_type": "1",
+                    //     "custrecord_twc_srf_itm_equip_id": "",
+                    //     "custrecord_twc_srf_itm_type": "1",
+                    //     "custrecord_twc_srf_itm_desc": "Test Dish Install",
+                    //     "custrecord_twc_srf_itm_loc": "1",
+                    //     "custrecord_twc_srf_itm_length_mm": "60",
+                    //     "custrecord_twc_srf_itm_width_mm": "60",
+                    //     "custrecord_twc_srf_itm_depth_mm": "60",
+                    //     "custrecord_twc_srf_itm_ht_on_twr": "5",
+                    //     "custrecord_twc_srf_itm_weight_kg": "1",
+                    //     "custrecord_twc_srf_itm_volt_type": "1",
+                    //     "custrecord_twc_srf_itm_volt_range": "1",
+                    //     "custrecord_twc_srf_itm_azimuth": "0",
+                    //     "custrecord_twc_srf_itm_b_end": "0",
+                    //     "custrecord_twc_srf_itm_cust_ref": "XXX",
+                    //     "custrecord_twc_srf_itm_invent_flag": "18"
+                    // }
+                    // console.log(twcSrfUI.getSrfChildRecord({}, testData))
                     // var options = { fields: { id: 'value' } };
                     // options.fields[twcEquipment.Fields.EQUIPMENT_ID] = 'text';
 

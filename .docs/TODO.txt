@@ -1,5 +1,7 @@
 TODO:
 -----
+    00. new SRF => big files will cause the UI to take time to save
+        srf => preview file not work for csv
 
     
 

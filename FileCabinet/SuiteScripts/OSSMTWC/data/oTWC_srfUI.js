@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItemUI.js', './oTWC_configUIFields.js'],
-    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItemUI, configUIFields) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItemUI.js', './oTWC_fileUI.js', './oTWC_configUIFields.js'],
+    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItemUI, twcFileUI, configUIFields) => {
 
         function getSrfTableFields() {
             // @@TODO: this list of fields to display can be set by user
@@ -70,10 +70,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroup;
         }
 
-        function getSRFWorkFlowPanels(dataSource, userInfo) {
-
-        }
-
+      
 
         function getSRFUIPanels(dataSource, userInfo) {
             if (!dataSource) { dataSource = {}; }
@@ -93,10 +90,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getSrfChildRecord(srf, childRecord) {
-            var fieldGroup = twcSrfItemUI.getUIFields(srf, childRecord);
+            var fieldGroup = [];
+            if (childRecord.type == twcSrfItemUI.RecordType) {
+                fieldGroup = twcSrfItemUI.getUIFields(srf, childRecord);
+            } else if (childRecord.type == twcFileUI.RecordType) {
+                fieldGroup = twcFileUI.getUIFields(srf, childRecord);
+            } else {
+                throw new Error(`No Child Record Found in payload (type: ${childRecord.type})`)
+            }
             configUIFields.formatPanelFields(childRecord, fieldGroup);
             return fieldGroup;
         }
+
+
+       
 
         return {
             getSrfTableFields: getSrfTableFields,

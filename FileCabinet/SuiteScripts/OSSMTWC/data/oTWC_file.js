@@ -11,6 +11,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             constructor(id, staticLoad) {
                 super(id, staticLoad);
             }
+
+            get fileName() {
+                return this.getText(twcFile.Fields.FILE)
+            }
+
         }
 
 
@@ -21,6 +26,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             get: function (id) {
                 var rec = new OSSMTWC_File(id);
                 rec.load();
+                if (rec.state == 'new') { rec.revision = 1; }
                 return rec;
             },
 

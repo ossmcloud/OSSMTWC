@@ -62,7 +62,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             setDataSource(dataSource) {
                 if (this.#options.type != ctrlBase.CTRL_TYPE.SELECT) { return; }
                 this.#options.dataSource = dataSource;
-                
+
                 this.#ui.find('data').html(JSON.stringify(this.#options));
 
                 var htmlInput = '';
@@ -211,6 +211,22 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     }
                 }
             }
+
+            async readFileAsync() {
+                return new Promise(function (resolve, reject) {
+                    this.readFile(resolve);
+                })
+            }
+
+            readFile(callBack) {
+                var reader = new FileReader();
+                reader.onload = (e) => {
+                    var fileInfo = reader.result.split(',');
+                    callBack({ name: this.#input[0].files[0].name, type: fileInfo[0].split(/[\:;]+/)[1], content: fileInfo[1] });
+                }
+                reader.readAsDataURL(this.#input[0].files[0]);
+            }
+
 
         }
 

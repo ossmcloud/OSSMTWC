@@ -34,7 +34,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 o.fields[twcSrfItemType.Fields.NAME] = 'text';
 
                 o.where = {};
-                o.where[twcSrfItemType.Fields.STEP_TYPE] = stepType || 0;
+                o.where[twcSrfItemType.Fields.EQ_TYPE] = stepType || 0;
 
                 o.orderBy = [twcSrfItemType.Fields.NAME];
 

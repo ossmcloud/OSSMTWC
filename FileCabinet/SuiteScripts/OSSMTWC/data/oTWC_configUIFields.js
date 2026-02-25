@@ -66,11 +66,22 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     var columns = [];
                     for (var k in field.fields) {
                         var f = getDataFieldInfo(field, k);
+
+                        var title = field.fields[k]; var link = undefined;
+                        if (title.title) {
+                            link = title.link || null;
+                            title = title.title;
+                            
+                        }
+
+                        
+
                         if (f) {
-                            columns.push({ id: f.name.toLowerCase(), title: field.fields[k] })
-                            if (f.type == 'select') { columns.push({ id: f.name.toLowerCase() + '_name', title: field.fields[k] }); }
+                            
+                            columns.push({ id: f.name.toLowerCase(), title: title, link: link })
+                            if (f.type == 'select') { columns.push({ id: f.name.toLowerCase() + '_name', title: title, link: link }); }
                         } else {
-                            columns.push({ id: k.toLowerCase(), title: field.fields[k] })
+                            columns.push({ id: k.toLowerCase(), title: title, link: link })
                         }
                     }
 
@@ -100,8 +111,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 var fieldId = field.id; var dataField = null; var dataFields = null;
 
-
-
                 if (field.id.indexOf('.') < 0) {
                     dataFields = getFieldDefinitions(dataSource.Type);
 
@@ -119,7 +128,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 dataField = dataFields.find(sf => { return sf.field_id == fieldId });
                 // @@TODO: what ????
-                if (!dataField) { return; }
+                if (!dataField) {
+                    
+                    if (dataSource[fieldId] === undefined) { return; }
+
+                    dataField = { field_type: 'text' };
+                }
 
                 // @@NOTE: if we have the name of a foreign table we would have retrieved it using BUILTIN.DF and just appended _name to the field id
                 //         so the data-source would have the value as dataSource.[fkFieldName]_name
@@ -127,7 +141,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
                 var control = {
-                    type: twcUI.nsTypeToCtrlType(dataField.field_type),
+                    type: field.type || twcUI.nsTypeToCtrlType(dataField.field_type),
                     value: dataSource[fieldId],
                     id: field.id.replaceAll('.', '___') // @@IMPORTANT: the 3 underscore are needed to be compatible with jQuery and we use split('___') to get to the field path again, so do not change or if we do change the split('___') too
                 };

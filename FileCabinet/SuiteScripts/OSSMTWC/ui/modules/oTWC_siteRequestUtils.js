@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js'],
-    (core, coreSQL, recu, twcSrf, twcSrfItem, twcSrfUI, twcConfig, twcIcons, twcUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_utils.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js'],
+    (core, coreSQL, recu, twcUtils, twcSite, twcSrf, twcSrfItem, twcSrfUI, twcFile, nsFileUtils) => {
 
         function saveSiteSrf(userInfo, payload) {
             // @@NOTE: @@REVIEW: this routine could be generalised to be used with different record types, not only twcSite
@@ -41,11 +41,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             //
             deleteSitesSrfItem(payload);
+            deleteSitesSrfFile(payload);
 
             //
             saveSiteSrfItem(payload, twcSrfItem.StepType.TME);
             saveSiteSrfItem(payload, twcSrfItem.StepType.ATME);
             saveSiteSrfItem(payload, twcSrfItem.StepType.GIE);
+            saveSiteSrfFile(payload);
 
             return payload.id;
 
@@ -58,7 +60,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var srfItem = twcSrfItem.get(item.id);
                 srfItem.sRF = payload.id;
                 srfItem.stepType = stepType;
-
                 for (var k in item) {
                     if (k == 'name') { continue; }
                     // @@IMPORTANT: field itemType is dependent on the stepType field
@@ -67,13 +68,57 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (!srfItem.hasField(k)) { continue; }
                     srfItem.set(k, item[k])
                 }
-
                 srfItem.save();
             })
         }
         function deleteSitesSrfItem(payload) {
+            if (!payload.items_deleted) { return; }
             core.array.each(payload.items_deleted, item => {
                 recu.del(twcSrfItem.Type, item.id);
+            })
+        }
+
+        function saveSiteSrfFile(payload) {
+            if (!payload.files) { return; }
+
+            var srfInfo = coreSQL.first(`
+                select  s.name, site.${twcSite.Fields.SITE_ID} as site_id
+                from    ${twcSrf.Type} s
+                join    ${twcSite.Type} site on site.id = s.${twcSrf.Fields.SITE}
+                where   s.id = ${payload.id}
+            `)
+
+            var srfFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${srfInfo.site_id}/${srfInfo.name}`);
+
+            core.array.each(payload.files, file => {
+                if (!file.dirty) { return; }
+
+                var srfFile = twcFile.get(file.id);
+                srfFile.recordType = twcSrf.Type;
+                srfFile.recordID = payload.id;
+                for (var k in file) {
+                    if (k == 'fileObject') { continue; }
+                    if (!srfFile.hasField(k)) { continue; }
+                    srfFile.set(k, file[k])
+                }
+                srfFile.save();
+
+                var nsFile = nsFileUtils.writeFile({
+                    name: `${srfFile.id}_${file.fileObject.name}`,
+                    fileType: nsFileUtils.getFileType(file.fileObject.type),
+                    content: file.fileObject.content,
+                    folder: srfFolder,
+                });
+                recu.submit(twcFile.Type, srfFile.id, twcFile.Fields.FILE, nsFile.fileId);
+
+            })
+        }
+        function deleteSitesSrfFile(payload) {
+            if (!payload.files_deleted) { return; }
+            core.array.each(payload.files_deleted, file => {
+                // @@TODO: delete actual file
+
+                recu.del(twcFile.Type, file.id);
             })
         }
 
@@ -83,38 +128,39 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSrfChildRecord: (options) => {
                 var srf = twcSrf.get(options.srf.id);
                 srf.copyFromObject(options.srf);
+                var childRecord = null;
+                if (options.item) {
+                    childRecord = twcSrfItem.get(options.item.id);
+                } else if (options.file) {
+                    childRecord = twcFile.get(options.file.id);
 
-                var childRecord = twcSrfItem.get(options.item.id);
+                } else {
+                    throw new Error(`No Child Record Found in payload`)
+                }
+
                 childRecord.copyFromObject(options.item);
                 return twcSrfUI.getSrfChildRecord(srf, childRecord);
             },
 
             getSiteRequestInfo: (pageData) => {
-
                 var srf = {};
-
                 if (pageData.recId) {
                     srf = coreSQL.first(`select * from ${twcSrf.Type} where id = ${pageData.recId}`);
                     srf.siteId = srf[twcSrf.Fields.SITE];
-
-                    // for (var k in twcSrfItem.StepType) {
-                    //     srf[`items_${twcSrfItem.StepType[k]}`] = coreSQL.run(`
-                    //         select  *
-                    //         from    ${twcSrfItem.Type}
-                    //         where   ${twcSrfItem.Fields.SRF} = ${srf.id}
-                    //         and     ${twcSrfItem.Fields.STEP_TYPE} = ${twcSrfItem.StepType[k]}
-                    //         order by created
-                    //     `)
-                    // }
-
                 } else {
                     // this is a new SRF, if the logged in user is a customer then set the customer field
                     if (pageData.userInfo.isCustomer) { srf[twcSrf.Fields.CUSTOMER] = pageData.userInfo.id; }
                     srf[twcSrf.Fields.SITE] = pageData.siteId;
-
-
                 }
                 return srf;
+            },
+
+            getFile: (id) => {
+                return coreSQL.first(`  
+                    select id, ${twcFile.Fields.NAME}, ${twcFile.Fields.FILE} as file_id
+                    from   ${twcFile.Type}
+                    where   id = ${id}
+                `)
             },
 
             saveSiteSrf: saveSiteSrf
