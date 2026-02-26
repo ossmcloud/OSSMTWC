@@ -36,8 +36,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function formatPanelFields(dataSource, panelFields) {
-
-
             if (!dataSource.Type) {
                 if (dataSource.type) {
                     dataSource.Type = dataSource.type
@@ -74,18 +72,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             
                         }
 
-                        
-
                         if (f) {
-                            
                             columns.push({ id: f.name.toLowerCase(), title: title, link: link })
                             if (f.type == 'select') { columns.push({ id: f.name.toLowerCase() + '_name', title: title, link: link }); }
                         } else {
                             columns.push({ id: k.toLowerCase(), title: title, link: link })
                         }
                     }
-
-                    //throw new Error(JSON.stringify(columns))
 
                     var control = {
                         label: field.label,
@@ -129,16 +122,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 dataField = dataFields.find(sf => { return sf.field_id == fieldId });
                 // @@TODO: what ????
                 if (!dataField) {
-                    
                     if (dataSource[fieldId] === undefined) { return; }
-
                     dataField = { field_type: 'text' };
                 }
 
                 // @@NOTE: if we have the name of a foreign table we would have retrieved it using BUILTIN.DF and just appended _name to the field id
                 //         so the data-source would have the value as dataSource.[fkFieldName]_name
                 if (fieldId == 'name' && field.id.indexOf('.') > 0) { fieldId = `${field.id.split('.')[0]}_name`; }
-
 
                 var control = {
                     type: field.type || twcUI.nsTypeToCtrlType(dataField.field_type),
@@ -157,10 +147,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
 
                 if (dataField.field_type == 'List/Record' || dataField.field_type == 'Multiple Select') {
-
                     try {
                         if (!control.dataSource) {
-
                             if (dataField.ns_table && (dataField.ns_table.name == 'customer' || dataField.ns_table.name == 'vendor')) {
                                 // @@NOTE
                                 control.dataSource = coreSQL.run(`

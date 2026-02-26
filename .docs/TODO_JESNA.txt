@@ -1,0 +1,8 @@
+
+TODO:
+-----
+
+02. Finalise the site info page panels: 
+    add missing fields/panels
+
+03. Locator Panel => Access Request => the table should show site access requests (i.e.: work lite the space request page)

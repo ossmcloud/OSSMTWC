@@ -2,14 +2,14 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js'],
-    function (nsFile, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUIPanel, twcConfig) {
+define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_srf.js'],
+    function (nsFile, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcSrf) {
 
         var PAGE_VERSION = 'v0.01';
 
         var suiteLet = uis.new({ title: 'TWC Space Request', script: 'SuiteScripts/OSSMTWC/ui/oTWC_spaceRequest_cs.js' });
         suiteLet.get = (context, s) => {
-            
+
             var pageData = twcBaseView.initPageData(context);
 
             var html = '';
@@ -27,6 +27,14 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 var fieldGroups = twcSiteRequestUtils.getSRFInfoPanels(pageData.siteRequestInfo, pageData.userInfo);
                 html = html.replaceAll('{SITE_REQUEST_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
 
+                if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft) {
+                    html = html.replaceAll('<div id="custom-actions"></div>', `
+                        <div id="custom-actions">
+                            ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Submit', id: 'submit-button' })}
+                        </div>
+                    `);
+                }
+
             } else {
                 // @@TODO: this should actually be the site access info
                 pageData.data.srfInfo = twcSiteLocatorUtils.getSiteSrf();
@@ -41,8 +49,6 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
         suiteLet.post = (context, s) => {
             var userInfo = twcConfig.userInfo(context);
-            
-
             if (context.request.parameters.action == 'child-record') {
                 var payload = JSON.parse(context.request.body);
                 var fields = twcSiteRequestUtils.getSrfChildRecord(payload);

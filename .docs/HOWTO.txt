@@ -1,0 +1,46 @@
+COMMENT TAGS:
+-------------
+    @@TODO                  stuff we want to eventually do
+    @@NOTE                  comments that explains some peculiar things
+    @@IMPORTANT             comments that warn about any changes potentially impacting the execution or other bits of code (i.e.: do not change or make extreme caution)
+    @@REVIEW                code that works but would be optimized or moved to the SDK
+    @@CODE-REVIEW           code to review with Giuseppe / Carlos
+
+________________________________________________________________________________________________________________________________________________________________
+
+
+ADD/EDIT DATA OBJECT:
+--------------------
+
+01. export XML from NetSuite
+
+02. Run NSUtils - Build Object (v2) => 
+    save into FileCabinet\SuiteScripts\OSSMTWC\data\persistent\oTWC_[tableName]Persistent.js
+
+--- if data object was edited stop here
+
+03. Create Business Object (Manual Operation)
+    save into FileCabinet\SuiteScripts\OSSMTWC\data\oTWC_[tableName].js
+    
+________________________________________________________________________________________________________________________________________________________________
+
+ADD FEATURE:
+------------
+
+01. Create Files:
+    FileCabinet\SuiteScripts\OSSMTWC\ui\oTWC_{FEATURE_NAME}_sl.js
+    FileCabinet\SuiteScripts\OSSMTWC\ui\oTWC_{FEATURE_NAME}_cs.js
+    FileCabinet\SuiteScripts\OSSMTWC\ui\js\oTWC_{FEATURE_NAME}.js
+    FileCabinet\SuiteScripts\OSSMTWC\ui\modules\oTWC_{FEATURE_NAME}Utils.js
+
+02. Deploy suitelet (get script id)
+    NOTE: set external role: allow TWC Customer Center
+
+03. Add record to table: OSSMTWC - Role Feature List
+    also update role
+
+
+________________________________________________________________________________________________________________________________________________________________
+
+
+

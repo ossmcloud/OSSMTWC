@@ -121,7 +121,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // @@NOTE: this is record view/edit mode
                     this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
 
-
+                    this.ui.getControl('submit-button').on('click', e => {
+                        alert('do submit')
+                    });
+                    // this.ui.on('click', e => {
+                    //     if (e.id == 'submit-button') {
+                    //         alert('do submit')
+                    //     }
+                    //     console.log(e)
+                    // })
+                    
                     this.ui.on('change', e => {
                         if (e.target.type != 'table') {
                             this.data.siteRequestInfo[e.id] = e.value;
