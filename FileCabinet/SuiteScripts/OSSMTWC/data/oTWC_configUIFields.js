@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_srfItem.js', './oTWC_file.js', '../O/controls/oTWC_ui_ctrl.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSrfItem, twcFile, twcUI) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_srfItem.js', './oTWC_file.js', '../O/controls/oTWC_ui_ctrl.js','./oTWC_planning.js','./oTWC_siteRow.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSrfItem, twcFile, twcUI,twcPlan,twcRow) => {
 
         // @@TODO: need to find a way to make this as handy as possible
         function getDataObject(recordType, callback) {
@@ -11,6 +11,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (recordType == twcInfra.Type) { return twcInfra; }
             if (recordType == twcSrfItem.Type) { return twcSrfItem; }
             if (recordType == twcFile.Type) { return twcFile; }
+             if (recordType == twcPlan.Type) { return twcPlan; }
+             if (recordType == twcRow.Type) { return twcRow; }
             throw new Error(`Unrecognised record type: ${recordType}`);
         }
 

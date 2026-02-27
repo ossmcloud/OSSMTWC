@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js','./oTWC_planning.js','./oTWC_siteRow.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields,twcPlan,twcRow) => {
 
         function getSiteTableFields() {
             // @@TODO: this list of fields to display can be set by user
@@ -151,10 +151,117 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSitePanelFields_estates(dataSource) {
             var fieldGroup = { id: 'site-estates', title: 'Estates', collapsed: false, controls: [] };
 
-            var basicInfo = { id: 'site-estates-title', title: 'Title', fields: [] };
-            fieldGroup.controls.push(basicInfo);
+            var titleInfo = { id: 'site-estates-title', title: 'Title', fields: [] };
+            fieldGroup.controls.push(titleInfo);
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'C.O.A' })
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Type' })
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Folio' })
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Folio Registration Completed' })
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Burden' })
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Burden Details' })
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'R.O.W Type' })
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'R.O.W Registered' })
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'R.O.W Folio' })
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'R.O.W Conditions' })
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Long Term User' })
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Additional Wayleave' })
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Wayleave Registered' })
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Wayleave Folio' })
+            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Wayleave Comments' })
+           
+             titleInfo.fields.push({
+                id: `${twcRow.Type}`, label: 'Site ROW',
+                fields: {
+                    [twcRow.Fields.ROW_TYPE]: 'R.O.W Type',
+                    [twcRow.Fields.ROW_REGISTERED]:  'R.O.W Registered',
+                    [twcRow.Fields.ROW_FOLIO]: 'R.O.W Folio',
+                    [twcRow.Fields.ROW_CONDITIONS]:  'R.O.W Conditions',
+                    [twcRow.Fields.LONG_TERM_USER]: 'Long Term User',
+                 //   [twcRow.Fields.WAYLEAVE_REGISTERED]:  'Additional Wayleave',
+                    [twcRow.Fields.WAYLEAVE_REGISTERED]: 'Wayleave Registered',
+                    [twcRow.Fields.WAYLEAVE_FOLIO]:  'Wayleave Folio',
+                    [twcRow.Fields.WAYLEAVE_COMMENTS]: 'Wayleave Comments',
+                },
+                where: { [twcRow.Fields.SITE]: dataSource.id },
+                FieldsInfo: twcRow.FieldsInfo,
+            });
 
-          
+
+             var leaseholdInfo = { id: 'site-estates-leasehold', title: 'Leasehold', fields: [] };
+            fieldGroup.controls.push(leaseholdInfo);
+            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Leasehold' })
+            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Start Date' })
+            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Expiry Date' })
+            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Current Amount Payable' })
+            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Licensor Name' })
+            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Licensor Contact' })
+            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Review Basis' })
+            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Review Next Date' })
+            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Comments' })
+            
+   var planningInfo = { id: 'site-estates-planning', title: 'Planning', fields: [] };
+            fieldGroup.controls.push(planningInfo);
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Planning Type' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Comments' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'County Council / An Bord Pleanala' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Reference' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Files Available' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Consultant' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Submitted Date' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Granted Date' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Expiry Date' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Forecast Submission Date' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Restricted' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Risk Level' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Conditions' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Conditions Discharged' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Conditions Outstanding' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'C.R Sensitivity' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'C.R Comments' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'P.R Sensitivity' })
+            // planningInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'P.R Comments' })
+         
+
+            planningInfo.fields.push({
+                id: `${twcPlan.Type}`, label: 'Site Planning',
+                fields: {
+                    [twcPlan.Fields.PLANNING_TYPE]: 'Planning Type',
+                    [twcPlan.Fields.COMMENTS]:  'Comments',
+                    //[twcPlan.Fields.SUBMITTED_DATE]: 'County Council / An Bord Pleanala',
+                    [twcPlan.Fields.LOCAL_AUTHORITY_REFERENCE]: 'Reference',
+                    [twcPlan.Fields.FILES_AVAILABLE]:  'Files Available',
+                    [twcPlan.Fields.CONSULTANT]: 'Consultant',
+                    [twcPlan.Fields.SUBMITTED_DATE]:  'Submitted Date',
+                   // [twcPlan.Fields.SUBMITTED_DATE]: 'Granted Date',
+                    [twcPlan.Fields.PLANNING_EXPIRY_DATE]: 'Expiry Date',
+                    [twcPlan.Fields.FORECAST_SUBMISSION_DATE]:  'Forecast Submission Date',
+                    [twcPlan.Fields.RESTRICTED]: 'Restricted',
+                    [twcPlan.Fields.RISK_LEVEL]: 'Risk Level',
+                    [twcPlan.Fields.CONDITIONS]:  'Conditions',
+                    [twcPlan.Fields.CONDITIONS_DISCHARGED]: 'Conditions Discharged',
+                    [twcPlan.Fields.CONDITIONS_OUTSTANDING]:  'Conditions Outstanding',
+                    [twcPlan.Fields.CR_SENSITIVITY]:'C.R Sensitivity',
+                    [twcPlan.Fields.CR_COMMENTS]: 'C.R Comments',
+                    [twcPlan.Fields.PR_SENSITIVITY]:  'P.R Sensitivity',
+                    [twcPlan.Fields.PR_COMMENTS]:'P.R Comments',
+
+                },
+                where: { [twcPlan.Fields.SITE]: dataSource.id },
+                FieldsInfo: twcPlan.FieldsInfo,
+            });
+
+
+
+
+
+            var fibreInfo = { id: 'site-estates-fibre', title: 'Fibre', fields: [] };
+            fieldGroup.controls.push(fibreInfo);
+            fibreInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Fibre ( on site )' })
+            fibreInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Fibre Priority' })
+            fibreInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Fibre Phase' })
+            fibreInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Fibre Partner Priority' })
+            fibreInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Fibre Duct Installed' })
+            fibreInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Fibre Comments' }) 
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
 
