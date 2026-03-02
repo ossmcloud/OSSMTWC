@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', '../../O/oTWC_themes.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_permissions.js'],
-    (email, file, url, core, https, b64, oStyles, twcThemes, twcIcons, twcConfig, dialog, twcUI, uiTable, permissions) => {
+define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', '../../O/oTWC_themes.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_permissions.js', '../../data/oTWC_srf.js'],
+    (email, file, url, core, https, b64, oStyles, twcThemes, twcIcons, twcConfig, dialog, twcUI, uiTable, permissions, twcSrf) => {
 
         //
         const PORTLET_STYLES_PROPS = {
@@ -346,11 +346,18 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                 html = html.replace('{TWC_PAGE_CLASS}', '');
             }
 
+            const status = pageData.siteRequestInfo?.[twcSrf.Fields.SRF_STATUS];
             var buttons = '';
-            if ((pageData.recId !== undefined || pageData.editMode) && userInfo.permission.lvl > 1) {
-                buttons += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: pageData.editMode ? 'Save' : 'Edit', id: pageData.editMode ? 'save-button' : 'edit-button' })
+            const hasPermission = (pageData.recId !== undefined || pageData.editMode) && userInfo.permission.lvl > 1;
+            const canEdit = status == twcSrf.Status.Draft || status == twcSrf.Status.FeedbackIssued;
+
+            // If siteRequestInfo does NOT exist, allow editing (based on your earlier logic)
+            const isEditable = !status || canEdit;
+            if (hasPermission && isEditable) {
+                buttons += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: pageData.editMode ? 'Save' : 'Edit', id: pageData.editMode ? 'save-button' : 'edit-button' });
+
                 if (pageData.editMode) {
-                    buttons += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel', id: 'cancel-button' })
+                    buttons += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel', id: 'cancel-button' });
                 }
 
             }

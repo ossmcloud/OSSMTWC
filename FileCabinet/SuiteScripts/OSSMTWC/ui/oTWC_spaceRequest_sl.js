@@ -26,8 +26,8 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
                 var fieldGroups = twcSiteRequestUtils.getSRFInfoPanels(pageData.siteRequestInfo, pageData.userInfo);
                 html = html.replaceAll('{SITE_REQUEST_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
-
-                if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft) {
+                core.logDebug("SRF STATUS", pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS])
+                if ((pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued)) {
                     html = html.replaceAll('<div id="custom-actions"></div>', `
                         <div id="custom-actions">
                             ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Submit', id: 'submit-button' })}
