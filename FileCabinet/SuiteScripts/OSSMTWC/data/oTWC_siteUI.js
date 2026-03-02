@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js','./oTWC_powerSupply.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow,twcPowerSupply) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js','./oTWC_powerSupply.js','./oTWC_land.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow,twcPowerSupply, twcLand) => {
 
         function getSiteTableFields() {
             // @@TODO: this list of fields to display can be set by user
@@ -83,11 +83,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcSite.Fields.SITE_NAME, label: 'Site Name' })
             basicInfo.fields.push({ id: twcSite.Fields.ALIAS, label: 'Alias', lineBreak: true })
             basicInfo.fields.push({ id: twcSite.Fields.SITE_LEVEL, label: 'Site Level' })
-            basicInfo.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type' }) //added line break           
-            basicInfo.fields.push({ id: twcSite.Fields.PORTFOLIO, label: 'Portfolio', lineBreak: true }) //new
-            basicInfo.fields.push({ id: twcSite.Fields.SAF_AUTO_APPROVE, label: 'SAF Auto Approve' }) //new
-            basicInfo.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL' }) //new
+            basicInfo.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type' })          
+            basicInfo.fields.push({ id: twcSite.Fields.PORTFOLIO, label: 'Portfolio', lineBreak: true }) 
+            basicInfo.fields.push({ id: twcSite.Fields.SAF_AUTO_APPROVE, label: 'SAF Auto Approve' }) 
+            basicInfo.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL' }) 
             basicInfo.fields.push({ id: twcSite.Fields.PUBLIC, label: 'Public' })
+            //@NOTE Missing fields - TC Building/Cabin , Indoor Accommodation
 
             var structures = { id: 'site-summary-structure', title: 'Site Structures', fields: [] };
             fieldGroup.controls.push(structures);
@@ -102,6 +103,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcInfra.Fields.TOWER_FAMILY]: 'Family',
                     [twcInfra.Fields.STRUCTURE_HEIGHT_M]: 'Height (m)',
                     [twcInfra.Fields.ROOFTOP_HEIGHT_M]: 'Height Rooftop',
+                    //[twcInfra.Fields.ROOFTOP_HEIGHT_M]: 'Fall Arrest',    //Which field to source ??
 
                 },
                 where: { [twcInfra.Fields.SITE]: dataSource.id },
@@ -125,7 +127,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var locations = { id: 'site-summary-access', title: 'Access Track / Safety Info', fields: [] };
             fieldGroup.controls.push(locations);
-            locations.fields.push({ id: twcSite.Fields.TRACK_TYPE, label: 'Track Type' })  //New
+            locations.fields.push({ id: twcSite.Fields.TRACK_TYPE, label: 'Track Type' })  
             locations.fields.push({ id: twcSite.Fields.LATITUDE_ACCESS, label: 'Latitude' })
             locations.fields.push({ id: twcSite.Fields.LONGITUDE_ACCESS, label: 'Longitude' })
             locations.fields.push({ id: twcSite.Fields.EASTING_ACCESS, label: 'Easting' })
@@ -134,13 +136,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             locations.fields.push({ id: twcSite.Fields.DIRECTIONS, label: 'Directions', width: '75%', rows: 5, lineBreak: true })
             locations.fields.push({ id: twcSite.Fields.INSTRUCTIONS, label: 'Instructions', width: '75%', rows: 5, lineBreak: true })
 
-            locations.fields.push({ id: twcSite.Fields.TENANT_CARD_REQUIRED, label: 'Tenant Card Required', labelNoWrap: false })  //New
-            //locations.fields.push({ id: twcSite.Fields.LONGITUDE_ACCESS, label: 'Dual Lock Installed', lineBreak: true })  //New
-            locations.fields.push({ id: twcSite.Fields.FOURX4_REQUIRED, label: '4x4 Required', labelNoWrap: false, lineBreak: true })  //New
-            locations.fields.push({ id: twcSite.Fields.PARKING_RESTRICTIONS, label: 'Parking Restrictions', width: '50%', lineBreak: true })  //New
-            locations.fields.push({ id: twcSite.Fields.CRANEMEWP_ACCESS, label: 'Crane/Mewp Access', lineBreak: true })  //New
-            locations.fields.push({ id: twcInfra.Fields.FALL_ARREST_TYPE, label: 'Fall Arrest Type', lineBreak: true })  //New
-            locations.fields.push({ id: twcSite.Fields.SAFETY__SPECIAL_NOTES, label: 'Safety / Special Notes', width: '50%', lineBreak: true })  //New
+            locations.fields.push({ id: twcSite.Fields.TENANT_CARD_REQUIRED, label: 'Tenant Card Required', labelNoWrap: false })  
+            //locations.fields.push({ id: twcSite.Fields.LONGITUDE_ACCESS, label: 'Dual Lock Installed', lineBreak: true })  //Field removed comment in shema.
+            locations.fields.push({ id: twcSite.Fields.FOURX4_REQUIRED, label: '4x4 Required', labelNoWrap: false, lineBreak: true })  
+            locations.fields.push({ id: twcSite.Fields.PARKING_RESTRICTIONS, label: 'Parking Restrictions', width: '50%', lineBreak: true })  
+            locations.fields.push({ id: twcSite.Fields.CRANEMEWP_ACCESS, label: 'Crane/Mewp Access', lineBreak: true })  
+            locations.fields.push({ id: twcInfra.Fields.FALL_ARREST_TYPE, label: 'Fall Arrest Type', lineBreak: true })  
+            locations.fields.push({ id: twcSite.Fields.SAFETY__SPECIAL_NOTES, label: 'Safety / Special Notes', width: '50%', lineBreak: true })  
 
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
@@ -153,13 +155,24 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var titleInfo = { id: 'site-estates-title', title: 'Title', fields: [] };
             fieldGroup.controls.push(titleInfo);
-            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'C.O.A' })
-            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Type' })
-            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Folio' })
-            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Folio Registration Completed' })
-            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Burden' })
-            // titleInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Burden Details' })
 
+            //@@NOTE added as 2 differenct table structure for this section as the TITLE feilds are sourced from 2 different custom records
+            //Custom Record - LAND
+             titleInfo.fields.push({
+                id: `${twcLand.Type}`, label: 'Leasehold',
+                fields: {
+                    [twcLand.Fields.COA]: 'C.O.A',
+                    [twcLand.Fields.TITLE_TYPE]:  'Type',
+                    [twcLand.Fields.FOLIO]: 'Folio',
+                    [twcLand.Fields.FOLIO_REGISTRATION_COMPLETE]: 'Folio Registration Completed',
+                    [twcLand.Fields.BURDEN]: 'Burden',
+                    [twcLand.Fields.BURDEN_DETAILS]:   'Burden Details',
+                },
+                where: { [twcLand.Fields.SITE]: dataSource.id },
+                FieldsInfo: twcLand.FieldsInfo,
+            });
+
+             //Custom Record - ROW
             titleInfo.fields.push({
                 id: `${twcRow.Type}`, label: 'Site ROW',
                 fields: {
@@ -168,7 +181,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcRow.Fields.ROW_FOLIO]: 'R.O.W Folio',
                     [twcRow.Fields.ROW_CONDITIONS]: 'R.O.W Conditions',
                     [twcRow.Fields.LONG_TERM_USER]: 'Long Term User',
-                    //   [twcRow.Fields.WAYLEAVE_REGISTERED]:  'Additional Wayleave',
+                    //   [twcRow.Fields.WAYLEAVE_REGISTERED]:  'Additional Wayleave', //Field not present in ROW table
                     [twcRow.Fields.WAYLEAVE_REGISTERED]: 'Wayleave Registered',
                     [twcRow.Fields.WAYLEAVE_FOLIO]: 'Wayleave Folio',
                     [twcRow.Fields.WAYLEAVE_COMMENTS]: 'Wayleave Comments',
@@ -180,15 +193,23 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var leaseholdInfo = { id: 'site-estates-leasehold', title: 'Leasehold', fields: [] };
             fieldGroup.controls.push(leaseholdInfo);
-            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Leasehold' })
-            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Start Date' })
-            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Expiry Date' })
-            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Current Amount Payable' })
-            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Licensor Name' })
-            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Licensor Contact' })
-            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Review Basis' })
-            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Review Next Date' })
-            // leaseholdInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Comments' })
+              //Custom Record - LAND
+            leaseholdInfo.fields.push({
+                id: `${twcLand.Type}`, label: 'Leasehold',
+                fields: {
+                    [twcLand.Fields.LAND_ID]: 'Leasehold',  //@@NOTE which field to source
+                    [twcLand.Fields.START_DATE]:  'Start Date',
+                    [twcLand.Fields.EXPIRY_DATE]: 'Expiry Date',
+                    [twcLand.Fields.CURRENT_AMOUNT_PAYABLE]: 'Current Amount Payable',
+                    [twcLand.Fields.LANDLORD_NAME]: 'Licensor Name',
+                    [twcLand.Fields.LANDLORD_CONTACT]:   'Licensor Contact',
+                    [twcLand.Fields.REVIEW_BASIS]: 'Review Basis',
+                    [twcLand.Fields.REVIEW_NEXT_DATE]: 'Review Next Date',
+                    [twcLand.Fields.AGREEMENT_COMMENT]: 'Comments',
+                },
+                where: { [twcLand.Fields.SITE]: dataSource.id },
+                FieldsInfo: twcLand.FieldsInfo,
+            });
 
             var planningInfo = { id: 'site-estates-planning', title: 'Planning', fields: [] };
             fieldGroup.controls.push(planningInfo);
@@ -197,12 +218,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 fields: {
                     [twcPlan.Fields.PLANNING_TYPE]: 'Planning Type',
                     [twcPlan.Fields.COMMENTS]: 'Comments',
-                    //[twcPlan.Fields.SUBMITTED_DATE]: 'County Council / An Bord Pleanala',
+                    //[twcPlan.Fields.SUBMITTED_DATE]: 'County Council / An Bord Pleanala', //Not present
                     [twcPlan.Fields.LOCAL_AUTHORITY_REFERENCE]: 'Reference',
                     [twcPlan.Fields.FILES_AVAILABLE]: 'Files Available',
                     [twcPlan.Fields.CONSULTANT]: 'Consultant',
                     [twcPlan.Fields.SUBMITTED_DATE]: 'Submitted Date',
-                    // [twcPlan.Fields.SUBMITTED_DATE]: 'Granted Date',
+                    // [twcPlan.Fields.SUBMITTED_DATE]: 'Granted Date', //Not present
                     [twcPlan.Fields.PLANNING_EXPIRY_DATE]: 'Expiry Date',
                     [twcPlan.Fields.FORECAST_SUBMISSION_DATE]: 'Forecast Submission Date',
                     [twcPlan.Fields.RESTRICTED]: 'Restricted',
@@ -221,17 +242,21 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             });
 
 
-
-
-
-            // var fibreInfo = { id: 'site-estates-fibre', title: 'Fibre', fields: [] };
-            // fieldGroup.controls.push(fibreInfo);
-            // fibreInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Fibre ( on site )' })
-            // fibreInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Fibre Priority' })
-            // fibreInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Fibre Phase' })
-            // fibreInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Fibre Partner Priority' })
-            // fibreInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Fibre Duct Installed' })
-            // fibreInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Fibre Comments' }) 
+            var fibreInfo = { id: 'site-estates-fibre', title: 'Fibre', fields: [] };
+             fieldGroup.controls.push(fibreInfo);
+             fibreInfo.fields.push({
+                id: `${twcInfra.Type}`, label: 'Site Fibre',
+                fields: {
+                  //  [twcInfra.Fields.ROW_TYPE]: 'Fibre ( on site )',
+                    [twcInfra.Fields.FIBRE_PRIORITY]: 'Fibre Priority',
+                    [twcInfra.Fields.FIBRE_PHASE]:'Fibre Phase',
+                    [twcInfra.Fields.FIBRE_PARTNER_PRIORITY]: 'Fibre Partner Priority',
+                    [twcInfra.Fields.FIBRE_DUCT_INSTALLED]: 'Fibre Duct Installed',
+                    [twcInfra.Fields.FIBRE_COMMENTS]: 'Fibre Comments',
+                },
+                where: { [twcInfra.Fields.SITE]: dataSource.id },
+                FieldsInfo: twcInfra.FieldsInfo,
+            });
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
 
@@ -241,16 +266,47 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSitePanelFields_assets(dataSource) {
             var fieldGroup = { id: 'site-assets', title: 'Assets', collapsed: true, controls: [] };
 
-            var basicInfo = { id: 'site-assets-struct', title: 'Structure', fields: [] };
-            fieldGroup.controls.push(basicInfo);
+            var struct = { id: 'site-assets-struct', title: 'Structure', fields: [] };
+            fieldGroup.controls.push(struct);
 
-            basicInfo.fields.push({ id: twcSite.Fields.ADJACENT_GROUND_OWNER, label: 'Adiacent ground Owner' })
-            basicInfo.fields.push({
+
+            struct.fields.push({
+                id: `${twcInfra.Type}`, label: 'Site Infrastructures',
+                fields: {
+                    [twcInfra.Fields.INFRASTRUCTURE_ID]: 'Infra Id',
+                    [twcInfra.Fields.INFRASTRUCTURE_TYPE]: 'Type',
+                    [twcInfra.Fields.TOWER_FAMILY]: 'Tower Family',
+                    [twcInfra.Fields.STRUCTURE_HEIGHT_M]: 'Height (m)',
+                    [twcInfra.Fields.ROOFTOP_HEIGHT_M]: 'Height Rooftop',
+                    [twcInfra.Fields.AIRCRAFT_LIGHTS_LIST]: 'Aircraft Lights',
+                    [twcInfra.Fields.ANTI_CLIMB]: 'Anti Climb',
+                   // [twcInfra.Fields.STRUCTURE_HEIGHT_M]: 'Structural Analysis Date',
+                    [twcInfra.Fields.TLM]: 'TLM',
+                  //  [twcInfra.Fields.ROOFTOP_HEIGHT_M]: 'TLM Last Changed Date',
+                    //[twcInfra.Fields.AIRCRAFT_LIGHTS_LIST]: 'Fall Arrest',
+                    [twcInfra.Fields.FALL_ARREST_TYPE]: 'Fall Arrest Type',
+                    [twcInfra.Fields.TOWER_LAST_PAINTED_DATE]: 'Tower Last Painted Date',
+                    [twcInfra.Fields.SCHEDULED_NEXT_PAINTING_DATE]: 'Scheduled Next Painting Date',
+                    [twcInfra.Fields.PAINTING_WARRANTY_EXPIRY_DATE]: 'Painting Warranty Expiry Date',
+
+                },
+                where: { [twcInfra.Fields.SITE]: dataSource.id },
+                FieldsInfo: twcInfra.FieldsInfo,
+            });
+
+
+
+
+           // struct.fields.push({ id: twcSite.Fields.ADJACENT_GROUND_OWNER, label: 'Adiacent ground Owner' })
+            struct.fields.push({
                 id: `${twcLock.Type}`, label: 'Locks',
                 fields: { [twcLock.Fields.LOCK_ID]: 'Lock Id', [twcLock.Fields.LOCK_LOCATION_CATEGORY]: 'Category' },
                 where: { [twcLock.Fields.SITE]: dataSource.id },
                 FieldsInfo: twcLock.FieldsInfo,
             })
+
+            var foundationInfo = { id: 'site-assets-foundation', title: 'Foundation', fields: [] };
+            fieldGroup.controls.push(foundationInfo);
 
             var perimeterInfo = { id: 'site-assets-perimeter', title: 'Perimeter', fields: [] };
             fieldGroup.controls.push(perimeterInfo);
@@ -260,6 +316,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             perimeterInfo.fields.push({ id: twcSite.Fields.ADJACENT_GROUND_SPACE, label: 'Adjacent Ground Space' })
             perimeterInfo.fields.push({ id: twcSite.Fields.ADJACENT_GROUND_OWNER, label: 'Adiacent ground Owner' })
 
+
+            //@@NOTE DESIGN and SCHEMATICS fields are under review
+            var designInfo = { id: 'site-assets-design', title: 'Design', fields: [] };
+            fieldGroup.controls.push(designInfo);
+
+            var schematicsInfo = { id: 'site-assets-schematics', title: 'Schematics', fields: [] };
+            fieldGroup.controls.push(schematicsInfo);
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
 
@@ -273,6 +336,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         var powerInfo = { id: 'site-facilities-power', title: 'Power', fields: [] };
             fieldGroup.controls.push(powerInfo);
 
+            //POWER SUPPLY and POWER USER fields
             powerInfo.fields.push({
                 id: `${twcPowerSupply.Type}`, label: 'Power',
                 fields: {
@@ -297,6 +361,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             });
 
 
+            //@@NOTE LOCKS fields with comment 'remove field' in schema
 
 
             var alarmsInfo = { id: 'site-facilities-alarms', title: 'Alarms', fields: [] };
@@ -305,6 +370,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             alarmsInfo.fields.push({
                 id: `${twcInfra.Type}`, label: 'Alarms',
                 fields: {
+                    [twcInfra.Fields.INFRASTRUCTURE_ID]: 'Infra Id',
                     [twcInfra.Fields.INTRUDER_ALARM_PRESENT]: 'Intruder Alarm Present',
                    // [twcInfra.Fields.INTRUDER_ALARM_PRESENT]: 'Intruder Alarm Monitored',
                     [twcInfra.Fields.INTRUDER_CODE]: 'Intruder Code',
@@ -327,6 +393,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             airCondtionInfo.fields.push({
                 id: `${twcInfra.Type}`, label: 'Air Conditioning',
                 fields: {
+                    [twcInfra.Fields.INFRASTRUCTURE_ID]: 'Infra Id',
                     [twcInfra.Fields.UNITS]: 'Units',
                     [twcInfra.Fields.MODEL]: 'Model',
                     [twcInfra.Fields.INSTALLED]: 'Installed',
@@ -344,6 +411,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fireSafetyInfo.fields.push({
                 id: `${twcInfra.Type}`, label: 'Fire Safety',
                 fields: {
+                    [twcInfra.Fields.INFRASTRUCTURE_ID]: 'Infra Id',
                     //[twcInfra.Fields.UNITS]: 'Co2 Count',
                    // [twcInfra.Fields.MODEL]: 'Abc Count',
                    // [twcInfra.Fields.INSTALLED]: 'Last Fire Service',
@@ -358,7 +426,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             return fieldGroup;
         }
+        function getSitePanelFields_projects(dataSource) {
+            var fieldGroup = { id: 'site-projects', title: 'Projects', collapsed: true, controls: [] };
 
+            configUIFields.formatPanelFields(dataSource, fieldGroup);
+
+            return fieldGroup;
+        }
+        function getSitePanelFields_files(dataSource) {
+            var fieldGroup = { id: 'site-files', title: 'Files', collapsed: true, controls: [] };
+
+            configUIFields.formatPanelFields(dataSource, fieldGroup);
+
+            return fieldGroup;
+        }
 
 
         function getSiteInfoPanels(dataSource) {
@@ -370,6 +451,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroups.push(getSitePanelFields_estates(dataSource));
             fieldGroups.push(getSitePanelFields_assets(dataSource));
             fieldGroups.push(getSitePanelFields_facilities(dataSource))
+            fieldGroups.push(getSitePanelFields_projects(dataSource))
+            fieldGroups.push(getSitePanelFields_files(dataSource))
+
+
             // @@TODO: implement all required panels
             return fieldGroups;
         }

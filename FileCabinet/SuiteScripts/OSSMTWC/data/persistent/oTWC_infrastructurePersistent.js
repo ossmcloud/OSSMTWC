@@ -77,6 +77,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             TANK_CAPACITY_L: 'custrecord_twc_infra_tnk_cap_l',
             NEXT_GENERATOR_SERVICE: 'custrecord_twc_infra_nxt_gen_svc',
             NEXT_GENERATOR_SERVICE_TYPE: 'custrecord_twc_infra_nxt_gen_svc_type',
+            LOCKS_LIST: 'custrecord_twc_infra_locks_list',
+            PLANNING_RECORDS_LIST: 'custrecord_twc_infra_plan_rec_list',
+            AIRCRAFT_LIGHTS_LIST: 'custrecord_twc_infra_aircraft_light_list',
+            STRUCTURE_INSPECTIONS_LIST: 'custrecord_twc_infra_str_insp_list',
+            CAPACITY_REVIEW_LIST: 'custrecord_twc_infra_cap_rev_list',
+            FACILITIES_SERVICE_LIST: 'custrecord_twc_infra_fac_svc_list',
+            GENERATOR_SERVICE_LIST: 'custrecord_twc_infra_gen_svc_list',
+            FIBRE_INFRASTRUCTURE_STATUS: 'custrecord_twc_infra_fibre_infra_sts',
+            FIBRE_DUCT_INSTALLED: 'custrecord_twc_infra_fibre_duct_instal',
+            FIBRE_INFRASTRUCTURE_TYPE: 'custrecord_twc_infra_fibre_infra_type',
+            FIBRE_SERVICE_PROVIDERS: 'custrecord_twc_infra_fibre_svc_providers',
+            FIBRE_PRIORITY: 'custrecord_twc_infra_fibre_priority',
+            FIBRE_PHASE: 'custrecord_twc_infra_fibre_phase',
+            FIBRE_PARTNER_PRIORITY: 'custrecord_twc_infra_fibre_partner_prior',
+            FIBRE_COMMENTS: 'custrecord_twc_infra_fibre_comm',
         }
         var _recordFieldInfo = {
             SITE: { name: 'custrecord_twc_infra_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site,' },
@@ -150,6 +165,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             TANK_CAPACITY_L: { name: 'custrecord_twc_infra_tnk_cap_l', type: 'integer', alias: 'tankCapacityl', display: 'normal', mandatory: false },
             NEXT_GENERATOR_SERVICE: { name: 'custrecord_twc_infra_nxt_gen_svc', type: 'date', alias: 'nextGeneratorService', display: 'normal', mandatory: false },
             NEXT_GENERATOR_SERVICE_TYPE: { name: 'custrecord_twc_infra_nxt_gen_svc_type', type: 'select', alias: 'nextGeneratorServiceType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_nxt_gen_svc_type,' },
+            LOCKS_LIST: { name: 'custrecord_twc_infra_locks_list', type: 'select', alias: 'locksList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_lock,' },
+            PLANNING_RECORDS_LIST: { name: 'custrecord_twc_infra_plan_rec_list', type: 'select', alias: 'planningRecordsList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_plan,' },
+            AIRCRAFT_LIGHTS_LIST: { name: 'custrecord_twc_infra_aircraft_light_list', type: 'select', alias: 'aircraftLightsList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_awl,' },
+            STRUCTURE_INSPECTIONS_LIST: { name: 'custrecord_twc_infra_str_insp_list', type: 'select', alias: 'structureInspectionsList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_insp,' },
+            CAPACITY_REVIEW_LIST: { name: 'custrecord_twc_infra_cap_rev_list', type: 'select', alias: 'capacityReviewList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_capacity_review,' },
+            FACILITIES_SERVICE_LIST: { name: 'custrecord_twc_infra_fac_svc_list', type: 'select', alias: 'facilitiesServiceList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_fac_svc,' },
+            GENERATOR_SERVICE_LIST: { name: 'custrecord_twc_infra_gen_svc_list', type: 'select', alias: 'generatorServiceList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_gen_svc,' },
+            FIBRE_INFRASTRUCTURE_STATUS: { name: 'custrecord_twc_infra_fibre_infra_sts', type: 'select', alias: 'fibreInfrastructureStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_sts,' },
+            FIBRE_DUCT_INSTALLED: { name: 'custrecord_twc_infra_fibre_duct_instal', type: 'select', alias: 'fibreDuctInstalled', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_duct_inst,' },
+            FIBRE_INFRASTRUCTURE_TYPE: { name: 'custrecord_twc_infra_fibre_infra_type', type: 'select', alias: 'fibreInfrastructureType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_type,' },
+            FIBRE_SERVICE_PROVIDERS: { name: 'custrecord_twc_infra_fibre_svc_providers', type: 'multiselect', alias: 'fibreServiceProviders', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_svc_provide,' },
+            FIBRE_PRIORITY: { name: 'custrecord_twc_infra_fibre_priority', type: 'text', alias: 'fibrePriority', display: 'normal', mandatory: false },
+            FIBRE_PHASE: { name: 'custrecord_twc_infra_fibre_phase', type: 'text', alias: 'fibrePhase', display: 'normal', mandatory: false },
+            FIBRE_PARTNER_PRIORITY: { name: 'custrecord_twc_infra_fibre_partner_prior', type: 'text', alias: 'fibrePartnerPriority', display: 'normal', mandatory: false },
+            FIBRE_COMMENTS: { name: 'custrecord_twc_infra_fibre_comm', type: 'text', alias: 'fibreComments', display: 'normal', mandatory: false },
+        
         }
 
         class OSSMTWC_Infrastructure extends customRec.RecordBase {
@@ -602,7 +633,106 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.NEXT_GENERATOR_SERVICE_TYPE, value)
             }
             get nextGeneratorServiceTypeName() { return this.getText(_recordFields.NEXT_GENERATOR_SERVICE_TYPE); }
+            get locksList() {
+                return this.get(_recordFields.LOCKS_LIST);
+            } set locksList(value) {
+                this.set(_recordFields.LOCKS_LIST, value)
+            }
+            get locksListName() { return this.getText(_recordFields.LOCKS_LIST); }
             
+            get planningRecordsList() {
+                return this.get(_recordFields.PLANNING_RECORDS_LIST);
+            } set planningRecordsList(value) {
+                this.set(_recordFields.PLANNING_RECORDS_LIST, value)
+            }
+            get planningRecordsListName() { return this.getText(_recordFields.PLANNING_RECORDS_LIST); }
+            
+            get aircraftLightsList() {
+                return this.get(_recordFields.AIRCRAFT_LIGHTS_LIST);
+            } set aircraftLightsList(value) {
+                this.set(_recordFields.AIRCRAFT_LIGHTS_LIST, value)
+            }
+            get aircraftLightsListName() { return this.getText(_recordFields.AIRCRAFT_LIGHTS_LIST); }
+            
+            get structureInspectionsList() {
+                return this.get(_recordFields.STRUCTURE_INSPECTIONS_LIST);
+            } set structureInspectionsList(value) {
+                this.set(_recordFields.STRUCTURE_INSPECTIONS_LIST, value)
+            }
+            get structureInspectionsListName() { return this.getText(_recordFields.STRUCTURE_INSPECTIONS_LIST); }
+            
+            get capacityReviewList() {
+                return this.get(_recordFields.CAPACITY_REVIEW_LIST);
+            } set capacityReviewList(value) {
+                this.set(_recordFields.CAPACITY_REVIEW_LIST, value)
+            }
+            get capacityReviewListName() { return this.getText(_recordFields.CAPACITY_REVIEW_LIST); }
+            
+            get facilitiesServiceList() {
+                return this.get(_recordFields.FACILITIES_SERVICE_LIST);
+            } set facilitiesServiceList(value) {
+                this.set(_recordFields.FACILITIES_SERVICE_LIST, value)
+            }
+            get facilitiesServiceListName() { return this.getText(_recordFields.FACILITIES_SERVICE_LIST); }
+            
+            get generatorServiceList() {
+                return this.get(_recordFields.GENERATOR_SERVICE_LIST);
+            } set generatorServiceList(value) {
+                this.set(_recordFields.GENERATOR_SERVICE_LIST, value)
+            }
+            get generatorServiceListName() { return this.getText(_recordFields.GENERATOR_SERVICE_LIST); }
+            
+            get fibreInfrastructureStatus() {
+                return this.get(_recordFields.FIBRE_INFRASTRUCTURE_STATUS);
+            } set fibreInfrastructureStatus(value) {
+                this.set(_recordFields.FIBRE_INFRASTRUCTURE_STATUS, value)
+            }
+            get fibreInfrastructureStatusName() { return this.getText(_recordFields.FIBRE_INFRASTRUCTURE_STATUS); }
+            
+            get fibreDuctInstalled() {
+                return this.get(_recordFields.FIBRE_DUCT_INSTALLED);
+            } set fibreDuctInstalled(value) {
+                this.set(_recordFields.FIBRE_DUCT_INSTALLED, value)
+            }
+            get fibreDuctInstalledName() { return this.getText(_recordFields.FIBRE_DUCT_INSTALLED); }
+            
+            get fibreInfrastructureType() {
+                return this.get(_recordFields.FIBRE_INFRASTRUCTURE_TYPE);
+            } set fibreInfrastructureType(value) {
+                this.set(_recordFields.FIBRE_INFRASTRUCTURE_TYPE, value)
+            }
+            get fibreInfrastructureTypeName() { return this.getText(_recordFields.FIBRE_INFRASTRUCTURE_TYPE); }
+            
+            get fibreServiceProviders() {
+                return this.get(_recordFields.FIBRE_SERVICE_PROVIDERS);
+            } set fibreServiceProviders(value) {
+                this.set(_recordFields.FIBRE_SERVICE_PROVIDERS, value)
+            }
+            get fibreServiceProvidersName() { return this.getText(_recordFields.FIBRE_SERVICE_PROVIDERS); }
+            
+            get fibrePriority() {
+                return this.get(_recordFields.FIBRE_PRIORITY);
+            } set fibrePriority(value) {
+                this.set(_recordFields.FIBRE_PRIORITY, value)
+            }
+            
+            get fibrePhase() {
+                return this.get(_recordFields.FIBRE_PHASE);
+            } set fibrePhase(value) {
+                this.set(_recordFields.FIBRE_PHASE, value)
+            }
+            
+            get fibrePartnerPriority() {
+                return this.get(_recordFields.FIBRE_PARTNER_PRIORITY);
+            } set fibrePartnerPriority(value) {
+                this.set(_recordFields.FIBRE_PARTNER_PRIORITY, value)
+            }
+            
+            get fibreComments() {
+                return this.get(_recordFields.FIBRE_COMMENTS);
+            } set fibreComments(value) {
+                this.set(_recordFields.FIBRE_COMMENTS, value)
+            }  
         }
 
         return {
