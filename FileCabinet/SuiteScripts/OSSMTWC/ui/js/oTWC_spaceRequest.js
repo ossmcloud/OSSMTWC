@@ -106,7 +106,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
-    
+
         class TWCSpaceRequestPage extends twcPageBase.TWCPageBase {
             #map = null;
             #sitesTable = null;
@@ -123,6 +123,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     this.ui.getControl('submit-button').on('click', e => {
                         alert('do submit')
+                        // call onSave function
+                        this.onSave(e);
                     });
                     // this.ui.on('click', e => {
                     //     if (e.id == 'submit-button') {
@@ -130,7 +132,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     //     }
                     //     console.log(e)
                     // })
-                    
+
                     this.ui.on('change', e => {
                         if (e.target.type != 'table') {
                             this.data.siteRequestInfo[e.id] = e.value;
@@ -147,13 +149,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                             } else if (e.action == 'edit') {
                                 this[manageMethod](e.rowData, e.table);
-                                
+
                             } else if (e.action == 'delete') {
                                 dialog.confirm('Are you sure you wish to delete this record', () => {
                                     e.rowData.delete = true;
                                     this[manageMethod](e.rowData, e.table);
                                 })
-                                
+
                             }
                         }
                     })
@@ -189,7 +191,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
-        
+
             manageSRFFile(srfFile, table) {
                 try {
                     if (!srfFile) { srfFile = {}; }
@@ -197,7 +199,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     var res = this.postSync({ action: 'child-record' }, { srf: this.data.siteRequestInfo, file: srfFile })
                     var form = twcUIPanel.ui(res);
-                    form.on('change', e => { 
+                    form.on('change', e => {
                         if (e.id == 'name') {
                             e.target.readFile(file => {
                                 srfFile.fileObject = file;
@@ -241,7 +243,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 try {
                     if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER]) { throw new Error('You need to specify a customer'); }
 
-                    
+
                     if (!srfItem) { srfItem = {}; }
                     if (this.deleteRecord(srfItem, table)) { return; }
 
@@ -300,7 +302,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
             }
 
-            async onSave() {
+            async onSave(e) {
+                const targetId = e.id || e.target.id;
                 try {
                     this.wait();
 
@@ -309,11 +312,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // @@TODO: if status is 'Draft' ask user if the request has to be submitted
 
                     var payload = this.data.siteRequestInfo;
+                    if (targetId == 'submit-button') {
+                        if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft || payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued) {
+                            if (!confirm('Are you sure you want to submit this request?')) { return; }
+                            payload[twcSrf.Fields.SRF_STATUS] = twcSrf.Status.Submitted;
+                        }
+                    }
                     var res = await this.post({ action: 'save' }, payload);
                     this.dirty = false;
                     var p = new URLSearchParams(location.search);
                     if (p.has('recId')) {
-                        location.href = location.href.replace('&edit=T', '');   
+                        location.href = location.href.replace('&edit=T', '');
                     } else {
                         location.href = location.href.replace('&edit=T', '&recId=' + res.id);
                     }
