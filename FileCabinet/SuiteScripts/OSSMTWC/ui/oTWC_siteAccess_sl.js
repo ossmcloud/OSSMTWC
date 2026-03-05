@@ -23,10 +23,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 
             } else {
                 // @@TODO: this should actually be the site access info
-                pageData.data.sitesInfo = twcSiteLocatorUtils.getSites();
+              //  pageData.data.sitesInfo = twcSiteLocatorUtils.getSites();
+                pageData.data.sitesInfo = twcSiteAccessUtils.getSiteAccess()
 
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
-                html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteLocatorUtils.renderSiteLocatorPanel(pageData.permission.featureId));
+                html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteAccessUtils.renderSiteAccessPanel(pageData.permission.featureId));
             }
 
             s.form.fieldHtml(html);

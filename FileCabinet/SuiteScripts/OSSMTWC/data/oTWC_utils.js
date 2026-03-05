@@ -171,6 +171,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getLookUpTableValues('customrecord_twc_site_portfolio');
         }
 
+        function getSafStatus(){
+            return getLookUpTableValues('customrecord_twc_saf_status');
+        }
+
+        function getSafTypes(){
+            return getLookUpTableValues('customrecord_twc_saf_type');
+        }
+
+        function getCustomers(){
+            return getLookUpTableValues('customer');
+        }
+        function getSafIds(){
+            return coreSQL.run(`select id as id, custrecord_twc_saf_id as text from customrecord_twc_saf where 1 = 1 order by id`)
+        }
+
 
         
         //
@@ -190,5 +205,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getCounties: getCounties,
             getRegions: getRegions,
             getPortfolios: getPortfolios,
+            getSafStatus: getSafStatus,
+            getSafTypes: getSafTypes,
+            getCustomers: getCustomers,
+            getSafIds:getSafIds
         }
     });
