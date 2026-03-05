@@ -313,9 +313,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     var payload = this.data.siteRequestInfo;
                     if (targetId == 'submit-button') {
-                        if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft || payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued) {
+                        if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft) {
                             if (!confirm('Are you sure you want to submit this request?')) { return; }
                             payload[twcSrf.Fields.SRF_STATUS] = twcSrf.Status.Submitted;
+                        } else if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued) {
+                            if (!confirm('Are you sure you want to resubmit this request?')) { return; }
+                            payload[twcSrf.Fields.SRF_STATUS] = twcSrf.Status.Resubmitted;
                         }
                     }
                     var res = await this.post({ action: 'save' }, payload);
