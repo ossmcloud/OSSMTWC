@@ -31,6 +31,47 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LicenceExecuted: 9,
             SRFCancelled: 10
         }
+        // @@TOD: these could be on the status table since we have one
+        const SRF_STATUS_STYLE = {
+            Draft: { color: 'white', backgroundColor: 'silver' },
+            Submitted: { color: 'white', backgroundColor: 'olive' },
+            UnderReview: { color: 'white', backgroundColor: 'orange' },
+            FeedbackIssued: { color: 'white', backgroundColor: 'magenta' },
+            Resubmitted: { color: 'white', backgroundColor: 'olive' },
+            SRFApproved: { color: 'white', backgroundColor: 'lime' },
+            LicenceRequested: { color: 'white', backgroundColor: 'lightblue' },
+            WorksPermitted: { color: 'white', backgroundColor: 'mediumblue' },
+            LicenceIssued: { color: 'white', backgroundColor: 'blue' },
+            LicenceExecuted: { color: 'white', backgroundColor: 'green' },
+            SRFCancelled: { color: 'white', backgroundColor: 'red' }
+        }
+        function getSrfStatusName(srfStatusNumber) {
+            if (!srfStatusNumber) { srfStatusNumber = 11; }
+            for (var k in SRF_STATUS) {
+                if (SRF_STATUS[k] == srfStatusNumber) { return k; }
+            }
+        }
+        function getSrfStatusStyle(srfStatusNumber) {
+            if (!srfStatusNumber) { srfStatusNumber = 11; }
+            if (isNaN(parseInt(srfStatusNumber))) {
+                return SRF_STATUS_STYLE[srfStatusNumber];
+            } else {
+                return SRF_STATUS_STYLE[getSrfStatusName(srfStatusNumber)];
+            }
+        }
+        function getSrfStatusHtml(srfStatusNumber, spanClass) {
+            if (!srfStatusNumber) { srfStatusNumber = 11; }
+            var statusName = getSrfStatusName(srfStatusNumber);
+            if (isNaN(parseInt(srfStatusNumber))) {
+                statusName = srfStatusNumber;
+            }
+            var statusStyle = getSrfStatusStyle(statusName);
+            return `
+                <span class="${spanClass ? spanClass : 'twc-record-status'}" style="color: ${statusStyle.color}; background-color: ${statusStyle.backgroundColor};" >
+                    ${statusName}
+                </span>
+            `
+        }
 
 
 
@@ -85,7 +126,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var whereClause = '';
             if (Array.isArray(recordType)) {
-                whereClause = `c.scriptid in (${recordType.map(rt => { return `UPPER('${rt}')`; }).join(',') })`;
+                whereClause = `c.scriptid in (${recordType.map(rt => { return `UPPER('${rt}')`; }).join(',')})`;
             } else {
                 whereClause = `c.scriptid = UPPER('${recordType}')`;
             }
@@ -171,32 +212,35 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getLookUpTableValues('customrecord_twc_site_portfolio');
         }
 
-        function getSafStatus(){
+        function getSafStatus() {
             return getLookUpTableValues('customrecord_twc_saf_status');
         }
 
-        function getSafTypes(){
+        function getSafTypes() {
             return getLookUpTableValues('customrecord_twc_saf_type');
         }
 
-        function getCustomers(){
+        function getCustomers() {
             return getLookUpTableValues('customer');
         }
-        function getSafIds(){
+        function getSafIds() {
             return coreSQL.run(`select id as id, custrecord_twc_saf_id as text from customrecord_twc_saf where 1 = 1 order by id`)
         }
 
 
-        
+
         //
 
         return {
             SrfStepType: SRF_ITEM_STEP_TYPE,
             SrfRequestType: SRF_ITEM_REQUEST_TYPE,
             SrfStatus: SRF_STATUS,
+            getSrfStatusName: getSrfStatusName,
+            getSrfStatusStyle: getSrfStatusStyle,
+            getSrfStatusHtml: getSrfStatusHtml,
 
             ROOT_FILE_FOLDER: 'TWC Files',
-            
+
             getFields: getCustomTableFields,
 
             getSiteNames: getSiteNames,
@@ -208,6 +252,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafStatus: getSafStatus,
             getSafTypes: getSafTypes,
             getCustomers: getCustomers,
-            getSafIds:getSafIds
+            getSafIds: getSafIds
         }
     });

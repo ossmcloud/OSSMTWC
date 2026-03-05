@@ -2530,3 +2530,22 @@ div.twc-control-panel-fields {}
 div.twc-animate-height {
     /* transition: height 1s ease; */
 }
+
+
+
+span.twc-record-status {
+    padding: 10px 7px 6px 7px;
+    border-radius: 7px;
+    font-weight: bold;
+}
+
+span.twc-record-status-row {
+    padding: 5px;
+    border-radius: 7px;
+    font-weight: bold;
+    width: 100%;
+    display: block;
+    text-align: center;
+    margin-top: -10px;
+    margin-bottom: -10px;
+}

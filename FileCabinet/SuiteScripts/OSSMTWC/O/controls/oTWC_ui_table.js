@@ -389,6 +389,18 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#sortDirection = val;
             }
 
+            get nullText() {
+                return this.options.nullText;
+            } set nullText(val) {
+                this.options.nullText = val;
+            }
+
+            get cellMask() {
+                return this.options.cellMask;
+            } set cellMask(val) {
+                this.options.cellMask = val;
+            }
+
             showFilter() {
                 this.#filters.open();
             }
@@ -440,7 +452,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 }
 
                 if (formattedValue == null) {
-                    formattedValue = '<span style="color: silver; font-style: italic;">null</span>'
+                    formattedValue = `<span style="color: silver; font-style: italic;">${this.options.nullText === undefined ? 'null' : this.options.nullText}</span>`
+
                 } else {
                     if (this.type == 'float') {
                         formattedValue = toFloat(value).formatMoney();
@@ -465,11 +478,15 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         url = this.options.link.url.replace('${' + this.options.link.valueField + '}', data[this.options.link.valueField]);
                     }
                     if (url.startsWith('onclick')) {
-                        formattedValue = `<a class="o-table-link" ${url} href="#" target="${this.options.link.target || '_blank'}">${formattedValue}</a>`;   
+                        formattedValue = `<a class="o-table-link" ${url} href="#" target="${this.options.link.target || '_blank'}">${formattedValue}</a>`;
                     } else {
                         formattedValue = `<a class="o-table-link" href="${url}" target="${this.options.link.target || '_blank'}">${formattedValue}</a>`;
                     }
                 }
+
+                if (this.cellMask) { formattedValue = this.cellMask.replaceAll('${value}', formattedValue); }
+
+                if (this.formatValue) { formattedValue = this.formatValue(value, formattedValue); }
 
                 return `<div style="${this.baseStyles('cell')}">${formattedValue}</div>`;
             }

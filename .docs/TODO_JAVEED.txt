@@ -1,8 +1,14 @@
 TODO:
 -----
 
-03. Space Request: 
-    add submit button if status is 'Draft' or 'FeedbackIssued'
-        NOTE: if status is FeedbackIssued then set to 'Resubmitted'
-    if status not 'Draft' or 'FeedbackIssued' then the user should no longer be able to edit the request - Done (For Testing When i change the record Status and check I am getting an error : Cannot read properties of null (reading 'on'))
-    
+00. SRF Table:
+    create new field 'feedback_message' to srf table
+    show on UI on top ONLY if status is FeedbackIssued make sure field isd read-only
+
+01. Space Request: 
+    If status is Submitted or Resubmitted and userInfo.isEmployee = true and permission is FULL 
+        then add 'Issue Feedback' button =>
+            user must be forced to enter a message 
+                
+02. Implement workflow
+    -- need call with towercom --

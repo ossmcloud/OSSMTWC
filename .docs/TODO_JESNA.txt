@@ -2,7 +2,12 @@
 TODO:
 -----
 
-02. Finalise the site info page panels: 
-    add missing fields/panels
+01. Site Locator Panel :
+    like for SAF for SRF add SRF ID/Status in the filters
 
-03. Locator Panel => Access Request => the table should show site access requests (i.e.: work lite the space request page)
+02. New SAF :
+    create UI with:
+        Panel for Step 1
+        Panel for Existing SAFs
+
+    Calendar Control

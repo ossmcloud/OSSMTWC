@@ -13,9 +13,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var pageData = twcBaseView.initPageData(context);
 
             var html = '';
-            if (context.request.parameters.siteId) {
-                pageData.siteAccessInfo = twcSiteAccessUtils.getSiteAccessInfo(context.request.parameters.siteId);
-                pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(context.request.parameters.siteId);
+            if (context.request.parameters.siteId || context.request.parameters.recId) {
+                pageData.siteAccessInfo = twcSiteAccessUtils.getSiteAccessInfo(pageData);
+                pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteAccessInfo.siteId || context.request.parameters.siteId);
 
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteAccess');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
@@ -24,7 +24,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } else {
                 // @@TODO: this should actually be the site access info
               //  pageData.data.sitesInfo = twcSiteLocatorUtils.getSites();
-                pageData.data.sitesInfo = twcSiteAccessUtils.getSiteAccess()
+                //pageData.data.sitesInfo = twcSiteAccessUtils.getSiteAccess()
+                pageData.data.safInfo = twcSiteLocatorUtils.getSiteSaf();
 
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
                 html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteAccessUtils.renderSiteAccessPanel(pageData.permission.featureId));

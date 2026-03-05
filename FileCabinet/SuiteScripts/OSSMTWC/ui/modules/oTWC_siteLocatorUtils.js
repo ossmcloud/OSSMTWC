@@ -2,9 +2,10 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_icons.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js'],
-    (core, coreSQL, twcUtils, twcIcons, twcSrf, twcSrfUI, twcSite, twcSiteUI, twcUI, twcConfig) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_icons.js', '../../data/oTWC_srf.js', '../../data/oTWC_saf.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_safUI.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js'],
+    (core, coreSQL, twcUtils, twcIcons, twcSrf, twcSaf, twcSrfUI, twcSafUI, twcSite, twcSiteUI, twcUI, twcConfig) => {
 
+        // @@TODO:  this should really be on siteRequestUtils module
         function getSiteSrf(options) {
             var sqlFields = 's.id, s.id as record_id, s.name, s.custrecord_twc_srf_site as site_id, BUILTIN.DF(s.custrecord_twc_srf_site) as site_id_text';
 
@@ -46,6 +47,50 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 srfFields: srfFields,
                 userFields: userFields,
                 srfs: srfs,
+                sites: getSites(options).sites
+            }
+        }
+
+        // @@TODO:  this should really be on siteAccessUtils module
+        function getSiteSaf(options) {
+            var sqlFields = 's.id, s.id as record_id, s.name, s.custrecord_twc_saf_site as site_id, BUILTIN.DF(s.custrecord_twc_saf_site) as site_id_text';
+
+            var siteFields = twcUtils.getFields(twcSaf.Type);
+            var userFields = twcSafUI.getSafTableFields();
+
+            core.array.each(userFields, uf => {
+                var nsField = siteFields.find(nsf => { return nsf.field_id == uf.field });
+                var sqlField = uf.field;
+                uf.type = nsField.field_type;
+                if (nsField.field_type == 'List/Record') {
+                    uf.listRecord = true;
+                    sqlField = `${sqlField} as ${sqlField}, BUILTIN.DF(${sqlField}) as ${sqlField}_text`;
+                }
+                sqlFields += `, s.${sqlField}`;
+
+                if (!uf.label) { uf.label = nsField.field_label; }
+
+            })
+
+
+            // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
+            var whereClause = 'where 1 = 1 ';
+            var orderBy = `order by s.${twcSaf.Fields.SAF_ID}`;
+
+            var sites = coreSQL.run(`
+                select  ${sqlFields},
+                from    ${twcSaf.Type} s
+                ${whereClause} 
+                ${orderBy}
+            `)
+            log.debug('sqlFields', sqlFields)
+            log.debug('sites', sites)
+
+
+            return {
+                siteFields: siteFields,
+                userFields: userFields,
+                safs: sites,
                 sites: getSites(options).sites
             }
         }
@@ -171,6 +216,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             getSites: getSites,
             getSiteSrf: getSiteSrf,
+            getSiteSaf: getSiteSaf,
             renderSiteLocatorPanel: renderSiteLocatorPanel
 
         }

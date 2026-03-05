@@ -50,7 +50,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (col.id == 'site_type_color') { return false; }
                 if (col.id == 'site_type_color') { return false; }
 
-                var uf = window.twc.page.data.data.sitesInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
+                var uf = window.twc.page.data.data.safInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
                 if (uf) {
                     col.title = uf.label;
                     if (uf.listRecord && !col.id.endsWith('_text')) { return false; }
@@ -93,7 +93,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 } else {
                     // @@NOTE: this is site locator mode
                     this.#sitesTable = new TWCSiteTable(this);
-                    this.#sitePanel = twcSiteLocatorPanel.get({ page: this, table: this.#sitesTable, data: window.twc.page.data.data.sitesInfo.sites });
+                    this.#sitePanel = twcSiteLocatorPanel.get({ page: this, table: this.#sitesTable, data: this.data.data.safInfo.sites, tableData: this.data.data.safInfo.safs });
 
                 }
             }

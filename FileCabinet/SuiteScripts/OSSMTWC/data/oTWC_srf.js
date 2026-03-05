@@ -19,6 +19,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Fields: twcSrf.Fields,
             StepType: twcUtils.SrfStepType,
             Status: twcUtils.SrfStatus,
+            getSrfStatusName: twcUtils.getSrfStatusName,
+            getSrfStatusStyle: twcUtils.getSrfStatusStyle,
+            getSrfStatusHtml: twcUtils.getSrfStatusHtml,
 
             get: function (id) {
                 var rec = new OSSMTWC_SRF(id);

@@ -17,17 +17,25 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 pageData.siteRequestInfo = twcSiteRequestUtils.getSiteRequestInfo(pageData);
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteRequestInfo.siteId || context.request.parameters.siteId);
 
+                pageData.recordStatus = twcSrf.getSrfStatusHtml(pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS]);
+
+                // @@NOTES: if the SRF is submitted we still let users with full access to edit it but only if we are a Towercom employee 
+                var canSubmit = pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued;
+                pageData.forceViewOnly = !(canSubmit ? true : (pageData.userInfo.isEmployee && pageData.userInfo.permission.lvl == twcConfig.PERMISSION_LEVEL.FULL));
+
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_spaceRequest');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
 
                 var readOnly = context.request.parameters.edit != 'T';
                 // @@NOTE: if permission lvl is 1 it means view only so even if parameter passed force to read only
-                if (pageData.userInfo.permission.lvl == 1) { readOnly = true; }
+                if (pageData.userInfo.permission.lvl == twcConfig.PERMISSION_LEVEL.VIEW) {
+                    // @@TODO: here we should really re-direct without the edit flag
+                    readOnly = true;
+                }
 
                 var fieldGroups = twcSiteRequestUtils.getSRFInfoPanels(pageData.siteRequestInfo, pageData.userInfo);
                 html = html.replaceAll('{SITE_REQUEST_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
-                core.logDebug("SRF STATUS", pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS])
-                if ((pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued)) {
+                if (canSubmit) {
                     html = html.replaceAll('<div id="custom-actions"></div>', `
                         <div id="custom-actions">
                             ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Submit', id: 'submit-button' })}

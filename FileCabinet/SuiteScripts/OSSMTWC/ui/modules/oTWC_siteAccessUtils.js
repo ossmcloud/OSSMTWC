@@ -125,11 +125,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         return {
-            getSiteAccessInfo: (id) => {
-                // @@TODO:
-                return {
-                    site: id,
+            getSiteAccessInfo: (pageData) => {
+                
+
+                var saf = {};
+                if (pageData.recId) {
+                    // @@TODO: this is an existing record so load it
+                    saf.siteId = pageData.siteId;
+                } else {
+                    // @@TODO: this is a new record for the given site id
+
+                    if (pageData.userInfo.isCustomer) { saf[twcSaf.Fields.CUSTOMER] = pageData.userInfo.id; }
+                    saf[twcSaf.Fields.SITE] = pageData.siteId;
+                    
                 }
+                
+
+                return saf;
             },
             renderSiteAccessPanel:renderSiteAccessPanel,
             getSiteAccess:getSiteAccess

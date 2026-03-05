@@ -93,6 +93,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 }
 
+                if (col.id == `${twcSrf.Fields.SRF_STATUS}_text`) {
+                    col.styles = { 'text-align': 'center', width: '150px' }
+                    col.formatValue = (v) => {
+                        return twcSrf.getSrfStatusHtml(v, 'twc-record-status-row');
+                    }
+                }
+                if (col.id == twcSrf.Fields.OPERATOR_SITE_ID) { col.nullText = ''; }
 
                 if (col.id == twcSite.Fields.LATITUDE || col.id == twcSite.Fields.LONGITUDE) { col.styles = { 'text-align': 'right' }; }
             }
@@ -121,17 +128,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // @@NOTE: this is record view/edit mode
                     this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
 
-                    this.ui.getControl('submit-button').on('click', e => {
-                        alert('do submit')
-                        // call onSave function
+                    this.ui.getControl('submit-button')?.on('click', e => {
                         this.onSave(e);
                     });
-                    // this.ui.on('click', e => {
-                    //     if (e.id == 'submit-button') {
-                    //         alert('do submit')
-                    //     }
-                    //     console.log(e)
-                    // })
 
                     this.ui.on('change', e => {
                         if (e.target.type != 'table') {
@@ -302,25 +301,55 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
             }
 
+            // setFeedbackIssued() {
+            //     dialog.open({
+            //         title: '',
+            //         content: '',
+            //         ok: (dlg) => {
+            //             if (!dlg.find('#my-message-input-id')) {
+            //                 dialog.error('please enter a message')
+            //                 return false;
+            //             }
+            //             if (dlg.find('#my-message-input-id').val().length < 20) {
+                            
+            //             }
+            //             this.onSave()
+            //         }
+            //     })
+            // }
+
             async onSave(e) {
                 const targetId = e.id || e.target.id;
                 try {
-                    this.wait();
-
-                    if (!this.dirty) { throw new Error('The record has not changed'); }
-
-                    // @@TODO: if status is 'Draft' ask user if the request has to be submitted
+                    
+                    if (!targetId == 'submit-button') {
+                        if (!this.dirty) { throw new Error('The record has not changed'); }
+                    }
+                    
+                    // else if (!targetId == 'submit-button-fffff') {
+                    //     var res = await dialog.openAsync({ ...})
+                    //     if (!dlg.find('#my-message-input-id')) {
+                    //         await dialog.errorAsync('please enter a message')
+                    //         await this.onSave(e)
+                    //         return ;
+                    //     }
+                    // }
 
                     var payload = this.data.siteRequestInfo;
                     if (targetId == 'submit-button') {
                         if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft) {
-                            if (!confirm('Are you sure you want to submit this request?')) { return; }
+                            await dialog.confirmAsync('Are you sure you want to submit this request?');
+                            
                             payload[twcSrf.Fields.SRF_STATUS] = twcSrf.Status.Submitted;
                         } else if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued) {
-                            if (!confirm('Are you sure you want to resubmit this request?')) { return; }
+                            await dialog.confirmAsync('Are you sure you want to resubmit this request?');
+
                             payload[twcSrf.Fields.SRF_STATUS] = twcSrf.Status.Resubmitted;
                         }
                     }
+
+                    this.wait();
+
                     var res = await this.post({ action: 'save' }, payload);
                     this.dirty = false;
                     var p = new URLSearchParams(location.search);
