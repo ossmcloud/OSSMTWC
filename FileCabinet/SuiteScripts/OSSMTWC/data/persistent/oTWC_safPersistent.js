@@ -46,8 +46,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             END_TIME_BLOCK: { name: 'custrecord_twc_saf_end_time_block', type: 'datetimetz', alias: 'endTimeBlock', display: 'normal', mandatory: false },
             SITE: { name: 'custrecord_twc_saf_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site,' },
             WORKS_END_DATE: { name: 'custrecord_twc_saf_word_end_date', type: 'date', alias: 'worksEndDate', display: 'normal', mandatory: false },
+            //@@REVIEW TYPE was recursively called and was getting error maximum call stack reached, so changed alias to safType
+
             TYPE: { name: 'custrecord_twc_saf_type', type: 'select', alias: 'type', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf_type,' },
-            PHOTO_ASSESSMENT_CATEGORY: { name: 'custrecord_twc_saf_photo_assess_category', type: 'select', alias: 'photoAssessmentCategory', display: 'normal', mandatory: false, recordType: 'customrecord_twc_photo_assessment_cat,' },
+           // TYPE: { name: 'custrecord_twc_saf_type', type: 'select', alias: 'safType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf_type,' },
+
+           PHOTO_ASSESSMENT_CATEGORY: { name: 'custrecord_twc_saf_photo_assess_category', type: 'select', alias: 'photoAssessmentCategory', display: 'normal', mandatory: false, recordType: 'customrecord_twc_photo_assessment_cat,' },
             MAST_ACCESS: { name: 'custrecord_twc_saf_mast_access', type: 'checkbox', alias: 'mastAccess', display: 'normal', mandatory: false },
             TL_BUILDING_ACCESS: { name: 'custrecord_twc_saf_tl_building_access', type: 'checkbox', alias: 'tLBuildingAccess', display: 'normal', mandatory: false },
             CRANE__CHERRYPICKER: { name: 'custrecord_twc_saf_crane_cherrypicker', type: 'checkbox', alias: 'craneCherrypicker', display: 'normal', mandatory: false },
@@ -120,13 +124,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.WORKS_END_DATE, value)
             }
             
-            get type() {
+            //@@REVIEW type() was recursively called and was getting error maximum call stack reached, so changed type() to saftype()
+            // get type() {
+            //     return this.get(_recordFields.TYPE);
+            // } set type(value) {
+            //     this.set(_recordFields.TYPE, value)
+            // }
+            // get typeName() { return this.getText(_recordFields.TYPE); }
+            
+            get safType() {
                 return this.get(_recordFields.TYPE);
-            } set type(value) {
+            } set safType(value) {
                 this.set(_recordFields.TYPE, value)
             }
-            get typeName() { return this.getText(_recordFields.TYPE); }
+            get safTypeName() { return this.getText(_recordFields.TYPE); }
             
+
             get photoAssessmentCategory() {
                 return this.get(_recordFields.PHOTO_ASSESSMENT_CATEGORY);
             } set photoAssessmentCategory(value) {
@@ -279,6 +292,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             Type: _recordType,
             Fields: _recordFields,
+            FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_SAF,
 
             get: function (id) {

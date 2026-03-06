@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_srfItem.js', './oTWC_file.js', '../O/controls/oTWC_ui_ctrl.js','./oTWC_planning.js','./oTWC_siteRow.js','./oTWC_powerSupply.js','./oTWC_land.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSrfItem, twcFile, twcUI,twcPlan,twcRow,twcPowerSupply,twcLand) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_srfItem.js', './oTWC_file.js', '../O/controls/oTWC_ui_ctrl.js','./oTWC_planning.js','./oTWC_siteRow.js','./oTWC_powerSupply.js','./oTWC_land.js','./oTWC_saf.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSrfItem, twcFile, twcUI,twcPlan,twcRow,twcPowerSupply,twcLand, twcSaf) => {
 
         // @@TODO: need to find a way to make this as handy as possible
         function getDataObject(recordType, callback) {
@@ -15,6 +15,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (recordType == twcRow.Type) { return twcRow; }
             if (recordType == twcPowerSupply.Type) { return twcPowerSupply; }
             if (recordType == twcLand.Type) { return twcLand; }
+            if (recordType == twcSaf.Type) { return twcSaf; }
 
             throw new Error(`Unrecognised record type: ${recordType}`);
         }

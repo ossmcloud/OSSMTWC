@@ -8,6 +8,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
           function getSiteAccess(options) {
             var sqlFields = 's.id, s.id as record_id, s.name';
+            //var sqlFields = 's.id, s.id as record_id, s.name, s.custrecord_twc_saf_site as site_id, BUILTIN.DF(s.custrecord_twc_saf_site) as site_id_text'; //@@JESNA replace with
 
             var siteFields = twcUtils.getFields(twcSaf.Type);
             var userFields = twcSafUI.getSafTableFields();
@@ -45,6 +46,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 siteFields: siteFields,
                 userFields: userFields,
                 sites: sites
+                //   safs: sites, //@@JESNA REPLACE WITH
+                // sites: getSites(options).sites //@@JESNA REPLACE WITH
             }
         }
 
@@ -144,7 +147,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return saf;
             },
             renderSiteAccessPanel:renderSiteAccessPanel,
-            getSiteAccess:getSiteAccess
+            getSiteAccess:getSiteAccess,
+            getSAFInfoPanels: twcSafUI.getSAFInfoPanels,
 
         }
 

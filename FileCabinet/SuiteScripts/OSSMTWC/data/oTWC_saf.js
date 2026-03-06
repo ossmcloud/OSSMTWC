@@ -17,6 +17,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             Type: twcSaf.Type,
             Fields: twcSaf.Fields,
+            FieldsInfo: twcSaf.FieldsInfo,
+
 
             get: function (id) {
                 var rec = new OSSMTWC_SAF(id);

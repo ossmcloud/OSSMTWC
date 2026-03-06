@@ -227,8 +227,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return coreSQL.run(`select id as id, custrecord_twc_saf_id as text from customrecord_twc_saf where 1 = 1 order by id`)
         }
 
+        function getSrfStatus() {
+            return getLookUpTableValues('customrecord_twc_srf_status');
+        }
 
-
+         function getSrfIds() {
+            return getLookUpTableValues('customrecord_twc_srf');
+        }
         //
 
         return {
@@ -252,6 +257,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafStatus: getSafStatus,
             getSafTypes: getSafTypes,
             getCustomers: getCustomers,
-            getSafIds: getSafIds
+            getSafIds: getSafIds,
+            getSrfIds:getSrfIds,
+            getSrfStatus:getSrfStatus
         }
     });
