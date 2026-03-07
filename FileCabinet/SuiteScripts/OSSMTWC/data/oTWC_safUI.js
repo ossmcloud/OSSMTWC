@@ -36,8 +36,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSAFInfoPanels_SAF_Builder(dataSource, userInfo) {
             var fieldGroup = { id: 'site-access-builder', title: (dataSource.id) ? `Site Access [${dataSource.name}]` : 'Create New Site Access', collapsed: false, controls: [] };
 
-            var calenderInfo = { id: 'site-access-saf-builder', title: 'SAF BUILDER / CALENDER', fields: [] };
+            var calenderInfo = { id: 'site-access-saf-builder', renderAsTable: true, fields: [] };
             fieldGroup.controls.push(calenderInfo);
+
+            calenderInfo.fields.push({ id: 'saf-calendar', type: twcUI.CTRL_TYPE.CALENDAR })
+            calenderInfo.fields.push({
+                id: 'saf-calendar-panel', type: twcUI.CTRL_TYPE.PANEL,
+                title: `<div id="srf-cal-selection-title">${twcUtils.formatLongDate()}</div>`,
+                content: '<div id="srf-cal-selection-body"></div>',
+                styles: { width: '300px', height: '175px' }
+            })
 
             var customers = null;
 
@@ -72,70 +80,70 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getSAFInfoPanels_Existing(dataSource, userInfo) {
-            var fieldGroup = { id: 'site-access-extings-safs', title: 'Existing SAFs', collapsed: false, controls: [] };
+            var fieldGroup = { id: 'site-access-extings-safs', title: 'Existing SAFs', collapsed: true, controls: [] };
 
             var detailsInfo = { id: 'site-access-details', title: 'Filters', fields: [] };
             fieldGroup.controls.push(detailsInfo);
 
-            detailsInfo.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Customer' })          
-            detailsInfo.fields.push({ id: twcSaf.Fields.STATUS, label: 'Status' })    
+            detailsInfo.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Customer' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.STATUS, label: 'Status' })
             // detailsInfo.fields.push({ id: twcSaf.Fields.START_TIME_BLOCK, label: 'Start' })          
             // detailsInfo.fields.push({ id: twcSaf.Fields.END_TIME_BLOCK, label: 'End' })          
-              
-          // fieldGroup.controls.push({ id: 'site-access-saf-det', title: 'Saf Details', fields: [twcSafItemUI.getStepTableUIControl(dataSource, 1)] });
 
-          
-        var safDetails = { id: 'site-access-details-table', title: 'Saf Details', fields: [] };
+            // fieldGroup.controls.push({ id: 'site-access-saf-det', title: 'Saf Details', fields: [twcSafItemUI.getStepTableUIControl(dataSource, 1)] });
+
+
+            var safDetails = { id: 'site-access-details-table', title: 'Saf Details', fields: [] };
             fieldGroup.controls.push(safDetails);
-          safDetails.fields.push({
+            safDetails.fields.push({
                 id: `${twcSaf.Type}`, label: 'Saf Details',
                 fields: {
-                [twcSaf.Fields.SAF_ID]: 'SAF',
-                //[twcSaf.Fields.SITE]: 'Submitted',
-                [twcSaf.Fields.CUSTOMER]: 'Customer',
-                [twcSaf.Fields.TYPE]: 'Type',
-                [twcSaf.Fields.MAST_ACCESS]: 'Mast',
-                [twcSaf.Fields.SAF_AUTHOR]: 'Author',
-                [twcSaf.Fields.STATUS]: 'Status',
+                    [twcSaf.Fields.SAF_ID]: 'SAF',
+                    //[twcSaf.Fields.SITE]: 'Submitted',
+                    [twcSaf.Fields.CUSTOMER]: 'Customer',
+                    [twcSaf.Fields.TYPE]: 'Type',
+                    [twcSaf.Fields.MAST_ACCESS]: 'Mast',
+                    [twcSaf.Fields.SAF_AUTHOR]: 'Author',
+                    [twcSaf.Fields.STATUS]: 'Status',
 
                 },
-               //where: { [twcSaf.Fields.SITE]: dataSource.id },
+                //where: { [twcSaf.Fields.SITE]: dataSource.id },
                 FieldsInfo: twcSaf.FieldsInfo,
             });
-                        log.debug("wcSaf.Fields",twcSaf.FieldsInfo )
+            log.debug("wcSaf.Fields", twcSaf.FieldsInfo)
 
-                        log.debug("dataSource.id",dataSource.id )
+            log.debug("dataSource.id", dataSource.id)
 
-            log.debug("safDetails",safDetails)
+            log.debug("safDetails", safDetails)
             configUIFields.formatPanelFields(dataSource, fieldGroup);
-            
-           
+
+
             return fieldGroup;
         }
 
-          function getSAFInfoPanels_Existing_Saf_Details(dataSource, userInfo) {
+        function getSAFInfoPanels_Existing_Saf_Details(dataSource, userInfo) {
             var fieldGroup = { id: 'site-access-details', title: 'Existing SAFs', collapsed: false, controls: [] };
 
             var detailsInfo = { id: 'site-access-details', title: 'Details', fields: [] };
             fieldGroup.controls.push(detailsInfo);
 
-            detailsInfo.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Customer' })          
-            detailsInfo.fields.push({ id: twcSaf.Fields.STATUS, label: 'Status' })    
+            detailsInfo.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Customer' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.STATUS, label: 'Status' })
             // detailsInfo.fields.push({ id: twcSaf.Fields.START_TIME_BLOCK, label: 'Start' })          
             // detailsInfo.fields.push({ id: twcSaf.Fields.END_TIME_BLOCK, label: 'End' })          
-              
+
             configUIFields.formatPanelFields(dataSource, fieldGroup);
-            
-           
+
+
             return fieldGroup;
         }
 
         function getSAFInfoPanels(dataSource, userInfo) {
-            log.debug("dataSource",dataSource)
+            log.debug("dataSource", dataSource)
             if (!dataSource) { dataSource = {}; }
             dataSource.Type = twcSaf.Type;
 
-            log.debug("dataSource",dataSource)
+            log.debug("dataSource", dataSource)
             var fieldGroups = [];
             fieldGroups.push(getSAFInfoPanels_SAF_Builder(dataSource, userInfo));
             fieldGroups.push(getSAFInfoPanels_Existing(dataSource, userInfo));

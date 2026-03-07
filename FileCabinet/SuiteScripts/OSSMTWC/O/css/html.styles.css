@@ -1,3 +1,7 @@
+ossm {
+    display: inline-block;
+}
+
 dialog.o-dialog {
     padding: 0px;
     border: none;
@@ -274,10 +278,136 @@ dialog.o-dialog-maximized {
 div.o-table-toolbar {
     text-align: right;
 }
+
 div.o-table-toolbar>span {
     cursor: pointer;
 }
 
 span.o-table-action {
     cursor: pointer;
+}
+
+
+div.o-calendar-outer {
+    padding: 3px;
+    border-radius: 7px;
+    border: 1px solid var(--grid-color);
+}
+
+div.o-calendar-nav {
+    display: table;
+    width: 100%;
+}
+
+div.o-calendar-nav>div {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    padding: 0px 7px;
+    
+}
+
+div.o-calendar-nav>div:last-child,
+div.o-calendar-nav>div:first-child {
+    width: 20px;
+    cursor: pointer;
+    padding: 3px 0px 0px 0px;
+}
+
+div.o-calendar {
+    display: table;
+}
+
+div.o-calendar-row {
+    display: table-row;
+
+}
+
+div.o-calendar-row>div {
+    display: table-cell;
+    /* padding: 7px; */
+    text-align: center;
+    vertical-align: middle;
+    /* border-radius: 7px; */
+}
+
+div.o-calendar-row>div:hover {
+    cursor: pointer;
+    color: var(--accent-fore-color);
+    background-color: var(--accent-bkgd-color);
+}
+
+div.o-calendar-header {
+    display: table-row;
+    
+}
+
+div.o-calendar-header>div {
+    display: table-cell;
+    padding: 7px;
+    text-align: center;
+    vertical-align: middle;
+    color: var(--accent-fore-color);
+    background-color: var(--accent-bkgd-color);
+}
+
+div.o-calendar-day {
+    padding: 7px;
+    border: 3px solid transparent;
+    
+}
+div.o-calendar-day-c {
+    padding: 0px;
+    border-right: 1px solid var(--grid-color);
+    border-bottom: 1px solid var(--grid-color);
+    
+}
+div.o-calendar-day-c:first-child {
+    border-left: 1px solid var(--grid-color);
+}
+div.o-calendar-day-c>div:first-child {
+    padding: 3px;
+    border-bottom: 1px solid var(--grid-color);
+    background-color: var(--highlight-color-bkgd);
+    color: var(--highlight-color);
+}
+div.o-calendar-day-content {
+    display: grid;
+    align-content: center;
+    padding: 7px;
+    min-height: 50px;
+    min-width: 75px;
+    vertical-align: middle;
+}
+
+.o-calendar-gray {
+    color: silver;
+}
+
+.o-calendar-gray-we {
+    color: rosybrown;
+}
+
+.o-calendar-we {
+    color: red;
+}
+
+.o-calendar-current {
+    border: 3px solid var(--highlight-color-bkgd) !important;
+    
+}
+
+.o-calendar-special {
+    background-color: var(--accent-fore-color) !important;
+    color: var(--accent-bkgd-color) !important;
+}
+
+
+.o-my-special-class {
+    background-color: magenta !important;
+    color: white !important;
+}
+
+.o-calendar-past {
+    background-color: silver !important;
 }

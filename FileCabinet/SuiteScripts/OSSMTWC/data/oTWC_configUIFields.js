@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_srfItem.js', './oTWC_file.js', '../O/controls/oTWC_ui_ctrl.js','./oTWC_planning.js','./oTWC_siteRow.js','./oTWC_powerSupply.js','./oTWC_land.js','./oTWC_saf.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSrfItem, twcFile, twcUI,twcPlan,twcRow,twcPowerSupply,twcLand, twcSaf) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_srfItem.js', './oTWC_file.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSrfItem, twcFile, twcUI, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf) => {
 
         // @@TODO: need to find a way to make this as handy as possible
         function getDataObject(recordType, callback) {
@@ -58,7 +58,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var siteFields = getFieldDefinitions(dataSource.Type);
             if (!panelFields.controls) { panelFields.controls = []; }
             core.array.each(panelFields.fields, field => {
-                if (field.type == twcUI.CTRL_TYPE.BUTTON) {
+                //if (field.type == twcUI.CTRL_TYPE.BUTTON) {
+                if (field.type !== undefined) {
                     panelFields.controls.push(field)
                     return;
                 }
@@ -75,7 +76,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         if (title.title) {
                             link = title.link || null;
                             title = title.title;
-                            
+
                         }
 
                         if (f) {

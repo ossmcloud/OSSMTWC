@@ -841,8 +841,35 @@ div.twc_ctrl_dropDown>div:hover {
 }
 
 
+div.twc_ctrl_panel_outer {
+    padding: 3px;
 
+}
 
+div.twc_ctrl_panel_title {
+    font-weight: bold;
+    color: var(--title-color);
+    background-color: var(--accent-bkgd-color);
+    border-left: 1px solid var(--grid-color);
+    border-right: 1px solid var(--grid-color);
+    border-top: 1px solid var(--grid-color);
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    margin-bottom: 0px;
+    padding: 3px 7px;
+}
+
+div.twc_ctrl_panel {
+    border-left: 1px solid var(--grid-color);
+    border-right: 1px solid var(--grid-color);
+    border-bottom: 1px solid var(--grid-color);
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+    margin-bottom: 0px;
+    padding: 3px 7px;
+    min-height: 70px;
+    min-width: 100px;
+}
 
 
 
@@ -2526,6 +2553,13 @@ span.twc-control-panel-expand {
 
 div.twc-control-panel-fields {}
 
+div.twc-control-panel-fields-table {
+    display: table;
+}
+div.twc-control-panel-fields-table>div {
+    display: table-cell;
+    vertical-align: top;
+}
 
 div.twc-animate-height {
     /* transition: height 1s ease; */

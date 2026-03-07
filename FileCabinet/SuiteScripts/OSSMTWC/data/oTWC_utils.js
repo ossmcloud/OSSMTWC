@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js'],
-    (core, coreSQL) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js'],
+    (core, cored, coreSQL) => {
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SRF_ITEM_STEP_TYPE = {
@@ -231,10 +231,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getLookUpTableValues('customrecord_twc_srf_status');
         }
 
-         function getSrfIds() {
+        function getSrfIds() {
             return getLookUpTableValues('customrecord_twc_srf');
         }
         //
+
+        function formatLongDate(d) {
+            if (!d) { d = (new Date()).addHours(12); }
+            return `${cored.WeekDays[d.getDay()]} ${d.getDate()} ${cored.Months[d.getMonth()]}, ${d.getFullYear()}`;
+        }   
 
         return {
             SrfStepType: SRF_ITEM_STEP_TYPE,
@@ -258,7 +263,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafTypes: getSafTypes,
             getCustomers: getCustomers,
             getSafIds: getSafIds,
-            getSrfIds:getSrfIds,
-            getSrfStatus:getSrfStatus
+            getSrfIds: getSrfIds,
+            getSrfStatus: getSrfStatus,
+
+            formatLongDate: formatLongDate
         }
     });

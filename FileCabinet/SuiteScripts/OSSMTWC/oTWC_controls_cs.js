@@ -3,11 +3,18 @@
  *@NScriptType ClientScript
  *@NModuleScope public
  */
-define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_srf.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js', './O/oTWC_nsFileUtils.js'],
-    function (core, coreSQL, dialog, recu, twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields, siteInfoUtils, twcSrf, twcSrfUI, twcEquipment, nsFileUtils) {
+define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_srf.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js', './O/oTWC_nsFileUtils.js', './O/controls/oTWC_ui_ctrl.js'],
+    function (core, coreSQL, dialog, recu, twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields, siteInfoUtils, twcSrf, twcSrfUI, twcEquipment, nsFileUtils, twcUI) {
+        var _ui;
 
         function pageInit(context) {
             console.log('debug -------------> ' + core.env.live())
+            _ui = twcUI.init({}, jQuery('#main_form'));
+            _ui.on('change', e => {
+                console.log(e.value)
+                console.log(e.target.getDateContent(e.value))
+            })
+
 
         }
 
@@ -19,12 +26,12 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             })
 
         }
-    
+
 
 
 
         function deleteSrf(id) {
-    
+
             coreSQL.each(`select id from customrecord_twc_srf_itm where custrecord_twc_srf_itm_srf = ${id}`, srfItem => {
                 recu.del('customrecord_twc_srf_itm', srfItem.id)
             })
@@ -40,16 +47,20 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             testFunction() {
                 try {
 
+                    // _ui.getControl('twc-calendar').specialDates = { '2026-03-03': 'test' }
+                    // _ui.getControl('twc-calendar').datesContent = { '2026-03-03': 'test' }
+                    // _ui.getControl('twc-calendar').value = new Date(2026, 1, 15)
 
-                    console.log(coreSQL.first(`
-                        select  s.name, site.${twcSite.Fields.SITE_ID} as site_id
-                        from    ${twcSrf.Type} s
-                        join    ${twcSite.Type} site on site.id = s.${twcSrf.Fields.SITE}
-                        where   s.id = 13
-                        
-                    `));
 
-                    console.log(recu.lookUp(twcSrf.Type, 13, ['name', twcSrf.Fields.SITE]));
+                    // console.log(coreSQL.first(`
+                    //     select  s.name, site.${twcSite.Fields.SITE_ID} as site_id
+                    //     from    ${twcSrf.Type} s
+                    //     join    ${twcSite.Type} site on site.id = s.${twcSrf.Fields.SITE}
+                    //     where   s.id = 13
+
+                    // `));
+
+                    // console.log(recu.lookUp(twcSrf.Type, 13, ['name', twcSrf.Fields.SITE]));
 
                     // var testData = {
                     //     type: 'customrecord_twc_srf_itm',
@@ -81,14 +92,14 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
 
                     // console.log(twcEquipment.select(options));
 
-                    
+
                     //  var rec = {};
                     //  rec['custrecord_twc_srf_cust'] = 210;
                     //  console.log(twcSrfUI.getSRFInfoPanels(rec, {}))
 
 
                     // var payload = {
-                        
+
                     //     "custrecord_twc_site_level": "1",
                     //     "custrecord_twc_site_level___name": "Premium (TEST)",
                     //     "custrecord_twc_site_alias": "peppo",

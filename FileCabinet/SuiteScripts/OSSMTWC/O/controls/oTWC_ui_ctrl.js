@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', '../../data/oTWC_icons.js', './oTWC_ui_ctrlBase.js', './oTWC_ui_dropDown.js', './oTWC_ui_input.js', './oTWC_ui_table.js', './oTWC_ui_propTable.js', './oTWC_ui_button.js', './oTWC_ui_toggle.js'],
-    (core, b64, icons, ctrlBase, uiDropDown, uiInput, uiTable, uiPropTable, uiButton, uiToggle) => {
+define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', '../../data/oTWC_icons.js', './oTWC_ui_ctrlBase.js', './oTWC_ui_dropDown.js', './oTWC_ui_input.js', './oTWC_ui_table.js', './oTWC_ui_propTable.js', './oTWC_ui_button.js', './oTWC_ui_toggle.js', './oTWC_ui_calendar.js', './oTWC_ui_panel.js'],
+    (core, b64, icons, ctrlBase, uiDropDown, uiInput, uiTable, uiPropTable, uiButton, uiToggle, uiCalendar, uiPanel) => {
 
         class UI {
             #container = null;
@@ -39,7 +39,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     }
 
                 });
-                if (errors) { throw new Error(errors);                }
+                if (errors) { throw new Error(errors); }
                 return obj;
             }
 
@@ -80,8 +80,11 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 } else if (ctrlType == ctrlBase.CTRL_TYPE.TOGGLE) {
                     ctrl = uiToggle.ui(ctrl);
                 } else if (ctrlType == ctrlBase.CTRL_TYPE.TABLE) {
-
                     ctrl = uiTable.ui(ctrl.closest('ossm'));
+                } else if (ctrlType == ctrlBase.CTRL_TYPE.CALENDAR) {
+                    ctrl = uiCalendar.ui(ctrl);
+                } else if (ctrlType == ctrlBase.CTRL_TYPE.PANEL) {
+                    ctrl = uiPanel.ui(ctrl);
                 } else {
                     ctrl = uiInput.ui(ctrl);
                 }
@@ -141,6 +144,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 return uiButton.render(options);
             } else if (options.type == ctrlBase.CTRL_TYPE.TOGGLE) {
                 return uiToggle.render(options);
+            } else if (options.type == ctrlBase.CTRL_TYPE.CALENDAR) {
+                return uiCalendar.render(options);
+            } else if (options.type == ctrlBase.CTRL_TYPE.PANEL) {
+                return uiPanel.render(options);
             } else {
                 return uiInput.render(options);
             }

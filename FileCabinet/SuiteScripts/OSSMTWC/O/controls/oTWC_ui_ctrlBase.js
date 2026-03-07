@@ -17,7 +17,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             DROPDOWN: 'dropDown',
             SELECT: 'select',
             BUTTON: 'button',
-            CHART: 'chart'
+            CHART: 'chart',
+            CALENDAR: 'calendar',
+            PANEL: 'panel'
         }
 
         return {
@@ -45,6 +47,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     styles = ` style="display: block; overflow: auto;"`;
                 } else if (options.type == CTRL_TYPE.CHART) {
                     styles = ` style="display: block; width: 100%; height: 100%;"`;
+                // } else if (options.type == CTRL_TYPE.PANEL) {
+                //     styles = ` style="position: absolute;"`;
                 }
                 return `
                     <ossm data-type="${options.type || 'control'}"${styles}>

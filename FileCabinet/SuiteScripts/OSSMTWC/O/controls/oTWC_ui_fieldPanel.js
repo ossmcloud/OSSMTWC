@@ -10,8 +10,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
         function renderCollection(controlGroup, readOnly) {
             var id = controlGroup.id ? ` id="${controlGroup.id}"` : '';
             var collapsed = controlGroup.collapsed ? ' style="display: none"' : '';
-            var content = `
-                <div class="twc-control-panel" ${id}>
+            var title = '';
+            if (controlGroup.title !== undefined) {
+                title = `
                     <div class="twc-control-panel-title twc-div-table">
                         <div style="width: 24px">
                             <span class="twc-control-panel-expand">${twcIcons.get('arrowDown', 20)}</span>
@@ -20,10 +21,20 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                             ${controlGroup.title || ''}
                         </div>
                     </div>
+                `
+            }
+
+            var content = `
+                <div class="twc-control-panel" ${id}>
+                    ${title}
                     <div class="twc-control-panel-fields" ${collapsed}>
             `;
 
+            if (controlGroup.renderAsTable) {
+                content += '<div class="twc-control-panel-fields-table">';
+            }
             core.array.each(controlGroup.controls, ctrl => {
+                if (controlGroup.renderAsTable) { content += '<div>'; }
                 if (ctrl.controls) {
                     content += renderCollection(ctrl, readOnly);
                 } else {
@@ -31,7 +42,11 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     content += ui.render(ctrl);
                     if (ctrl.lineBreak) { content += '<br />'; }
                 }
+                if (controlGroup.renderAsTable) { content += '</div>'; }
             })
+            if (controlGroup.renderAsTable) {
+                content += '</div>';
+            }
 
             content += '</div>';    // twc-control-panel-fields
             content += '</div>';    // twc-control-panel
