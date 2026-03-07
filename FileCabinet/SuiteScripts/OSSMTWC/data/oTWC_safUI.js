@@ -46,6 +46,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 content: '<div id="srf-cal-selection-body"></div>',
                 styles: { width: '300px', height: '175px' }
             })
+            calenderInfo.fields.push({
+                id: 'saf-calendar-access-panel', type: twcUI.CTRL_TYPE.PANEL,
+                title: `<div id="srf-cal-selection-access-title">Your Access Form</div>`,
+                content: '<div id="srf-cal-selection-access-body"></div>',
+                styles: { width: '300px', height: '175px' }
+            })
+
 
             var customers = null;
 
