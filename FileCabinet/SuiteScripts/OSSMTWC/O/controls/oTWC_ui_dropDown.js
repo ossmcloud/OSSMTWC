@@ -40,6 +40,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get multiSelect() { return this.#options.multiSelect; }
             get mandatory() { return this.#options.mandatory; }
 
+            get hide() {
+                return this.#ui.closest('ossm').css('display') == 'none';
+            } set hide(val) {
+                this.#ui.closest('ossm').css('display', val ? 'none' : 'inline');
+            }
+
             // @@TODO: we need to implement the disabled attr on arrow
             get disabled() {
                 return this.#input.attr("disabled") !== undefined;

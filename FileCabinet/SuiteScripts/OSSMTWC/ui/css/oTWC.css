@@ -298,12 +298,15 @@ a:hover {
     text-decoration: underline;
 }
 
+span.twc-link-like,
 a.twc {
     color: var(--nav-icon-color);
     text-decoration: none;
 }
 
+span.twc-link-like:hover,
 a.twc:hover {
+    cursor: pointer;
     color: var(--accent-fore-color);
     text-decoration: underline;
 }
@@ -750,7 +753,6 @@ span.twc-wait-cursor {
 }
 
 
-
 .twc-clickable {
     padding: 7px;
     cursor: pointer;
@@ -848,7 +850,7 @@ div.twc_ctrl_panel_outer {
 
 div.twc_ctrl_panel_title {
     font-weight: bold;
-    color: var(--title-color);
+    color: var(--accent-fore-color);
     background-color: var(--accent-bkgd-color);
     border-left: 1px solid var(--grid-color);
     border-right: 1px solid var(--grid-color);
@@ -2536,7 +2538,7 @@ div.twc-control-panel {
 
 div.twc-control-panel-title {
     font-weight: bold;
-    color: var(--title-color);
+    color: var(--accent-fore-color);
     background-color: var(--accent-bkgd-color);
     border-left: 1px solid var(--grid-color);
     border-right: 1px solid var(--grid-color);

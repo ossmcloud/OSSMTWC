@@ -27,10 +27,6 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get type() { { return this.#options?.type; } }
 
             render(container) {
-                var title = '';
-                if (this.#options.title !== undefined) {
-                    title = `<div class="twc_ctrl_panel_title">${this.#options.title || ''}</div>`;
-                }
 
                 var styles = '';
                 if (this.#options.styles) {
@@ -39,12 +35,26 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     }
                 }
 
-                var html = `
-                    <div class="twc_ctrl twc_ctrl_panel_outer" data-type="panel" data-id="${this.#options.id}">
-                        ${title}
+                var title = '';
+                if (this.#options.title !== undefined) {
+                    title = `<div class="twc_ctrl_panel_title" >${this.#options.title || ''}</div>`;
+                }
+
+                var content = ''; var noContentStyle = `style="${styles}; padding: 3px 0px 0px 0px; border-bottom: 1px solid var(--grid-color);"`;
+                if (this.#options.content !== undefined) {
+                    noContentStyle = '';
+                    content = `
                         <div class="twc_ctrl_panel" style="${styles}">
                             ${this.#options.content || ''}
                         </div>
+                    `;
+                }
+
+              
+                var html = `
+                    <div class="twc_ctrl twc_ctrl_panel_outer" ${noContentStyle} data-type="panel" data-id="${this.#options.id}">
+                        ${title}
+                        ${content}
                         <data id="${this.#options.id}_options">
                             ${b64.encode(JSON.stringify(this.#options))}
                         </data>   

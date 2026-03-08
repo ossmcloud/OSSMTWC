@@ -1,6 +1,6 @@
-ossm {
+/* ossm {
     display: inline-block;
-}
+} */
 
 dialog.o-dialog {
     padding: 0px;
@@ -327,7 +327,7 @@ div.o-calendar-row>div {
     display: table-cell;
     /* padding: 7px; */
     text-align: center;
-    vertical-align: middle;
+    vertical-align: top;
     /* border-radius: 7px; */
 }
 
@@ -360,6 +360,7 @@ div.o-calendar-day-c {
     padding: 0px;
     border-right: 1px solid var(--grid-color);
     border-bottom: 1px solid var(--grid-color);
+    border-top: 1px solid var(--grid-color);
     
 }
 div.o-calendar-day-c:first-child {
@@ -409,5 +410,5 @@ div.o-calendar-day-content {
 }
 
 .o-calendar-past {
-    background-color: silver !important;
+    background-color: var(--input-bkgd-color-disabled) !important;
 }

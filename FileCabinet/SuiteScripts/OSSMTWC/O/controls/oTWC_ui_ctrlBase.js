@@ -44,14 +44,18 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 var styles = '';
                 if (options.type == CTRL_TYPE.TABLE) {
-                    styles = ` style="display: block; overflow: auto;"`;
+                    styles = `display: block; overflow: auto; `;
                 } else if (options.type == CTRL_TYPE.CHART) {
-                    styles = ` style="display: block; width: 100%; height: 100%;"`;
+                    styles = `display: block; width: 100%; height: 100%;`;
                 // } else if (options.type == CTRL_TYPE.PANEL) {
                 //     styles = ` style="position: absolute;"`;
                 }
+
+
+                if (options.hide) { styles += 'display: none;' }
+                
                 return `
-                    <ossm data-type="${options.type || 'control'}"${styles}>
+                    <ossm data-type="${options.type || 'control'}" style="${styles}">
                         ${html}
                         ${htmlData}
                     </ossm>

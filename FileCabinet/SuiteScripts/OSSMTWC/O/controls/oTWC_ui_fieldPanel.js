@@ -10,6 +10,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
         function renderCollection(controlGroup, readOnly) {
             var id = controlGroup.id ? ` id="${controlGroup.id}"` : '';
             var collapsed = controlGroup.collapsed ? ' style="display: none"' : '';
+            var hidden = controlGroup.hide ? ' style="display: none"' : '';
             var title = '';
             if (controlGroup.title !== undefined) {
                 title = `
@@ -25,7 +26,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             var content = `
-                <div class="twc-control-panel" ${id}>
+                <div class="twc-control-panel" ${id} ${hidden}>
                     ${title}
                     <div class="twc-control-panel-fields" ${collapsed}>
             `;

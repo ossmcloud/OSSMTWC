@@ -18,6 +18,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get ui() { return this.#container; }
             get controls() { return this.#controls; }
 
+            find(selector) {
+                return this.#container.find(selector)
+            }
+
             setAllDisabled() {
                 core.array.each(this.#controls, c => {
                     c.disabled = true;
@@ -130,8 +134,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             //     return uiInput.render(options);
             // } else
             if (options.type == ctrlBase.CTRL_TYPE.DROPDOWN) {
+                var styles = options.hide ? ' style="display: none;"' : '';
                 return `
-                        <ossm data-type="${options.type}">
+                        <ossm data-type="${options.type}" ${styles}>
                             ${uiDropDown.render(options, dataSource)}
                         </ossm>
                     `;

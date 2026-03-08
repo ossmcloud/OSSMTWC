@@ -1,11 +1,12 @@
 
 TODO-NEXT:
 ----------
+    00. Port page error email changes applied in KTL
+
     00. FileCabinet\SuiteScripts\OSSMTWC\ui\js\oTWC_siteLocatorPanel.js
             searching by SAF ID/Status (and eventually SRF) does not work as the panel is designed to first filter the sites and the sites would no t have status/safid because they are a different record
             if a non site filter is selected we should filter the SAF first then the stores
             
-
     00. SRF Type => what is this??? we do not have oit in Radix
     
     04. implement functionalities:

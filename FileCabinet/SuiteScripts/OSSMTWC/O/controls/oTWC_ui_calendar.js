@@ -48,6 +48,16 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.refresh();
             }
 
+            get isPast() {
+                return cored.utils.dropTime(this.value) < cored.utils.dropTime();
+            }
+            get isToday() {
+                return cored.utils.dropTime(this.value) == cored.utils.dropTime();
+            }
+            get isFuture() {
+                return cored.utils.dropTime(this.value) > cored.utils.dropTime();
+            }
+
             get datesContent() {
                 return this.#options.datesContent || null;
             } set datesContent(val) {
@@ -66,7 +76,16 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 if (!this.#options.datesContent) { return ''; }
                 var c = this.#options.datesContent[date.format()];
                 if (c === undefined) { return ''; }
-                return c;
+                if (Array.isArray(c)) {
+                    var html = '';
+                    core.array.each(c, content => {
+                        //if (html) { html += '<br />'; }
+                        html += `${content}`;
+                    })
+                    return html;
+                } else {
+                    return c;
+                }
             }
 
             specialDate(date) {

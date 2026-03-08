@@ -74,6 +74,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
+        const SAF_TIME_BLOCKS = 'customrecord_twc_tm_blk_opt';
+
+        function getYesNoOptions() {
+            return [{ value: 'T', text: 'Yes' }, { value: 'F', text: 'No' }]
+        };
 
         function getNsTable(tableId) {
             if (tableId == -242 || tableId == 'bin') {
@@ -82,6 +87,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return { pk: 'id', name: 'case', nameField: 'casenumber', isInactive: '', alias: '' }
             } else if (tableId == -2 || tableId == 'customer') {
                 return { pk: 'id', name: 'customer', nameField: 'companyname', isInactive: '', alias: 'cust' }
+            } else if (tableId == -3 || tableId == 'vendor') {
+                return { pk: 'id', name: 'vendor', nameField: 'companyname', isInactive: '', alias: 'vend' }
             } else if (tableId == -4 || tableId == 'employee') {
                 return { pk: 'id', name: 'employee', nameField: 'entityid', isInactive: '', alias: 'emp' }
             } else if (tableId == -7 || tableId == 'job' || tableId == 'project') {
@@ -181,10 +188,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 nameField = nsTable.nameField;
                 if (!nsTable.isInactive) { isInactive = ''; }
             }
-
-
             return coreSQL.run(`select ${idField} as value, ${nameField} as text from ${recordType} where 1 = 1 ${isInactive} ${additionalFilters || ''} order by ${nameField}`);
-
         }
 
         function getSiteNames() {
@@ -201,7 +205,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getCounties() {
             return getLookUpTableValues('state', "and country = 'IE'");
-            //return coreSQL.run(`select id as value, fullname as text from state where country = 'IE' order by fullname`)
         }
 
         function getRegions() {
@@ -223,6 +226,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getCustomers() {
             return getLookUpTableValues('customer');
         }
+        
+        function getVendors() {
+            return getLookUpTableValues('vendor');
+        }
+
         function getSafIds() {
             return coreSQL.run(`select id as id, custrecord_twc_saf_id as text from customrecord_twc_saf where 1 = 1 order by id`)
         }
@@ -234,7 +242,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSrfIds() {
             return getLookUpTableValues('customrecord_twc_srf');
         }
-        //
+        
+        function getSafTimeBlocks(siteId) {
+            // @@TODO: we could have time slots specific to a site if needed
+            return coreSQL.run(`select id as value, name as text from ${SAF_TIME_BLOCKS} order by id`);
+        }
+
+        function getSafDropDown(options) {
+            var siteSafs = [];
+            coreSQL.each(`
+                select  saf.id as value, saf.name, BUILTIN.DF(saf.custrecord_twc_saf_type) as type, saf.custrecord_twc_saf_start_time_block as date, c.companyname as customer,
+                        BUILTIN.DF(saf.custrecord_twc_saf_site) as site
+                from    customrecord_twc_saf saf
+                join    customer c on c.id = saf.custrecord_twc_saf_customer
+                where   saf.custrecord_twc_saf_site = ${options.siteId}
+                order by saf.custrecord_twc_saf_start_time_block desc
+            `, saf => {
+                siteSafs.push({
+                    value: saf.value,
+                    text: `<b>${saf.name}</b> [${saf.date}] <i>${saf.customer}</i> @ ${saf.site}`
+                })
+            })
+            return siteSafs;
+        }
 
         function formatLongDate(d) {
             if (!d) { d = (new Date()).addHours(12); }
@@ -242,6 +272,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }   
 
         return {
+            ROOT_FILE_FOLDER: 'TWC Files',
+            
             SrfStepType: SRF_ITEM_STEP_TYPE,
             SrfRequestType: SRF_ITEM_REQUEST_TYPE,
             SrfStatus: SRF_STATUS,
@@ -249,10 +281,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSrfStatusStyle: getSrfStatusStyle,
             getSrfStatusHtml: getSrfStatusHtml,
 
-            ROOT_FILE_FOLDER: 'TWC Files',
+            getSafDropDown: getSafDropDown,
+            getSafTimeBlocks: getSafTimeBlocks,
 
             getFields: getCustomTableFields,
-
             getSiteNames: getSiteNames,
             getSiteTypes: getSiteTypes,
             getSiteLevels: getSiteLevels,
@@ -262,9 +294,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafStatus: getSafStatus,
             getSafTypes: getSafTypes,
             getCustomers: getCustomers,
+            getVendors: getVendors,
             getSafIds: getSafIds,
             getSrfIds: getSrfIds,
             getSrfStatus: getSrfStatus,
+
+            getYesNoOptions: getYesNoOptions,
 
             formatLongDate: formatLongDate
         }
