@@ -93,7 +93,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fieldGroup = { id: 'site-access-builder', collapsed: false, controls: [] };
 
             // @@TODO: SAF: collapse for test only
-            var calenderInfo = { id: 'site-access-saf-builder', title: 'Create New Site Access', collapsed: true, renderAsTable: true, fields: [] };
+            var calenderInfo = { id: 'site-access-saf-builder', title: 'Create New Site Access', collapsed: false, renderAsTable: true, fields: [] };
             fieldGroup.controls.push(calenderInfo);
 
             var specialDates = {}; var datesContent = {};

@@ -261,6 +261,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                                 cb({
                                     target: this,
                                     id: this.#options.id,
+                                    value: this.value,
                                     evt: callBack,
                                 })
                             } catch (error) {

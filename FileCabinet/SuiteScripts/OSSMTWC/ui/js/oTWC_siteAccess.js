@@ -88,13 +88,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#page = page;
                 this.init();
 
-                // @@TODO:
-                this.#accessRequirements = {
-                    timeBlocksRequired: 4,
-                    timeBlocksAllocated: 0,
-                    timeBlocks: {},
-
-                }
+              
             }
 
             get ui() { return this.#page.ui; }
@@ -125,9 +119,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#calendarSelectionTitle.html(twcUtils.formatLongDate(e.value))
 
                     var editable = this.#accessRequirements != null;
-                    // @TODO:
-                    editable = true;
-
+                    
                     this.#calendarSelection.html(twcSafUI.renderTimeBlocks({
                         date: e.value.format(),
                         timeBlocks: this.data.siteTimeBlocks[e.value.format()],
@@ -193,6 +185,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.find('#site-access-step-4').css('display', showStep3 ? 'block' : 'none');
                 this.ui.find('#site-access-step-5').css('display', showStep3 ? 'block' : 'none');
                 this.ui.find('#site-access-step-6').css('display', showStep3 ? 'block' : 'none');
+
+                if (showStep3) {
+                    // @@TODO: SAF get conditions of access
+                    this.#accessRequirements = {
+                        timeBlocksRequired: 4,
+                        timeBlocksAllocated: 0,
+                        timeBlocks: {},
+                    }
+                    this.refreshInfo();
+                    this.#calendar.on('change', null)
+                }
             }
 
             refreshInfo() {
