@@ -37,6 +37,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
 
+        suiteLet.post = (context, s) => {
+
+            if (context.request.parameters.action == 'get-access-requirements') {
+                var payload = JSON.parse(context.request.body);
+                return twcSiteAccessUtils.getAccessRequirements(payload);
+            } else {
+                throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);
+            }
+
+        }
+
 
         return {
             onRequest: uis.onRequest

@@ -82,13 +82,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #calendarSelection = null;
             #calendarSelectionTitle = null;
             #accessInfoSection = null;
+            #accessConditionsSection = null;
             #accessRequirements = null;
-
+         
             constructor(page) {
                 this.#page = page;
                 this.init();
 
-              
+
             }
 
             get ui() { return this.#page.ui; }
@@ -99,7 +100,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#calendarSelectionTitle = this.ui.ui.find('#saf-cal-selection-title');
                 this.#calendarSelection = this.ui.ui.find('#saf-cal-selection-body');
                 this.#accessInfoSection = this.ui.ui.find('#saf-cal-selection-access-body');
-
+                this.#accessConditionsSection = this.ui.ui.find('#saf-access-condition-info');
+                
                 this.ui.getControl('saf-template').on('change', e => {
                     this.ui.getControl('saf-type').hide = e.value != 'new';
                     this.ui.getControl('saf-reuse').hide = e.value != 'reuse';
@@ -119,7 +121,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#calendarSelectionTitle.html(twcUtils.formatLongDate(e.value))
 
                     var editable = this.#accessRequirements != null;
-                    
+
                     this.#calendarSelection.html(twcSafUI.renderTimeBlocks({
                         date: e.value.format(),
                         timeBlocks: this.data.siteTimeBlocks[e.value.format()],
@@ -181,27 +183,39 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (this.ui.getControl('saf-building-access').value != 'T') { showStep3 = false; }
                 if (this.ui.getControl('saf-crane-access').value != 'T') { showStep3 = false; }
 
-                this.ui.find('#site-access-step-3').css('display', showStep3 ? 'block' : 'none');
-                this.ui.find('#site-access-step-4').css('display', showStep3 ? 'block' : 'none');
-                this.ui.find('#site-access-step-5').css('display', showStep3 ? 'block' : 'none');
-                this.ui.find('#site-access-step-6').css('display', showStep3 ? 'block' : 'none');
+
 
                 if (showStep3) {
                     // @@TODO: SAF get conditions of access
-                    this.#accessRequirements = {
-                        timeBlocksRequired: 4,
-                        timeBlocksAllocated: 0,
-                        timeBlocks: {},
-                    }
-                    this.refreshInfo();
-                    this.#calendar.on('change', null)
+                    var payload = {};
+                    this.#page.post({ action: 'get-access-requirements' }, payload)
+                        .then(res => {
+                            this.#accessRequirements = res;
+
+                            this.ui.find('#site-access-step-3').css('display', 'block');
+                            this.ui.find('#site-access-step-4').css('display', 'block');
+                            this.ui.find('#site-access-step-5').css('display', 'block');
+                            this.ui.find('#site-access-step-6').css('display', 'block');
+
+                            this.refreshInfo();
+                            this.#calendar.on('change', null)
+                        })
+                        .catch(err => { dialog.error(err); });
+
+                } else {
+                    this.ui.find('#site-access-step-3').css('display', 'none');
+                    this.ui.find('#site-access-step-4').css('display', 'none');
+                    this.ui.find('#site-access-step-5').css('display', 'none');
+                    this.ui.find('#site-access-step-6').css('display', 'none');
                 }
             }
 
             refreshInfo() {
                 var html = jQuery('<div></div>');
+                var htmlCond = jQuery('<div></div>');
                 if (!this.#accessRequirements) {
                     html.append('<b>Select SAF Setup & Access Requirements below to begin</b>');
+                    htmlCond.append('<b>Select SAF Setup & Access Requirements above to begin</b>');
                 } else {
                     var colorStyle = '';
                     if (this.#accessRequirements.timeBlocksAllocated == this.#accessRequirements.timeBlocksRequired) {
@@ -210,6 +224,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         colorStyle = ' color: red; font-weight: bold;';
                     }
                     html.append(`
+                        <div style="padding: 7px; border-bottom: 1px solid var(--grid-color);${colorStyle}">
+                            ${this.#accessRequirements.timeBlocksAllocated} of ${this.#accessRequirements.timeBlocksRequired} time-blocks allocated
+                        </div>
+                    `);
+                    htmlCond.append(`
                         <div style="padding: 7px; border-bottom: 1px solid var(--grid-color);${colorStyle}">
                             ${this.#accessRequirements.timeBlocksAllocated} of ${this.#accessRequirements.timeBlocksRequired} time-blocks allocated
                         </div>
@@ -243,9 +262,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             })
                         })
                     }
+
+                    core.array.each(this.#accessRequirements.conditions, cond => {
+                        htmlCond.append(`
+                            <div>${cond.quantity} ${cond.name} Required</div>
+                        `)
+                    })
                 }
 
                 this.#accessInfoSection.html(html);
+                this.#accessConditionsSection.html(htmlCond);
             }
         }
 

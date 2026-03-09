@@ -163,6 +163,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#input = this.#ui.find(`#${this.#options.id}`);
                 this.#dropDown = this.#ui.find(`#${this.#options.id}_dropDown`);
 
+                
+
                 this.#ui.find(`#${this.#options.id}_arrow`).click(e => {
                     if (this.readOnly || this.disabled) { return; }
                     if (this.#dropDown.css('display') == 'none') {
@@ -349,8 +351,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     this.#input.focus();
                 }
 
-
-
+                this.#dropDown.css('top', this.#input.offset().top + this.#input.height() + 16)
                 return this.#dropDown;
             }
             closeDropDown() {
