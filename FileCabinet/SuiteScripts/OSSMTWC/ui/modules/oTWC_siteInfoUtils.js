@@ -135,7 +135,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 <div style="width: 20%; min-width: 450px; border: 1px solid var(--grid-color);">
                     <div id="twc-site-info-panel" style="overflow: auto;">
                         <div style="position: sticky; top: 0px; z-index: 1099; background-color: var(--main-bkgd-color);">
-                            <h1>{SITE_NAME}</h1>
+                            <h1 style="margin: 0px;">{SITE_NAME}</h1>
                         </div>
 
                         <div id="twc-google-map-container" class="twc-border" style="height: 250px; width: 100%; text-align: center;">

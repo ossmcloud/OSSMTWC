@@ -268,6 +268,21 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                 }
                 return res;
             }
+
+            async previewFile(file, getUrl) {
+                var url = core.url.script('otwc_microsvc_sl', { action: 'view-file' });
+                var res = await https.promise.post({ url: url, body: { file: file, getUrl: getUrl } });
+                if (getUrl) {
+                    window.open(res.url);
+                    return;
+                }
+                var html = `<object style="width: 100%;height: 100%;" data="data:application/${res.type.toLowerCase()};base64,${res.fileContent}">`;
+                dialog.message({
+                    title: res.name,
+                    message: html,
+                    size: { width: '1000px', height: '95vh' }
+                })
+            }
         }
 
         function initPageData(context, data) {

@@ -17,8 +17,13 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 if (options.jquery) {
                     this.#ui = options;
                     var id = this.#ui.data('id');
-                    this.#dataSource = JSON.parse(this.#ui.find(`#${id}_data`).html() || '[]');
-                    this.#options = JSON.parse(this.#ui.find(`#${id}_options`).html() || '{}');
+                    var ds = this.#ui.find(`#${id}_data`).html();
+                    ds = (ds) ? b64.decode(ds) : '[]'
+                    this.#dataSource = JSON.parse(ds);
+
+                    var op = this.#ui.find(`#${id}_options`).html();
+                    op = (op) ? b64.decode(op) : '{}'
+                    this.#options = JSON.parse(op);
                     if (!this.#options.id) { this.#options.id = id; }
 
                     this.initEvents();
@@ -52,7 +57,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             } set disabled(val) {
                 if (val) {
                     this.#input.attr('disabled', 'disabled');
-                    
+
                 } else {
                     this.#input.removeAttr('disabled');
                 }
@@ -141,10 +146,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                         </div>
                         <data id="${this.#options.id}_data">
-                            ${JSON.stringify(this.#dataSource)}
+                            ${b64.encode(JSON.stringify(this.#dataSource))}
                         </data>   
                         <data id="${this.#options.id}_options">
-                            ${JSON.stringify(this.#options)}
+                            ${b64.encode(JSON.stringify(this.#options))}
                         </data>   
                     </div>
                 `;
@@ -163,12 +168,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#input = this.#ui.find(`#${this.#options.id}`);
                 this.#dropDown = this.#ui.find(`#${this.#options.id}_dropDown`);
 
-                
+
 
                 this.#ui.find(`#${this.#options.id}_arrow`).click(e => {
                     if (this.readOnly || this.disabled) { return; }
                     if (this.#dropDown.css('display') == 'none') {
-                        this.showDropDownList().css('display', 'block');
+                        this.showDropDownList();
                     } else {
                         this.#dropDown.css('display', 'none')
                     }
@@ -178,13 +183,13 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 this.#dropDown.css('min-width', this.#ui.width() + 'px');
                 this.#input.on('input', e => {
-                    this.showDropDownList(jQuery(e.currentTarget).val()).css('display', 'block');
+                    this.showDropDownList(jQuery(e.currentTarget).val());
                     if (this.multiSelect) { jQuery(e.currentTarget).val(''); }
 
                 })
 
                 this.#dropDown.click(e => {
-                    var item = jQuery(e.target);
+                    var item = jQuery(e.target).closest('.twc_dropdown_item');
                     if (this.readOnly || this.disabled) { return; }
 
                     if (this.multiSelect) {
@@ -199,12 +204,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                             items.push(jQuery(c).attr('data-value'));
                         })
                         this.setMultiTextValue(items.join(','));
-                        
+
                     } else {
 
                         this.#ui.attr('data-value', item.attr('data-value'));
                         if (item.attr('data-value')) {
-                            this.#input.val(item.text());
+                            this.#input.val(this.valueObj.text);
                         } else {
                             this.#input.val('');
                         }
@@ -224,7 +229,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             showDropDownList(src) {
-                
+
                 var content = '';
 
                 jQuery('.twc_ctrl_dropDown').css('display', 'none');
@@ -253,10 +258,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                         var value = this.value?.toString().split(',').filter(i => i);
                         var checked = value?.indexOf(item.value?.toString()) >= 0 ? 'checked' : '';
-                        content += `<div class="twc_dropdown_item"><input data-value="${item.value}" type="checkbox" ${checked}/>${item.text}</div>`
+                        content += `<div class="twc_dropdown_item"><input data-value="${item.value}" type="checkbox" ${checked}/>${item.text_render === undefined ? item.text : item.text_render}</div>`
                     } else {
                         if (src && item.text.toLowerCase().indexOf(src.toLowerCase()) < 0) { return; }
-                        content += `<div class="twc_dropdown_item" data-value="${item.value}">${item.text}</div>`
+                        content += `<div class="twc_dropdown_item" data-value="${item.value}">${item.text_render === undefined ? item.text : item.text_render}</div>`
                     }
                 })
                 if (!content) {
@@ -276,6 +281,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 }
 
                 this.#dropDown.html(content);
+
 
                 if (this.multiSelect) {
                     this.#dropDown.find('#twc_dropdown_confirm').click(e => {
@@ -351,7 +357,14 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     this.#input.focus();
                 }
 
-                this.#dropDown.css('top', this.#input.offset().top + this.#input.height() + 16)
+
+                this.#dropDown.css('top', this.#input.offset().top + this.#input.height() + 16);
+
+                this.#dropDown.css('display', 'block');
+                if (parseInt(this.#dropDown.css('top')) + this.#dropDown.height() > window.innerHeight) {
+                    this.#dropDown.css('top', this.#input.offset().top - this.#dropDown.height());
+                }
+
                 return this.#dropDown;
             }
             closeDropDown() {
@@ -387,7 +400,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                                 cb({
                                     target: this,
                                     id: this.#options.id,
-                                    value: this.#ui.attr('data-value')
+                                    value: this.#ui.attr('data-value'),
+                                    object: this.valueObj
                                 })
                             } catch (error) {
                                 console.log(error);

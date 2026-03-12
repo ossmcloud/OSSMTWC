@@ -209,14 +209,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var childRecord = null;
                 if (options.item) {
                     childRecord = twcSrfItem.get(options.item.id);
+                    childRecord.copyFromObject(options.item);
                 } else if (options.file) {
                     childRecord = twcFile.get(options.file.id);
-
+                    childRecord.copyFromObject(options.field);
                 } else {
                     throw new Error(`No Child Record Found in payload`)
                 }
 
-                childRecord.copyFromObject(options.item);
+                
                 return twcSrfUI.getSrfChildRecord(srf, childRecord);
             },
 

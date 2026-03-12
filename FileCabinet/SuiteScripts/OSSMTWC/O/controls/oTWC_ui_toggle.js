@@ -64,7 +64,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     label = `<label class="inline" ${this.#options.labelNoWrap ? ' style="white-space: nowrap"' : ''}>${this.#options.label}</label>`;
                 }
 
-                var defaultWidth = '60px';
+                var defaultWidth = this.#options.small ? '35px' : '60px';
                 if (this.#options.style?.width || this.#options.width) { defaultWidth = this.#options.style?.width || this.#options.width; }
 
                 var disabled = this.#options.disabled ? 'disabled' : '';
@@ -73,13 +73,14 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 var marginLeft = parseInt(defaultWidth.replace('px', '')) - 30;
                 var checked = this.#options.value ? ` twc_toggle_inner_selected" style="margin-left: ${marginLeft}px;"` : '"';
                 var checkedOuter = this.#options.value ? ' twc_toggle_outer_selected' : '';
+                var small = this.#options.small ? ' twc_toggle_inner_small' : '';
 
                 var html = `
                     <div class="twc_ctrl" data-id="${this.#options.id}" data-type="${this.#options.type}" data-type="${this.#options.type}" data-value="${this.#options.value || 'false'}" style="width: ${defaultWidth}; text-align: center;">
                         ${label}
                         <div class="twc_ctrl_table" style="border: 1px solid var(--grid-color); border-radius: 7px; margin-top: 3px">
                             <div class="twc_toggle_outer${checkedOuter}">
-                                <div class="twc_toggle_inner${checked}>
+                                <div class="twc_toggle_inner${small}${checked}>
                                 </div>
                             </div>
                         </div>

@@ -381,16 +381,26 @@ div.o-calendar-day-content {
     vertical-align: middle;
 }
 
+.o-calendar-green {
+    background-color: green !important;
+}
+.o-calendar-orange {
+    background-color: orange !important;
+}
+.o-calendar-red  {
+    background-color: red !important;
+}
+
 .o-calendar-gray {
-    color: silver;
+    color: silver !important;
 }
 
 .o-calendar-gray-we {
-    color: rosybrown;
+    color: rosybrown !important;
 }
 
 .o-calendar-we {
-    color: red;
+    color: maroon !important;
 }
 
 .o-calendar-current {

@@ -47,6 +47,16 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             testFunction() {
                 try {
 
+                    // coreSQL.each(`
+                    //     select   id, name, 	custrecord_twc_prof_name
+                    //     from  customrecord_twc_prof
+                    //     where   id > 
+                    //     order by id
+                    // `, c => {
+                    //     console.log(c);
+                    //     recu.submit('customrecord_twc_prof', c.id, 'name', c.custrecord_twc_prof_name)
+                    // })
+
                     // _ui.getControl('twc-calendar').specialDates = { '2026-03-03': 'test' }
                     // _ui.getControl('twc-calendar').datesContent = { '2026-03-03': 'test' }
                     // _ui.getControl('twc-calendar').value = new Date(2026, 1, 15)

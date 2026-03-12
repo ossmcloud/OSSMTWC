@@ -7,7 +7,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         const FIELD_ENTITY_USER_PREF = 'custentity_twc_userpref';
 
-        
+
 
 
         function getUserInfo(context) {
@@ -21,19 +21,42 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 params: [core.env.user()]
             })
 
+
             userInfo.permission = permissions.get(context);
 
-            if (userInfo.type.indexOf('Vendor') >= 0) {
+            userInfo.recordId = userInfo.id;
+            userInfo.companyProfile = coreSQL.first(`
+                select  id, name, custrecord_twc_co_fin_vend as is_vendor, custrecord_twc_co_fin_cust as is_customer
+                from    customrecord_twc_company
+                where   custrecordtwc_entity = ${userInfo.id}
+            `)
+
+            if (userInfo.type == 'Employee') {
+                userInfo.isEmployee = true;
+                userInfo.recordType = 'employee';
+            } else if (userInfo.companyProfile?.is_vendor == 'T') {
                 userInfo.isVendor = true;
                 userInfo.recordType = 'vendor';
-            } else if (userInfo.type.indexOf('CustJob') >= 0) {
+            } else if (userInfo.companyProfile?.is_customer == 'T') {
                 userInfo.isCustomer = true;
                 userInfo.recordType = 'customer';
             } else {
-                userInfo.isEmployee = true;
-                userInfo.recordType = 'employee';
+                throw new Error('Could not determine login type');
             }
-            userInfo.recordId = userInfo.id;
+
+            // if (userInfo.type.indexOf('Vendor') >= 0) {
+            //     userInfo.isVendor = true;
+            //     userInfo.recordType = 'vendor';
+            // } else if (userInfo.type.indexOf('CustJob') >= 0) {
+            //     userInfo.isCustomer = true;
+            //     userInfo.recordType = 'customer';
+            // } else {
+            //     userInfo.isEmployee = true;
+            //     userInfo.recordType = 'employee';
+            // }
+            
+            
+
 
             if (!userInfo.isEmployee) {
                 // @@NOTE: the oly way to detect that the logged in user is not the main customer but a contact with access is if the email on runtime is different than what we loaded for the customer
@@ -58,6 +81,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     userInfo.recordId = userInfo.contact.id;
 
                 }
+
+
             }
 
             userInfo.profile = coreSQL.first(`select id from customrecord_twc_prof where custrecord_twc_prof_username = ${userInfo.recordId}`)?.id || null;

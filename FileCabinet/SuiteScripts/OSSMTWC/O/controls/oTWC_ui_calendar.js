@@ -157,12 +157,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 var today = cored.utils.dropTime();   // (new Date());
                 while (true) {
 
-                    var dayClass = ''; var dayTitle = '';
+                    var dayClass = this.#options.dayClass || ''; var dayTitle = '';
                     if (calendarStart.getMonth() != calendarMonth) {
-                        dayClass = 'o-calendar-gray';
-                        if (calendarStart.getDayEU() >= 6) { dayClass = 'o-calendar-gray-we'; }
+                        dayClass += ' o-calendar-gray';
+                        if (calendarStart.getDayEU() >= 6) { dayClass += ' o-calendar-gray-we'; }
                     } else if (calendarStart.getDayEU() >= 6) {
-                        dayClass = 'o-calendar-we';
+                        dayClass += ' o-calendar-we';
                     }
 
                     var dayPastClass = '';

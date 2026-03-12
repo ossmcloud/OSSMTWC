@@ -6,6 +6,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, cored, coreSQL) => {
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const SAF_TYPE = {
+            SURVEY_DRONE: 5
+        }
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const NO_ACTIVE_EXPIRED = {
+            No: 1,
+            Active: 2,
+            Expired: 3
+        }
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SRF_ITEM_STEP_TYPE = {
             TME: 1,
             ATME: 2,
@@ -220,15 +231,184 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getSafTypes() {
+            return coreSQL.run(`select id as value, name as text from customrecord_twc_saf_type where isinactive='F' order by custrecord_twc_saf_type_sort`);
             return getLookUpTableValues('customrecord_twc_saf_type');
         }
 
-        function getCustomers() {
-            return getLookUpTableValues('customer');
+
+
+        function getCompanies(options) {
+            //
+            // @@TODO: SAF: what are the insurance filters we need?
+            var additionalFilters = `
+                and c.custrecord_twc_co_el_expiry > CURRENT_DATE
+                and c.custrecord_twc_co_pl_expiry > CURRENT_DATE
+                and c.custrecord_twc_co_pi_expiry > CURRENT_DATE
+            `
+
+
+
+            if (options.isCustomer) {
+                options.customer = options.companyProfile.id;
+            } else if (options.isVendor) {
+                options.vendor = options.companyProfile.id;
+            } else {
+                additionalFilters = '';
+            }
+
+            if (options.type == 'V') {
+                // @@TODO: SAF: Accredited Contractor Expiry date seems null for all
+                // additionalFilters += `
+                //     and 	custrecord_twc_co_accred_appr <= CURRENT_DATE
+                //     and     custrecord_twc_co_accred_cont_exp > CURRENT_DATE
+                // `;
+            }
+
+
+
+            var sql = '';
+            if (options.vendor) {
+                if (options.type == 'C') {
+                    // @@NOTE: here we want to select customers the given vendor can work on behalf of
+                    sql = `
+                        select  distinct c.id as value, c.name as text
+                        from    customrecord_twc_acl acl
+                        join    customrecord_twc_company c on c.id = acl.custrecord_twc_acl_cust and c.custrecord_twc_co_fin_cust = 'T'
+                        where   c.isinactive = 'F'
+                        and     acl.custrecord_twc_acl_cont = ${options.vendor}
+                        ${additionalFilters}
+                        order by c.name
+                    `
+                } else {
+                    // @@NOTE: here we want to select sub-contractors the given vendor can use
+                    sql = `
+                        select  c.id as value, c.name as text
+                        from    customrecord_twc_company c
+                        where   c.id = ${options.vendor}
+                        ${additionalFilters}
+
+                        UNION
+
+                        select  distinct c.id as value, c.name as text
+                        from    customrecord_twc_ascl acl
+                        join    customrecord_twc_company c on c.id = acl.custrecord_twc_acl_sub_contractor and c.custrecord_twc_co_fin_vend = 'T'
+                        where   c.isinactive = 'F'
+                        and     acl.custrecord_twc_acl_contractor = ${options.vendor}
+                        ${additionalFilters}
+                        order by text
+                    `;
+
+                }
+
+            } else if (options.customer) {
+                if (options.type == 'C') {
+                    // @@NOTE: here we want to select only the logged in customer
+                    sql = `
+                        select  distinct c.id as value, c.name as text
+                        from    customrecord_twc_company c
+                        where   c.isinactive = 'F'
+                        and     c.id = ${options.customer}
+                        ${additionalFilters}
+                        order by c.name
+                    `;
+                } else {
+                    // @@NOTE: here we want to select only vendors this customer can use
+                    sql = `
+                        select  distinct c.id as value, c.name as text
+                        from    customrecord_twc_acl acl
+                        join    customrecord_twc_company c on c.id = acl.custrecord_twc_acl_cont and c.custrecord_twc_co_fin_vend = 'T'
+                        where   c.isinactive = 'F'
+                        and     acl.custrecord_twc_acl_cust = ${options.customer}
+                        ${additionalFilters}
+                        order by c.name
+                    `
+                }
+            } else {
+                if (options.type == 'C') {
+                    additionalFilters += `and	custrecord_twc_co_fin_cust = 'T'`;
+                } else {
+                    additionalFilters += `and	custrecord_twc_co_fin_vend = 'T'`;
+                }
+                sql = `
+                    select  c.id as value, c.name as text
+                    from    customrecord_twc_company c
+                    where   c.isinactive = 'F'
+                    ${additionalFilters}
+                    order by c.name
+                `;
+
+            }
+
+
+            try {
+                return coreSQL.run(sql);
+            } catch (error) {
+                throw new Error(sql);
+            }
+
+
+
         }
-        
-        function getVendors() {
-            return getLookUpTableValues('vendor');
+
+        function getCustomers(options) {
+            if (!options) { options = {}; }
+            options.type = 'C';
+            return getCompanies(options);
+        }
+
+        function getVendors(options) {
+            if (!options) { options = {}; }
+            options.type = 'V';
+            return getCompanies(options);
+        }
+
+        function getProfiles(options) {
+            var sql = `
+                select  id as value, name as text, name || ' <span style="color: silver; font-style: italic;">[' || custrecord_twc_prof_position || ']</span>' as text_render,
+                        custrecord_twc_prof_phone as phone, custrecord_twc_prof_email as email,
+                        (case when custrecord_twc_prof_safe_pass_expiry > CURRENT_DATE then 'T' else 'F' end) as valid_safe_pass,
+                        (case when custrecord_twc_prof_climber_cert_sts = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_climb_cert,
+                        (case when custrecord_twc_prof_rescue_cert_sts = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rescue_cert,
+                        (case when custrecord_twc_prof_rooftop_cert_sts = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rooftop_cert,
+                        (case when custrecord_twc_prof_elec_cert_sts = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_electrician_cert,
+                        (case when custrecord_twc_prof_rf_cert_sts = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rf_cert,
+                        (case when custrecord_twc_prof_drone_cert_sts = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_drone_cert,
+                from    customrecord_twc_prof
+                where   custrecord_twc_prof_company = ${options.company}
+                and 	  custrecord_twc_prof_picw_acceptable='T'
+            `
+            if (options.filters) {
+                for (var f in options.filters) {
+                    if (options.filters[f].op !== undefined) {
+                        sql += `and ${f} ${options.filters[f].op} ${options.filters[f].value}`;
+                    } else {
+                        sql += `and ${f} = '${options.filters[f]}'`;
+                    }
+                }
+            }
+
+            sql += ' order by name';
+
+            var profiles = [];
+            coreSQL.each(sql, p => {
+                var attendAs = [];
+                if (p.valid_safe_pass == 'T') { attendAs.push({ value: 'Visitor', text: 'Visitor' }); }
+                if (p.valid_climb_cert == 'T') { attendAs.push({ value: 'Climber Certified', text: 'Climber Certified' }); }
+                if (p.valid_rescue_cert == 'T') { attendAs.push({ value: 'Rescue Certified', text: 'Rescue Certified' }); }
+                if (p.valid_rooftop_cert == 'T') { attendAs.push({ value: 'Rooftop Certified', text: 'Rooftop Certified' }); }
+                if (p.valid_electrician_cert == 'T') { attendAs.push({ value: 'Electrician Certified', text: 'Electrician Certified' }); }
+                if (p.valid_drone_cert == 'T') { attendAs.push({ value: 'Drone Certified', text: 'Drone Certified' }); }
+                if (options.canAttend && attendAs.length == 0) { return; }
+                profiles.push({
+                    value: p.value,
+                    text: p.text,
+                    text_render: p.text_render,
+                    phone: p.phone,
+                    email: p.email,
+                    attendAs: attendAs
+                })
+            })
+            return profiles;
         }
 
         function getSafIds() {
@@ -242,7 +422,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSrfIds() {
             return getLookUpTableValues('customrecord_twc_srf');
         }
-        
+
         function getSafTimeBlocks(siteId) {
             // @@TODO: we could have time slots specific to a site if needed
             return coreSQL.run(`select id as value, name as text from ${SAF_TIME_BLOCKS} order by id`);
@@ -251,10 +431,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSafDropDown(options) {
             var siteSafs = [];
             coreSQL.each(`
-                select  saf.id as value, saf.name, BUILTIN.DF(saf.custrecord_twc_saf_type) as type, saf.custrecord_twc_saf_start_time_block as date, c.companyname as customer,
+                select  saf.id as value, saf.name, BUILTIN.DF(saf.custrecord_twc_saf_type) as type, saf.custrecord_twc_saf_start_time_block as date, c.name as customer,
                         BUILTIN.DF(saf.custrecord_twc_saf_site) as site
                 from    customrecord_twc_saf saf
-                join    customer c on c.id = saf.custrecord_twc_saf_customer
+                join    customrecord_twc_company c on c.id = saf.custrecord_twc_saf_customer
                 where   saf.custrecord_twc_saf_site = ${options.siteId}
                 order by saf.custrecord_twc_saf_start_time_block desc
             `, saf => {
@@ -266,14 +446,91 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return siteSafs;
         }
 
+        function getSrfDropDown(options) {
+            var siteSrfs = [];
+            coreSQL.each(`
+                select  srf.id as value, srf.name, BUILTIN.DF(srf.custrecord_twc_srf_type) as type, srf.custrecord_twc_srf_app_date as date, c.name as customer,
+                        BUILTIN.DF(srf.custrecord_twc_srf_site) as site
+                from    customrecord_twc_srf srf
+                join    customrecord_twc_company c on c.id = srf.custrecord_twc_srf_cust
+                where   srf.custrecord_twc_srf_site = ${options.siteId}
+                and     srf.custrecord_twc_srf_status between ${SRF_STATUS.WorksPermitted} and ${SRF_STATUS.SRFCancelled}
+                order by srf.custrecord_twc_srf_app_date desc
+            `, srf => {
+                siteSrfs.push({
+                    value: srf.value,
+                    text: `<b>${srf.name}</b> [${srf.date}] <i>${srf.customer}</i> @ ${srf.site}`
+                })
+            })
+            return siteSrfs;
+        }
+
+
+        function getStructureTypeInfo(options) {
+            var info = { height: 0 };
+            coreSQL.each(`
+                select  BUILTIN.DF(i.custrecord_twc_infra_type) as type, i.custrecord_twc_infra_str_ht_m as height,
+                        t.custrecord_twc_infra_str_type_rooftop as is_rooftop, t.custrecord_twc_infra_str_type_mast as is_mast, t.custrecord_twc_infra_str_type_tower as is_tower,
+                        s.custrecord_twc_site_crane_mewp_access as crane,
+                from    customrecord_twc_infra i
+                join    customrecord_twc_infra_str_type t on t.id = i.custrecord_twc_infra_str_type
+                join    customrecord_twc_site s on s.id = i.custrecord_twc_infra_site
+                where  	i.custrecord_twc_infra_site = ${options.siteId}
+            `, r => {
+                if (r.is_rooftop == 'T') {
+                    info.roofTop = true;
+                } else if (r.is_mast == 'T') {
+                    info.mast = true;
+                } else if (r.is_tower == 'T') {
+                    info.tower = true;
+                } else if (r.crane == 'T') {
+                    info.crane = true;
+                }
+
+                if (r.height > info.height) { info.height = r.height; }
+
+                // @@NOTE: these are required all the time
+                info.electrical = true;
+                info.building = true;
+            })
+            return info;
+        }
+
+        function getFiles(options) {
+            var sql = ` 
+                select  f.id, f.name, BUILTIN.DF(f.custrecord_twc_file_type) as type, f.custrecord_twc_file_recid as file_dsecr, f.custrecord_twc_file_doc as   ,
+                        t.custrecord_twc_file_type_hs as is_hs, t.custrecord_twc_file_type_method as is_method
+                from    customrecord_twc_file f
+                left join    customrecord_twc_file_type t on t.id = f.custrecord_twc_file_type
+
+                where  f.isinactive = 'F'
+            `
+            if (options.filters) {
+                for (var f in options.filters) {
+                    if (options.filters[f].op !== undefined) {
+                        sql += `and ${f} ${options.filters[f].op} ${options.filters[f].value}`;
+                    } else {
+                        sql += `and ${f} = '${options.filters[f]}'`;
+                    }
+                }
+            }
+
+            sql += ' order by f.name';
+
+            return coreSQL.run(sql)
+        }   
+
         function formatLongDate(d) {
             if (!d) { d = (new Date()).addHours(12); }
             return `${cored.WeekDays[d.getDay()]} ${d.getDate()} ${cored.Months[d.getMonth()]}, ${d.getFullYear()}`;
-        }   
+        }
 
         return {
             ROOT_FILE_FOLDER: 'TWC Files',
-            
+
+            HEIGH_LIMIT_FOR_1_CLIMBER: 60,
+
+            SafType: SAF_TYPE,
             SrfStepType: SRF_ITEM_STEP_TYPE,
             SrfRequestType: SRF_ITEM_REQUEST_TYPE,
             SrfStatus: SRF_STATUS,
@@ -283,6 +540,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             getSafDropDown: getSafDropDown,
             getSafTimeBlocks: getSafTimeBlocks,
+            getStructureTypeInfo: getStructureTypeInfo,
+
+            getSrfDropDown: getSrfDropDown,
 
             getFields: getCustomTableFields,
             getSiteNames: getSiteNames,
@@ -293,6 +553,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getPortfolios: getPortfolios,
             getSafStatus: getSafStatus,
             getSafTypes: getSafTypes,
+            getProfiles: getProfiles,
+            getCompanies: getCompanies,
             getCustomers: getCustomers,
             getVendors: getVendors,
             getSafIds: getSafIds,
@@ -300,6 +562,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSrfStatus: getSrfStatus,
 
             getYesNoOptions: getYesNoOptions,
+
+            getFiles: getFiles,
 
             formatLongDate: formatLongDate
         }

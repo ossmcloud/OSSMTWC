@@ -844,7 +844,7 @@ div.twc_ctrl_dropDown>div:hover {
 
 
 div.twc_ctrl_panel_outer {
-    padding: 3px;
+    padding: 3px 0px;
 
 }
 
@@ -2501,6 +2501,10 @@ div.twc_toggle_inner {
     cursor: pointer;
     margin-left: 3px;
 }
+div.twc_toggle_inner_small {
+    width: 15px !important;
+    height: 15px !important;
+}
 
 div.twc_toggle_inner_selected {
     background-color: var(--accent-fore-color) !important;
@@ -2528,7 +2532,7 @@ tr.twc_tr_flash_yellow>td {
 
 div.twc-control-panel {
     padding: 7px;
-    border: 1px solid var(--grid-color);
+    /* border: 1px solid var(--grid-color); */
     border-bottom-left-radius: 7px;
     border-bottom-right-radius: 7px;
 

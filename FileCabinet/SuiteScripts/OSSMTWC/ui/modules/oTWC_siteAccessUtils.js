@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js'],
-    (core, coreSQL, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_safCrew.js'],
+    (core, coreSQL, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew) => {
 
         function renderSiteAccessPanel(featureId) {
             // @@TODO: featureId will determine some change on fields in the criteria
@@ -88,7 +88,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 where   saf.custrecord_twc_saf_site = ${options?.siteId || 0}
                 order by b.custrecord_twc_saf_tm_blk_date desc
             `, tb => {
-                if (!timeBlocks[tb.block_date]) { timeBlocks[tb.block_date] = {}; }
+                if (!timeBlocks[tb.block_date]) { timeBlocks[tb.block_date] = { blocksCount: 0 }; }
                 if (!timeBlocks[tb.block_date][tb.saf_id]) {
                     timeBlocks[tb.block_date][tb.saf_id] = {
                         site: { id: tb.site_id, name: tb.site_name, },
@@ -99,32 +99,69 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 timeBlocks[tb.block_date][tb.saf_id].blocks.push({
                     id: tb.id,
                     block: { id: tb.block_id, name: tb.block_name, },
-
                 })
+                timeBlocks[tb.block_date].blocksCount++;
             })
             return timeBlocks;
         }
 
         function getAccessRequirements(options) {
+
+            var infraInfo = twcUtils.getStructureTypeInfo({ siteId: options.siteId });
+            var blocksRequired = coreSQL.first(`select custrecord_twc_saf_type_timeblocks as time_blocks from customrecord_twc_saf_type where id = ${options['saf-type']}`).time_blocks;
+
             var conditions = [];
-            conditions.push({
-                quantity: 1,
-                name: 'Rescue Climber'
-            })
-            conditions.push({
-                quantity: 1,
-                name: 'Climber'
-            })
+            var climberCount = 0; var rescueCount = 0; var roofTopVisitorCount = 0; var electricianCount = 0;
+            if (options['saf-mast-access'] == 'T') {
+                climberCount = 1;
+                rescueCount = (infraInfo.height < twcUtils.HEIGH_LIMIT_FOR_1_CLIMBER) ? 2 : 3;
+            }
+            if (climberCount > 0) { conditions.push({ quantity: climberCount, name: 'Climber' }) }
+            if (rescueCount > 0) { conditions.push({ quantity: rescueCount, name: 'Rescue Climber' }) }
+            if (options['saf-rooftop-access'] == 'T') { conditions.push({ quantity: 1, name: 'Rooftop Trained Visitor' }) }
+            if (options['saf-electrical-access'] == 'T') { conditions.push({ quantity: 1, name: 'Electrician' }) }
+            if (options.safType == twcUtils.SafType.SURVEY_DRONE) { conditions.push({ quantity: 1, name: 'Drone Certified' }) }
+            if (options['saf-mast-access'] == 'T' && options['saf-rooftop-access'] == 'T') { conditions.push({ quantity: 'all', name: 'RF Certified' }) }
 
             return {
-                timeBlocksRequired: 4,
+                timeBlocksRequired: blocksRequired,
                 timeBlocksAllocated: 0,
                 conditions: conditions,
                 timeBlocks: {},
             }
         }
 
+        function getSafCrewRecord(options, userInfo) {
+            var saf = twcSaf.get(options.saf.id);
+            saf.copyFromObject(options.saf);
+            var childRecord = twcSafCrew.get(options.crew.id);
+            childRecord.copyFromObject(options.crew);
+            return twcSafUI.getSafCrewRecord(saf, childRecord, userInfo);
+        }
+
+        function getVendorDocs(options) {
+            var files = twcUtils.getFiles({
+                filters: {
+                    'custrecord_twc_file_rectype': 'customrecord_twc_company',
+                    'custrecord_twc_file_recid': options.vendor,
+                }
+            });
+
+            var vendorFiles = [];
+            core.array.each(files, f => {
+                var section = vendorFiles.find(vf => { return vf.title == f.type });
+                if (!section) {
+                    section = { title: f.type, files: [] };
+                    vendorFiles.push(section);
+                }
+                section.files.push(f);
+            })
+            return vendorFiles;
+        }
+
         return {
+            getSAFInfoPanels: twcSafUI.getSAFInfoPanels,
+            
             getSiteAccessInfo: (pageData) => {
                 var saf = {};
                 if (pageData.recId) {
@@ -144,7 +181,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getAllSafTimeBlocks: getAllSafTimeBlocks,
             getAccessRequirements: getAccessRequirements,
             renderSiteAccessPanel: renderSiteAccessPanel,
-            getSAFInfoPanels: twcSafUI.getSAFInfoPanels,
+            getSafCrewRecord: getSafCrewRecord,
+            getVendorDocs: getVendorDocs
+
+            
 
         }
 
