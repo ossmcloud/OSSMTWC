@@ -29,6 +29,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LONGITUDE: 'custrecord_twc_site_longitude',
             LATITUDE: 'custrecord_twc_site_latitude',
             SAF_AUTO_APPROVE: 'custrecord_twc_site_saf_auto_approve',
+            SAF_STATUS: 'custrecord_twc_site_saf_status',
             TRACK_TYPE: 'custrecord_twc_site_track_type',
             EASTING_ACCESS: 'custrecord_twc_site_easting_access',
             NORTHING_ACCESS: 'custrecord_twc_site_northing_access',
@@ -61,6 +62,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             OCCUPANCY: 'custrecord_twc_site_occ',
             WHAT3WORDS: 'custrecord_twc_site_what3words',
             ACCESS_WHAT3WORDS: 'custrecord_twc_site_acc_wt3words',
+            CUSTOMER_PRESENCE_LIST: 'custrecord_twc_site_cust_pres_list',
+            LAND_AGREEMENT_LIST: 'custrecord_twc_site_land_agr_list',
+            ROW_AGREEMENT_LIST: 'custrecord_twc_site_row_agr_list',
+            POWER_SUPPLY_LIST: 'custrecord_twc_site_pew_sup_list',
+            GENERATOR_LIST: 'custrecord_twc_site_gen_list',
+            EARTH__AND__LP_INSPECTIONS_LIST: 'custrecord_twc_site_earth_lp_insp_list',
+            STRUCTURE_INSPECTIONS_LIST: 'custrecord_twc_site_str_insp_list',
+            FACILITIES_SERVICES_LIST: 'custrecord_twc_list_fac_svc_list',
+            SITE_LOCATION: 'custrecord_twc_site_location',
         }
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
@@ -75,7 +85,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             HEIGHT_ASL_M: { name: 'custrecord_twc_site_height_asl', type: 'float', alias: 'heightASLm', display: 'normal', mandatory: false },
             SITE_LEVEL: { name: 'custrecord_twc_site_level', type: 'select', alias: 'siteLevel', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_level,' },
             PORTFOLIO: { name: 'custrecord_twc_site_portfolio', type: 'select', alias: 'portfolio', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_portfolio,' },
-            PUBLIC: { name: 'custrecord_twc_site_public', type: 'select', alias: 'public', display: 'normal', mandatory: false, recordType: 'customrecord_twc_gen_public,' },
+            PUBLIC: { name: 'custrecord_twc_site_public', type: 'select', alias: 'public', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_public,' },
             BTS_STATUS: { name: 'custrecord_twc_site_bts_status', type: 'select', alias: 'bTSStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_bts_sts,' },
             ADDRESS: { name: 'custrecord_twc_site_address', type: 'text', alias: 'address', display: 'normal', mandatory: false },
             ADDRESS_EIRCODE: { name: 'custrecord_twc_site_address_zip', type: 'text', alias: 'addressEircode', display: 'normal', mandatory: false },
@@ -86,6 +96,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LONGITUDE: { name: 'custrecord_twc_site_longitude', type: 'float', alias: 'longitude', display: 'normal', mandatory: false },
             LATITUDE: { name: 'custrecord_twc_site_latitude', type: 'float', alias: 'latitude', display: 'normal', mandatory: false },
             SAF_AUTO_APPROVE: { name: 'custrecord_twc_site_saf_auto_approve', type: 'checkbox', alias: 'sAFAutoApprove', display: 'normal', mandatory: false },
+            SAF_STATUS: { name: 'custrecord_twc_site_saf_status', type: 'select', alias: 'sAFStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_saf_sts,' },
             TRACK_TYPE: { name: 'custrecord_twc_site_track_type', type: 'select', alias: 'trackType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_track_type,' },
             EASTING_ACCESS: { name: 'custrecord_twc_site_easting_access', type: 'float', alias: 'eastingAccess', display: 'normal', mandatory: false },
             NORTHING_ACCESS: { name: 'custrecord_twc_site_northing_access', type: 'float', alias: 'northingAccess', display: 'normal', mandatory: false },
@@ -102,7 +113,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ADJACENT_GROUND_SPACE: { name: 'custrecord_twc_site_adj_grnd_space', type: 'checkbox', alias: 'adjacentGroundSpace', display: 'normal', mandatory: false },
             ADJACENT_GROUND_OWNER: { name: 'custrecord_twc_site_adj_grnd_owner', type: 'text', alias: 'adjacentGroundOwner', display: 'normal', mandatory: false },
             PERIMETER_TYPE: { name: 'custrecord_twc_site_perimeter_type', type: 'select', alias: 'perimeterType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_perimeter_type,' },
-            FENCE_HEIGHT_M: { name: 'custrecord_twc_site_fence_height_m', type: 'integer', alias: 'fenceHeightm', display: 'normal', mandatory: false },
+            FENCE_HEIGHT_M: { name: 'custrecord_twc_site_fence_height_m', type: 'float', alias: 'fenceHeightm', display: 'normal', mandatory: false },
             INDEPENDENT_POWER_SUPPLIES: { name: 'custrecord_twc_site_indep_pwr_supp', type: 'integer', alias: 'independentPowerSupplies', display: 'normal', mandatory: false },
             NEXT_GENERATOR_SERVICE: { name: 'custrecord_twc_site_nxt_gen_svc', type: 'date', alias: 'nextGeneratorService', display: 'normal', mandatory: false },
             NEXT_EARTH__AND__LP_TEST: { name: 'custrecord_twc_site_nxt_earth_lp_test', type: 'date', alias: 'nextEarth_and_LPTest', display: 'normal', mandatory: false },
@@ -118,6 +129,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             OCCUPANCY: { name: 'custrecord_twc_site_occ', type: 'integer', alias: 'occupancy', display: 'normal', mandatory: false },
             WHAT3WORDS: { name: 'custrecord_twc_site_what3words', type: 'text', alias: 'what3Words', display: 'normal', mandatory: false },
             ACCESS_WHAT3WORDS: { name: 'custrecord_twc_site_acc_wt3words', type: 'text', alias: 'accessWhat3Words', display: 'normal', mandatory: false },
+            CUSTOMER_PRESENCE_LIST: { name: 'custrecord_twc_site_cust_pres_list', type: 'select', alias: 'customerPresenceList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_cust_pres,' },
+            LAND_AGREEMENT_LIST: { name: 'custrecord_twc_site_land_agr_list', type: 'select', alias: 'landAgreementList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_land,' },
+            ROW_AGREEMENT_LIST: { name: 'custrecord_twc_site_row_agr_list', type: 'select', alias: 'rOWAgreementList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_row,' },
+            POWER_SUPPLY_LIST: { name: 'custrecord_twc_site_pew_sup_list', type: 'select', alias: 'powerSupplyList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_pwr_sply,' },
+            GENERATOR_LIST: { name: 'custrecord_twc_site_gen_list', type: 'select', alias: 'generatorList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra,' },
+            EARTH__AND__LP_INSPECTIONS_LIST: { name: 'custrecord_twc_site_earth_lp_insp_list', type: 'select', alias: 'earth_and_LPInspectionsList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_elp_svc,' },
+            STRUCTURE_INSPECTIONS_LIST: { name: 'custrecord_twc_site_str_insp_list', type: 'select', alias: 'structureInspectionsList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_insp,' },
+            FACILITIES_SERVICES_LIST: { name: 'custrecord_twc_list_fac_svc_list', type: 'select', alias: 'facilitiesServicesList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_fac_svc,' },
+            SITE_LOCATION: { name: 'custrecord_twc_site_location', type: 'select', alias: 'siteLocation', display: 'normal', mandatory: false, recordType: '-103' },
         }
 
         class OSSMTWC_Site extends customRec.RecordBase {
@@ -269,6 +289,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set sAFAutoApprove(value) {
                 this.set(_recordFields.SAF_AUTO_APPROVE, value)
             }
+            
+            get sAFStatus() {
+                return this.get(_recordFields.SAF_STATUS);
+            } set sAFStatus(value) {
+                this.set(_recordFields.SAF_STATUS, value)
+            }
+            get sAFStatusName() { return this.getText(_recordFields.SAF_STATUS); }
             
             get trackType() {
                 return this.get(_recordFields.TRACK_TYPE);
@@ -464,11 +491,75 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.ACCESS_WHAT3WORDS, value)
             }
             
+            get customerPresenceList() {
+                return this.get(_recordFields.CUSTOMER_PRESENCE_LIST);
+            } set customerPresenceList(value) {
+                this.set(_recordFields.CUSTOMER_PRESENCE_LIST, value)
+            }
+            get customerPresenceListName() { return this.getText(_recordFields.CUSTOMER_PRESENCE_LIST); }
+            
+            get landAgreementList() {
+                return this.get(_recordFields.LAND_AGREEMENT_LIST);
+            } set landAgreementList(value) {
+                this.set(_recordFields.LAND_AGREEMENT_LIST, value)
+            }
+            get landAgreementListName() { return this.getText(_recordFields.LAND_AGREEMENT_LIST); }
+            
+            get rOWAgreementList() {
+                return this.get(_recordFields.ROW_AGREEMENT_LIST);
+            } set rOWAgreementList(value) {
+                this.set(_recordFields.ROW_AGREEMENT_LIST, value)
+            }
+            get rOWAgreementListName() { return this.getText(_recordFields.ROW_AGREEMENT_LIST); }
+            
+            get powerSupplyList() {
+                return this.get(_recordFields.POWER_SUPPLY_LIST);
+            } set powerSupplyList(value) {
+                this.set(_recordFields.POWER_SUPPLY_LIST, value)
+            }
+            get powerSupplyListName() { return this.getText(_recordFields.POWER_SUPPLY_LIST); }
+            
+            get generatorList() {
+                return this.get(_recordFields.GENERATOR_LIST);
+            } set generatorList(value) {
+                this.set(_recordFields.GENERATOR_LIST, value)
+            }
+            get generatorListName() { return this.getText(_recordFields.GENERATOR_LIST); }
+            
+            get earth_and_LPInspectionsList() {
+                return this.get(_recordFields.EARTH__AND__LP_INSPECTIONS_LIST);
+            } set earth_and_LPInspectionsList(value) {
+                this.set(_recordFields.EARTH__AND__LP_INSPECTIONS_LIST, value)
+            }
+            get earth_and_LPInspectionsListName() { return this.getText(_recordFields.EARTH__AND__LP_INSPECTIONS_LIST); }
+            
+            get structureInspectionsList() {
+                return this.get(_recordFields.STRUCTURE_INSPECTIONS_LIST);
+            } set structureInspectionsList(value) {
+                this.set(_recordFields.STRUCTURE_INSPECTIONS_LIST, value)
+            }
+            get structureInspectionsListName() { return this.getText(_recordFields.STRUCTURE_INSPECTIONS_LIST); }
+            
+            get facilitiesServicesList() {
+                return this.get(_recordFields.FACILITIES_SERVICES_LIST);
+            } set facilitiesServicesList(value) {
+                this.set(_recordFields.FACILITIES_SERVICES_LIST, value)
+            }
+            get facilitiesServicesListName() { return this.getText(_recordFields.FACILITIES_SERVICES_LIST); }
+            
+            get siteLocation() {
+                return this.get(_recordFields.SITE_LOCATION);
+            } set siteLocation(value) {
+                this.set(_recordFields.SITE_LOCATION, value)
+            }
+            get siteLocationName() { return this.getText(_recordFields.SITE_LOCATION); }
+            
         }
 
         return {
             Type: _recordType,
             Fields: _recordFields,
+            FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_Site,
 
             get: function (id) {

@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_utils.js', '../../data/oTWC_safUI.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../O/controls/oTWC_ui_ctrl.js'],
-    (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, uiTable, twcSite, twcUtils, twcSafUI, twcIcons, twcUIPanel, twcUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../O/controls/oTWC_ui_ctrl.js'],
+    (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, uiTable, twcSite, twcUtils, twcSaf, twcSafUI, twcIcons, twcUIPanel, twcUI) => {
 
 
 
@@ -17,15 +17,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 var safLink = core.url.script('otwc_siteaccess_sl');
                 var unboundCols = [];
-                unboundCols.push({
-                    id: 'open_saf', title: 'SAF', unbound: true,
-                    styles: { 'text-align': 'center' },
-                    noSort: true,
-                    sortIdx: 999,
-                    initValue: (d) => {
-                        return `<a href="${safLink}&siteId=${d.id}">view</a>`;
-                    }
-                })
+                // unboundCols.push({
+                //     id: 'open_saf', title: 'SAF', unbound: true,
+                //     styles: { 'text-align': 'center' },
+                //     noSort: true,
+                //     sortIdx: 999,
+                //     initValue: (d) => {
+                //         return `<a href="${safLink}&recId=${d.id}">view</a>`;
+                //     }
+                // })
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
                     id: 'omt_sites',
                     unboundCols: unboundCols,
@@ -46,9 +46,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             colInit(tbl, col) {
                 if (col.id == 'id') { return false; }
                 if (col.id == 'record_id') { return false; }
-                if (col.id == 'name') { return false; }
-                if (col.id == 'site_type_color') { return false; }
-                if (col.id == 'site_type_color') { return false; }
+                if (col.id == 'site_id') { return false; }
+                if (col.id == 'name') {
+                    col.title = 'SAF ID';
+                    col.addCount = true;
+                    col.link = {
+                        url: core.url.script('otwc_spacerequest_sl') + '&recId=${id}',
+                        valueField: 'id'
+                    }
+                }
 
                 var uf = window.twc.page.data.data.safInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
                 if (uf) {
@@ -56,13 +62,28 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (uf.listRecord && !col.id.endsWith('_text')) { return false; }
                 }
 
-                if (col.id == twcSite.Fields.SITE_NAME || col.id == twcSite.Fields.SITE_ID) {
-                    col.addCount = col.id == twcSite.Fields.SITE_NAME;
+                if (col.id == 'site_id_text') {
+                    col.title = 'Site';
                     col.link = {
-                        url: core.url.script('otwc_siteinfo_sl') + '&recId=${id}',
-                        valueField: 'id'
+                        url: core.url.script('otwc_siteinfo_sl') + '&recId=${site_id}',
+                        valueField: 'site_id'
                     }
                 }
+
+                if (col.id == `${twcSaf.Fields.STATUS}_text`) {
+                    col.styles = { 'text-align': 'center', width: '150px' }
+                    col.formatValue = (v) => {
+                        return twcSaf.getSafStatusHtml(v, 'twc-record-status-row');
+                    }
+                }
+
+                // if (col.id == twcSite.Fields.SITE_NAME || col.id == twcSite.Fields.SITE_ID) {
+                //     col.addCount = col.id == twcSite.Fields.SITE_NAME;
+                //     col.link = {
+                //         url: core.url.script('otwc_siteinfo_sl') + '&recId=${id}',
+                //         valueField: 'id'
+                //     }
+                // }
                 if (col.id == twcSite.Fields.LATITUDE || col.id == twcSite.Fields.LONGITUDE) { col.styles = { 'text-align': 'right' }; }
             }
 
@@ -81,26 +102,34 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #calendar = null;
             #calendarSelection = null;
             #calendarSelectionTitle = null;
-            #accessInfoSection = null;
+            // #accessInfoSection = null;
             #accessConditionsSection = null;
             #accessRequirements = null;
+            #vendorDocuments = null;
 
             constructor(page) {
                 this.#page = page;
                 this.init();
-
-
             }
 
             get ui() { return this.#page.ui; }
             get data() { return this.#page.data; }
 
             init() {
+                if (!this.ui.getControl('saf-template')) { return; }
+
                 this.#calendar = this.ui.getControl('saf-calendar');
                 this.#calendarSelectionTitle = this.ui.ui.find('#saf-cal-selection-title');
                 this.#calendarSelection = this.ui.ui.find('#saf-cal-selection-body');
-                this.#accessInfoSection = this.ui.ui.find('#saf-cal-selection-access-body');
-                this.#accessConditionsSection = this.ui.ui.find('#saf-access-condition-info');
+                // this.#accessInfoSection = this.ui.ui.find('#saf-cal-selection-access-body');
+                this.#accessConditionsSection = this.ui.ui.find('#saf-access-condition-info-2');
+
+                this.ui.getControl('saf-submit').on('click', e => {
+                    dialog.confirm('Are you sure you wish to submit the Access Request?', () => {
+                        this.submitForm();    
+                    })
+                    
+                })
 
                 this.ui.getControl('saf-template').on('change', e => {
                     this.#page.dirty = true;
@@ -117,6 +146,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.getControl('saf-rooftop-access')?.on('change', e => { this.refreshAccessRequirements(); });
                 this.ui.getControl('saf-electrical-access')?.on('change', e => { this.refreshAccessRequirements(); });
                 this.ui.getControl('saf-crane-access')?.on('change', e => { this.refreshAccessRequirements(); });
+                this.ui.getControl('saf-customer')?.on('change', e => { this.refreshAccessRequirements(); });
+                this.ui.getControl('saf-vendor')?.on('change', e => { this.refreshAccessRequirements(); });
+                this.ui.getControl('saf-structure')?.on('change', e => { this.refreshAccessRequirements(); });
+                this.ui.getControl('saf-accommodation')?.on('change', e => { this.refreshAccessRequirements(); });
 
                 this.ui.getControl('saf-picw').on('change', e => {
                     this.ui.getControl('saf-picw-staff').value = null;
@@ -144,19 +177,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 core.array.each(this.ui.controls, c => {
                     if (c.type !== 'table') { return; }
                     c.onToolbarClick = e => {
-                        var manageMethod = 'manageVisitor';
                         if (e.action == 'add-new') {
-                            this[manageMethod](null, e.table);
-
+                            this.manageVisitor(null, e.table);
                         } else if (e.action == 'edit') {
-                            this[manageMethod](e.rowData, e.table);
-
+                            this.manageVisitor(e.rowData, e.table);
                         } else if (e.action == 'delete') {
                             dialog.confirm('Are you sure you wish to delete this record', () => {
                                 e.rowData.delete = true;
-                                this[manageMethod](e.rowData, e.table);
+                                this.manageVisitor(e.rowData, e.table);
                             })
-
                         }
                     }
                 })
@@ -179,9 +208,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         var timeBlockDate = timeBlockRow.data('block-date');
                         var timeBlock = this.data.siteTimeBlocks[timeBlockDate];
                         if (!timeBlock) {
-                            this.data.siteTimeBlocks[timeBlockDate] = {}
+                            this.data.siteTimeBlocks[timeBlockDate] = { blocksCount: 0 }
                             timeBlock = this.data.siteTimeBlocks[timeBlockDate];
                         }
+                        timeBlock.blocksCount++;
+
+                        this.#calendar.specialDates[timeBlockDate] = { css: timeBlock.blocksCount > 3 ? 'o-calendar-red' : 'o-calendar-orange' }
 
                         if (!timeBlock['t']) {
                             timeBlock['t'] = {
@@ -196,10 +228,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             block: {
                                 id: timeBlockRow.data('block-id'),
                                 name: timeBlockRow.data('block-text'),
-
                             }
                         })
 
+                        if (!this.#accessRequirements.timeBlocks) {
+                            this.#accessRequirements.timeBlocks = {};
+                            this.#accessRequirements.timeBlocksAllocated = 0;
+                        }
                         if (!this.#accessRequirements.timeBlocks[timeBlockDate]) { this.#accessRequirements.timeBlocks[timeBlockDate] = {}; }
                         this.#accessRequirements.timeBlocks[timeBlockDate] = timeBlock;
                         this.#accessRequirements.timeBlocksAllocated++;
@@ -219,6 +254,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     })
 
                 })
+                this.#calendar.on('change', {});
             }
 
             refreshAccessRequirements() {
@@ -228,99 +264,129 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (this.ui.getControl('saf-rooftop-access') && this.ui.getControl('saf-rooftop-access').value == '') { showStep3 = false; }
                 if (this.ui.getControl('saf-electrical-access') && this.ui.getControl('saf-electrical-access').value == '') { showStep3 = false; }
                 if (this.ui.getControl('saf-crane-access') && this.ui.getControl('saf-crane-access').value == '') { showStep3 = false; }
+                if (this.ui.getControl('saf-structure')) { this.ui.getControl('saf-structure').hide = this.ui.getControl('saf-mast-access')?.value != 'T' }
+                if (this.ui.getControl('saf-accommodation')) { this.ui.getControl('saf-accommodation').hide = this.ui.getControl('saf-building-access')?.value != 'T' }
 
-                if (showStep3) {
-                    this.#accessConditionsSection.html(`
-                        <span class="twc-wait-cursor">${twcIcons.get('waitWheel', 24)}</span>
-                        <span>gathering data...</span>
-                    `);
-                    this.ui.find('#site-access-step-3').css('display', 'block');
-                    this.ui.find('#site-access-step-4').css('display', 'block');
-                    this.ui.find('#site-access-step-5').css('display', 'block');
-                    this.ui.find('#site-access-step-6').css('display', 'block');
+                this.ui.find('#site-access-step-3').css('display', showStep3 ? 'block' : 'none');
+                this.ui.find('#site-access-step-4').css('display', showStep3 ? 'block' : 'none');
+                this.ui.find('#site-access-step-5').css('display', showStep3 ? 'block' : 'none');
+                this.ui.find('#site-access-step-6').css('display', showStep3 ? 'block' : 'none');
 
-                    var payload = this.ui.getValues();
-                    payload.siteId = this.data.siteId;
-                    payload.safType = this.ui.getControl('saf-type').value;
-                    console.log(payload)
-                    this.#page.post({ action: 'get-access-requirements' }, payload)
-                        .then(res => {
-                            this.#accessRequirements = res;
-                            this.refreshInfo();
-                            this.#calendar.on('change', null)
-                        })
-                        .catch(err => { dialog.error(err); });
+                this.#accessConditionsSection.html(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 24)}</span><span>gathering data...</span>`);
 
-                } else {
-                    this.ui.find('#site-access-step-3').css('display', 'none');
-                    this.ui.find('#site-access-step-4').css('display', 'none');
-                    this.ui.find('#site-access-step-5').css('display', 'none');
-                    this.ui.find('#site-access-step-6').css('display', 'none');
-                }
+                var payload = this.ui.getValues();
+                payload.siteId = this.data.siteId;
+                payload.safType = this.ui.getControl('saf-type').value;
+                console.log(payload)
+                this.#page.post({ action: 'get-access-requirements' }, payload).then(res => {
+                    //this.#accessRequirements = res;#
+                    if (!this.#accessRequirements) { this.#accessRequirements = {}; }
+                    for (var k in res) {
+                        this.#accessRequirements[k] = res[k];
+                    }
+                    this.refreshInfo();
+                    this.#calendar.on('change', null)
+                }).catch(err => {
+                    dialog.error(err);
+                });
+
             }
 
             refreshInfo() {
-                var html = jQuery('<div></div>');
                 var htmlCond = jQuery('<div></div>');
                 if (!this.#accessRequirements) {
-                    html.append('<b>Select SAF Setup & Access Requirements below to begin</b>');
-                    htmlCond.append('<b>Select SAF Setup & Access Requirements above to begin</b>');
+                    htmlCond.append('<b>Select SAF Setup & Access Requirements to begin</b>');
                 } else {
+                    var safTypeErrorStructure = '';
+                    if (this.ui.getControl('saf-structure')) {
+                        var structure = this.ui.getControl('saf-structure').valueObj;
+                        if (structure?.saf_types) {
+                            if (structure.saf_types.indexOf(this.ui.getControl('saf-type').value) < 0) {
+                                safTypeErrorStructure = `<div style="padding: 3px; border-bottom: 1px solid var(--grid-color); color: red; font-weight: bold;">The selected structure does not allow for the selected SAF type</div>`;
+                            }
+                        }
+                    }
+                    htmlCond.append(safTypeErrorStructure);
+
+                    var safTypeErrorAccommodation = '';
+                    if (this.ui.getControl('saf-accommodation')) {
+                        var structure = this.ui.getControl('saf-accommodation').valueObj;
+                        if (structure?.saf_types) {
+                            if (structure.saf_types.indexOf(this.ui.getControl('saf-type').value) < 0) {
+                                safTypeErrorAccommodation = `<div style="padding: 3px; border-bottom: 1px solid var(--grid-color); color: red; font-weight: bold;">The selected accommodation does not allow for the selected SAF type</div>`;
+                            }
+                        }
+                    }
+                    htmlCond.append(safTypeErrorAccommodation);
+
+                    if (this.#accessRequirements.autoApprove) {
+                        htmlCond.append(`
+                            <div style="padding: 3px; border-bottom: 1px solid var(--grid-color); color: limegreen; font-weight: bold;">
+                                This request will be automatically approved
+                            </div>
+                        `);
+                    }
+
                     var colorStyle = '';
                     if (this.#accessRequirements.timeBlocksAllocated == this.#accessRequirements.timeBlocksRequired) {
-                        colorStyle = ' color: green; font-weight: bold;';
+                        colorStyle = ' color: limegreen; font-weight: bold;';
                     } else if (this.#accessRequirements.timeBlocksAllocated > this.#accessRequirements.timeBlocksRequired) {
                         colorStyle = ' color: red; font-weight: bold;';
                     }
-                    html.append(`
-                        <div style="padding: 7px; border-bottom: 1px solid var(--grid-color);${colorStyle}">
-                            ${this.#accessRequirements.timeBlocksAllocated} of ${this.#accessRequirements.timeBlocksRequired} time-blocks allocated
-                        </div>
-                    `);
                     htmlCond.append(`
                         <div style="padding: 3px; border-bottom: 1px solid var(--grid-color);${colorStyle}">
                             ${this.#accessRequirements.timeBlocksRequired} Time-Blocks Required (${this.#accessRequirements.timeBlocksAllocated} Allocated)
                         </div>
                     `);
 
-                    var allocatedBlocksTable = jQuery('<div class="twc-div-table-r"></div>');
-                    html.append(allocatedBlocksTable);
+                    var allocatedBlocksTable = jQuery('<div class="twc-div-table-r" style="border-bottom: 1px solid var(--grid-color);"></div>');
+                    htmlCond.append(allocatedBlocksTable);
                     for (var k in this.#accessRequirements.timeBlocks) {
                         if (!this.#accessRequirements.timeBlocks[k]['t']) { continue; }
                         core.array.each(this.#accessRequirements.timeBlocks[k]['t'].blocks, b => {
                             var allocatedBlocksTableRow = jQuery(`
                                 <div>
+                                    <div data-action="remove" class="twc-clickable" style="width: 20px; text-align: center;">${twcIcons.get('trash', 16, 'red')}</div>
                                     <div style="padding: 7px;">${b.block.name} - ${k}</div>
-                                    <div data-action="remove" class="twc-clickable" style="text-align: right;">${twcIcons.get('trash', 16, 'red')}</div>
                                 </div>
                             `);
                             allocatedBlocksTable.append(allocatedBlocksTableRow);
                             allocatedBlocksTableRow.find('[data-action="remove"]').click(e => {
                                 console.log(b.date, this.#accessRequirements.timeBlocks[b.date]['t'], b)
 
+                                this.#accessRequirements.timeBlocksAllocated--;
+                                this.#accessRequirements.timeBlocks[b.date].blocksCount--;
                                 this.#accessRequirements.timeBlocks[b.date]['t'].blocks.splice(this.#accessRequirements.timeBlocks[b.date]['t'].blocks.indexOf(b), 1);
+
                                 if (this.#accessRequirements.timeBlocks[b.date]['t'].blocks.length == 0) {
                                     delete this.#accessRequirements.timeBlocks[b.date]['t'];
                                     var idx = this.#calendar.datesContent[b.date].indexOf('This');
                                     if (idx >= 0) { this.#calendar.datesContent[b.date].splice(idx, 1) }
                                 }
-                                this.#accessRequirements.timeBlocksAllocated--;
+
+                                this.#calendar.specialDates[b.date] = { css: this.#accessRequirements.timeBlocks[b.date].blocksCount > 3 ? 'o-calendar-red' : 'o-calendar-orange' }
+                                if (this.#accessRequirements.timeBlocks[b.date].blocksCount == 0) {
+                                    delete this.#calendar.specialDates[b.date]
+                                }
+
                                 this.refreshInfo();
                                 this.#calendar.refresh();
-                                //this.#calendar.on('change', e)
+                                this.#calendar.on('change', e);
+
+
                             })
                         })
                     }
 
                     core.array.each(this.#accessRequirements.conditions, cond => {
+
                         htmlCond.append(`
-                            <div style="padding: 3px;">${cond.quantity} ${cond.name} Required</div>
+                            <div style="padding: 3px;">${cond.quantity == 'all' ? '<span style="color: var(--accent-fore-color); font-weight: bold;">All Crew</span>' : cond.quantity} ${cond.name} Required</div>
                         `)
                     })
                 }
-
-                this.#accessInfoSection.html(html);
                 this.#accessConditionsSection.html(htmlCond);
+
             }
 
             refreshVendorDocuments(documents) {
@@ -341,6 +407,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     html.append(docSection)
                 })
                 var ui = twcUI.init({}, html);
+                this.#vendorDocuments = ui;
 
                 html.find('.toggle-file').click(e => {
                     var fileId = jQuery(e.currentTarget).closest('div[data-file]').data('file');
@@ -379,9 +446,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             .catch(err => { dialog.error(err); });
                     })
                     form.getControl('saf-crew-member').on('change', e => {
-                        form.getControl('saf-crew-attend-as').value = null;
-                        form.getControl('saf-crew-attend-as').setDataSource(e.object.attendAs);
-                        safCrew.ui.controls.find(c => { return c.id == 'saf-crew-attend-as' }).dataSource = e.object.attendAs;
+                        form.getControl('saf-crew-attend-as').value = null; form.getControl('saf-crew-attend-as').setDataSource(e.object?.attendAs || []);
+                        safCrew.ui.controls.find(c => { return c.id == 'saf-crew-attend-as' }).dataSource = e.object?.attendAs || [];
                     });
 
 
@@ -404,11 +470,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             safCrew.ui.controls.find(c => { return c.id == 'saf-crew-member' }).value = safCrew['saf-crew-member'];
                             safCrew.ui.controls.find(c => { return c.id == 'saf-crew-attend-as' }).value = safCrew['saf-crew-attend-as'];
 
-                            // @@NOTE: if we have anew item then add it to the collection 
-                            var itemList = `crews`;
-                            if (!this.data.siteAccessInfo[itemList]) { this.data.siteAccessInfo[itemList] = table.data; }
-                            if (this.data.siteAccessInfo[itemList].indexOf(safCrew) < 0) { this.data.siteAccessInfo[itemList].push(safCrew); }
-                            table.render(this.data.siteAccessInfo[itemList], true)
+                            if (!this.data.siteAccessInfo.crews) { this.data.siteAccessInfo.crews = table.data; }
+                            if (this.data.siteAccessInfo.crews.indexOf(safCrew) < 0) { this.data.siteAccessInfo.crews.push(safCrew); }
+                            table.render(this.data.siteAccessInfo.crews, true)
 
                             this.dirty = true
                         } catch (error) {
@@ -436,15 +500,48 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
+
+            submitForm() {
+                try {
+
+                    this.#page.wait();
+
+                    var values = this.ui.getValues();
+
+                    var saf = this.data.siteAccessInfo;
+                    saf.documents = this.#vendorDocuments.getValues();
+                    for (var k in values) { saf[k] = values[k]; }
+
+                    console.log(saf);
+                    console.log(this.#accessRequirements);
+
+
+                    this.#page.post({ action: 'save-new-saf' }, { saf: saf, accessRequirements: this.#accessRequirements }).then(resp => {
+                        if (resp.error) {
+                            dialog.error(resp.error);
+                            return;
+                        }
+
+                        this.#page.dirty = false;
+                        window.location.href = this.#page.url({ recId: resp.id });
+
+                    }).catch(err => {
+                        dialog.error(err);
+                        this.#page.waitClose();
+                    });
+
+                } catch (error) {
+                    dialog.error(error);
+                }
+            }
+
         }
 
 
         class TWCSiteAccessPage extends twcPageBase.TWCPageBase {
-            #map = null;
             #sitesTable = null;
             #sitePanel = null;
             #safBuilder = null;
-
             constructor() {
                 super({ scriptId: 'otwc_siteAccess_sl' });
             }

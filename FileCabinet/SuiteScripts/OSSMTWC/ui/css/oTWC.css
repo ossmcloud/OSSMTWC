@@ -2531,7 +2531,7 @@ tr.twc_tr_flash_yellow>td {
 
 
 div.twc-control-panel {
-    padding: 7px;
+    padding: 3px 1px 0px 0px;
     /* border: 1px solid var(--grid-color); */
     border-bottom-left-radius: 7px;
     border-bottom-right-radius: 7px;

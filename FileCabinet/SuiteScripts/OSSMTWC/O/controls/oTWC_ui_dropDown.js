@@ -109,6 +109,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 var disabled = this.#options.disabled ? 'disabled' : '';
                 var readOnly = this.#options.readOnly ? 'readonly' : '';
 
+                if (this.#dataSource.length == 1 && !this.#options.value) {
+                    this.#options.value = this.#dataSource[0].value;
+                }
+
                 // @@TODO: we need to implement the disabled attr 
                 var label = '';
                 if (this.#options.label) {

@@ -376,7 +376,7 @@ div.o-calendar-day-content {
     display: grid;
     align-content: center;
     padding: 7px;
-    min-height: 50px;
+    min-height: 35px;
     min-width: 75px;
     vertical-align: middle;
 }

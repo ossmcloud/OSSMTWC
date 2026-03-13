@@ -18,6 +18,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Type: twcSaf.Type,
             Fields: twcSaf.Fields,
             FieldsInfo: twcSaf.FieldsInfo,
+            Status: twcUtils.SafStatus,
+            getSafStatusName: twcUtils.getSafStatusName,
+            getSafStatusStyle: twcUtils.getSafStatusStyle,
+            getSafStatusHtml: twcUtils.getSafStatusHtml,
 
 
             get: function (id) {

@@ -96,6 +96,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         dataSourceType: field.recordType,
                         showToolbar: true,
                         showEditDelete: true,
+                        readOnly: field.readOnly,
                         onColumnInit: (tbl, col) => {
                             // @@NOTE: if we have fxFields the framework would return the field_name (with id) and field_name_name (with BUILTIN.DF value)
                             //         we do not want to show the id

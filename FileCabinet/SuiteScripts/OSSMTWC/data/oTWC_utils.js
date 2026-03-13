@@ -11,6 +11,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const INFRA_TYPE = {
+            Accommodation: 1,
+            Structure: 2,
+            Fibre: 3,
+            Generator: 4
+        }
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const NO_ACTIVE_EXPIRED = {
             No: 1,
             Active: 2,
@@ -42,7 +50,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LicenceExecuted: 9,
             SRFCancelled: 10
         }
-        // @@TOD: these could be on the status table since we have one
+        // @@TODO: these could be on the status table since we have one
         const SRF_STATUS_STYLE = {
             Draft: { color: 'white', backgroundColor: 'silver' },
             Submitted: { color: 'white', backgroundColor: 'olive' },
@@ -85,7 +93,82 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const SAF_STATUS = {
+            Pending: 1,
+            Approved: 2,
+            Rejected: 3,
+            PartiallyComplete: 4,
+            Complete: 5,
+            Cancelled: 6,
+            AwaitingPhotos: 7,
+            PhotosReceived: 8
+        }
+        // @@TOD: these could be on the status table since we have one
+        const SAF_STATUS_STYLE = {
+            Pending: { color: 'white', backgroundColor: 'olive' },
+            Approved: { color: 'white', backgroundColor: 'limegreen' },
+            Rejected: { color: 'white', backgroundColor: 'red' },
+            PartiallyComplete: { color: 'white', backgroundColor: 'yellow' },
+            Complete: { color: 'white', backgroundColor: 'green' },
+            Cancelled: { color: 'white', backgroundColor: 'silver' },
+            AwaitingPhotos: { color: 'white', backgroundColor: 'orange' },
+            PhotosReceived: { color: 'white', backgroundColor: 'lime' },
+        }
+        function getSafStatusName(safStatusNumber) {
+            if (!safStatusNumber) { safStatusNumber = 1; }
+            for (var k in SAF_STATUS) {
+                if (SAF_STATUS[k] == safStatusNumber) { return k; }
+            }
+        }
+        function getSafStatusStyle(safStatusNumber) {
+            if (!safStatusNumber) { safStatusNumber = 1; }
+            if (isNaN(parseInt(safStatusNumber))) {
+                return SAF_STATUS_STYLE[safStatusNumber];
+            } else {
+                return SAF_STATUS_STYLE[getSafStatusName(safStatusNumber)];
+            }
+        }
+        function getSafStatusHtml(safStatusNumber, spanClass) {
+            if (!safStatusNumber) { safStatusNumber = 1; }
+            var statusName = getSafStatusName(safStatusNumber);
+            if (isNaN(parseInt(safStatusNumber))) { statusName = safStatusNumber; }
+            var statusStyle = getSafStatusStyle(statusName);
+            return `
+                <span class="${spanClass ? spanClass : 'twc-record-status'}" style="color: ${statusStyle.color}; background-color: ${statusStyle.backgroundColor};" >
+                    ${statusName}
+                </span>
+            `
+        }
+
+
         const SAF_TIME_BLOCKS = 'customrecord_twc_tm_blk_opt';
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const SAF_TIME_BLOCK = {
+            A_8_TO_10: 1,
+            B_10_TO_12: 2,
+            C_12_TO_15: 3,
+            D_15_TO_18: 4,
+        }
+        function getTimeBlockTimeRange(timeBlockId) {
+            var range = { start: '', end: '' };
+            if (timeBlockId == SAF_TIME_BLOCK.A_8_TO_10) {
+                range.start = '08:00';
+                range.end = '10:00';
+            } else if (timeBlockId == SAF_TIME_BLOCK.B_10_TO_12) {
+                range.start = '10:00';
+                range.end = '12:00';
+            } else if (timeBlockId == SAF_TIME_BLOCK.C_12_TO_15) {
+                range.start = '12:00';
+                range.end = '15:00';
+            } else if (timeBlockId == SAF_TIME_BLOCK.D_15_TO_18) {
+                range.start = '15:00';
+                range.end = '18:00';
+            }
+            return range;
+        }
+
 
         function getYesNoOptions() {
             return [{ value: 'T', text: 'Yes' }, { value: 'F', text: 'No' }]
@@ -230,9 +313,37 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getLookUpTableValues('customrecord_twc_saf_status');
         }
 
-        function getSafTypes() {
-            return coreSQL.run(`select id as value, name as text from customrecord_twc_saf_type where isinactive='F' order by custrecord_twc_saf_type_sort`);
-            return getLookUpTableValues('customrecord_twc_saf_type');
+        function getSafTypes(options) {
+
+            var allowedTypes = null;
+            if (options?.siteId) {
+                allowedTypes = coreSQL.first(`
+                    select  st.custrecord_twc_infra_saf_sts_types as types
+                    from    customrecord_twc_site s
+                    join    customrecord_twc_infra_saf_sts st on st.id = s.custrecord_twc_site_saf_status
+                    where   s.id = ${options.siteId}
+                `);
+                if (allowedTypes) {
+
+                    if (allowedTypes.types) {
+                        allowedTypes = allowedTypes.types.split(',').map(i => { return parseInt(i.trim()); })
+                    } else {
+                        allowedTypes = [];
+                    }
+                }
+            }
+
+            var safTypes = [];
+            coreSQL.each(`select id as value, name as text from customrecord_twc_saf_type where isinactive='F' order by custrecord_twc_saf_type_sort`, t => {
+                if (allowedTypes) {
+                    if (allowedTypes.indexOf(t.value) < 0) { return; }
+                }
+                safTypes.push(t);
+            });
+
+
+            return safTypes;
+
         }
 
 
@@ -465,6 +576,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return siteSrfs;
         }
 
+        function getInfraStructures(options) {
+            return coreSQL.run(`
+                select  is.id as value, custrecord_twc_infra_id as text, custrecord_twc_infra_id || ' [' || BUILTIN.DF(custrecord_twc_infra_str_type) || ']' as text_render, 
+                        custrecord_twc_infra_type as type, BUILTIN.DF(custrecord_twc_infra_type) as type_name, st.custrecord_twc_infra_saf_sts_types as saf_types
+                from    customrecord_twc_infra is
+                left join    customrecord_twc_infra_saf_sts st on st.id = is.custrecord_twc_infra_saf_status
+                where   custrecord_twc_infra_site = ${options?.siteId || 0}
+                order by is.custrecord_twc_infra_id
+            `)
+        }
 
         function getStructureTypeInfo(options) {
             var info = { height: 0 };
@@ -518,7 +639,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             sql += ' order by f.name';
 
             return coreSQL.run(sql)
-        }   
+        }
 
         function formatLongDate(d) {
             if (!d) { d = (new Date()).addHours(12); }
@@ -530,18 +651,30 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             HEIGH_LIMIT_FOR_1_CLIMBER: 60,
 
+            InfraType: INFRA_TYPE,
+
             SafType: SAF_TYPE,
+            SafStatus: SAF_STATUS,
+
             SrfStepType: SRF_ITEM_STEP_TYPE,
             SrfRequestType: SRF_ITEM_REQUEST_TYPE,
             SrfStatus: SRF_STATUS,
+
+            getTimeBlockTimeRange: getTimeBlockTimeRange,
+
+            getInfraStructures: getInfraStructures,
+            getStructureTypeInfo: getStructureTypeInfo,
+
             getSrfStatusName: getSrfStatusName,
             getSrfStatusStyle: getSrfStatusStyle,
             getSrfStatusHtml: getSrfStatusHtml,
 
+            getSafStatusName: getSafStatusName,
+            getSafStatusStyle: getSafStatusStyle,
+            getSafStatusHtml: getSafStatusHtml,
+
             getSafDropDown: getSafDropDown,
             getSafTimeBlocks: getSafTimeBlocks,
-            getStructureTypeInfo: getStructureTypeInfo,
-
             getSrfDropDown: getSrfDropDown,
 
             getFields: getCustomTableFields,
@@ -560,6 +693,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafIds: getSafIds,
             getSrfIds: getSrfIds,
             getSrfStatus: getSrfStatus,
+
+
 
             getYesNoOptions: getYesNoOptions,
 

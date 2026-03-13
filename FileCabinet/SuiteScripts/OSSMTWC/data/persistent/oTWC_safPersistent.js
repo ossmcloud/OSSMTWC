@@ -13,7 +13,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             END_TIME_BLOCK: 'custrecord_twc_saf_end_time_block',
             SITE: 'custrecord_twc_saf_site',
             WORKS_END_DATE: 'custrecord_twc_saf_word_end_date',
-            TYPE: 'custrecord_twc_saf_type',
+            R_TYPE: 'custrecord_twc_saf_type',
             PHOTO_ASSESSMENT_CATEGORY: 'custrecord_twc_saf_photo_assess_category',
             MAST_ACCESS: 'custrecord_twc_saf_mast_access',
             TL_BUILDING_ACCESS: 'custrecord_twc_saf_tl_building_access',
@@ -24,12 +24,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CUSTOMER: 'custrecord_twc_saf_customer',
             PRIMARY_CONTRACTOR: 'custrecord_twc_saf_primary_contractor',
             SUMMARY_OF_WORKS: 'custrecord_twc_saf_summary_works',
-            ASSOCIATED_SRFS: 'custrecord_twc_saf_associated_srfs',
             PLANNED_EQUIPMENT_WORK: 'custrecord_twc_saf_planned_equip_work',
             PICW: 'custrecord_twc_saf_picw',
-            CREW__VISITORS: 'custrecord_twc_saf_crew_visitors',
-            HEALTH__AND__SAFETY: 'custrecord_twc_saf_health_safety',
-            METHOD_STATEMENT: 'custrecord_twc_saf_method_statement',
             SAF_AUTHOR: 'custrecord_twc_saf_author',
             WORKS_PHOTOS_REQ_DELAY: 'custrecord_twc_saf_wrk_photo_req_delay',
             COMPLETION_PHOTOS_REQUESTED: 'custrecord_twc_saf_comp_photo_req',
@@ -37,6 +33,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             COMPLETION_REVIEWER: 'custrecord_twc_saf_comp_reviewer',
             REVIEW_COMMENT: 'custrecord_twc_saf_rev_cmt',
             SAF_COMPLETION_PHOTOS: 'custrecord_twc_saf_comp_photo',
+            ACCOMMODATION: 'custrecord_twc_saf_accommodation',
+            STRUCTURE: 'custrecord_twc_saf_strcture',
+            HEALTH__AND__SAFETY_DELETE: 'custrecord_twc_saf_health_safety',
+            METHOD_STATEMENT_DELETE: 'custrecord_twc_saf_method_statement',
+            CREW__VISITORS_DELETE: 'custrecord_twc_saf_crew_visitors',
+            ASSOCIATED_SRFS_DELETE: 'custrecord_twc_saf_associated_srfs',
         }
         var _recordFieldInfo = {
             STATUS: { name: 'custrecord_twc_saf_status', type: 'select', alias: 'status', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf_status,' },
@@ -46,27 +48,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             END_TIME_BLOCK: { name: 'custrecord_twc_saf_end_time_block', type: 'datetimetz', alias: 'endTimeBlock', display: 'normal', mandatory: false },
             SITE: { name: 'custrecord_twc_saf_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site,' },
             WORKS_END_DATE: { name: 'custrecord_twc_saf_word_end_date', type: 'date', alias: 'worksEndDate', display: 'normal', mandatory: false },
-            //@@REVIEW TYPE was recursively called and was getting error maximum call stack reached, so changed alias to safType
-
-            TYPE: { name: 'custrecord_twc_saf_type', type: 'select', alias: 'type', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf_type,' },
-           // TYPE: { name: 'custrecord_twc_saf_type', type: 'select', alias: 'safType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf_type,' },
-
-           PHOTO_ASSESSMENT_CATEGORY: { name: 'custrecord_twc_saf_photo_assess_category', type: 'select', alias: 'photoAssessmentCategory', display: 'normal', mandatory: false, recordType: 'customrecord_twc_photo_assessment_cat,' },
+            R_TYPE: { name: 'custrecord_twc_saf_type', type: 'select', alias: 'r_type', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf_type,' },
+            PHOTO_ASSESSMENT_CATEGORY: { name: 'custrecord_twc_saf_photo_assess_category', type: 'select', alias: 'photoAssessmentCategory', display: 'normal', mandatory: false, recordType: 'customrecord_twc_photo_assessment_cat,' },
             MAST_ACCESS: { name: 'custrecord_twc_saf_mast_access', type: 'checkbox', alias: 'mastAccess', display: 'normal', mandatory: false },
             TL_BUILDING_ACCESS: { name: 'custrecord_twc_saf_tl_building_access', type: 'checkbox', alias: 'tLBuildingAccess', display: 'normal', mandatory: false },
             CRANE__CHERRYPICKER: { name: 'custrecord_twc_saf_crane_cherrypicker', type: 'checkbox', alias: 'craneCherrypicker', display: 'normal', mandatory: false },
             ROOFTOP_ACCESS: { name: 'custrecord_twc_saf_rooftop_access', type: 'checkbox', alias: 'rooftopAccess', display: 'normal', mandatory: false },
             ELECTRICAL_WORKS: { name: 'custrecord_twc_saf_electrical_works', type: 'checkbox', alias: 'electricalWorks', display: 'normal', mandatory: false },
             CONDITIONS_OF_ACCESS: { name: 'custrecord_twc_saf_conditions_access', type: 'text', alias: 'conditionsofAccess', display: 'normal', mandatory: false },
-            CUSTOMER: { name: 'custrecord_twc_saf_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: '-2' },
-            PRIMARY_CONTRACTOR: { name: 'custrecord_twc_saf_primary_contractor', type: 'select', alias: 'primaryContractor', display: 'normal', mandatory: false, recordType: '-2' },
+            CUSTOMER: { name: 'custrecord_twc_saf_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company,' },
+            PRIMARY_CONTRACTOR: { name: 'custrecord_twc_saf_primary_contractor', type: 'select', alias: 'primaryContractor', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company,' },
             SUMMARY_OF_WORKS: { name: 'custrecord_twc_saf_summary_works', type: 'textarea', alias: 'summaryofWorks', display: 'normal', mandatory: false },
-            ASSOCIATED_SRFS: { name: 'custrecord_twc_saf_associated_srfs', type: 'select', alias: 'associatedSRFs', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf,' },
             PLANNED_EQUIPMENT_WORK: { name: 'custrecord_twc_saf_planned_equip_work', type: 'select', alias: 'plannedEquipmentWork', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action,' },
             PICW: { name: 'custrecord_twc_saf_picw', type: 'select', alias: 'pICW', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
-            CREW__VISITORS: { name: 'custrecord_twc_saf_crew_visitors', type: 'select', alias: 'crewVisitors', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
-            HEALTH__AND__SAFETY: { name: 'custrecord_twc_saf_health_safety', type: 'document', alias: 'health_and_Safety', display: 'normal', mandatory: false },
-            METHOD_STATEMENT: { name: 'custrecord_twc_saf_method_statement', type: 'document', alias: 'methodStatement', display: 'normal', mandatory: false },
             SAF_AUTHOR: { name: 'custrecord_twc_saf_author', type: 'select', alias: 'sAFAuthor', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
             WORKS_PHOTOS_REQ_DELAY: { name: 'custrecord_twc_saf_wrk_photo_req_delay', type: 'integer', alias: 'worksPhotosReqDelay', display: 'normal', mandatory: false },
             COMPLETION_PHOTOS_REQUESTED: { name: 'custrecord_twc_saf_comp_photo_req', type: 'date', alias: 'completionPhotosRequested', display: 'normal', mandatory: false },
@@ -74,6 +68,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             COMPLETION_REVIEWER: { name: 'custrecord_twc_saf_comp_reviewer', type: 'select', alias: 'completionReviewer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
             REVIEW_COMMENT: { name: 'custrecord_twc_saf_rev_cmt', type: 'text', alias: 'reviewComment', display: 'normal', mandatory: false },
             SAF_COMPLETION_PHOTOS: { name: 'custrecord_twc_saf_comp_photo', type: 'document', alias: 'sAFCompletionPhotos', display: 'normal', mandatory: false },
+            ACCOMMODATION: { name: 'custrecord_twc_saf_accommodation', type: 'select', alias: 'accommodation', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra,' },
+            STRUCTURE: { name: 'custrecord_twc_saf_strcture', type: 'select', alias: 'structure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra,' },
+            HEALTH__AND__SAFETY_DELETE: { name: 'custrecord_twc_saf_health_safety', type: 'document', alias: 'health_and_SafetyDELETE', display: 'normal', mandatory: false },
+            METHOD_STATEMENT_DELETE: { name: 'custrecord_twc_saf_method_statement', type: 'document', alias: 'methodStatementDELETE', display: 'normal', mandatory: false },
+            CREW__VISITORS_DELETE: { name: 'custrecord_twc_saf_crew_visitors', type: 'select', alias: 'crewVisitorsDELETE', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
+            ASSOCIATED_SRFS_DELETE: { name: 'custrecord_twc_saf_associated_srfs', type: 'select', alias: 'associatedSRFsDELETE', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf,' },
         }
 
         class OSSMTWC_SAF extends customRec.RecordBase {
@@ -124,22 +124,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.WORKS_END_DATE, value)
             }
             
-            //@@REVIEW type() was recursively called and was getting error maximum call stack reached, so changed type() to saftype()
-            // get type() {
-            //     return this.get(_recordFields.TYPE);
-            // } set type(value) {
-            //     this.set(_recordFields.TYPE, value)
-            // }
-            // get typeName() { return this.getText(_recordFields.TYPE); }
-            
-            get safType() {
-                return this.get(_recordFields.TYPE);
-            } set safType(value) {
-                this.set(_recordFields.TYPE, value)
+            get r_type() {
+                return this.get(_recordFields.R_TYPE);
+            } set r_type(value) {
+                this.set(_recordFields.R_TYPE, value)
             }
-            get safTypeName() { return this.getText(_recordFields.TYPE); }
+            get r_typeName() { return this.getText(_recordFields.R_TYPE); }
             
-
             get photoAssessmentCategory() {
                 return this.get(_recordFields.PHOTO_ASSESSMENT_CATEGORY);
             } set photoAssessmentCategory(value) {
@@ -203,13 +194,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.SUMMARY_OF_WORKS, value)
             }
             
-            get associatedSRFs() {
-                return this.get(_recordFields.ASSOCIATED_SRFS);
-            } set associatedSRFs(value) {
-                this.set(_recordFields.ASSOCIATED_SRFS, value)
-            }
-            get associatedSRFsName() { return this.getText(_recordFields.ASSOCIATED_SRFS); }
-            
             get plannedEquipmentWork() {
                 return this.get(_recordFields.PLANNED_EQUIPMENT_WORK);
             } set plannedEquipmentWork(value) {
@@ -223,25 +207,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.PICW, value)
             }
             get pICWName() { return this.getText(_recordFields.PICW); }
-            
-            get crewVisitors() {
-                return this.get(_recordFields.CREW__VISITORS);
-            } set crewVisitors(value) {
-                this.set(_recordFields.CREW__VISITORS, value)
-            }
-            get crewVisitorsName() { return this.getText(_recordFields.CREW__VISITORS); }
-            
-            get health_and_Safety() {
-                return this.get(_recordFields.HEALTH__AND__SAFETY);
-            } set health_and_Safety(value) {
-                this.set(_recordFields.HEALTH__AND__SAFETY, value)
-            }
-            
-            get methodStatement() {
-                return this.get(_recordFields.METHOD_STATEMENT);
-            } set methodStatement(value) {
-                this.set(_recordFields.METHOD_STATEMENT, value)
-            }
             
             get sAFAuthor() {
                 return this.get(_recordFields.SAF_AUTHOR);
@@ -286,6 +251,46 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set sAFCompletionPhotos(value) {
                 this.set(_recordFields.SAF_COMPLETION_PHOTOS, value)
             }
+            
+            get accommodation() {
+                return this.get(_recordFields.ACCOMMODATION);
+            } set accommodation(value) {
+                this.set(_recordFields.ACCOMMODATION, value)
+            }
+            get accommodationName() { return this.getText(_recordFields.ACCOMMODATION); }
+            
+            get structure() {
+                return this.get(_recordFields.STRUCTURE);
+            } set structure(value) {
+                this.set(_recordFields.STRUCTURE, value)
+            }
+            get structureName() { return this.getText(_recordFields.STRUCTURE); }
+            
+            get health_and_SafetyDELETE() {
+                return this.get(_recordFields.HEALTH__AND__SAFETY_DELETE);
+            } set health_and_SafetyDELETE(value) {
+                this.set(_recordFields.HEALTH__AND__SAFETY_DELETE, value)
+            }
+            
+            get methodStatementDELETE() {
+                return this.get(_recordFields.METHOD_STATEMENT_DELETE);
+            } set methodStatementDELETE(value) {
+                this.set(_recordFields.METHOD_STATEMENT_DELETE, value)
+            }
+            
+            get crewVisitorsDELETE() {
+                return this.get(_recordFields.CREW__VISITORS_DELETE);
+            } set crewVisitorsDELETE(value) {
+                this.set(_recordFields.CREW__VISITORS_DELETE, value)
+            }
+            get crewVisitorsDELETEName() { return this.getText(_recordFields.CREW__VISITORS_DELETE); }
+            
+            get associatedSRFsDELETE() {
+                return this.get(_recordFields.ASSOCIATED_SRFS_DELETE);
+            } set associatedSRFsDELETE(value) {
+                this.set(_recordFields.ASSOCIATED_SRFS_DELETE, value)
+            }
+            get associatedSRFsDELETEName() { return this.getText(_recordFields.ASSOCIATED_SRFS_DELETE); }
             
         }
 

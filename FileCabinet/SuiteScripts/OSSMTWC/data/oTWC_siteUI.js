@@ -86,6 +86,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type' })          
             basicInfo.fields.push({ id: twcSite.Fields.PORTFOLIO, label: 'Portfolio', lineBreak: true }) 
             basicInfo.fields.push({ id: twcSite.Fields.SAF_AUTO_APPROVE, label: 'SAF Auto Approve' }) 
+            basicInfo.fields.push({ id: twcSite.Fields.SAF_STATUS, label: 'SAF Status' }) 
             basicInfo.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL' }) 
             basicInfo.fields.push({ id: twcSite.Fields.PUBLIC, label: 'Public' })
             //@NOTE Missing fields - TC Building/Cabin , Indoor Accommodation

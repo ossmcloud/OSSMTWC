@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_safCrew.js'],
-    (core, coreSQL, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew) => {
+define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_safCrew.js', '../../data/oTWC_safTimeBlock.js'],
+    (record, core, coreSQL, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew, twcSafTimeBlock) => {
 
         function renderSiteAccessPanel(featureId) {
             // @@TODO: featureId will determine some change on fields in the criteria
@@ -118,16 +118,41 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             if (climberCount > 0) { conditions.push({ quantity: climberCount, name: 'Climber' }) }
             if (rescueCount > 0) { conditions.push({ quantity: rescueCount, name: 'Rescue Climber' }) }
-            if (options['saf-rooftop-access'] == 'T') { conditions.push({ quantity: 1, name: 'Rooftop Trained Visitor' }) }
+            if (options['saf-rooftop-access'] == 'T') {
+                //conditions.push({ quantity: 1, name: 'Rooftop Trained Visitor' })
+                conditions.push({ quantity: 'all', name: 'Rooftop Certified' })
+            }
+            if (options['saf-mast-access'] == 'T' || options['saf-rooftop-access'] == 'T') { conditions.push({ quantity: 'all', name: 'RF Certified' }) }
             if (options['saf-electrical-access'] == 'T') { conditions.push({ quantity: 1, name: 'Electrician' }) }
             if (options.safType == twcUtils.SafType.SURVEY_DRONE) { conditions.push({ quantity: 1, name: 'Drone Certified' }) }
-            if (options['saf-mast-access'] == 'T' && options['saf-rooftop-access'] == 'T') { conditions.push({ quantity: 'all', name: 'RF Certified' }) }
+
+
+            var customer = options['saf-customer'];
+            var vendor = options['saf-vendor'];
+
+            // Whether a SAF can be Auto-Approved is dependent on:
+            var autoApprove = false;
+            if (customer && vendor) {
+                autoApprove = true;
+                // - the SAF Type allows Auto-Approve (see SAF Visit Types tab)
+                if (!recu.lookUp('customrecord_twc_saf_type', options.safType, 'custrecord_twc_saf_type_autoapprove')) { autoApprove = false; }
+                // - the Customer (the SAF Auto-Approve field for the Customer is YES)
+                if (autoApprove) { if (!recu.lookUp('customrecord_twc_company', customer, 'custrecord_twc_co_saf_auto_approve')) { autoApprove = false; } }
+                // - the Primary Contractor (the SAF Auto-Approve field for the Primary Contractor is YES)
+                if (autoApprove) { if (!recu.lookUp('customrecord_twc_company', vendor, 'custrecord_twc_co_saf_auto_approve')) { autoApprove = false; } }
+                // - the Site (the SAF Auto-Approve for the Site is YES)
+                if (autoApprove) { if (!recu.lookUp('customrecord_twc_site', options.siteId, 'custrecord_twc_site_saf_auto_approve')) { autoApprove = false; } }
+                // - the Structure, if one is selected  (the SAF Auto-Approve for the Structure is YES)
+                if (autoApprove && options['saf-structure']) { if (!recu.lookUp('customrecord_twc_infra', options['saf-structure'], 'custrecord_twc_infra_saf_auto_apprv')) { autoApprove = false; } }
+                // - the TL Accommodation, if one is selected  (the SAF Auto-Approve for the Accommodation is YES)
+                if (autoApprove && options['saf-accommodation']) { if (!recu.lookUp('customrecord_twc_infra', options['saf-accommodation'], 'custrecord_twc_infra_saf_auto_apprv')) { autoApprove = false; } }
+            }
 
             return {
+                autoApprove: autoApprove,
                 timeBlocksRequired: blocksRequired,
-                timeBlocksAllocated: 0,
                 conditions: conditions,
-                timeBlocks: {},
+
             }
         }
 
@@ -159,9 +184,95 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return vendorFiles;
         }
 
+        function saveNewSaf(options, userInfo) {
+
+            var payload = options.saf;
+
+            // @@TODO: SAF: validations
+
+            var earliestDate = '2099-31-12'; var latestDate = '1900-01-01';
+            for (var d in options.accessRequirements.timeBlocks) {
+                if (d < earliestDate) { earliestDate = d; }
+                if (d > latestDate) { latestDate = d; }
+            }
+
+            var earliestBlock = 99;
+            core.array.each(options.accessRequirements.timeBlocks[earliestDate]['t'].blocks, b => {
+                if (b.block.id < earliestBlock) { earliestBlock = b.block.id; }
+            })
+
+            var latestBlock = 0;
+            core.array.each(options.accessRequirements.timeBlocks[latestDate]['t'].blocks, b => {
+                if (b.block.id > latestBlock) { latestBlock = b.block.id; }
+            })
+
+            // main SAF record
+            var saf = twcSaf.get();
+            saf.site = payload.siteId;
+            saf.r_type = payload['saf-type'];
+            saf.status = twcSaf.Status.Pending;
+            saf.mastAccess = payload['saf-mast-access'] == 'T';
+            saf.tLBuildingAccess = payload['saf-building-access'] == 'T';
+            saf.craneCherrypicker = payload['saf-crane-access'] == 'T';
+            saf.rooftopAccess = payload['saf-rooftop-access'] == 'T';
+            saf.electricalWorks = payload['saf-electrical-access'] == 'T';
+            saf.customer = payload['saf-customer'];
+            saf.primaryContractor = payload['saf-vendor'];
+            saf.summaryofWorks = payload['saf-work-summary'];
+            saf.pICW = payload['saf-picw-staff'];
+            saf.sAFAuthor = userInfo.profile;
+            saf.accommodation = payload['saf-accommodation'];
+            saf.structure = payload['saf-structure'];
+            saf.startTimeBlock = new Date(`${earliestDate} ${twcUtils.getTimeBlockTimeRange(earliestBlock).start}`);
+            saf.endTimeBlock = new Date(`${latestDate} ${twcUtils.getTimeBlockTimeRange(latestBlock).end}`);
+            var safId = saf.save();
+
+            // time blocks
+            for (var d in options.accessRequirements.timeBlocks) {
+                core.array.each(options.accessRequirements.timeBlocks[d]['t'].blocks, b => {
+                    var tb = twcSafTimeBlock.get();
+                    tb.sAF = safId;
+                    tb.blockDate = (new Date(d)).addHours(12);
+                    tb.block = b.block.id;
+                    tb.save();
+                });
+            }
+
+
+            // crews
+            if (payload.crews) {
+                core.array.each(payload.crews, c => {
+                    var crew = twcSafCrew.get();
+                    crew.sAF = safId;
+                    crew.member = c['saf-crew-member'];
+                    crew.attendAs = c['saf-crew-attend-as'];
+                    crew.save();
+                })
+            }
+
+            // attachments
+            if (payload.documents) {
+                var docIds = [];
+                for (var d in payload.documents) {
+                    if (payload.documents[d]) { docIds.push(d.replace('file_toggle_', '')); }
+                }
+
+                coreSQL.each(`select custrecord_twc_file_doc as file_id from customrecord_twc_file where id in (${docIds.join(',')})`, f => {
+                    record.attach({
+                        record: { type: 'file', id: f.file_id },
+                        to: { type: 'customrecord_twc_saf', id: safId }
+                    });
+                });
+            }
+
+
+            return { id: safId }
+
+        }
+
         return {
             getSAFInfoPanels: twcSafUI.getSAFInfoPanels,
-            
+
             getSiteAccessInfo: (pageData) => {
                 var saf = {};
                 if (pageData.recId) {
@@ -182,9 +293,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getAccessRequirements: getAccessRequirements,
             renderSiteAccessPanel: renderSiteAccessPanel,
             getSafCrewRecord: getSafCrewRecord,
-            getVendorDocs: getVendorDocs
+            getVendorDocs: getVendorDocs,
 
-            
+            saveNewSaf: saveNewSaf
+
+
 
         }
 

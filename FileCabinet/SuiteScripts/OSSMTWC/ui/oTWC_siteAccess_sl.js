@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteAccessUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_utils.js', '../data/oTWC_config.js'],
-    function (core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteAccessUtils, twcUIPanel, twcUtils, twcConfig) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteAccessUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_utils.js', '../data/oTWC_config.js', '../data/oTWC_saf.js'],
+    function (core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteAccessUtils, twcUIPanel, twcUtils, twcConfig, twcSaf) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -18,6 +18,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteAccessInfo.siteId || context.request.parameters.siteId);
                 pageData.timeBlocks = twcUtils.getSafTimeBlocks();
                 pageData.siteTimeBlocks = twcSiteAccessUtils.getAllSafTimeBlocks(pageData.siteAccessInfo);
+                pageData.recordStatus = twcSaf.getSafStatusHtml(pageData.siteAccessInfo[twcSaf.Fields.STATUS]);
+                // @@NOTE: if we have no recId is because we have a new SAF, we have a submit button at the bottom of the page for it, we use the forceViewOnly to hide the Save/Cancel buttons
+                pageData.forceViewOnly = context.request.parameters.recId === undefined;
 
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteAccess');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
@@ -25,6 +28,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var readOnly = context.request.parameters.edit != 'T';
                 var fieldGroups = twcSiteAccessUtils.getSAFInfoPanels(pageData.siteAccessInfo, pageData.userInfo, { siteTimeBlocks: pageData.siteTimeBlocks });
                 html = html.replaceAll('{SITE_ACCESS_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
+
+                if (context.request.parameters.recId === undefined) {
+                    html = html.replaceAll('{CONDITION_OF_ACCESS_PANEL}', `
+                        <div style="width: 350px; padding-top: 6px; padding-left: 2px; ">
+                            <div class="twc-control-panel-title" style="padding: 6px;">
+                                Conditions of Access
+                            </div>
+                            <div id="saf-access-condition-info-2" style="border: 1px solid var(--grid-color); border-top: none; padding: 3px;">
+                                <b>Select SAF Setup & Access Requirements to begin</b>
+                            </div>
+                        </div>
+                    `);
+                } else {
+                    html = html.replaceAll('{CONDITION_OF_ACCESS_PANEL}', '');
+                }
 
             } else {
                 pageData.data.safInfo = twcSiteLocatorUtils.getSiteSaf();
@@ -69,6 +87,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var payload = JSON.parse(context.request.body);
                 var fields = twcSiteAccessUtils.getSafCrewRecord(payload, userInfo);
                 return fields;
+
+            } else if (context.request.parameters.action == 'save-new-saf') {
+                var userInfo = twcConfig.userInfo(context);
+                var payload = JSON.parse(context.request.body);
+                return twcSiteAccessUtils.saveNewSaf(payload, userInfo);
+
 
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);
