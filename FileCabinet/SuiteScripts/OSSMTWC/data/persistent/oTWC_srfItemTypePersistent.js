@@ -11,7 +11,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
-            EQ_TYPE: { name: 'custrecord_twc_srf_itm_type_eqtype', type: 'select', alias: 'eqType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_eqtype,' },
+            EQ_TYPE: { name: 'custrecord_twc_srf_itm_type_eqtype', type: 'select', alias: 'eqType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_eqtype' },
         }
 
         class OSSMTWC_SRFItemType extends customRec.RecordBase {

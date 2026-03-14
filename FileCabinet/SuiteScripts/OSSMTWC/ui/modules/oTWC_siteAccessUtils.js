@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_safCrew.js', '../../data/oTWC_safTimeBlock.js'],
-    (record, core, coreSQL, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew, twcSafTimeBlock) => {
+define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_safCrew.js', '../../data/oTWC_safTimeBlock.js', '../../data/oTWC_safLog.js'],
+    (record, core, coreSQL, b64, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew, twcSafTimeBlock, twcSafLog) => {
 
         function renderSiteAccessPanel(featureId) {
             // @@TODO: featureId will determine some change on fields in the criteria
@@ -225,16 +225,23 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             saf.structure = payload['saf-structure'];
             saf.startTimeBlock = new Date(`${earliestDate} ${twcUtils.getTimeBlockTimeRange(earliestBlock).start}`);
             saf.endTimeBlock = new Date(`${latestDate} ${twcUtils.getTimeBlockTimeRange(latestBlock).end}`);
+            saf.conditionsofAccess = b64.decode(options.conditionsOfAccessHtml);
             var safId = saf.save();
+
+            saf.logInfo('SAF Created');
 
             // time blocks
             for (var d in options.accessRequirements.timeBlocks) {
                 core.array.each(options.accessRequirements.timeBlocks[d]['t'].blocks, b => {
-                    var tb = twcSafTimeBlock.get();
-                    tb.sAF = safId;
-                    tb.blockDate = (new Date(d)).addHours(12);
-                    tb.block = b.block.id;
-                    tb.save();
+                    try {
+                        var tb = twcSafTimeBlock.get();
+                        tb.sAF = safId;
+                        tb.blockDate = (new Date(d)).addHours(12);
+                        tb.block = b.block.id;
+                        tb.save();
+                    } catch (error) {
+                        saf.logEx('Error while saving time block', error);
+                    }
                 });
             }
 
@@ -242,32 +249,83 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             // crews
             if (payload.crews) {
                 core.array.each(payload.crews, c => {
-                    var crew = twcSafCrew.get();
-                    crew.sAF = safId;
-                    crew.member = c['saf-crew-member'];
-                    crew.attendAs = c['saf-crew-attend-as'];
-                    crew.save();
+                    try {
+                        var crew = twcSafCrew.get();
+                        crew.sAF = safId;
+                        crew.member = c['saf-crew-member'];
+                        crew.attendAs = c['saf-crew-attend-as'];
+                        crew.save();
+                    } catch (error) {
+                        saf.logEx('Error while saving crew record', error);
+                    }
                 })
             }
 
             // attachments
             if (payload.documents) {
-                var docIds = [];
-                for (var d in payload.documents) {
-                    if (payload.documents[d]) { docIds.push(d.replace('file_toggle_', '')); }
-                }
+                try {
+                    // @@TODO: SAF: create TWC File record here
+                    var docIds = [];
+                    for (var d in payload.documents) {
+                        if (payload.documents[d]) { docIds.push(d.replace('file_toggle_', '')); }
+                    }
 
-                coreSQL.each(`select custrecord_twc_file_doc as file_id from customrecord_twc_file where id in (${docIds.join(',')})`, f => {
-                    record.attach({
-                        record: { type: 'file', id: f.file_id },
-                        to: { type: 'customrecord_twc_saf', id: safId }
+                    coreSQL.each(`select custrecord_twc_file_doc as file_id from customrecord_twc_file where id in (${docIds.join(',')})`, f => {
+                        record.attach({
+                            record: { type: 'file', id: f.file_id },
+                            to: { type: 'customrecord_twc_saf', id: safId }
+                        });
                     });
-                });
+                } catch (error) {
+                    saf.logEx('Error while attaching files', error);
+                }
             }
+
+            // @@TODO: SAF: if any error we should let the user know
 
 
             return { id: safId }
 
+        }
+
+        function editSafStatus(options) {
+
+            // @@TODO: SAF: do we need validations here?
+            var saf = twcSaf.get(options.saf);
+            try {
+                var statusChanged = saf.status != options.status;
+                var commentCHanged = saf.statusComments != options.comment;
+                if (!statusChanged && !commentCHanged) { return; }
+
+                
+                var logMsg = ''; var info = '';
+                if (statusChanged) {
+                    logMsg = 'status';
+                    info = 'old status: ' + saf.statusName;
+                }
+                if (commentCHanged) {
+                    if (logMsg) { logMsg += ' and ' }
+                    if (info) { info += ' - ' }
+                    logMsg += 'comment';
+                    info = 'old comment: ' + saf.statusComments
+                }
+
+                logMsg += ' changed';
+
+                saf.status = options.status;
+                saf.statusComments = options.comment;
+                saf.save();
+
+                saf.logInfo(logMsg, info);
+
+                
+            } catch (error) {
+
+                //saf.logEx('Error while changing status/comments', error);
+                throw error;
+                
+            }
+            
         }
 
         return {
@@ -277,7 +335,8 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 var saf = {};
                 if (pageData.recId) {
                     // @@TODO: this is an existing record so load it
-                    saf = coreSQL.first(`select * from ${twcSaf.Type} where id = ${pageData.recId}`);
+                    //saf = coreSQL.first(`select * from ${twcSaf.Type} where id = ${pageData.recId}`);
+                    saf = twcSaf.select({ noAlias: true, returnFirst: true, where: { id: pageData.recId } })
                     saf.siteId = saf[twcSaf.Fields.SITE];
 
                 } else {
@@ -295,7 +354,8 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             getSafCrewRecord: getSafCrewRecord,
             getVendorDocs: getVendorDocs,
 
-            saveNewSaf: saveNewSaf
+            saveNewSaf: saveNewSaf,
+            editSafStatus: editSafStatus
 
 
 

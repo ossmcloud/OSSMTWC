@@ -4,15 +4,14 @@
  */
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js' ],
     (core, coreSQL, recu, customRec) => {
-        var _recordType = 'customrecord_twc_file';
+        var _recordType = 'customrecord_twc_saf_log';
         var _recordFields = {
             NAME: 'name',
-            RECORD_TYPE: 'custrecord_twc_file_rectype',
-            RECORD_ID: 'custrecord_twc_file_recid',
-            DESCRIPTION: 'custrecord_twc_file_description',
-            REVISION: 'custrecord_twc_file_revision',
-            FILE: 'custrecord_twc_file_doc',
-            R_TYPE: 'custrecord_twc_file_type',
+            SAF: 'custrecord_twc_saf_log_saf',
+            PROFILE: 'custrecord_twc_saf_log_profile',
+            LOG_TYPE: 'custrecord_twc_saf_log_type',
+            MESSAGE: 'custrecord_twc_saf_log_message',
+            ADDITIONAL_INFO: 'custrecord_twc_saf_log_notes',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -20,19 +19,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
-            RECORD_TYPE: { name: 'custrecord_twc_file_rectype', type: 'text', alias: 'recordType', display: 'normal', mandatory: false },
-            RECORD_ID: { name: 'custrecord_twc_file_recid', type: 'integer', alias: 'recordID', display: 'normal', mandatory: false },
-            DESCRIPTION: { name: 'custrecord_twc_file_description', type: 'text', alias: 'description', display: 'normal', mandatory: false },
-            REVISION: { name: 'custrecord_twc_file_revision', type: 'integer', alias: 'revision', display: 'normal', mandatory: false },
-            FILE: { name: 'custrecord_twc_file_doc', type: 'document', alias: 'file', display: 'normal', mandatory: false },
-            R_TYPE: { name: 'custrecord_twc_file_type', type: 'select', alias: 'r_type', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file_type' },
+            SAF: { name: 'custrecord_twc_saf_log_saf', type: 'select', alias: 'sAF', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf' },
+            PROFILE: { name: 'custrecord_twc_saf_log_profile', type: 'select', alias: 'profile', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
+            LOG_TYPE: { name: 'custrecord_twc_saf_log_type', type: 'text', alias: 'logType', display: 'normal', mandatory: false },
+            MESSAGE: { name: 'custrecord_twc_saf_log_message', type: 'text', alias: 'message', display: 'normal', mandatory: false },
+            ADDITIONAL_INFO: { name: 'custrecord_twc_saf_log_notes', type: 'clobtext', alias: 'additionalInfo', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
             MODIFIED_BY: { name: 'lastmodifiedby', type: 'select', alias: 'last_modified_by', display: 'inline', recordType: 'employee'}, 
         }
 
-        class OSSMTWC_File extends customRec.RecordBase {
+        class OSSMTWC_SAF_Logs extends customRec.RecordBase {
             constructor(id, staticLoad) {
                 super(_recordType, _recordFieldInfo, id, staticLoad);
             }
@@ -42,42 +40,37 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set('name', value)
             }
             
-            get recordType() {
-                return this.get(_recordFields.RECORD_TYPE);
-            } set recordType(value) {
-                this.set(_recordFields.RECORD_TYPE, value)
+            get sAF() {
+                return this.get(_recordFields.SAF);
+            } set sAF(value) {
+                this.set(_recordFields.SAF, value)
+            }
+            get sAFName() { return this.getText(_recordFields.SAF); }
+            
+            get profile() {
+                return this.get(_recordFields.PROFILE);
+            } set profile(value) {
+                this.set(_recordFields.PROFILE, value)
+            }
+            get profileName() { return this.getText(_recordFields.PROFILE); }
+            
+            get logType() {
+                return this.get(_recordFields.LOG_TYPE);
+            } set logType(value) {
+                this.set(_recordFields.LOG_TYPE, value)
             }
             
-            get recordID() {
-                return this.get(_recordFields.RECORD_ID);
-            } set recordID(value) {
-                this.set(_recordFields.RECORD_ID, value)
+            get message() {
+                return this.get(_recordFields.MESSAGE);
+            } set message(value) {
+                this.set(_recordFields.MESSAGE, value)
             }
             
-            get description() {
-                return this.get(_recordFields.DESCRIPTION);
-            } set description(value) {
-                this.set(_recordFields.DESCRIPTION, value)
+            get additionalInfo() {
+                return this.get(_recordFields.ADDITIONAL_INFO);
+            } set additionalInfo(value) {
+                this.set(_recordFields.ADDITIONAL_INFO, value)
             }
-            
-            get revision() {
-                return this.get(_recordFields.REVISION);
-            } set revision(value) {
-                this.set(_recordFields.REVISION, value)
-            }
-            
-            get file() {
-                return this.get(_recordFields.FILE);
-            } set file(value) {
-                this.set(_recordFields.FILE, value)
-            }
-            
-            get r_type() {
-                return this.get(_recordFields.R_TYPE);
-            } set r_type(value) {
-                this.set(_recordFields.R_TYPE, value)
-            }
-            get r_typeName() { return this.getText(_recordFields.R_TYPE); }
             
             get created() {
                 return this.get(_recordFields.CREATED);
@@ -109,16 +102,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Type: _recordType,
             Fields: _recordFields,
             FieldsInfo: _recordFieldInfo,
-            PersistentRecord: OSSMTWC_File,
+            PersistentRecord: OSSMTWC_SAF_Logs,
 
             get: function (id) {
-                var rec = new OSSMTWC_File(id);
+                var rec = new OSSMTWC_SAF_Logs(id);
                 rec.load();
                 return rec;
             }, 
 
             select: function (options) {
-                var rec = new OSSMTWC_File();
+                var rec = new OSSMTWC_SAF_Logs();
                 return rec.select(options);
             }
 

@@ -27,11 +27,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LANDLORD_GROUP: 'custrecord_twc_land_landlord_group',
         }
         var _recordFieldInfo = {
-            SITE: { name: 'custrecord_twc_land_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site,' },
+            SITE: { name: 'custrecord_twc_land_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
             LAND_ID: { name: 'custrecord_twc_land_id', type: 'text', alias: 'landID', display: 'normal', mandatory: false },
-            LAND_AGREEMENT_STATUS: { name: 'custrecord_twc_land_agre_sts', type: 'select', alias: 'landAgreementStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_land_agre_sts_type,' },
+            LAND_AGREEMENT_STATUS: { name: 'custrecord_twc_land_agre_sts', type: 'select', alias: 'landAgreementStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_land_agre_sts_type' },
             COA: { name: 'custrecord_twc_land_coa', type: 'checkbox', alias: 'c.O.A', display: 'normal', mandatory: false },
-            TITLE_TYPE: { name: 'custrecord_twc_land_title_type', type: 'select', alias: 'titleType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_land_title_type,' },
+            TITLE_TYPE: { name: 'custrecord_twc_land_title_type', type: 'select', alias: 'titleType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_land_title_type' },
             FOLIO: { name: 'custrecord_twc_land_folio', type: 'text', alias: 'folio', display: 'normal', mandatory: false },
             FOLIO_REGISTRATION_COMPLETE: { name: 'custrecord_twc_land_folio_reg_complete', type: 'checkbox', alias: 'folioRegistrationComplete', display: 'normal', mandatory: false },
             BURDEN: { name: 'custrecord_twc_land_burden', type: 'checkbox', alias: 'burden', display: 'normal', mandatory: false },
@@ -41,11 +41,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EXPIRY_DATE: { name: 'custrecord_twc_land_expiry_date', type: 'date', alias: 'expiryDate', display: 'normal', mandatory: false },
             CURRENT_AMOUNT_PAYABLE: { name: 'custrecord_twc_land_cur_amt_payable', type: 'currency', alias: 'currentAmountPayable', display: 'normal', mandatory: false },
             LANDLORD_NAME: { name: 'custrecord_twc_land_landlord_name', type: 'select', alias: 'landlordName', display: 'normal', mandatory: false, recordType: '-2' },
-            LANDLORD_CONTACT: { name: 'custrecord_twc_land_landlord_contact', type: 'select', alias: 'landlordContact', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
+            LANDLORD_CONTACT: { name: 'custrecord_twc_land_landlord_contact', type: 'select', alias: 'landlordContact', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             REVIEW_BASIS: { name: 'custrecord_twc_land_review_basic', type: 'text', alias: 'reviewBasis', display: 'normal', mandatory: false },
             REVIEW_NEXT_DATE: { name: 'custrecord_twc_land_review_next_date', type: 'date', alias: 'reviewNextDate', display: 'normal', mandatory: false },
             AGREEMENT_COMMENT: { name: 'custrecord_twc_land_agreement_comment', type: 'text', alias: 'agreementComment', display: 'normal', mandatory: false },
-            LANDLORD_GROUP: { name: 'custrecord_twc_land_landlord_group', type: 'select', alias: 'landlordGroup', display: 'normal', mandatory: false, recordType: 'customrecord_twc_row_landlord_group,' },
+            LANDLORD_GROUP: { name: 'custrecord_twc_land_landlord_group', type: 'select', alias: 'landlordGroup', display: 'normal', mandatory: false, recordType: 'customrecord_twc_row_landlord_group' },
         }
 
         class OSSMTWC_Land extends customRec.RecordBase {

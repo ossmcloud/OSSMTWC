@@ -51,7 +51,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     col.title = 'SAF ID';
                     col.addCount = true;
                     col.link = {
-                        url: core.url.script('otwc_spacerequest_sl') + '&recId=${id}',
+                        url: core.url.script('otwc_siteaccess_sl') + '&recId=${id}',
                         valueField: 'id'
                     }
                 }
@@ -126,9 +126,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 this.ui.getControl('saf-submit').on('click', e => {
                     dialog.confirm('Are you sure you wish to submit the Access Request?', () => {
-                        this.submitForm();    
+                        this.submitForm();
                     })
-                    
+
                 })
 
                 this.ui.getControl('saf-template').on('change', e => {
@@ -292,7 +292,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             }
 
-            refreshInfo() {
+            refreshInfo(forSave) {
                 var htmlCond = jQuery('<div></div>');
                 if (!this.#accessRequirements) {
                     htmlCond.append('<b>Select SAF Setup & Access Requirements to begin</b>');
@@ -344,47 +344,59 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     for (var k in this.#accessRequirements.timeBlocks) {
                         if (!this.#accessRequirements.timeBlocks[k]['t']) { continue; }
                         core.array.each(this.#accessRequirements.timeBlocks[k]['t'].blocks, b => {
-                            var allocatedBlocksTableRow = jQuery(`
-                                <div>
-                                    <div data-action="remove" class="twc-clickable" style="width: 20px; text-align: center;">${twcIcons.get('trash', 16, 'red')}</div>
-                                    <div style="padding: 7px;">${b.block.name} - ${k}</div>
-                                </div>
-                            `);
-                            allocatedBlocksTable.append(allocatedBlocksTableRow);
-                            allocatedBlocksTableRow.find('[data-action="remove"]').click(e => {
-                                console.log(b.date, this.#accessRequirements.timeBlocks[b.date]['t'], b)
 
-                                this.#accessRequirements.timeBlocksAllocated--;
-                                this.#accessRequirements.timeBlocks[b.date].blocksCount--;
-                                this.#accessRequirements.timeBlocks[b.date]['t'].blocks.splice(this.#accessRequirements.timeBlocks[b.date]['t'].blocks.indexOf(b), 1);
+                            if (forSave) {
+                                var allocatedBlocksTableRow = jQuery(`
+                                    <div>
+                                        <div style="padding: 7px;">${b.block.name} - ${k}</div>
+                                    </div>
+                                `);
+                                allocatedBlocksTable.append(allocatedBlocksTableRow);
+                            } else {
+                                var allocatedBlocksTableRow = jQuery(`
+                                    <div>
+                                        <div data-action="remove" class="twc-clickable" style="width: 20px; text-align: center;">${twcIcons.get('trash', 16, 'red')}</div>
+                                        <div style="padding: 7px;">${b.block.name} - ${k}</div>
+                                    </div>
+                                `);
+                                allocatedBlocksTable.append(allocatedBlocksTableRow);
+                                allocatedBlocksTableRow.find('[data-action="remove"]').click(e => {
+                                    console.log(b.date, this.#accessRequirements.timeBlocks[b.date]['t'], b)
 
-                                if (this.#accessRequirements.timeBlocks[b.date]['t'].blocks.length == 0) {
-                                    delete this.#accessRequirements.timeBlocks[b.date]['t'];
-                                    var idx = this.#calendar.datesContent[b.date].indexOf('This');
-                                    if (idx >= 0) { this.#calendar.datesContent[b.date].splice(idx, 1) }
-                                }
+                                    this.#accessRequirements.timeBlocksAllocated--;
+                                    this.#accessRequirements.timeBlocks[b.date].blocksCount--;
+                                    this.#accessRequirements.timeBlocks[b.date]['t'].blocks.splice(this.#accessRequirements.timeBlocks[b.date]['t'].blocks.indexOf(b), 1);
 
-                                this.#calendar.specialDates[b.date] = { css: this.#accessRequirements.timeBlocks[b.date].blocksCount > 3 ? 'o-calendar-red' : 'o-calendar-orange' }
-                                if (this.#accessRequirements.timeBlocks[b.date].blocksCount == 0) {
-                                    delete this.#calendar.specialDates[b.date]
-                                }
+                                    if (this.#accessRequirements.timeBlocks[b.date]['t'].blocks.length == 0) {
+                                        delete this.#accessRequirements.timeBlocks[b.date]['t'];
+                                        var idx = this.#calendar.datesContent[b.date].indexOf('This');
+                                        if (idx >= 0) { this.#calendar.datesContent[b.date].splice(idx, 1) }
+                                    }
 
-                                this.refreshInfo();
-                                this.#calendar.refresh();
-                                this.#calendar.on('change', e);
+                                    this.#calendar.specialDates[b.date] = { css: this.#accessRequirements.timeBlocks[b.date].blocksCount > 3 ? 'o-calendar-red' : 'o-calendar-orange' }
+                                    if (this.#accessRequirements.timeBlocks[b.date].blocksCount == 0) {
+                                        delete this.#calendar.specialDates[b.date]
+                                    }
+
+                                    this.refreshInfo();
+                                    this.#calendar.refresh();
+                                    this.#calendar.on('change', e);
 
 
-                            })
+                                })
+                            }
                         })
                     }
 
                     core.array.each(this.#accessRequirements.conditions, cond => {
-
                         htmlCond.append(`
                             <div style="padding: 3px;">${cond.quantity == 'all' ? '<span style="color: var(--accent-fore-color); font-weight: bold;">All Crew</span>' : cond.quantity} ${cond.name} Required</div>
                         `)
                     })
                 }
+
+                if (forSave) { return htmlCond.html(); }
+
                 this.#accessConditionsSection.html(htmlCond);
 
             }
@@ -516,7 +528,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     console.log(this.#accessRequirements);
 
 
-                    this.#page.post({ action: 'save-new-saf' }, { saf: saf, accessRequirements: this.#accessRequirements }).then(resp => {
+                    this.#page.post({ action: 'save-new-saf' }, { saf: saf, accessRequirements: this.#accessRequirements, conditionsOfAccessHtml: b64.encode(this.refreshInfo(true)) }).then(resp => {
                         if (resp.error) {
                             dialog.error(resp.error);
                             return;
@@ -549,11 +561,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             initPage() {
                 if (this.data.siteAccessInfo) {
                     this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
-                    if (this.data.siteAccessInfo.id) {
-                        this.initSafMode();
-                    } else {
+                    if (this.data.editMode) {
                         this.#safBuilder = new TWCSiteAccessBuilder(this);
-
+                    } else {
+                        this.initSafMode();
                     }
                 } else {
                     this.initLocatorMode();
@@ -567,6 +578,61 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             initSafMode() {
 
+                this.ui.getControl('customrecord_twc_file').ui.find('.saf-image-file').click(async e => {
+                    var file=jQuery(e.currentTarget).data('file')
+                    await this.previewFile(file, e.ctrlKey)
+                })
+
+                this.ui.getControl('change-status-button').on('click', e => {
+                    var allowedStatues = [];
+                    allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Pending, true));
+                    allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Approved, true));
+                    allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Rejected, true));
+                    allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Completed, true));
+
+                    var formConfig = {
+                        controls: [
+                            { type: twcUI.CTRL_TYPE.SELECT, id: 'status', dataSource: allowedStatues, value: this.data.siteAccessInfo[twcSaf.Fields.STATUS], lineBreak: true },
+                            { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', value: this.data.siteAccessInfo[twcSaf.Fields.STATUS_COMMENTS], width: '100%', rows: 7 },
+                        ]
+                    }
+                    var form = twcUI.init(formConfig);
+                    dialog.open({
+                        title: 'Change Status / Comment',
+                        content: form.ui,
+                        size: { width: '500px', height: '300px' },
+                        ok: () => {
+                            try {
+
+                                this.wait();
+                                var payload = form.getValues();
+                                payload.saf = this.data.siteAccessInfo.id;
+
+                                this.post({ action: 'edit-saf-status' }, payload).then(resp => {
+                                    if (resp.error) {
+                                        this.waitClose();
+                                        dialog.error(resp.error);
+                                        return;
+                                    }
+                                    location.reload();
+
+                                }).catch(err => {
+                                    dialog.error(err);
+                                    this.waitClose();
+                                    
+                                });
+
+                                return false;
+
+                            } catch (error) {
+                                this.wait();
+                                dialog.error(error);
+                                return false;
+                            }
+                        }
+                    })
+
+                })
             }
 
         }

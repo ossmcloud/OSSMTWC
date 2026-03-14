@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_srfItem.js', './oTWC_file.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSrfItem, twcFile, twcUI, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_srfItem.js', './oTWC_file.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSrfItem, twcFile, twcUI, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafTimeBlock, twcSafLog) => {
 
         // @@TODO: need to find a way to make this as handy as possible
         function getDataObject(recordType, callback) {
@@ -17,6 +17,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (recordType == twcLand.Type) { return twcLand; }
             if (recordType == twcSaf.Type) { return twcSaf; }
             if (recordType == twcSafCrew.Type) { return twcSafCrew; }
+            if (recordType == twcSafTimeBlock.Type) { return twcSafTimeBlock; }
+            if (recordType == twcSafLog.Type) { return twcSafLog; }
 
             throw new Error(`Unrecognised record type: ${recordType}`);
         }
@@ -67,36 +69,42 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 // @@NOTE: this means the field is a sub list
                 if (field.fields) {
+                    
                     var dataObj = getDataObject(field.recordType || field.id);
 
                     var columns = [];
                     for (var k in field.fields) {
+                        
                         var f = getDataFieldInfo(field, k);
-
-                        var title = field.fields[k]; var link = undefined;
+                        
+                        var title = field.fields[k]; var link = undefined; var styles = undefined;
                         if (title.title) {
                             link = title.link || null;
                             title = title.title;
+                            styles = title.styles || undefined;;
                         }
 
                         if (f) {
                             columns.push({ id: f.name.toLowerCase(), title: title, link: link })
-                            if (f.type == 'select') { columns.push({ id: f.name.toLowerCase() + '_name', title: title, link: link }); }
+                            if (f.type == 'select') { columns.push({ id: f.name.toLowerCase() + '_name', title: title, link: link, styles: styles }); }
                         } else {
-                            columns.push({ id: k.toLowerCase(), title: title, link: link })
+                            columns.push({ id: k.toLowerCase(), title: title, link: link, styles: styles })
                         }
                     }
+
+
 
                     var control = {
                         label: field.label,
                         type: twcUI.CTRL_TYPE.TABLE,
                         id: field.id,
                         columns: columns,
-                        dataSource: dataObj.select({ fields: field.fields, where: field.where, useNames: true }),
+                        dataSource: field.dataSource || dataObj.select({ fields: field.fields, where: field.where, orderBy: field.orderBy, useNames: true }),
                         dataSourceType: field.recordType,
                         showToolbar: true,
                         showEditDelete: true,
                         readOnly: field.readOnly,
+                        styles: field.styles,
                         onColumnInit: (tbl, col) => {
                             // @@NOTE: if we have fxFields the framework would return the field_name (with id) and field_name_name (with BUILTIN.DF value)
                             //         we do not want to show the id
@@ -105,6 +113,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             }
                         }
                     }
+
+
 
                     panelFields.controls.push(control);
                     return;
@@ -132,6 +142,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 if (!dataField) {
                     if (dataSource[fieldId] === undefined) { return; }
                     dataField = { field_type: 'text' };
+
+                    if (fieldId == 'created' || fieldId == 'lastmodified') {
+                        dataField = { field_type: 'Date/Time' };
+                    }
                 }
 
                 // @@NOTE: if we have the name of a foreign table we would have retrieved it using BUILTIN.DF and just appended _name to the field id

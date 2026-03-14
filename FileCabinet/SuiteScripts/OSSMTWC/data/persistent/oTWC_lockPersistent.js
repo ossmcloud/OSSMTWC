@@ -18,13 +18,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             OTHER_REFERENCE: 'custrecord_twc_lock_other_ref',
         }
         var _recordFieldInfo = {
-            SITE: { name: 'custrecord_twc_lock_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site,' },
+            SITE: { name: 'custrecord_twc_lock_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
             LOCK_ID: { name: 'custrecord_twc_lock_id', type: 'text', alias: 'lockID', display: 'normal', mandatory: false },
-            LOCK_LOCATION_CATEGORY: { name: 'custrecord_twc_lock_loc_cat', type: 'select', alias: 'lockLocationCategory', display: 'normal', mandatory: false, recordType: 'customrecord_twc_lock_loc_cat,' },
-            SECURED_INFRASTRUCTURE: { name: 'custrecord_twc_lock_infra', type: 'select', alias: 'securedInfrastructure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra,' },
+            LOCK_LOCATION_CATEGORY: { name: 'custrecord_twc_lock_loc_cat', type: 'select', alias: 'lockLocationCategory', display: 'normal', mandatory: false, recordType: 'customrecord_twc_lock_loc_cat' },
+            SECURED_INFRASTRUCTURE: { name: 'custrecord_twc_lock_infra', type: 'select', alias: 'securedInfrastructure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
             COMMENT: { name: 'custrecord_twc_lock_comment', type: 'text', alias: 'comment', display: 'normal', mandatory: false },
-            LOCK_TYPE: { name: 'custrecord_twc_lock_type', type: 'select', alias: 'lockType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_lock_type,' },
-            LOCK_CONFIG: { name: 'custrecord_twc_lock_config', type: 'select', alias: 'lockConfig', display: 'normal', mandatory: false, recordType: 'customrecord_twc_lock_config_type,' },
+            LOCK_TYPE: { name: 'custrecord_twc_lock_type', type: 'select', alias: 'lockType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_lock_type' },
+            LOCK_CONFIG: { name: 'custrecord_twc_lock_config', type: 'select', alias: 'lockConfig', display: 'normal', mandatory: false, recordType: 'customrecord_twc_lock_config_type' },
             LOCKEN_LOCK_NAME: { name: 'custrecord_twc_lock_locken_lock_name', type: 'text', alias: 'lockenLockName', display: 'normal', mandatory: false },
             LOCKEN_ACCESS_POINT_REFERENCE: { name: 'custrecord_twc_lock_access_point_ref', type: 'text', alias: 'lockenAccessPointReference', display: 'normal', mandatory: false },
             OTHER_REFERENCE: { name: 'custrecord_twc_lock_other_ref', type: 'text', alias: 'otherReference', display: 'normal', mandatory: false },

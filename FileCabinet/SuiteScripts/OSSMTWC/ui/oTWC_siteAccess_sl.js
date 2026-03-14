@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteAccessUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_utils.js', '../data/oTWC_config.js', '../data/oTWC_saf.js'],
-    function (core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteAccessUtils, twcUIPanel, twcUtils, twcConfig, twcSaf) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteAccessUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_utils.js', '../data/oTWC_config.js', '../data/oTWC_saf.js', '../O/controls/oTWC_ui_ctrl.js'],
+    function (core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteAccessUtils, twcUIPanel, twcUtils, twcConfig, twcSaf, twcUI) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -19,29 +19,44 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 pageData.timeBlocks = twcUtils.getSafTimeBlocks();
                 pageData.siteTimeBlocks = twcSiteAccessUtils.getAllSafTimeBlocks(pageData.siteAccessInfo);
                 pageData.recordStatus = twcSaf.getSafStatusHtml(pageData.siteAccessInfo[twcSaf.Fields.STATUS]);
+                if (context.request.parameters.recId) {
+                    s.form.f.title += ` - ${pageData.siteAccessInfo.name}`;
+                    pageData.recordStatus = `
+                        <div class="twc-div-span-table">
+                            <span class="twc-record-status" style="border: 1px solid var(--grid-color); padding: 0px 34px; font-size: 20px; vertical-align: middle; background-color: var(--accent-bkgd-color); color: var(--accent-fore-color)">
+                                ${pageData.siteAccessInfo.name}
+                            </span>
+                            ${pageData.recordStatus}
+                        </div>
+                    `
+                }
                 // @@NOTE: if we have no recId is because we have a new SAF, we have a submit button at the bottom of the page for it, we use the forceViewOnly to hide the Save/Cancel buttons
-                pageData.forceViewOnly = context.request.parameters.recId === undefined;
+                var canEdit = true; // @@TODO: SAF: this depends on the user logged in ???
+                pageData.forceViewOnly = canEdit ? context.request.parameters.recId === undefined : true;
 
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteAccess');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
 
                 var readOnly = context.request.parameters.edit != 'T';
-                var fieldGroups = twcSiteAccessUtils.getSAFInfoPanels(pageData.siteAccessInfo, pageData.userInfo, { siteTimeBlocks: pageData.siteTimeBlocks });
+                var fieldGroups = twcSiteAccessUtils.getSAFInfoPanels(pageData.siteAccessInfo, pageData.userInfo, { siteTimeBlocks: pageData.siteTimeBlocks, editMode: pageData.editMode });
                 html = html.replaceAll('{SITE_ACCESS_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
 
                 if (context.request.parameters.recId === undefined) {
-                    html = html.replaceAll('{CONDITION_OF_ACCESS_PANEL}', `
-                        <div style="width: 350px; padding-top: 6px; padding-left: 2px; ">
-                            <div class="twc-control-panel-title" style="padding: 6px;">
-                                Conditions of Access
-                            </div>
-                            <div id="saf-access-condition-info-2" style="border: 1px solid var(--grid-color); border-top: none; padding: 3px;">
-                                <b>Select SAF Setup & Access Requirements to begin</b>
-                            </div>
-                        </div>
-                    `);
+                    html = html.replaceAll('{CONDITION_OF_ACCESS}', `<b>Select SAF Setup & Access Requirements to begin</b>`);
                 } else {
-                    html = html.replaceAll('{CONDITION_OF_ACCESS_PANEL}', '');
+                    html = html.replaceAll('{CONDITION_OF_ACCESS}', pageData.siteAccessInfo[twcSaf.Fields.CONDITIONS_OF_ACCESS] || '');
+
+                    var actions = '';
+
+                    if (!pageData.editMode) {
+                        var canChangeStatus = pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Pending || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Approved || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Rejected || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Completed || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Cancelled;
+                        var canCompleteWork = pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.AwaitingPhotos
+                        if (canChangeStatus) { actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Change Status / Comment', id: 'change-status-button' }); }
+                        if (canCompleteWork) { actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Complete Work', id: 'complete-work-button' }); }
+                        // if (canEdit) { actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Edit', id: 'edit-saf-button' }); }
+                    }
+
+                    if (actions) { html = html.replaceAll('<div id="custom-actions"></div>', `<div id="custom-actions">${actions}</div>`); }
                 }
 
             } else {
@@ -93,6 +108,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var payload = JSON.parse(context.request.body);
                 return twcSiteAccessUtils.saveNewSaf(payload, userInfo);
 
+            } else if (context.request.parameters.action == 'edit-saf-status') {
+                var payload = JSON.parse(context.request.body);
+                return twcSiteAccessUtils.editSafStatus(payload);
 
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);

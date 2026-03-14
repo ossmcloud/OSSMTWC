@@ -11,8 +11,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ATTEND_AS: 'custrecord_twc_saf_crew_attend_as',
         }
         var _recordFieldInfo = {
-            SAF: { name: 'custrecord_twc_saf_crew_saf', type: 'select', alias: 'sAF', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf,' },
-            MEMBER: { name: 'custrecord_twc_saf_crew_member', type: 'select', alias: 'member', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
+            SAF: { name: 'custrecord_twc_saf_crew_saf', type: 'select', alias: 'sAF', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf' },
+            MEMBER: { name: 'custrecord_twc_saf_crew_member', type: 'select', alias: 'member', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             ATTEND_AS: { name: 'custrecord_twc_saf_crew_attend_as', type: 'text', alias: 'attendAs', display: 'normal', mandatory: false },
         }
 

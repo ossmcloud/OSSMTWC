@@ -4,8 +4,8 @@
  *@NModuleScope public
  *@NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '/.bundle/548734/O/client/html.styles.js', './data/oTWC_site.js', './O/controls/oTWC_ui_ctrl.js', './O/oTWC_themes.js'],
-    function (file, uis, core, coreSQL, recu, htmlStyles, twcSite, twcUI, twcThemes) {
+define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '/.bundle/548734/O/client/html.styles.js', './O/controls/oTWC_ui_ctrl.js', './O/oTWC_themes.js'],
+    function (file, uis, core, coreSQL, recu, htmlStyles,  twcUI, twcThemes) {
         var suiteLet = uis.new({ title: 'OSSM Control Page', script: 'SuiteScripts/OSSMTWC/oTWC_controls_cs.js' });
         suiteLet.get = (context, s) => {
 

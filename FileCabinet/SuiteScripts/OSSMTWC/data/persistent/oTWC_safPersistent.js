@@ -2,10 +2,11 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js'],
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js' ],
     (core, coreSQL, recu, customRec) => {
         var _recordType = 'customrecord_twc_saf';
         var _recordFields = {
+            NAME: 'name',
             STATUS: 'custrecord_twc_saf_status',
             STATUS_COMMENTS: 'custrecord_twc_saf_status_comments',
             SAF_ID: 'custrecord_twc_saf_id',
@@ -32,54 +33,69 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             COMPLETION_PHOTOS_RECEIVED: 'custrecord_twc_saf_comp_photo_rec',
             COMPLETION_REVIEWER: 'custrecord_twc_saf_comp_reviewer',
             REVIEW_COMMENT: 'custrecord_twc_saf_rev_cmt',
-            SAF_COMPLETION_PHOTOS: 'custrecord_twc_saf_comp_photo',
             ACCOMMODATION: 'custrecord_twc_saf_accommodation',
             STRUCTURE: 'custrecord_twc_saf_strcture',
+            SAF_COMPLETION_PHOTOS_DELETE: 'custrecord_twc_saf_comp_photo',
             HEALTH__AND__SAFETY_DELETE: 'custrecord_twc_saf_health_safety',
             METHOD_STATEMENT_DELETE: 'custrecord_twc_saf_method_statement',
             CREW__VISITORS_DELETE: 'custrecord_twc_saf_crew_visitors',
             ASSOCIATED_SRFS_DELETE: 'custrecord_twc_saf_associated_srfs',
+            CREATED: 'created',
+            MODIFIED: 'lastmodified',
+            OWNER: 'owner',
+            MODIFIED_BY: 'lastmodifiedby',
         }
         var _recordFieldInfo = {
-            STATUS: { name: 'custrecord_twc_saf_status', type: 'select', alias: 'status', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf_status,' },
-            STATUS_COMMENTS: { name: 'custrecord_twc_saf_status_comments', type: 'text', alias: 'statusComments', display: 'normal', mandatory: false },
+            NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
+            STATUS: { name: 'custrecord_twc_saf_status', type: 'select', alias: 'status', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf_status' },
+            STATUS_COMMENTS: { name: 'custrecord_twc_saf_status_comments', type: 'clobtext', alias: 'statusComments', display: 'normal', mandatory: false },
             SAF_ID: { name: 'custrecord_twc_saf_id', type: 'text', alias: 'sAFID', display: 'normal', mandatory: false },
             START_TIME_BLOCK: { name: 'custrecord_twc_saf_start_time_block', type: 'datetimetz', alias: 'startTimeBlock', display: 'normal', mandatory: false },
             END_TIME_BLOCK: { name: 'custrecord_twc_saf_end_time_block', type: 'datetimetz', alias: 'endTimeBlock', display: 'normal', mandatory: false },
-            SITE: { name: 'custrecord_twc_saf_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site,' },
+            SITE: { name: 'custrecord_twc_saf_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
             WORKS_END_DATE: { name: 'custrecord_twc_saf_word_end_date', type: 'date', alias: 'worksEndDate', display: 'normal', mandatory: false },
-            R_TYPE: { name: 'custrecord_twc_saf_type', type: 'select', alias: 'r_type', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf_type,' },
-            PHOTO_ASSESSMENT_CATEGORY: { name: 'custrecord_twc_saf_photo_assess_category', type: 'select', alias: 'photoAssessmentCategory', display: 'normal', mandatory: false, recordType: 'customrecord_twc_photo_assessment_cat,' },
+            R_TYPE: { name: 'custrecord_twc_saf_type', type: 'select', alias: 'r_type', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf_type' },
+            PHOTO_ASSESSMENT_CATEGORY: { name: 'custrecord_twc_saf_photo_assess_category', type: 'select', alias: 'photoAssessmentCategory', display: 'normal', mandatory: false, recordType: 'customrecord_twc_photo_assessment_cat' },
             MAST_ACCESS: { name: 'custrecord_twc_saf_mast_access', type: 'checkbox', alias: 'mastAccess', display: 'normal', mandatory: false },
             TL_BUILDING_ACCESS: { name: 'custrecord_twc_saf_tl_building_access', type: 'checkbox', alias: 'tLBuildingAccess', display: 'normal', mandatory: false },
             CRANE__CHERRYPICKER: { name: 'custrecord_twc_saf_crane_cherrypicker', type: 'checkbox', alias: 'craneCherrypicker', display: 'normal', mandatory: false },
             ROOFTOP_ACCESS: { name: 'custrecord_twc_saf_rooftop_access', type: 'checkbox', alias: 'rooftopAccess', display: 'normal', mandatory: false },
             ELECTRICAL_WORKS: { name: 'custrecord_twc_saf_electrical_works', type: 'checkbox', alias: 'electricalWorks', display: 'normal', mandatory: false },
-            CONDITIONS_OF_ACCESS: { name: 'custrecord_twc_saf_conditions_access', type: 'text', alias: 'conditionsofAccess', display: 'normal', mandatory: false },
-            CUSTOMER: { name: 'custrecord_twc_saf_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company,' },
-            PRIMARY_CONTRACTOR: { name: 'custrecord_twc_saf_primary_contractor', type: 'select', alias: 'primaryContractor', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company,' },
+            CONDITIONS_OF_ACCESS: { name: 'custrecord_twc_saf_conditions_access', type: 'clobtext', alias: 'conditionsofAccess', display: 'normal', mandatory: false },
+            CUSTOMER: { name: 'custrecord_twc_saf_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
+            PRIMARY_CONTRACTOR: { name: 'custrecord_twc_saf_primary_contractor', type: 'select', alias: 'primaryContractor', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             SUMMARY_OF_WORKS: { name: 'custrecord_twc_saf_summary_works', type: 'textarea', alias: 'summaryofWorks', display: 'normal', mandatory: false },
-            PLANNED_EQUIPMENT_WORK: { name: 'custrecord_twc_saf_planned_equip_work', type: 'select', alias: 'plannedEquipmentWork', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action,' },
-            PICW: { name: 'custrecord_twc_saf_picw', type: 'select', alias: 'pICW', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
-            SAF_AUTHOR: { name: 'custrecord_twc_saf_author', type: 'select', alias: 'sAFAuthor', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
+            PLANNED_EQUIPMENT_WORK: { name: 'custrecord_twc_saf_planned_equip_work', type: 'select', alias: 'plannedEquipmentWork', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action' },
+            PICW: { name: 'custrecord_twc_saf_picw', type: 'select', alias: 'pICW', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
+            SAF_AUTHOR: { name: 'custrecord_twc_saf_author', type: 'select', alias: 'sAFAuthor', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             WORKS_PHOTOS_REQ_DELAY: { name: 'custrecord_twc_saf_wrk_photo_req_delay', type: 'integer', alias: 'worksPhotosReqDelay', display: 'normal', mandatory: false },
             COMPLETION_PHOTOS_REQUESTED: { name: 'custrecord_twc_saf_comp_photo_req', type: 'date', alias: 'completionPhotosRequested', display: 'normal', mandatory: false },
             COMPLETION_PHOTOS_RECEIVED: { name: 'custrecord_twc_saf_comp_photo_rec', type: 'date', alias: 'completionPhotosReceived', display: 'normal', mandatory: false },
-            COMPLETION_REVIEWER: { name: 'custrecord_twc_saf_comp_reviewer', type: 'select', alias: 'completionReviewer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
-            REVIEW_COMMENT: { name: 'custrecord_twc_saf_rev_cmt', type: 'text', alias: 'reviewComment', display: 'normal', mandatory: false },
-            SAF_COMPLETION_PHOTOS: { name: 'custrecord_twc_saf_comp_photo', type: 'document', alias: 'sAFCompletionPhotos', display: 'normal', mandatory: false },
-            ACCOMMODATION: { name: 'custrecord_twc_saf_accommodation', type: 'select', alias: 'accommodation', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra,' },
-            STRUCTURE: { name: 'custrecord_twc_saf_strcture', type: 'select', alias: 'structure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra,' },
+            COMPLETION_REVIEWER: { name: 'custrecord_twc_saf_comp_reviewer', type: 'select', alias: 'completionReviewer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
+            REVIEW_COMMENT: { name: 'custrecord_twc_saf_rev_cmt', type: 'clobtext', alias: 'reviewComment', display: 'normal', mandatory: false },
+            ACCOMMODATION: { name: 'custrecord_twc_saf_accommodation', type: 'select', alias: 'accommodation', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
+            STRUCTURE: { name: 'custrecord_twc_saf_strcture', type: 'select', alias: 'structure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
+            SAF_COMPLETION_PHOTOS_DELETE: { name: 'custrecord_twc_saf_comp_photo', type: 'document', alias: 'sAFCompletionPhotosDELETE', display: 'normal', mandatory: false },
             HEALTH__AND__SAFETY_DELETE: { name: 'custrecord_twc_saf_health_safety', type: 'document', alias: 'health_and_SafetyDELETE', display: 'normal', mandatory: false },
             METHOD_STATEMENT_DELETE: { name: 'custrecord_twc_saf_method_statement', type: 'document', alias: 'methodStatementDELETE', display: 'normal', mandatory: false },
-            CREW__VISITORS_DELETE: { name: 'custrecord_twc_saf_crew_visitors', type: 'select', alias: 'crewVisitorsDELETE', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
-            ASSOCIATED_SRFS_DELETE: { name: 'custrecord_twc_saf_associated_srfs', type: 'select', alias: 'associatedSRFsDELETE', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf,' },
+            CREW__VISITORS_DELETE: { name: 'custrecord_twc_saf_crew_visitors', type: 'select', alias: 'crewVisitorsDELETE', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
+            ASSOCIATED_SRFS_DELETE: { name: 'custrecord_twc_saf_associated_srfs', type: 'select', alias: 'associatedSRFsDELETE', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf' },
+            CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
+            MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
+            OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
+            MODIFIED_BY: { name: 'lastmodifiedby', type: 'select', alias: 'last_modified_by', display: 'inline', recordType: 'employee'}, 
         }
 
         class OSSMTWC_SAF extends customRec.RecordBase {
             constructor(id, staticLoad) {
                 super(_recordType, _recordFieldInfo, id, staticLoad);
             }
+            get name() {
+                return this.get('name');
+            } set name(value) {
+                this.set('name', value)
+            }
+            
             get status() {
                 return this.get(_recordFields.STATUS);
             } set status(value) {
@@ -246,12 +262,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.REVIEW_COMMENT, value)
             }
             
-            get sAFCompletionPhotos() {
-                return this.get(_recordFields.SAF_COMPLETION_PHOTOS);
-            } set sAFCompletionPhotos(value) {
-                this.set(_recordFields.SAF_COMPLETION_PHOTOS, value)
-            }
-            
             get accommodation() {
                 return this.get(_recordFields.ACCOMMODATION);
             } set accommodation(value) {
@@ -265,6 +275,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.STRUCTURE, value)
             }
             get structureName() { return this.getText(_recordFields.STRUCTURE); }
+            
+            get sAFCompletionPhotosDELETE() {
+                return this.get(_recordFields.SAF_COMPLETION_PHOTOS_DELETE);
+            } set sAFCompletionPhotosDELETE(value) {
+                this.set(_recordFields.SAF_COMPLETION_PHOTOS_DELETE, value)
+            }
             
             get health_and_SafetyDELETE() {
                 return this.get(_recordFields.HEALTH__AND__SAFETY_DELETE);
@@ -291,6 +307,30 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.ASSOCIATED_SRFS_DELETE, value)
             }
             get associatedSRFsDELETEName() { return this.getText(_recordFields.ASSOCIATED_SRFS_DELETE); }
+            
+            get created() {
+                return this.get(_recordFields.CREATED);
+            } set created(value) {
+                this.set(_recordFields.CREATED, value)
+            }
+            
+            get last_modified() {
+                return this.get(_recordFields.MODIFIED);
+            } set last_modified(value) {
+                this.set(_recordFields.MODIFIED, value)
+            }
+            
+            get created_by() {
+                return this.get(_recordFields.OWNER);
+            } set created_by(value) {
+                this.set(_recordFields.OWNER, value)
+            }
+            
+            get last_modified_by() {
+                return this.get(_recordFields.MODIFIED_BY);
+            } set last_modified_by(value) {
+                this.set(_recordFields.MODIFIED_BY, value)
+            }
             
         }
 

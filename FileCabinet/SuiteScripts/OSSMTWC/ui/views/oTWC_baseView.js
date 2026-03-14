@@ -276,7 +276,13 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                     window.open(res.url);
                     return;
                 }
-                var html = `<object style="width: 100%;height: 100%;" data="data:application/${res.type.toLowerCase()};base64,${res.fileContent}">`;
+                var dataType = `data:application/${res.type.toLowerCase()}`;
+                var html = `<object style="width: 100%;height: 100%;" data="${dataType};base64,${res.fileContent}">`;
+                if (res.type.indexOf('IMAGE') > 0) {
+                    dataType = `data:image/${res.type.toLowerCase().replace('image', '')}`;
+                    html = `<img style="width: 100%; border: 1px solid var(--grid-color);" src="${dataType};base64,${res.fileContent}" />`;
+                }
+              
                 dialog.message({
                     title: res.name,
                     message: html,

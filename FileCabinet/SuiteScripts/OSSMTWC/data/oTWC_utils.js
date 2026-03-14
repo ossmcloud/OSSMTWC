@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js'],
-    (core, cored, coreSQL) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_profile.js', './oTWC_safCrew.js', './oTWC_file.js', './oTWC_icons.js'],
+    (core, cored, coreSQL, twcProfile, twcSafCrew, twcFile, twcIcons) => {
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SAF_TYPE = {
@@ -115,10 +115,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             AwaitingPhotos: { color: 'white', backgroundColor: 'orange' },
             PhotosReceived: { color: 'white', backgroundColor: 'lime' },
         }
-        function getSafStatusName(safStatusNumber) {
+        function getSafStatusName(safStatusNumber, asObject) {
             if (!safStatusNumber) { safStatusNumber = 1; }
             for (var k in SAF_STATUS) {
-                if (SAF_STATUS[k] == safStatusNumber) { return k; }
+                if (SAF_STATUS[k] == safStatusNumber) {
+                    if (asObject) {
+                        return { value: safStatusNumber, text: k }
+                    }
+                    return k;
+                }
             }
         }
         function getSafStatusStyle(safStatusNumber) {
@@ -346,7 +351,44 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+        function getSafCrew(options) {
+            return coreSQL.run(`
+                select  ${twcSafCrew.Fields.MEMBER}, BUILTIN.DF(${twcSafCrew.Fields.MEMBER}) as ${twcSafCrew.Fields.MEMBER}_name, ${twcSafCrew.Fields.ATTEND_AS}, 
+                        BUILTIN.DF(p.${twcProfile.Fields.COMPANY}) as contractor
+                from    ${twcSafCrew.Type} c
+                join    ${twcProfile.Type} p on p.id = c.${twcSafCrew.Fields.MEMBER}
+                where   ${twcSafCrew.Fields.SAF} = ${options.id}
+            `)
+        }
 
+        function getSafImages(options) {
+            return getSafFiles(options, 'image')
+        }
+        function getSafFiles(options, type) {
+            var fileTypeFilter = '';
+            if (type == 'image') {
+                fileTypeFilter = `AND t.custrecord_twc_file_type_image = 'T'`;
+            } else if (type == 'contractor') {
+                fileTypeFilter = `AND (t.custrecord_twc_file_type_hs = 'T' OR t.custrecord_twc_file_type_method = 'T')`;
+            }
+            
+            var files = [];
+            coreSQL.each(`
+                select  ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'dd/MM/yyyy HH:mi') as created, f.name, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name,
+                        ${twcFile.Fields.DESCRIPTION}
+                from    ${twcFile.Type} f
+                join    customrecord_twc_file_type t on t.id = f.${twcFile.Fields.R_TYPE}
+                where   ${twcFile.Fields.RECORD_TYPE} = 'customrecord_twc_saf'
+                and     ${twcFile.Fields.RECORD_ID} = ${options.id}
+                ${fileTypeFilter}
+                order by f.name
+            `, f => {
+                f.preview_link = `<div style="text-align: center;"><span class="twc-clickable saf-image-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
+                files.push(f)
+            })
+            //throw new Error(JSON.stringify(files))
+            return files;
+        }
 
         function getCompanies(options) {
             //
@@ -356,8 +398,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 and c.custrecord_twc_co_pl_expiry > CURRENT_DATE
                 and c.custrecord_twc_co_pi_expiry > CURRENT_DATE
             `
-
-
 
             if (options.isCustomer) {
                 options.customer = options.companyProfile.id;
@@ -374,8 +414,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 //     and     custrecord_twc_co_accred_cont_exp > CURRENT_DATE
                 // `;
             }
-
-
 
             var sql = '';
             if (options.vendor) {
@@ -686,6 +724,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getPortfolios: getPortfolios,
             getSafStatus: getSafStatus,
             getSafTypes: getSafTypes,
+            getSafCrew: getSafCrew,
+            getSafImages: getSafImages,
             getProfiles: getProfiles,
             getCompanies: getCompanies,
             getCustomers: getCustomers,

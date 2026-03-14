@@ -19,7 +19,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SELECT: 'select',
             MULTISELECT: 'multiselect',
             DATE: 'date',
-            DATE_TIME: 'datetimez',
+            DATE_TIME: 'datetimetz',
             BOOL: 'checkbox',
             CURRENCY: 'currency',
             DECIMAL: 'float',
@@ -28,6 +28,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             DOCUMENT: 'document',
         }
 
+     
         const sanitizeString = (value) => {
             var invalidChars = [
                 { c: ' ', r: '' },
@@ -176,6 +177,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 }
                 if (!field) { throw new Error(`You are trying to set a field that does not exists: ${fieldName}`); }
+
                 if (field.type == FIELD_TYPE.TEXT) {
                     value = value?.substring(0, 300);
                 } else if (field.type == FIELD_TYPE.TEXTAREA) {
@@ -270,7 +272,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     } else if (field.type == FIELD_TYPE.DATE_TIME) {
                         sql += `        TO_CHAR(${field.name}, 'YYYY-MM-DD HH24:Mi:ss') as ${fieldAlias}, `
                     } else {
-                        sql += `        ${field.name} ${fieldAlias}, `
+                        if (field.name == fieldAlias) {
+                            sql += `        ${field.name}, `
+                        } else {
+                            sql += `        ${field.name} as ${fieldAlias}, `
+                        }
                         if (field.type == FIELD_TYPE.SELECT || field.type == FIELD_TYPE.MULTISELECT) { sql += `BUILTIN.DF(${field.name}) ${fieldAliasName}, ` }
                     }
                     sql += '\n'
@@ -305,10 +311,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
                     } else {
+                        var hasStdFields = false;
                         for (var f in this.fields) {
-                            sql += selectFormat(this.fields[f], f.toLowerCase());
+                            if (this.fields[f].name == 'created') { hasStdFields = true; }
+                            if (options.noAlias) {
+                                sql += selectFormat(this.fields[f], this.fields[f].name);
+                            } else {
+                                sql += selectFormat(this.fields[f], f.toLowerCase());
+                            }
                         }
-                        sql += `        TO_CHAR(created, 'YYYY-MM-DD HH24:Mi:ss') as created, TO_CHAR(lastmodified, 'YYYY-MM-DD HH24:Mi:ss') as modified`
+                        if (!hasStdFields) {
+                            sql += `        TO_CHAR(created, 'YYYY-MM-DD HH24:Mi:ss') as created, TO_CHAR(lastmodified, 'YYYY-MM-DD HH24:Mi:ss') as modified`
+                        }
                     }
                 }
 
@@ -363,6 +377,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var sql = { query: sql, params: params }
                 if (options?.getSql) { return sql; }
 
+                //throw new Error(sql.query)
+
+                if (options?.returnFirst) { return coreSql.first(sql); }
                 return coreSql.run(sql);
             }
 

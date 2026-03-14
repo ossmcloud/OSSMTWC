@@ -146,7 +146,7 @@ div.twc_action_menu {
 
 div.twc_action_menu>div {
     display: table-cell;
-    vertical-align: middle;
+    vertical-align: top;
     padding: 3px;
 }
 
@@ -2574,7 +2574,8 @@ div.twc-animate-height {
 
 
 span.twc-record-status {
-    padding: 10px 7px 6px 7px;
+    padding: 8px 7px 8px 7px;
+    
     border-radius: 7px;
     font-weight: bold;
 }
@@ -2588,4 +2589,12 @@ span.twc-record-status-row {
     text-align: center;
     margin-top: -10px;
     margin-bottom: -10px;
+}
+
+
+div.twc-div-span-table {
+    display: table;
+}
+div.twc-div-span-table>span {
+    display: table-cell;
 }

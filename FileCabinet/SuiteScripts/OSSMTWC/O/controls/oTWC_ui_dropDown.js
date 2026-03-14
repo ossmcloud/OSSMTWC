@@ -143,7 +143,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                                 <input id="${this.#options.id}" type="text" class="twc twc-filter" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${selectedValueText}" ${disabled} ${readOnly} />
                             </div>
                             <div style="vertical-align: bottom; width: 28px;">
-                                <span id="${this.#options.id}_arrow" style="cursor: pointer; display: inline-block; padding-left: 2px; margin-right: -4px;">${icons.ICONS.arrowDown}</span>
+                                <span id="${this.#options.id}_arrow" style="cursor: pointer; display: inline-block; padding-left: 2px; margin-right: -4px;">${icons.get('arrowDown', 24, (disabled || readOnly) ? 'silver' : 'var(--nav-icon-color)')}</span>
                             </div>
                         </div>
                         <div id="${this.#options.id}_dropDown" class="twc_ctrl_dropDown">

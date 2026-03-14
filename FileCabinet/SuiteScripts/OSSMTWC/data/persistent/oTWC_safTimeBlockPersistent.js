@@ -11,9 +11,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             BLOCK: 'custrecord_twc_saf_tm_blk_block',
         }
         var _recordFieldInfo = {
-            SAF: { name: 'custrecord_twc_saf_tm_blk_saf', type: 'select', alias: 'sAF', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf,' },
+            SAF: { name: 'custrecord_twc_saf_tm_blk_saf', type: 'select', alias: 'sAF', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf' },
             BLOCK_DATE: { name: 'custrecord_twc_saf_tm_blk_date', type: 'date', alias: 'blockDate', display: 'normal', mandatory: false },
-            BLOCK: { name: 'custrecord_twc_saf_tm_blk_block', type: 'select', alias: 'block', display: 'normal', mandatory: false, recordType: 'customrecord_twc_tm_blk_opt,' },
+            BLOCK: { name: 'custrecord_twc_saf_tm_blk_block', type: 'select', alias: 'block', display: 'normal', mandatory: false, recordType: 'customrecord_twc_tm_blk_opt' },
         }
 
         class OSSMTWC_SAFTimeBlock extends customRec.RecordBase {

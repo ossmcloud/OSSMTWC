@@ -136,10 +136,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             if (options.type == ctrlBase.CTRL_TYPE.DROPDOWN) {
                 var styles = options.hide ? ' style="display: none;"' : '';
                 return `
-                        <ossm data-type="${options.type}" ${styles}>
-                            ${uiDropDown.render(options, dataSource)}
-                        </ossm>
-                    `;
+                    <ossm data-type="${options.type}" ${styles}>
+                        ${uiDropDown.render(options, dataSource)}
+                    </ossm>
+                `;
                 return uiDropDown.render(options, dataSource);
             } else if (options.type == ctrlBase.CTRL_TYPE.TABLE) {
                 return uiTable.render(options, dataSource);
@@ -200,8 +200,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     return ctrlBase.CTRL_TYPE.TEXT;
                 } else if (nsType == 'Long Text') {
                     return ctrlBase.CTRL_TYPE.TEXTAREA;
+                } else if (nsType == 'Text Area') {
+                    return ctrlBase.CTRL_TYPE.TEXTAREA;
                 } else if (nsType == 'Date') {
                     return ctrlBase.CTRL_TYPE.DATE;
+                } else if (nsType == 'Date/Time') {
+                    return ctrlBase.CTRL_TYPE.DATETIME;
                 } else if (nsType == 'Check Box') {
                     return ctrlBase.CTRL_TYPE.TOGGLE;
                 } else if (nsType == 'List/Record' || nsType == 'Multiple Select') {

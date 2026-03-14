@@ -46,6 +46,7 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             deleteAllSrf: deleteAllSrf,
             testFunction() {
                 try {
+                    twcUtils.getSafImages()
 
                     // coreSQL.each(`
                     //     select   id, name, 	custrecord_twc_prof_name

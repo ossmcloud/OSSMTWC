@@ -26,10 +26,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LANDLORD_GROUP: 'custrecord_twc_row_landlord_group',
         }
         var _recordFieldInfo = {
-            SITE: { name: 'custrecord_twc_row_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site,' },
+            SITE: { name: 'custrecord_twc_row_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
             ROW_ID: { name: 'custrecord_twc_row_id', type: 'text', alias: 'rowID', display: 'normal', mandatory: false },
-            ROW_STATUS: { name: 'custrecord_twc_row_sts', type: 'select', alias: 'rOWStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_row_status,' },
-            ROW_TYPE: { name: 'custrecord_twc_row_type', type: 'select', alias: 'r.O.W.Type', display: 'normal', mandatory: false, recordType: 'customrecord_twc_row_type,' },
+            ROW_STATUS: { name: 'custrecord_twc_row_sts', type: 'select', alias: 'rOWStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_row_status' },
+            ROW_TYPE: { name: 'custrecord_twc_row_type', type: 'select', alias: 'r.O.W.Type', display: 'normal', mandatory: false, recordType: 'customrecord_twc_row_type' },
             ROW_REGISTERED: { name: 'custrecord_twc_row_registered', type: 'checkbox', alias: 'r.O.W.Registered', display: 'normal', mandatory: false },
             ROW_FOLIO: { name: 'custrecord_twc_row_folio', type: 'text', alias: 'r.O.W.Folio', display: 'normal', mandatory: false },
             ROW_CONDITIONS: { name: 'custrecord_twc_row_conditions', type: 'textarea', alias: 'r.O.W.Conditions', display: 'normal', mandatory: false },
@@ -39,11 +39,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WAYLEAVE_COMMENTS: { name: 'custrecord_twc_row_wayleave_comments', type: 'text', alias: 'wayleaveComments', display: 'normal', mandatory: false },
             CURRENT_AMOUNT_PAYABLE: { name: 'custrecord_twc_row_currency_amt_payable', type: 'currency', alias: 'currentAmountPayable', display: 'normal', mandatory: false },
             LANDLORD_NAME: { name: 'custrecord_twc_row_landlord_name', type: 'select', alias: 'landlordName', display: 'normal', mandatory: false, recordType: '-2' },
-            LANDLORD_CONTACT: { name: 'custrecord_twc_row_landlord_contact', type: 'select', alias: 'landlordContact', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
+            LANDLORD_CONTACT: { name: 'custrecord_twc_row_landlord_contact', type: 'select', alias: 'landlordContact', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             REVIEW_BASIS: { name: 'custrecord_twc_row_review_basis', type: 'text', alias: 'reviewBasis', display: 'normal', mandatory: false },
             REVIEW_NEXT_DATE: { name: 'custrecord_twc_row_review_next_date', type: 'date', alias: 'reviewNextDate', display: 'normal', mandatory: false },
             AGREEMENT_COMMENT: { name: 'custrecord_twc_row_agreement_comment', type: 'text', alias: 'agreementComment', display: 'normal', mandatory: false },
-            LANDLORD_GROUP: { name: 'custrecord_twc_row_landlord_group', type: 'select', alias: 'landlordGroup', display: 'normal', mandatory: false, recordType: 'customrecord_twc_row_landlord_group,' },
+            LANDLORD_GROUP: { name: 'custrecord_twc_row_landlord_group', type: 'select', alias: 'landlordGroup', display: 'normal', mandatory: false, recordType: 'customrecord_twc_row_landlord_group' },
         }
 
         class OSSMTWC_Row extends customRec.RecordBase {

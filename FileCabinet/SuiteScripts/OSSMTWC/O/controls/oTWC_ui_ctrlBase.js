@@ -8,6 +8,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             TABLE: 'table',
             PROP_TABLE: 'propTable',
             DATE: 'date',
+            DATETIME: 'datetime-local',
             FILE: 'file',
             TEXT: 'text',
             TEXTAREA: 'textarea',
@@ -45,14 +46,19 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 var styles = '';
                 if (options.type == CTRL_TYPE.TABLE) {
                     styles = `display: block; overflow: auto; `;
+                    
                 } else if (options.type == CTRL_TYPE.CHART) {
                     styles = `display: block; width: 100%; height: 100%;`;
-                // } else if (options.type == CTRL_TYPE.PANEL) {
-                //     styles = ` style="position: absolute;"`;
                 }
 
-
                 if (options.hide) { styles += 'display: none;' }
+
+                var opStyles = options.data?.options?.styles || options.styles;
+                if (opStyles) {
+                    for (var s in opStyles) {
+                        styles += `${s}: ${opStyles[s]}; `;
+                    }
+                }
                 
                 return `
                     <ossm data-type="${options.type || 'control'}" style="${styles}">

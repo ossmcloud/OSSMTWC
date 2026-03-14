@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_file.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafTimeBlock, twcSafLog, twcFile) => {
         var _safUrl = null;
         var _isDisplay = 'none'
         function getSafUrl() {
@@ -82,8 +82,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 { field: twcSaf.Fields.ROOFTOP_ACCESS },
                 { field: twcSaf.Fields.CRANE__CHERRYPICKER },
                 { field: twcSaf.Fields.ELECTRICAL_WORKS },
-                
-                
+
+
             ];
             return safFields;
         }
@@ -220,6 +220,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getSAFInfoPanels_Existing(dataSource, userInfo) {
+            var safLink = core.url.script('otwc_siteaccess_sl');
 
             var safDetails = { id: 'ite-access-existing-safs', title: 'Existing SAFs', collapsed: true, fields: [] };
             safDetails.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Customer' })
@@ -227,12 +228,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             safDetails.fields.push({
                 id: `${twcSaf.Type}`, label: 'Saf Details',
                 fields: {
-                    [twcSaf.Fields.SAF_ID]: 'SAF',
-                    [twcSaf.Fields.CUSTOMER]: 'Customer',
+                    [twcSaf.Fields.NAME]: { title: 'SAF ID', link: { url: safLink + '&recId=${id}', valueField: 'id' } },
                     [twcSaf.Fields.R_TYPE]: 'Type',
-                    [twcSaf.Fields.MAST_ACCESS]: 'Mast',
-                    [twcSaf.Fields.SAF_AUTHOR]: 'Author',
+                    [twcSaf.Fields.CUSTOMER]: 'Customer',
+                    [twcSaf.Fields.PRIMARY_CONTRACTOR]: 'Contractor',
+                    [twcSaf.Fields.PICW]: 'PICW',
                     [twcSaf.Fields.STATUS]: 'Status',
+                    [twcSaf.Fields.START_TIME_BLOCK]: 'Start Time',
+                    [twcSaf.Fields.END_TIME_BLOCK]: 'End Time',
+                    [twcSaf.Fields.MAST_ACCESS]: 'Mast',
+                    [twcSaf.Fields.TL_BUILDING_ACCESS]: 'Building',
+                    [twcSaf.Fields.ROOFTOP_ACCESS]: 'Rooftop',
+                    [twcSaf.Fields.CRANE__CHERRYPICKER]: 'Crane/Cherryicker',
+                    [twcSaf.Fields.ELECTRICAL_WORKS]: 'Electrical',
 
                 },
                 where: { [twcSaf.Fields.SITE]: dataSource.siteId },
@@ -267,11 +275,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             dataSource.Type = twcSaf.Type;
 
             var fieldGroups = [];
-            if (dataSource.id == undefined) {
+            //if (dataSource.id == undefined) {
+            if (options.editMode) {
                 fieldGroups.push(getSAFInfoPanels_Builder(dataSource, userInfo, options));
             } else {
                 fieldGroups.push(getSAFInfoPanels_Info(dataSource, userInfo));
-                fieldGroups.push(getSAFInfoPanels_Existing_details(dataSource, userInfo));
+                fieldGroups.push(getSAFInfoPanels_WorkFlowInfo(dataSource, userInfo));
             }
             fieldGroups.push(getSAFInfoPanels_Existing(dataSource, userInfo));
             return fieldGroups;
@@ -295,10 +304,135 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
 
+        function getSAFInfoPanels_Info(dataSource, userInfo) {
+            var fieldGroup = { id: 'site-access-details', title: 'SAF info', collapsed: false, controls: [] };
+
+            var detailsInfo = { id: 'site-access-details', fields: [] };
+            fieldGroup.controls.push(detailsInfo);
+
+            detailsInfo.fields.push({ id: twcSaf.Fields.NAME, label: 'SAF ID' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.SAF_AUTHOR, label: 'Author' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.CREATED, label: 'Submitted On' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.START_TIME_BLOCK, label: 'Start' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.END_TIME_BLOCK, label: 'End', lineBreak: true })
+
+            detailsInfo.fields.push({ id: twcSaf.Fields.SITE, label: 'Site' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.R_TYPE, label: 'Type' });
+            detailsInfo.fields.push({ id: twcSaf.Fields.STATUS, label: 'Status', lineBreak: true })
+
+            detailsInfo.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Customer' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.PRIMARY_CONTRACTOR, label: 'Primary Contractor' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.PICW, label: 'PICW', lineBreak: true });
+
+
+            detailsInfo.fields.push({ id: twcSaf.Fields.MAST_ACCESS, label: 'Mast Access' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.TL_BUILDING_ACCESS, label: 'TL Building Access' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.ROOFTOP_ACCESS, label: 'Rooftop Access' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.ELECTRICAL_WORKS, label: 'Electrical Works' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.CRANE__CHERRYPICKER, label: 'Crane / Cherrypicker', lineBreak: true })
+
+            var siteInfraStructures = twcUtils.getInfraStructures(dataSource);
+            var siteStructures = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Structure })
+            var accommodationStructure = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Accommodation })
+
+            detailsInfo.fields.push({ id: twcSaf.Fields.STRUCTURE, label: 'Structure', dataSource: siteStructures })
+            detailsInfo.fields.push({ id: twcSaf.Fields.ACCOMMODATION, label: 'Accommodation', dataSource: accommodationStructure, lineBreak: true });
+
+            detailsInfo.fields.push({ id: twcSaf.Fields.SUMMARY_OF_WORKS, label: 'Summary of Works', width: '100%', rows: 5, lineBreak: true });
+
+            var infoLists = { id: 'site-access-lists', collapsed: false, renderAsTable: true, fields: [] };
+            fieldGroup.controls.push(infoLists);
+
+            infoLists.fields.push({
+                id: `${twcSafTimeBlock.Type}`, label: 'Time Blocks',
+                fields: {
+                    [twcSafTimeBlock.Fields.BLOCK_DATE]: 'Date',
+                    [twcSafTimeBlock.Fields.BLOCK]: 'Block',
+
+                },
+                where: { [twcSafTimeBlock.Fields.SAF]: dataSource.id },
+                FieldsInfo: twcSafTimeBlock.FieldsInfo
+            });
+
+            infoLists.fields.push({
+                id: `${twcSafCrew.Type}`, label: 'Crew / Visitors',
+                fields: {
+                    contractor: 'Contractor',
+                    [twcSafCrew.Fields.MEMBER]: 'Name',
+                    [twcSafCrew.Fields.ATTEND_AS]: 'Role',
+                },
+                dataSource: twcUtils.getSafCrew(dataSource),
+                //where: { [twcSafCrew.Fields.SAF]: dataSource.id },
+                FieldsInfo: twcSafCrew.FieldsInfo,
+                styles: { width: '750px', 'padding-left': '7px' }
+            });
 
 
 
 
+            configUIFields.formatPanelFields(dataSource, fieldGroup);
+
+            return fieldGroup;
+        }
+
+
+        function getSAFInfoPanels_WorkFlowInfo(dataSource, userInfo) {
+            var fieldGroup = { id: 'site-access-workflow', title: 'Workflow info', collapsed: false, controls: [] };
+
+            var workFlowInfo = { id: 'site-access-logs', collapsed: false, fields: [] };
+            fieldGroup.controls.push(workFlowInfo);
+
+            workFlowInfo.fields.push({ id: twcSaf.Fields.STATUS_COMMENTS, width: '100%', rows: 3, label: 'Status Comments', lineBreak: true })
+            workFlowInfo.fields.push({ id: twcSaf.Fields.WORKS_PHOTOS_REQ_DELAY, label: 'Works Photos Req. Delay' })
+            workFlowInfo.fields.push({ id: twcSaf.Fields.COMPLETION_REVIEWER, label: 'Completion Reviewer' })
+            workFlowInfo.fields.push({ id: twcSaf.Fields.COMPLETION_PHOTOS_REQUESTED, label: 'Photos Requested' })
+            workFlowInfo.fields.push({ id: twcSaf.Fields.COMPLETION_PHOTOS_RECEIVED, label: 'Photos Received', lineBreak: true })
+
+            workFlowInfo.fields.push({ id: twcSaf.Fields.REVIEW_COMMENT, width: '100%', rows: 5, label: 'Review Comment', lineBreak: true })
+
+
+
+
+            workFlowInfo.fields.push({
+                id: `${twcSafLog.Type}`, label: 'SAF Logs',
+                fields: {
+                    [twcSafLog.Fields.CREATED]: 'Date/Time',
+                    [twcSafLog.Fields.PROFILE]: 'Profile',
+                    [twcSafLog.Fields.LOG_TYPE]: 'Log Type',
+                    [twcSafLog.Fields.MESSAGE]: 'Message',
+                    [twcSafLog.Fields.ADDITIONAL_INFO]: 'Info',
+
+                },
+                where: { [twcSafLog.Fields.SAF]: dataSource.id },
+                orderBy: { created: 'desc' },
+                FieldsInfo: twcSafLog.FieldsInfo,
+            });
+
+            // @@TODO: SAF: show photos
+            workFlowInfo.fields.push({
+                id: `${twcFile.Type}`, label: 'Completion Photos',
+                fields: {
+                    [twcFile.Fields.CREATED]: 'Uploaded Date',
+                    [twcFile.Fields.NAME]: 'File Name',
+                    [twcFile.Fields.R_TYPE + '_name']: 'Type',
+                    [twcFile.Fields.DESCRIPTION]: 'Description',
+                    ['preview_link']: {
+                        title: 'view',
+                        styles: { width: '50px' }
+                    }
+                },
+                dataSource: twcUtils.getSafImages(dataSource),
+                FieldsInfo: twcSafLog.FieldsInfo,
+
+            });
+
+            // @@TODO: SAF: show documents
+
+
+            configUIFields.formatPanelFields(dataSource, fieldGroup);
+
+            return fieldGroup;
+        }
 
 
 
@@ -307,163 +441,163 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         //#region JESNA
 
-        function getSAFInfoPanels_Info(dataSource, userInfo) {
-            var fieldGroup = { id: 'site-access-details', title: 'SAF info', collapsed: false, controls: [] };
+        // function getSAFInfoPanels_Info(dataSource, userInfo) {
+        //     var fieldGroup = { id: 'site-access-details', title: 'SAF info', collapsed: false, controls: [] };
 
-            var detailsInfo = { id: 'site-access-details', title: 'Details', fields: [] };
-            fieldGroup.controls.push(detailsInfo);
+        //     var detailsInfo = { id: 'site-access-details', title: 'Details', fields: [] };
+        //     fieldGroup.controls.push(detailsInfo);
 
-            detailsInfo.fields.push({ id: twcSaf.Fields.SAF_ID, label: 'SAF ID' })
-            detailsInfo.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Customer' })
-            detailsInfo.fields.push({ id: twcSaf.Fields.STATUS, label: 'Status' })
-            // detailsInfo.fields.push({ id: twcSaf.Fields.START_TIME_BLOCK, label: 'Start' })          
-            // detailsInfo.fields.push({ id: twcSaf.Fields.END_TIME_BLOCK, label: 'End' })          
+        //     detailsInfo.fields.push({ id: twcSaf.Fields.SAF_ID, label: 'SAF ID' })
+        //     detailsInfo.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Customer' })
+        //     detailsInfo.fields.push({ id: twcSaf.Fields.STATUS, label: 'Status' })
+        //     // detailsInfo.fields.push({ id: twcSaf.Fields.START_TIME_BLOCK, label: 'Start' })          
+        //     // detailsInfo.fields.push({ id: twcSaf.Fields.END_TIME_BLOCK, label: 'End' })          
 
-            configUIFields.formatPanelFields(dataSource, fieldGroup);
+        //     configUIFields.formatPanelFields(dataSource, fieldGroup);
 
-            return fieldGroup;
-        }
+        //     return fieldGroup;
+        // }
 
-        function getSAFInfoPanels_Existing_details(dataSource, userInfo) {
+        // function getSAFInfoPanels_Existing_details(dataSource, userInfo) {
 
-            var fieldGroup = { id: 'site-access-existing-info', collapsed: false, controls: [] };
+        //     var fieldGroup = { id: 'site-access-existing-info', collapsed: false, controls: [] };
 
-            var safDetailsInfo = { id: 'ite-access-existing-safs-det', title: 'Details', collapsed: true, fields: [] };
-            fieldGroup.controls.push(safDetailsInfo);
+        //     var safDetailsInfo = { id: 'ite-access-existing-safs-det', title: 'Details', collapsed: true, fields: [] };
+        //     fieldGroup.controls.push(safDetailsInfo);
 
-            safDetailsInfo.fields.push({ id: twcSaf.Fields.SAF_ID, label: 'SAF ID' })
-            safDetailsInfo.fields.push({ id: twcSaf.Fields.STATUS, label: 'Submitted' })
-            safDetailsInfo.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Author' })
+        //     safDetailsInfo.fields.push({ id: twcSaf.Fields.SAF_ID, label: 'SAF ID' })
+        //     safDetailsInfo.fields.push({ id: twcSaf.Fields.STATUS, label: 'Submitted' })
+        //     safDetailsInfo.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Author' })
 
-            var safDetailsStatus = { id: 'ite-access-existing-safs-det-status', title: 'Status', collapsed: true, fields: [] };
-            fieldGroup.controls.push(safDetailsStatus);
-            safDetailsStatus.fields.push({ id: twcSaf.Fields.STATUS, label: 'Current Status' })
-            safDetailsStatus.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'History' })
-            configUIFields.formatPanelFields(dataSource, safDetailsStatus);
-
-
-            var safDetailsReq = { id: 'ite-access-existing-safs-det-accreq', title: 'Access Requirements', collapsed: true, fields: [] };
-            fieldGroup.controls.push(safDetailsReq);
-            safDetailsReq.fields.push({ id: twcSaf.Fields.R_TYPE, label: 'Access Type' })
-            safDetailsReq.fields.push({ id: twcSaf.Fields.MAST_ACCESS, label: 'Mast Access' })
-            safDetailsReq.fields.push({ id: twcSaf.Fields.ROOFTOP_ACCESS, label: 'Rooftop Access' })
-            safDetailsReq.fields.push({ id: twcSaf.Fields.TL_BUILDING_ACCESS, label: 'TC Building Access' })
-            configUIFields.formatPanelFields(dataSource, safDetailsReq);
-
-            var safDetailsAccDet = { id: 'ite-access-existing-safs-det-accdet', title: 'Access Details', collapsed: true, fields: [] };
-            fieldGroup.controls.push(safDetailsAccDet);
-            safDetailsAccDet.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Customer' })
-            safDetailsAccDet.fields.push({ id: twcSaf.Fields.PRIMARY_CONTRACTOR, label: 'Primary Contractor' })
-            safDetailsAccDet.fields.push({ id: twcSaf.Fields.SUMMARY_OF_WORKS, label: 'Summary of Works' })
-            safDetailsAccDet.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Key' })
-            safDetailsAccDet.fields.push({ id: twcSaf.Fields.STATUS, label: 'SRF' })
-            safDetailsAccDet.fields.push({ id: twcSaf.Fields.STATUS, label: 'PSDP' })
-            safDetailsAccDet.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'PSCS' })
-            safDetailsAccDet.fields.push({ id: twcSaf.Fields.PICW, label: 'PICW' })
-            safDetailsAccDet.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Key' })
-
-            configUIFields.formatPanelFields(dataSource, safDetailsAccDet);
-
-            safDetailsInfo.fields.push({
-                id: `${twcSaf.Type}`, label: 'Crew / Visitors',
-                fields: {
-                    [twcSaf.Fields.SAF_ID]: 'Company',
-                    [twcSaf.Fields.CUSTOMER]: 'Name',
-                    [twcSaf.Fields.R_TYPE]: 'Role',
-                },
-                where: { [twcSaf.Fields.SITE]: dataSource.siteId },
-                FieldsInfo: twcSaf.FieldsInfo
-            });
-
-            var safDetailsAccDoc = { id: 'ite-access-existing-safs-det-doc', title: 'Documentation', collapsed: true, fields: [] };
-            fieldGroup.controls.push(safDetailsAccDoc);
-            safDetailsAccDoc.fields.push({ id: twcSaf.Fields.STATUS, label: 'Health & Safety' })
-            safDetailsAccDoc.fields.push({ id: twcSaf.Fields.STATUS, label: 'Method Statements' })
-            configUIFields.formatPanelFields(dataSource, safDetailsAccDoc);
-
-            safDetailsInfo.fields.push({
-                id: `${twcSaf.Type}`, label: 'Time Blocks',
-                fields: {
-                    [twcSaf.Fields.SAF_ID]: 'Time',
-                    [twcSaf.Fields.CUSTOMER]: 'Date',
-                },
-                where: { [twcSaf.Fields.SITE]: dataSource.siteId },
-                FieldsInfo: twcSaf.FieldsInfo
-            });
-
-            var safDetailsAccEq = { id: 'ite-access-existing-safs-det-eq', title: 'Planned Equipment Work', collapsed: true, fields: [] };
-            fieldGroup.controls.push(safDetailsAccEq);
+        //     var safDetailsStatus = { id: 'ite-access-existing-safs-det-status', title: 'Status', collapsed: true, fields: [] };
+        //     fieldGroup.controls.push(safDetailsStatus);
+        //     safDetailsStatus.fields.push({ id: twcSaf.Fields.STATUS, label: 'Current Status' })
+        //     safDetailsStatus.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'History' })
+        //     configUIFields.formatPanelFields(dataSource, safDetailsStatus);
 
 
-            safDetailsInfo.fields.push({
-                id: `${twcSaf.Type}`, label: 'Text In/Out',
-                fields: {
-                    [twcSaf.Fields.SAF_ID]: 'Received',
-                    [twcSaf.Fields.CUSTOMER]: 'Type',
-                    [twcSaf.Fields.CUSTOMER]: 'Sender',
-                    [twcSaf.Fields.CUSTOMER]: 'Number',
-                },
-                where: { [twcSaf.Fields.SITE]: dataSource.siteId },
-                FieldsInfo: twcSaf.FieldsInfo
-            });
+        //     var safDetailsReq = { id: 'ite-access-existing-safs-det-accreq', title: 'Access Requirements', collapsed: true, fields: [] };
+        //     fieldGroup.controls.push(safDetailsReq);
+        //     safDetailsReq.fields.push({ id: twcSaf.Fields.R_TYPE, label: 'Access Type' })
+        //     safDetailsReq.fields.push({ id: twcSaf.Fields.MAST_ACCESS, label: 'Mast Access' })
+        //     safDetailsReq.fields.push({ id: twcSaf.Fields.ROOFTOP_ACCESS, label: 'Rooftop Access' })
+        //     safDetailsReq.fields.push({ id: twcSaf.Fields.TL_BUILDING_ACCESS, label: 'TC Building Access' })
+        //     configUIFields.formatPanelFields(dataSource, safDetailsReq);
 
-            configUIFields.formatPanelFields(dataSource, safDetailsInfo);
-            return safDetailsInfo;
-        }
+        //     var safDetailsAccDet = { id: 'ite-access-existing-safs-det-accdet', title: 'Access Details', collapsed: true, fields: [] };
+        //     fieldGroup.controls.push(safDetailsAccDet);
+        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Customer' })
+        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.PRIMARY_CONTRACTOR, label: 'Primary Contractor' })
+        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.SUMMARY_OF_WORKS, label: 'Summary of Works' })
+        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Key' })
+        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.STATUS, label: 'SRF' })
+        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.STATUS, label: 'PSDP' })
+        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'PSCS' })
+        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.PICW, label: 'PICW' })
+        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Key' })
 
-        function injectToggleColumn(panel) {
+        //     configUIFields.formatPanelFields(dataSource, safDetailsAccDet);
 
-            if (!panel || !panel.controls) return panel;
-            var displayState = ''
+        //     safDetailsInfo.fields.push({
+        //         id: `${twcSaf.Type}`, label: 'Crew / Visitors',
+        //         fields: {
+        //             [twcSaf.Fields.SAF_ID]: 'Company',
+        //             [twcSaf.Fields.CUSTOMER]: 'Name',
+        //             [twcSaf.Fields.R_TYPE]: 'Role',
+        //         },
+        //         where: { [twcSaf.Fields.SITE]: dataSource.siteId },
+        //         FieldsInfo: twcSaf.FieldsInfo
+        //     });
 
-            for (var i = 0; i < panel.controls.length; i++) {
+        //     var safDetailsAccDoc = { id: 'ite-access-existing-safs-det-doc', title: 'Documentation', collapsed: true, fields: [] };
+        //     fieldGroup.controls.push(safDetailsAccDoc);
+        //     safDetailsAccDoc.fields.push({ id: twcSaf.Fields.STATUS, label: 'Health & Safety' })
+        //     safDetailsAccDoc.fields.push({ id: twcSaf.Fields.STATUS, label: 'Method Statements' })
+        //     configUIFields.formatPanelFields(dataSource, safDetailsAccDoc);
 
-                var control = panel.controls[i];
+        //     safDetailsInfo.fields.push({
+        //         id: `${twcSaf.Type}`, label: 'Time Blocks',
+        //         fields: {
+        //             [twcSaf.Fields.SAF_ID]: 'Time',
+        //             [twcSaf.Fields.CUSTOMER]: 'Date',
+        //         },
+        //         where: { [twcSaf.Fields.SITE]: dataSource.siteId },
+        //         FieldsInfo: twcSaf.FieldsInfo
+        //     });
 
-                if (control.type === "table" && control.id === "customrecord_twc_saf") {
+        //     var safDetailsAccEq = { id: 'ite-access-existing-safs-det-eq', title: 'Planned Equipment Work', collapsed: true, fields: [] };
+        //     fieldGroup.controls.push(safDetailsAccEq);
 
-                    control.columns.unshift({
-                        id: "toggle",
-                        title: " "
-                    });
 
-                    if (control.dataSource) {
+        //     safDetailsInfo.fields.push({
+        //         id: `${twcSaf.Type}`, label: 'Text In/Out',
+        //         fields: {
+        //             [twcSaf.Fields.SAF_ID]: 'Received',
+        //             [twcSaf.Fields.CUSTOMER]: 'Type',
+        //             [twcSaf.Fields.CUSTOMER]: 'Sender',
+        //             [twcSaf.Fields.CUSTOMER]: 'Number',
+        //         },
+        //         where: { [twcSaf.Fields.SITE]: dataSource.siteId },
+        //         FieldsInfo: twcSaf.FieldsInfo
+        //     });
 
-                        for (var j = 0; j < control.dataSource.length; j++) {
+        //     configUIFields.formatPanelFields(dataSource, safDetailsInfo);
+        //     return safDetailsInfo;
+        // }
 
-                            var row = control.dataSource[j];
-                            var safId = row.custrecord_twc_saf_id;
+        // function injectToggleColumn(panel) {
 
-                            if (!row._isDisplay) {
-                                row._isDisplay = 'none';
-                            }
+        //     if (!panel || !panel.controls) return panel;
+        //     var displayState = ''
 
-                            var isOpen = row._isDisplay === 'block';
-                            var symbol = isOpen ? '-' : '+';
-                            displayState = isOpen ? 'none' : 'block';
+        //     for (var i = 0; i < panel.controls.length; i++) {
 
-                            row.toggle =
-                                `<div data-saf-id="test123" style="text-align:center;cursor:pointer;"
-                        onclick="
-                        var d=this.getAttribute('data-display')==='block'?'none':'block';
-                        this.setAttribute('data-display',d);
-                         this.innerHTML=(d==='block'?'-':'+');
-                         
-                        ">
-                         ${symbol}
-                        </div>`;
-                        }
-                    }
+        //         var control = panel.controls[i];
 
-                    break;
-                }
-            }
-            let test = {};
-            test.obj = (panel)
-            test.display = displayState
-            //throw new Error(JSON.stringify(obj))
-            return test
-        }
+        //         if (control.type === "table" && control.id === "customrecord_twc_saf") {
+
+        //             control.columns.unshift({
+        //                 id: "toggle",
+        //                 title: " "
+        //             });
+
+        //             if (control.dataSource) {
+
+        //                 for (var j = 0; j < control.dataSource.length; j++) {
+
+        //                     var row = control.dataSource[j];
+        //                     var safId = row.custrecord_twc_saf_id;
+
+        //                     if (!row._isDisplay) {
+        //                         row._isDisplay = 'none';
+        //                     }
+
+        //                     var isOpen = row._isDisplay === 'block';
+        //                     var symbol = isOpen ? '-' : '+';
+        //                     displayState = isOpen ? 'none' : 'block';
+
+        //                     row.toggle =
+        //                         `<div data-saf-id="test123" style="text-align:center;cursor:pointer;"
+        //                 onclick="
+        //                 var d=this.getAttribute('data-display')==='block'?'none':'block';
+        //                 this.setAttribute('data-display',d);
+        //                  this.innerHTML=(d==='block'?'-':'+');
+
+        //                 ">
+        //                  ${symbol}
+        //                 </div>`;
+        //                 }
+        //             }
+
+        //             break;
+        //         }
+        //     }
+        //     let test = {};
+        //     test.obj = (panel)
+        //     test.display = displayState
+        //     //throw new Error(JSON.stringify(obj))
+        //     return test
+        // }
 
         //#endregion
 

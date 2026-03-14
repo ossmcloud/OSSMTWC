@@ -2,15 +2,35 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './persistent/oTWC_safPersistent.js', './oTWC_utils.js'],
-    (core, coreSQL, twcSaf, twcUtils) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './persistent/oTWC_safPersistent.js', './oTWC_utils.js', './oTWC_safLog.js'],
+    (core, coreSQL, twcSaf, twcUtils, twcSafLog) => {
 
 
-     
+
         class OSSMTWC_SAF extends twcSaf.PersistentRecord {
             constructor(id, staticLoad) {
                 super(id, staticLoad);
             }
+
+            log(type, msg, info, profile) {
+                twcSafLog.log(this.id, type, msg, info, profile);
+            }
+            logInfo(msg, info, profile) {
+                twcSafLog.logInfo(this.id, msg, info, profile);
+            }
+            logWarn(msg, info, profile) {
+                twcSafLog.logWarn(this.id, msg, info, profile);
+            }
+            logError(msg, info, profile) {
+                twcSafLog.logWarn(this.id, msg, info, profile);
+            }
+            logSystem(msg, info, profile) {
+                twcSafLog.logSystem(this.id, msg, info, profile);
+            }
+            logEx(msg, error, profile) {
+                twcSafLog.logEx(this.id, msg, error, profile);
+            }
+
         }
 
 
@@ -37,9 +57,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             getFields: () => {
                 return twcUtils.getFields(twcSaf.Type);
-            }
+            },
 
-           
-            
+
+
         }
     });

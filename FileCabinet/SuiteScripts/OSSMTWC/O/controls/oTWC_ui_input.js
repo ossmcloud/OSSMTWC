@@ -39,7 +39,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             } set hide(val) {
                 this.#ui.closest('ossm').css('display', val ? 'none' : 'inline');
             }
-            
+
             get disabled() {
                 return this.#input.attr("disabled") !== undefined;
             } set disabled(val) {
@@ -49,6 +49,17 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     this.#input.removeAttr('disabled');
                 }
             }
+
+            get readOnly() {
+                return this.#input.attr("readonly") !== undefined;
+            } set readOnly(val) {
+                if (val) {
+                    this.#input.attr('readonly', 'readonly');
+                } else {
+                    this.#input.removeAttr('readonly');
+                }
+            }
+
 
             get value() {
                 if (this.#options.type == ctrlBase.CTRL_TYPE.CHECKBOX) {
@@ -83,6 +94,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             render(container) {
+                var disabled = this.#options.disabled ? 'disabled' : '';
+                var readOnly = this.#options.readOnly ? 'readonly' : '';
+
+
                 var label = '';
                 if (this.#options.label) {
                     var mandatory = (this.#options.mandatory) ? ' *' : '';
@@ -90,27 +105,32 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 }
 
                 var arrowDown = ''; var defaultWidth = '150px'; var inputWidth = '100%';
+                if (this.#options.type == ctrlBase.CTRL_TYPE.DATETIME) {
+                    defaultWidth = (disabled || readOnly) ? '150px' : '185px';
+                }
                 //var inputWidth = parseInt((this.#options.style?.width || defaultWidth).replace('px', '')) - 2;
 
                 if (this.#options.style?.width || this.#options.width) {
                     defaultWidth = this.#options.style?.width || this.#options.width;
                 }
 
-                if (this.#options.type == ctrlBase.CTRL_TYPE.DATE) {
-                    inputWidth = this.#options.style?.width || defaultWidth;
-                    if (inputWidth.indexOf('%') < 0) { inputWidth = (parseInt(inputWidth.replace('px', '')) - 32) + 'px'; }
-                    arrowDown = `
-                        <div style="vertical-align: bottom; width: 28px; min-width: 28px">
-                            <span id="${this.#options.id}_arrow" style="cursor: pointer; display: inline-block; padding-left: 2px; margin-right: -4px;">${icons.ICONS.arrowDown}</span>
-                        </div>
-                    `;
+                if (this.#options.type == ctrlBase.CTRL_TYPE.DATE || this.#options.type == ctrlBase.CTRL_TYPE.DATETIME) {
+                    if (disabled || readOnly) {
+                        inputWidth = defaultWidth;
+                    } else {
+                        inputWidth = this.#options.style?.width || defaultWidth;
+                        if (inputWidth.indexOf('%') < 0) { inputWidth = (parseInt(inputWidth.replace('px', '')) - 32) + 'px'; }
+                        arrowDown = `
+                            <div style="vertical-align: bottom; width: 28px; min-width: 28px">
+                                <span id="${this.#options.id}_arrow" style="cursor: pointer; display: inline-block; padding-left: 2px; margin-right: -4px;">${icons.ICONS.arrowDown}</span>
+                            </div>
+                        `;
+                    }
                 }
 
 
 
                 var accept = this.#options.accept ? ` accept="${this.#options.accept}"` : '';
-                var disabled = this.#options.disabled ? 'disabled' : '';
-                var readOnly = this.#options.readOnly ? 'readonly' : '';
                 var checked = ''; var min = ''; var max = ''; var rows = '';
                 if (this.#options.type == ctrlBase.CTRL_TYPE.CHECKBOX) {
                     checked = this.#options.value ? 'checked' : '';
@@ -174,8 +194,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#input = this.#ui.find(`#${this.#options.id}`);
 
                 this.#ui.find(`#${this.#options.id}_arrow`).click(e => {
-                    if (this.#options.type == ctrlBase.CTRL_TYPE.DATE) {
-                        if (this.disabled) { return; }
+                    if (this.#options.type == ctrlBase.CTRL_TYPE.DATE || this.#options.type == ctrlBase.CTRL_TYPE.DATETIME) {
+                        if (this.disabled || this.readOnly) { return; }
                         this.#input[0].showPicker();
                     }
                 });
