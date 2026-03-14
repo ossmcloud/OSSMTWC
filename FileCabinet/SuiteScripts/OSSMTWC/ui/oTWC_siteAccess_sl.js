@@ -18,7 +18,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteAccessInfo.siteId || context.request.parameters.siteId);
                 pageData.timeBlocks = twcUtils.getSafTimeBlocks();
                 pageData.siteTimeBlocks = twcSiteAccessUtils.getAllSafTimeBlocks(pageData.siteAccessInfo);
-                pageData.recordStatus = twcSaf.getSafStatusHtml(pageData.siteAccessInfo[twcSaf.Fields.STATUS]);
+                pageData.recordStatus = `<div class="twc-div-span-table">${twcSaf.getSafStatusHtml(pageData.siteAccessInfo[twcSaf.Fields.STATUS])}</div>`;
                 if (context.request.parameters.recId) {
                     s.form.f.title += ` - ${pageData.siteAccessInfo.name}`;
                     pageData.recordStatus = `
