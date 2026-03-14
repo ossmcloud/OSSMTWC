@@ -26,6 +26,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             <span class="twc-record-status" style="border: 1px solid var(--grid-color); padding: 0px 34px; font-size: 20px; vertical-align: middle; background-color: var(--accent-bkgd-color); color: var(--accent-fore-color)">
                                 ${pageData.siteAccessInfo.name}
                             </span>
+                            <span style="width: 5px;"></span>
                             ${pageData.recordStatus}
                         </div>
                     `

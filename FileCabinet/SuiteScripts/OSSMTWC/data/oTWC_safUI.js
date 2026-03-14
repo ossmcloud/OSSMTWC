@@ -281,6 +281,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             } else {
                 fieldGroups.push(getSAFInfoPanels_Info(dataSource, userInfo));
                 fieldGroups.push(getSAFInfoPanels_WorkFlowInfo(dataSource, userInfo));
+                fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Images(dataSource, userInfo));
+                fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo));
+                
             }
             fieldGroups.push(getSAFInfoPanels_Existing(dataSource, userInfo));
             return fieldGroups;
@@ -379,7 +382,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSAFInfoPanels_WorkFlowInfo(dataSource, userInfo) {
             var fieldGroup = { id: 'site-access-workflow', title: 'Workflow info', collapsed: false, controls: [] };
 
-            var workFlowInfo = { id: 'site-access-logs', collapsed: false, fields: [] };
+            var workFlowInfo = { id: 'site-access-workflow-info', collapsed: false, fields: [] };
             fieldGroup.controls.push(workFlowInfo);
 
             workFlowInfo.fields.push({ id: twcSaf.Fields.STATUS_COMMENTS, width: '100%', rows: 3, label: 'Status Comments', lineBreak: true })
@@ -392,24 +395,25 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
 
+         
 
-            workFlowInfo.fields.push({
-                id: `${twcSafLog.Type}`, label: 'SAF Logs',
-                fields: {
-                    [twcSafLog.Fields.CREATED]: 'Date/Time',
-                    [twcSafLog.Fields.PROFILE]: 'Profile',
-                    [twcSafLog.Fields.LOG_TYPE]: 'Log Type',
-                    [twcSafLog.Fields.MESSAGE]: 'Message',
-                    [twcSafLog.Fields.ADDITIONAL_INFO]: 'Info',
-
-                },
-                where: { [twcSafLog.Fields.SAF]: dataSource.id },
-                orderBy: { created: 'desc' },
-                FieldsInfo: twcSafLog.FieldsInfo,
-            });
-
+            //var workFlowImagesInfo = { id: 'site-access-images', title: 'Completion Photos', collapsed: false, fields: [] };
+            //fieldGroup.controls.push(workFlowLogsInfo);
             // @@TODO: SAF: show photos
-            workFlowInfo.fields.push({
+            
+            // @@TODO: SAF: show documents
+
+
+            configUIFields.formatPanelFields(dataSource, fieldGroup);
+
+            return fieldGroup;
+        }
+
+        function getSAFInfoPanels_WorkFlowInfo_Images(dataSource, userInfo) {
+            var fieldGroup = { id: 'site-access-workflow-images', title: 'Completion Photos', collapsed: false, controls: [] };
+            var workFlowLogsInfo = { id: 'site-access-logs', collapsed: false, fields: [] };
+            fieldGroup.controls.push(workFlowLogsInfo);
+            workFlowLogsInfo.fields.push({
                 id: `${twcFile.Type}`, label: 'Completion Photos',
                 fields: {
                     [twcFile.Fields.CREATED]: 'Uploaded Date',
@@ -423,10 +427,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 },
                 dataSource: twcUtils.getSafImages(dataSource),
                 FieldsInfo: twcSafLog.FieldsInfo,
-
+                showToolbar: false,
             });
-
-            // @@TODO: SAF: show documents
 
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
@@ -434,7 +436,30 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroup;
         }
 
+        function getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo) {
+            var fieldGroup = { id: 'site-access-workflow-logs', title: 'SAF Logs', collapsed: false, controls: [] };
+            var workFlowLogsInfo = { id: 'site-access-logs',  collapsed: false, fields: [] };
+            fieldGroup.controls.push(workFlowLogsInfo);
+            workFlowLogsInfo.fields.push({
+                id: `${twcSafLog.Type}`,
+                fields: {
+                    [twcSafLog.Fields.CREATED]: 'Date/Time',
+                    [twcSafLog.Fields.PROFILE]: 'Profile',
+                    [twcSafLog.Fields.LOG_TYPE]: 'Log Type',
+                    [twcSafLog.Fields.MESSAGE]: 'Message',
+                    [twcSafLog.Fields.ADDITIONAL_INFO]: 'Info',
 
+                },
+                where: { [twcSafLog.Fields.SAF]: dataSource.id },
+                orderBy: { created: 'desc' },
+                showToolbar: false,
+                FieldsInfo: twcSafLog.FieldsInfo,
+            });
+
+            configUIFields.formatPanelFields(dataSource, fieldGroup);
+
+            return fieldGroup;
+        }
 
 
 

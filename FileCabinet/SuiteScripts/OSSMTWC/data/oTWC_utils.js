@@ -371,9 +371,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } else if (type == 'contractor') {
                 fileTypeFilter = `AND (t.custrecord_twc_file_type_hs = 'T' OR t.custrecord_twc_file_type_method = 'T')`;
             }
-            
-            var files = [];
-            coreSQL.each(`
+
+            var sql = `
                 select  ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'dd/MM/yyyy HH:mi') as created, f.name, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name,
                         ${twcFile.Fields.DESCRIPTION}
                 from    ${twcFile.Type} f
@@ -382,7 +381,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 and     ${twcFile.Fields.RECORD_ID} = ${options.id}
                 ${fileTypeFilter}
                 order by f.name
-            `, f => {
+            `
+            
+            var files = [];
+            coreSQL.each(sql, f => {
                 f.preview_link = `<div style="text-align: center;"><span class="twc-clickable saf-image-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
                 files.push(f)
             })

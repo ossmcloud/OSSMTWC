@@ -17,7 +17,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 pageData.siteRequestInfo = twcSiteRequestUtils.getSiteRequestInfo(pageData);
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteRequestInfo.siteId || context.request.parameters.siteId);
 
-                pageData.recordStatus = twcSrf.getSrfStatusHtml(pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS]);
+                pageData.recordStatus =`<div class="twc-div-span-table">${twcSrf.getSrfStatusHtml(pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS])}</div>`;
 
                 // @@NOTES: if the SRF is submitted we still let users with full access to edit it but only if we are a Towercom employee 
                 var canSubmit = pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued;

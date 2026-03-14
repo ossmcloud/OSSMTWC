@@ -101,7 +101,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         columns: columns,
                         dataSource: field.dataSource || dataObj.select({ fields: field.fields, where: field.where, orderBy: field.orderBy, useNames: true }),
                         dataSourceType: field.recordType,
-                        showToolbar: true,
+                        showToolbar: field.showToolbar === undefined ? true : field.showToolbar,
                         showEditDelete: true,
                         readOnly: field.readOnly,
                         styles: field.styles,
