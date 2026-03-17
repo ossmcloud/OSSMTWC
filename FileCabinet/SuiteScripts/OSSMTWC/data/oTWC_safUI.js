@@ -422,7 +422,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getSAFInfoPanels_WorkFlowInfo(dataSource, userInfo) {
             var fieldGroup = { id: 'site-access-workflow', title: 'Workflow info', collapsed: false, controls: [] };
-
             var workFlowInfo = { id: 'site-access-workflow-info', collapsed: false, fields: [] };
             fieldGroup.controls.push(workFlowInfo);
 
@@ -433,16 +432,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             workFlowInfo.fields.push({ id: twcSaf.Fields.COMPLETION_PHOTOS_RECEIVED, label: 'Photos Received', lineBreak: true })
             workFlowInfo.fields.push({ id: twcSaf.Fields.REVIEW_COMMENT, width: '100%', rows: 5, label: 'Review Comment', lineBreak: true })
 
-            //var workFlowImagesInfo = { id: 'site-access-images', title: 'Completion Photos', collapsed: false, fields: [] };
-            //fieldGroup.controls.push(workFlowLogsInfo);
-            // @@TODO: SAF: show photos
-
-            // @@TODO: SAF: show documents
-
-
-
             configUIFields.formatPanelFields(dataSource, fieldGroup);
-
             return fieldGroup;
         }
 

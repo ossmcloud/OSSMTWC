@@ -209,7 +209,6 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 }
             }
 
-            // @@TODO: SAF: validations
             var validationErrors = [];
             if (earliestDate == '2099-31-12') { validationErrors.push('Specify at least one time block'); }
             if (blockCount > options.accessRequirements.timeBlocksRequired) { validationErrors.push(`Too many time-blocks allocated (${blockCount}), max allowed: ${options.accessRequirements.timeBlocksRequired}`); }
@@ -269,12 +268,10 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             // attachments
             if (payload.documents) {
-                // @@TODO: SAF: create TWC File record here
                 var docIds = [];
                 for (var d in payload.documents) { if (payload.documents[d]) { docIds.push(d.replace('file_toggle_', '')); } }
 
                 try {
-
                     var sql = `
                         select  f.id, ft.custrecord_twc_file_type_hs as health_safety, ft.custrecord_twc_file_type_method as method_stat
                         from    customrecord_twc_file f
@@ -377,18 +374,10 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
                 saf.logInfo(logMsg, info);
 
-                // if (options.status == twcSaf.Status.Cancelled) {
-                //     coreSQL.each('select id from ')
-                // }
-
-
             } catch (error) {
-
-                //saf.logEx('Error while changing status/comments', error);
+                saf.logEx('Error while changing status/comments', error);
                 throw error;
-
             }
-
         }
 
         return {
