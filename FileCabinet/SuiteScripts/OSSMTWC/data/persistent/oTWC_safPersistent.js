@@ -35,9 +35,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             REVIEW_COMMENT: 'custrecord_twc_saf_rev_cmt',
             ACCOMMODATION: 'custrecord_twc_saf_accommodation',
             STRUCTURE: 'custrecord_twc_saf_strcture',
+            HEALTH__AND__SAFETY: 'custrecord_twc_saf_health_safety',
+            METHOD_STATEMENT: 'custrecord_twc_saf_method_statement',
             SAF_COMPLETION_PHOTOS_DELETE: 'custrecord_twc_saf_comp_photo',
-            HEALTH__AND__SAFETY_DELETE: 'custrecord_twc_saf_health_safety',
-            METHOD_STATEMENT_DELETE: 'custrecord_twc_saf_method_statement',
             CREW__VISITORS_DELETE: 'custrecord_twc_saf_crew_visitors',
             ASSOCIATED_SRFS_DELETE: 'custrecord_twc_saf_associated_srfs',
             CREATED: 'created',
@@ -75,9 +75,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             REVIEW_COMMENT: { name: 'custrecord_twc_saf_rev_cmt', type: 'clobtext', alias: 'reviewComment', display: 'normal', mandatory: false },
             ACCOMMODATION: { name: 'custrecord_twc_saf_accommodation', type: 'select', alias: 'accommodation', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
             STRUCTURE: { name: 'custrecord_twc_saf_strcture', type: 'select', alias: 'structure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
+            HEALTH__AND__SAFETY: { name: 'custrecord_twc_saf_health_safety', type: 'multiselect', alias: 'health_and_Safety', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
+            METHOD_STATEMENT: { name: 'custrecord_twc_saf_method_statement', type: 'multiselect', alias: 'methodStatement', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
             SAF_COMPLETION_PHOTOS_DELETE: { name: 'custrecord_twc_saf_comp_photo', type: 'document', alias: 'sAFCompletionPhotosDELETE', display: 'normal', mandatory: false },
-            HEALTH__AND__SAFETY_DELETE: { name: 'custrecord_twc_saf_health_safety', type: 'document', alias: 'health_and_SafetyDELETE', display: 'normal', mandatory: false },
-            METHOD_STATEMENT_DELETE: { name: 'custrecord_twc_saf_method_statement', type: 'document', alias: 'methodStatementDELETE', display: 'normal', mandatory: false },
             CREW__VISITORS_DELETE: { name: 'custrecord_twc_saf_crew_visitors', type: 'select', alias: 'crewVisitorsDELETE', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             ASSOCIATED_SRFS_DELETE: { name: 'custrecord_twc_saf_associated_srfs', type: 'select', alias: 'associatedSRFsDELETE', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
@@ -276,22 +276,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get structureName() { return this.getText(_recordFields.STRUCTURE); }
             
+            get health_and_Safety() {
+                return this.get(_recordFields.HEALTH__AND__SAFETY);
+            } set health_and_Safety(value) {
+                this.set(_recordFields.HEALTH__AND__SAFETY, value)
+            }
+            get health_and_SafetyName() { return this.getText(_recordFields.HEALTH__AND__SAFETY); }
+            
+            get methodStatement() {
+                return this.get(_recordFields.METHOD_STATEMENT);
+            } set methodStatement(value) {
+                this.set(_recordFields.METHOD_STATEMENT, value)
+            }
+            get methodStatementName() { return this.getText(_recordFields.METHOD_STATEMENT); }
+            
             get sAFCompletionPhotosDELETE() {
                 return this.get(_recordFields.SAF_COMPLETION_PHOTOS_DELETE);
             } set sAFCompletionPhotosDELETE(value) {
                 this.set(_recordFields.SAF_COMPLETION_PHOTOS_DELETE, value)
-            }
-            
-            get health_and_SafetyDELETE() {
-                return this.get(_recordFields.HEALTH__AND__SAFETY_DELETE);
-            } set health_and_SafetyDELETE(value) {
-                this.set(_recordFields.HEALTH__AND__SAFETY_DELETE, value)
-            }
-            
-            get methodStatementDELETE() {
-                return this.get(_recordFields.METHOD_STATEMENT_DELETE);
-            } set methodStatementDELETE(value) {
-                this.set(_recordFields.METHOD_STATEMENT_DELETE, value)
             }
             
             get crewVisitorsDELETE() {

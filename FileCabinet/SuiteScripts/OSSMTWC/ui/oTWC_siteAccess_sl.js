@@ -14,17 +14,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var html = '';
             if (context.request.parameters.siteId || context.request.parameters.recId) {
-                pageData.siteAccessInfo = twcSiteAccessUtils.getSiteAccessInfo(pageData);
+                pageData.siteAccessInfo = twcSiteAccessUtils.getSiteAccessInfo(pageData, context.request.parameters.reUse == 'T');
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteAccessInfo.siteId || context.request.parameters.siteId);
                 pageData.timeBlocks = twcUtils.getSafTimeBlocks();
                 pageData.siteTimeBlocks = twcSiteAccessUtils.getAllSafTimeBlocks(pageData.siteAccessInfo);
                 pageData.recordStatus = `<div class="twc-div-span-table">${twcSaf.getSafStatusHtml(pageData.siteAccessInfo[twcSaf.Fields.STATUS])}</div>`;
                 if (context.request.parameters.recId) {
-                    s.form.f.title += ` - ${pageData.siteAccessInfo.name}`;
+                    var safCode = pageData.siteAccessInfo.name;
+                    if (context.request.parameters.reUse == 'T') { safCode = 'REUSE: ' + safCode; }
+                    s.form.f.title += ` - ${safCode}`;
                     pageData.recordStatus = `
                         <div class="twc-div-span-table">
                             <span class="twc-record-status" style="border: 1px solid var(--grid-color); padding: 0px 34px; font-size: 20px; vertical-align: middle; background-color: var(--accent-bkgd-color); color: var(--accent-fore-color)">
-                                ${pageData.siteAccessInfo.name}
+                                ${safCode}
                             </span>
                             <span style="width: 5px;"></span>
                             ${pageData.recordStatus}
@@ -34,6 +36,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@NOTE: if we have no recId is because we have a new SAF, we have a submit button at the bottom of the page for it, we use the forceViewOnly to hide the Save/Cancel buttons
                 var canEdit = true; // @@TODO: SAF: this depends on the user logged in ???
                 pageData.forceViewOnly = canEdit ? context.request.parameters.recId === undefined : true;
+                if (pageData.editMode) {
+                    pageData.forceViewOnly = true;
+                }
 
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteAccess');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
@@ -49,11 +54,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     var actions = '';
 
-                    if (!pageData.editMode) {
+                    if (pageData.editMode) {
+                        actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel', id: 'cancel-button' })
+                    } else {
                         var canChangeStatus = pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Pending || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Approved || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Rejected || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Completed || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Cancelled;
                         var canCompleteWork = pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.AwaitingPhotos
                         if (canChangeStatus) { actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Change Status / Comment', id: 'change-status-button' }); }
                         if (canCompleteWork) { actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Complete Work', id: 'complete-work-button' }); }
+                        actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Re Use', id: 're-use-button' });
                         // if (canEdit) { actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Edit', id: 'edit-saf-button' }); }
                     }
 
@@ -74,6 +82,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         suiteLet.post = (context, s) => {
 
             if (context.request.parameters.action == 'get-access-requirements') {
+                //throw new Error(context.request.body)
                 var payload = JSON.parse(context.request.body);
                 return twcSiteAccessUtils.getAccessRequirements(payload);
 

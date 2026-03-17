@@ -31,6 +31,14 @@ h4.twc {
     color: var(--main-color) !important;
 }
 
+ul.twc {
+    padding: 3px;
+}
+ul.twc>li {
+    margin-left: 30px;
+    list-style: disc;
+}
+
 div.twc_page {
     padding: 3px;
     width: calc(100vw - 40px);

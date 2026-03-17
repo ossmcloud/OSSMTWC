@@ -67,10 +67,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 var defaultWidth = this.#options.small ? '35px' : '60px';
                 if (this.#options.style?.width || this.#options.width) { defaultWidth = this.#options.style?.width || this.#options.width; }
 
-                var disabled = this.#options.disabled ? 'disabled' : '';
-                var readOnly = this.#options.readOnly ? 'readonly' : '';
+                // var disabled = this.#options.disabled ? 'disabled' : '';
+                // var readOnly = this.#options.readOnly ? 'readonly' : '';
 
-                var marginLeft = parseInt(defaultWidth.replace('px', '')) - 30;
+                var marginLeft = parseInt(defaultWidth.replace('px', '')) - (this.#options.value ? (this.#options.small ? 20 : 32) : 30);
                 var checked = this.#options.value ? ` twc_toggle_inner_selected" style="margin-left: ${marginLeft}px;"` : '"';
                 var checkedOuter = this.#options.value ? ' twc_toggle_outer_selected' : '';
                 var small = this.#options.small ? ' twc_toggle_inner_small' : '';

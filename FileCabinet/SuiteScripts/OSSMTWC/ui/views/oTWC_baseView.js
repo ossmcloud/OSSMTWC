@@ -269,10 +269,14 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                 return res;
             }
 
-            async previewFile(file, getUrl) {
+            async previewFile(file, e) {
+                var icon = jQuery(e.currentTarget).html();
+                jQuery(e.currentTarget).html(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 16)}</span>`);
+
                 var url = core.url.script('otwc_microsvc_sl', { action: 'view-file' });
-                var res = await https.promise.post({ url: url, body: { file: file, getUrl: getUrl } });
-                if (getUrl) {
+                var res = await https.promise.post({ url: url, body: { file: file, getUrl: e.ctrlKey } });
+                if (e.ctrlKey) {
+                    jQuery(e.currentTarget).html(icon);
                     window.open(res.url);
                     return;
                 }
@@ -282,6 +286,8 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                     dataType = `data:image/${res.type.toLowerCase().replace('image', '')}`;
                     html = `<img style="width: 100%; border: 1px solid var(--grid-color);" src="${dataType};base64,${res.fileContent}" />`;
                 }
+
+                jQuery(e.currentTarget).html(icon);
               
                 dialog.message({
                     title: res.name,

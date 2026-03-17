@@ -86,19 +86,30 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 from    customrecord_twc_saf_tm_blk b
                 join    customrecord_twc_saf saf on saf.id = b.custrecord_twc_saf_tm_blk_saf
                 where   saf.custrecord_twc_saf_site = ${options?.siteId || 0}
+                and     saf.custrecord_twc_saf_status not in (${twcSaf.Status.Cancelled})
                 order by b.custrecord_twc_saf_tm_blk_date desc
             `, tb => {
+
+                var safId = tb.saf_id; var safCode = tb.saf_code;
+                if (!options.reUse) {
+                    if (safId == options.id) {
+                        safId = 't'
+                        safCode = 'This';
+                    }
+                }
+
                 if (!timeBlocks[tb.block_date]) { timeBlocks[tb.block_date] = { blocksCount: 0 }; }
-                if (!timeBlocks[tb.block_date][tb.saf_id]) {
-                    timeBlocks[tb.block_date][tb.saf_id] = {
+                if (!timeBlocks[tb.block_date][safId]) {
+                    timeBlocks[tb.block_date][safId] = {
                         site: { id: tb.site_id, name: tb.site_name, },
-                        saf: { id: tb.saf_id, code: tb.saf_code },
+                        saf: { id: tb.saf_id, code: safCode },
                         blocks: []
                     }
                 }
-                timeBlocks[tb.block_date][tb.saf_id].blocks.push({
+                timeBlocks[tb.block_date][safId].blocks.push({
                     id: tb.id,
-                    block: { id: tb.block_id, name: tb.block_name, },
+                    date: tb.block_date,
+                    block: { id: tb.block_id, name: tb.block_name },
                 })
                 timeBlocks[tb.block_date].blocksCount++;
             })
@@ -188,13 +199,42 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             var payload = options.saf;
 
-            // @@TODO: SAF: validations
-
-            var earliestDate = '2099-31-12'; var latestDate = '1900-01-01';
+            var earliestDate = '2099-31-12'; var latestDate = '1900-01-01'; var blockCount = 0;
             for (var d in options.accessRequirements.timeBlocks) {
-                if (d < earliestDate) { earliestDate = d; }
-                if (d > latestDate) { latestDate = d; }
+                for (var saf in options.accessRequirements.timeBlocks[d]) {
+                    if (saf != 't') { continue; }
+                    blockCount += options.accessRequirements.timeBlocks[d]['t'].blocks.length;
+                    if (d < earliestDate) { earliestDate = d; }
+                    if (d > latestDate) { latestDate = d; }
+                }
             }
+
+            // @@TODO: SAF: validations
+            var validationErrors = [];
+            if (earliestDate == '2099-31-12') { validationErrors.push('Specify at least one time block'); }
+            if (blockCount > options.accessRequirements.timeBlocksRequired) { validationErrors.push(`Too many time-blocks allocated (${blockCount}), max allowed: ${options.accessRequirements.timeBlocksRequired}`); }
+            if (!payload['saf-customer']) { validationErrors.push(`Specify a customer`); }
+            if (!payload['saf-vendor']) { validationErrors.push(`Specify a primary contractor`); }
+            if (!payload['saf-work-summary']) { validationErrors.push(`Specify a summary of work comment`); }
+            if (!payload['saf-picw-staff']) { validationErrors.push(`Specify a PICW`); }
+            if (payload['saf-mast-access'] == 'T' && !payload['saf-structure']) { validationErrors.push(`Specify a structure`); }
+            if (payload['saf-building-access'] == 'T' && !payload['saf-accommodation']) { validationErrors.push(`Specify an accommodation`); }
+
+            core.array.each(options.accessRequirements.conditions, cond => {
+                // @@TODO: SAF: validations: make sure all conditions are met
+            })
+
+
+            if (validationErrors.length > 0) {
+                var errorHtml = 'The SAF cannot be saved, please:<ul class="twc">';
+                core.array.each(validationErrors, e => {
+                    errorHtml += `<li>${e}</li>`;
+                })
+                errorHtml += '</ul>';
+                throw new Error(errorHtml);
+            }
+
+
 
             var earliestBlock = 99;
             core.array.each(options.accessRequirements.timeBlocks[earliestDate]['t'].blocks, b => {
@@ -207,10 +247,10 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             })
 
             // main SAF record
-            var saf = twcSaf.get();
+            var saf = twcSaf.get(payload.reUse ? null : payload.id);
             saf.site = payload.siteId;
             saf.r_type = payload['saf-type'];
-            saf.status = twcSaf.Status.Pending;
+            saf.status = options.accessRequirements.autoApprove ? twcSaf.Status.Approved : twcSaf.Status.Pending;
             saf.mastAccess = payload['saf-mast-access'] == 'T';
             saf.tLBuildingAccess = payload['saf-building-access'] == 'T';
             saf.craneCherrypicker = payload['saf-crane-access'] == 'T';
@@ -226,15 +266,53 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             saf.startTimeBlock = new Date(`${earliestDate} ${twcUtils.getTimeBlockTimeRange(earliestBlock).start}`);
             saf.endTimeBlock = new Date(`${latestDate} ${twcUtils.getTimeBlockTimeRange(latestBlock).end}`);
             saf.conditionsofAccess = b64.decode(options.conditionsOfAccessHtml);
-            var safId = saf.save();
 
-            saf.logInfo('SAF Created');
+            // attachments
+            if (payload.documents) {
+                // @@TODO: SAF: create TWC File record here
+                var docIds = [];
+                for (var d in payload.documents) { if (payload.documents[d]) { docIds.push(d.replace('file_toggle_', '')); } }
+
+                try {
+
+                    var sql = `
+                        select  f.id, ft.custrecord_twc_file_type_hs as health_safety, ft.custrecord_twc_file_type_method as method_stat
+                        from    customrecord_twc_file f
+                        join    customrecord_twc_file_type ft on ft.id = f.custrecord_twc_file_type
+                        where   f.id in (${docIds.join(',')})
+                    `;
+
+                    var health_and_Safety = [];
+                    var methodStatement = [];
+                    coreSQL.each(sql, f => {
+                        if (f.health_safety == 'T') { health_and_Safety.push(f.id); }
+                        if (f.method_stat == 'T') { methodStatement.push(f.id); }
+                    });
+                    saf.health_and_Safety = health_and_Safety;
+                    saf.methodStatement = methodStatement;
+
+                } catch (error) {
+                    saf.logEx('Error while attaching files', error);
+                }
+            }
+
+            var safId = saf.save();
+            if (payload.id) {
+                if (payload.reUse) {
+                    saf.logInfo('SAF Reused from ' + recu.lookUp(twcSaf.Type, payload.id, 'name'));
+                } else {
+                    saf.logInfo('SAF Edited');
+                }
+            } else {
+                saf.logInfo('SAF Created');
+            }
 
             // time blocks
             for (var d in options.accessRequirements.timeBlocks) {
+                if (!options.accessRequirements.timeBlocks[d]['t']) { continue; }
                 core.array.each(options.accessRequirements.timeBlocks[d]['t'].blocks, b => {
                     try {
-                        var tb = twcSafTimeBlock.get();
+                        var tb = twcSafTimeBlock.get(b.id == 'new' ? null : b.id);
                         tb.sAF = safId;
                         tb.blockDate = (new Date(d)).addHours(12);
                         tb.block = b.block.id;
@@ -250,7 +328,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             if (payload.crews) {
                 core.array.each(payload.crews, c => {
                     try {
-                        var crew = twcSafCrew.get();
+                        var crew = twcSafCrew.get(payload.reUse ? null : c.id);
                         crew.sAF = safId;
                         crew.member = c['saf-crew-member'];
                         crew.attendAs = c['saf-crew-attend-as'];
@@ -261,25 +339,6 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 })
             }
 
-            // attachments
-            if (payload.documents) {
-                try {
-                    // @@TODO: SAF: create TWC File record here
-                    var docIds = [];
-                    for (var d in payload.documents) {
-                        if (payload.documents[d]) { docIds.push(d.replace('file_toggle_', '')); }
-                    }
-
-                    coreSQL.each(`select custrecord_twc_file_doc as file_id from customrecord_twc_file where id in (${docIds.join(',')})`, f => {
-                        record.attach({
-                            record: { type: 'file', id: f.file_id },
-                            to: { type: 'customrecord_twc_saf', id: safId }
-                        });
-                    });
-                } catch (error) {
-                    saf.logEx('Error while attaching files', error);
-                }
-            }
 
             // @@TODO: SAF: if any error we should let the user know
 
@@ -297,7 +356,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 var commentCHanged = saf.statusComments != options.comment;
                 if (!statusChanged && !commentCHanged) { return; }
 
-                
+
                 var logMsg = ''; var info = '';
                 if (statusChanged) {
                     logMsg = 'status';
@@ -318,26 +377,32 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
                 saf.logInfo(logMsg, info);
 
-                
+                // if (options.status == twcSaf.Status.Cancelled) {
+                //     coreSQL.each('select id from ')
+                // }
+
+
             } catch (error) {
 
                 //saf.logEx('Error while changing status/comments', error);
                 throw error;
-                
+
             }
-            
+
         }
 
         return {
             getSAFInfoPanels: twcSafUI.getSAFInfoPanels,
 
-            getSiteAccessInfo: (pageData) => {
+            getSiteAccessInfo: (pageData, reUse) => {
                 var saf = {};
                 if (pageData.recId) {
                     // @@TODO: this is an existing record so load it
                     //saf = coreSQL.first(`select * from ${twcSaf.Type} where id = ${pageData.recId}`);
                     saf = twcSaf.select({ noAlias: true, returnFirst: true, where: { id: pageData.recId } })
                     saf.siteId = saf[twcSaf.Fields.SITE];
+                    if (reUse) { saf.reUse = reUse; }
+
 
                 } else {
                     // @@TODO: this is a new record for the given site id

@@ -364,6 +364,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSafImages(options) {
             return getSafFiles(options, 'image')
         }
+
         function getSafFiles(options, type) {
             var fileTypeFilter = '';
             if (type == 'image') {
@@ -382,15 +383,39 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 ${fileTypeFilter}
                 order by f.name
             `
-            
+
             var files = [];
             coreSQL.each(sql, f => {
-                f.preview_link = `<div style="text-align: center;"><span class="twc-clickable saf-image-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
+                f.preview_link = `<div style="text-align: center;"><span class="twc-clickable saf-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
                 files.push(f)
             })
             //throw new Error(JSON.stringify(files))
             return files;
         }
+
+        function getSafContractorFiles(options) {
+            var fileIds = options['custrecord_twc_saf_method_statement'];
+            if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
+            fileIds += options['custrecord_twc_saf_health_safety'];
+
+            var sql = `
+                select  ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'dd/MM/yyyy HH:mi') as created, f.name, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name,
+                        ${twcFile.Fields.DESCRIPTION}
+                from    ${twcFile.Type} f
+                join    customrecord_twc_file_type t on t.id = f.${twcFile.Fields.R_TYPE}
+                where   f.id in (${fileIds})
+                order by BUILTIN.DF(${twcFile.Fields.R_TYPE}), f.name
+            `
+
+            var files = [];
+            coreSQL.each(sql, f => {
+                f.preview_link = `<div style="text-align: center;"><span class="twc-clickable saf-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
+                files.push(f)
+            })
+            //throw new Error(JSON.stringify(files))
+            return files;
+        }
+
 
         function getCompanies(options) {
             //
@@ -591,7 +616,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `, saf => {
                 siteSafs.push({
                     value: saf.value,
-                    text: `<b>${saf.name}</b> [${saf.date}] <i>${saf.customer}</i> @ ${saf.site}`
+                    text: `${saf.name} [${saf.date}] ${saf.customer} @ ${saf.site}`,
+                    text_render: `<b>${saf.name}</b> [${saf.date}] <i>${saf.customer}</i> @ ${saf.site}`,
                 })
             })
             return siteSafs;
@@ -659,7 +685,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getFiles(options) {
             var sql = ` 
-                select  f.id, f.name, BUILTIN.DF(f.custrecord_twc_file_type) as type, f.custrecord_twc_file_recid as file_dsecr, f.custrecord_twc_file_doc as   ,
+                select  f.id, f.name, BUILTIN.DF(f.custrecord_twc_file_type) as type, f.custrecord_twc_file_recid as file_dsecr, f.custrecord_twc_file_doc as file_id,
                         t.custrecord_twc_file_type_hs as is_hs, t.custrecord_twc_file_type_method as is_method
                 from    customrecord_twc_file f
                 left join    customrecord_twc_file_type t on t.id = f.custrecord_twc_file_type
@@ -728,6 +754,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafTypes: getSafTypes,
             getSafCrew: getSafCrew,
             getSafImages: getSafImages,
+            getSafContractorFiles: getSafContractorFiles,
             getProfiles: getProfiles,
             getCompanies: getCompanies,
             getCustomers: getCustomers,
