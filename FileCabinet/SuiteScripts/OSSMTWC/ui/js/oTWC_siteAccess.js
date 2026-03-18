@@ -80,13 +80,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 }
 
-                // if (col.id == twcSite.Fields.SITE_NAME || col.id == twcSite.Fields.SITE_ID) {
-                //     col.addCount = col.id == twcSite.Fields.SITE_NAME;
-                //     col.link = {
-                //         url: core.url.script('otwc_siteinfo_sl') + '&recId=${id}',
-                //         valueField: 'id'
-                //     }
-                // }
                 if (col.id == twcSite.Fields.LATITUDE || col.id == twcSite.Fields.LONGITUDE) { col.styles = { 'text-align': 'right' }; }
             }
 
@@ -139,6 +132,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
                 this.ui.getControl('saf-type').on('change', e => {
                     this.ui.find('#site-access-step-2').css('display', 'block');
+
                     this.refreshAccessRequirements();
                 });
                 this.ui.getControl('saf-reuse').on('change', e => {
@@ -180,19 +174,37 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         })
                         .catch(err => { dialog.error(err); });
                 });
+                this.ui.getControl('saf-srf')?.on('change', e => {
+                    
+                })
 
                 core.array.each(this.ui.controls, c => {
                     if (c.type !== 'table') { return; }
-                    c.onToolbarClick = e => {
-                        if (e.action == 'add-new') {
-                            this.manageVisitor(null, e.table);
-                        } else if (e.action == 'edit') {
-                            this.manageVisitor(e.rowData, e.table);
-                        } else if (e.action == 'delete') {
-                            dialog.confirm('Are you sure you wish to delete this record', () => {
-                                e.rowData.delete = true;
+                    if (c.id == 'saf-crew-table') {
+                        c.onToolbarClick = e => {
+                            if (e.action == 'add-new') {
+                                this.manageVisitor(null, e.table);
+                            } else if (e.action == 'edit') {
                                 this.manageVisitor(e.rowData, e.table);
-                            })
+                            } else if (e.action == 'delete') {
+                                dialog.confirm('Are you sure you wish to delete this record', () => {
+                                    e.rowData.delete = true;
+                                    this.manageVisitor(e.rowData, e.table);
+                                })
+                            }
+                        }
+                    } else if (c.id == 'saf-eq-action-table') {
+                        c.onToolbarClick = e => {
+                            if (e.action == 'add-new') {
+                                this.manageEqAction(null, e.table);
+                            } else if (e.action == 'edit') {
+                                this.manageEqAction(e.rowData, e.table);
+                            } else if (e.action == 'delete') {
+                                dialog.confirm('Are you sure you wish to delete this record', () => {
+                                    e.rowData.delete = true;
+                                    this.manageEqAction(e.rowData, e.table);
+                                })
+                            }
                         }
                     }
                 })
@@ -291,6 +303,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (this.ui.getControl('saf-crane-access') && this.ui.getControl('saf-crane-access').value == '') { showStep3 = false; }
                 if (this.ui.getControl('saf-structure')) { this.ui.getControl('saf-structure').hide = this.ui.getControl('saf-mast-access')?.value != 'T' }
                 if (this.ui.getControl('saf-accommodation')) { this.ui.getControl('saf-accommodation').hide = this.ui.getControl('saf-building-access')?.value != 'T' }
+
+                var requiresSrf = this.ui.getControl('saf-type').valueObj?.requires_srf == 'T';
+                this.ui.getControl('saf-srf').hide = !requiresSrf;
+                this.ui.getControl('saf-srf-equip').hide = !requiresSrf;
+                this.ui.getControl('saf-photo-delay').hide = !requiresSrf;
+                this.ui.find('#site-access-step-3c').css('display', requiresSrf ? 'block' : 'none');
 
                 this.ui.find('#site-access-step-3').css('display', showStep3 ? 'block' : 'none');
                 this.ui.find('#site-access-step-4').css('display', showStep3 ? 'block' : 'none');
@@ -425,7 +443,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             }
 
-            refreshVendorDocuments(documents) {
+            refreshVendorDocuments(documents, what) {
 
                 var safFiles = this.data.siteAccessInfo[twcSaf.Fields.HEALTH__AND__SAFETY];
                 if (safFiles && this.data.siteAccessInfo[twcSaf.Fields.METHOD_STATEMENT]) { safFiles += ','; }
@@ -451,6 +469,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     })
                     html.append(docSection)
                 })
+
+                this.ui.find('#site-access-step-5').find('.twc-control-panel-fields').html(html)
+                
                 var ui = twcUI.init({}, html);
                 this.#vendorDocuments = ui;
 
@@ -464,8 +485,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     await this.#page.previewFile(fileId, e);
                 })
 
-
-                this.ui.find('#site-access-step-5').find('.twc-control-panel-fields').html(html)
+                // @@TODO: @@REVIEW: the 1st time I call the routine the events do not seem to be handled (in fact the DOM is refreshed but events do not work)
+                if (!what) { this.refreshVendorDocuments(documents, true) };
+                
             }
 
             manageVisitor(safCrew, table) {
@@ -528,8 +550,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
+            
+
+            manageEqAction(safActions, table) {
+                dialog.error('not implemented')
+            }
+
             deleteRecord(safRecord, table) {
-                var deleteRecordCollectionName = 'crews_deleted';
+                var deleteRecordCollectionName = table.id == 'saf-crew-table' ? 'crews_deleted' : 'actions_deleted';
                 if (safRecord.delete) {
                     if (safRecord.id) {
                         if (!this.data.siteAccessInfo[deleteRecordCollectionName]) { this.data.siteAccessInfo[deleteRecordCollectionName] = []; }
@@ -608,7 +636,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             initSafMode() {
-
                 this.ui.find('.saf-file').click(async e => {
                     var file = jQuery(e.currentTarget).data('file')
                     await this.previewFile(file, e)
@@ -619,16 +646,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 });
 
                 this.ui.getControl('change-status-button').on('click', e => {
-                    var allowedStatues = [];
-                    allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Pending, true));
-                    allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Approved, true));
-                    allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Rejected, true));
-                    allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Completed, true));
-
                     var formConfig = {
                         controls: [
-                            { type: twcUI.CTRL_TYPE.SELECT, id: 'status', dataSource: allowedStatues, value: this.data.siteAccessInfo[twcSaf.Fields.STATUS], lineBreak: true },
-                            { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', value: this.data.siteAccessInfo[twcSaf.Fields.STATUS_COMMENTS], width: '100%', rows: 7 },
+                            { type: twcUI.CTRL_TYPE.SELECT, id: 'status', dataSource: this.data.allowedStatues, value: this.data.siteAccessInfo[twcSaf.Fields.STATUS], lineBreak: true },
+                            { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', value: '', width: '100%', rows: 7 },
                         ]
                     }
                     var form = twcUI.init(formConfig);
@@ -639,9 +660,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         ok: () => {
                             try {
 
+                                
                                 this.wait();
                                 var payload = form.getValues();
                                 payload.saf = this.data.siteAccessInfo.id;
+
+                                if (form.getControl('status').valueObj.forceComment) {
+                                    if (!payload.comment) { throw new Error('Please, specify a comment'); }
+                                }
+
 
                                 this.post({ action: 'edit-saf-status' }, payload).then(resp => {
                                     if (resp.error) {
@@ -660,7 +687,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 return false;
 
                             } catch (error) {
-                                this.wait();
+                                this.waitClose();
                                 dialog.error(error);
                                 return false;
                             }

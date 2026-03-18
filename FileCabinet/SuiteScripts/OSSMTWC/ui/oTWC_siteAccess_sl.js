@@ -36,8 +36,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@NOTE: if we have no recId is because we have a new SAF, we have a submit button at the bottom of the page for it, we use the forceViewOnly to hide the Save/Cancel buttons
                 var canEdit = true; // @@TODO: SAF: this depends on the user logged in ???
                 pageData.forceViewOnly = canEdit ? context.request.parameters.recId === undefined : true;
-                if (pageData.editMode) {
-                    pageData.forceViewOnly = true;
+                if (pageData.editMode) { pageData.forceViewOnly = true; }
+                
+
+                // @@TODO: SAF: this depends on the logged in user
+                var canChangeStatus = pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Pending || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Approved || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Rejected || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Completed || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Cancelled;
+                if (canChangeStatus) {
+                    pageData.allowedStatues = [];
+                    pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Pending, true));
+                    pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Approved, true));
+                    pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Rejected, true));
+                    pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Complete, true));
+                    pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Cancelled, true));
+
                 }
 
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteAccess');
@@ -49,20 +60,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 if (context.request.parameters.recId === undefined) {
                     html = html.replaceAll('{CONDITION_OF_ACCESS}', `<b>Select SAF Setup & Access Requirements to begin</b>`);
+
                 } else {
                     html = html.replaceAll('{CONDITION_OF_ACCESS}', pageData.siteAccessInfo[twcSaf.Fields.CONDITIONS_OF_ACCESS] || '');
 
                     var actions = '';
-
                     if (pageData.editMode) {
                         actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel', id: 'cancel-button' })
                     } else {
-                        var canChangeStatus = pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Pending || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Approved || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Rejected || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Completed || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Cancelled;
                         var canCompleteWork = pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.AwaitingPhotos
                         if (canChangeStatus) { actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Change Status / Comment', id: 'change-status-button' }); }
                         if (canCompleteWork) { actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Complete Work', id: 'complete-work-button' }); }
                         actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Re Use', id: 're-use-button' });
-                        // if (canEdit) { actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Edit', id: 'edit-saf-button' }); }
                     }
 
                     if (actions) { html = html.replaceAll('<div id="custom-actions"></div>', `<div id="custom-actions">${actions}</div>`); }

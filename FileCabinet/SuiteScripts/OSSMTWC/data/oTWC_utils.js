@@ -5,11 +5,39 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_profile.js', './oTWC_safCrew.js', './oTWC_file.js', './oTWC_icons.js'],
     (core, cored, coreSQL, twcProfile, twcSafCrew, twcFile, twcIcons) => {
 
+        const PROFILE_CERT_FIELD = {
+            SAFE_PASS: { field: 'custrecord_twc_prof_safe_pass_expiry', attendAs: 'SAFE_PASS' },
+            CLIMBER: { field: 'custrecord_twc_prof_climber_cert_sts', attendAs: 'CLIMBER' },
+            RESCUE: { field: 'custrecord_twc_prof_rescue_cert_sts', attendAs: 'RESCUE' },
+            ROOFTOP: { field: 'custrecord_twc_prof_rooftop_cert_sts', attendAs: 'ROOFTOP' },
+            ELECTRICAL: { field: 'custrecord_twc_prof_elec_cert_sts', attendAs: 'ELECTRICAL' },
+            RF: { field: 'custrecord_twc_prof_rf_cert_sts', attendAs: 'RF' },
+            DRONE: { field: 'custrecord_twc_prof_drone_cert_sts', attendAs: 'DRONE' }
+        }
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const NO_ACTIVE_EXPIRED = {
+            No: 1,
+            Active: 2,
+            Expired: 3
+        }
+
+        function getAttendAs(p) {
+            var attendAs = [];
+            if (p.valid_safe_pass == 'T') { attendAs.push({ value: 'SAFE_PASS', text: 'Visitor' }); }
+            if (p.valid_climb_cert == 'T') { attendAs.push({ value: 'CLIMBER', text: 'Climber Certified' }); }
+            if (p.valid_rescue_cert == 'T') { attendAs.push({ value: 'RESCUE', text: 'Rescue Certified' }); }
+            if (p.valid_rooftop_cert == 'T') { attendAs.push({ value: 'ROOFTOP', text: 'Rooftop Certified' }); }
+            if (p.valid_electrician_cert == 'T') { attendAs.push({ value: 'ELECTRICAL', text: 'Electrician Certified' }); }
+            if (p.valid_drone_cert == 'T') { attendAs.push({ value: 'DRONE', text: 'Drone Certified' }); }
+            return attendAs;
+        }
+
+
+
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SAF_TYPE = {
             SURVEY_DRONE: 5
         }
-
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const INFRA_TYPE = {
             Accommodation: 1,
@@ -18,12 +46,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Generator: 4
         }
 
-        // @@HARDCODED @@GO-LIVE :: these map to internal ids
-        const NO_ACTIVE_EXPIRED = {
-            No: 1,
-            Active: 2,
-            Expired: 3
-        }
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SRF_ITEM_STEP_TYPE = {
             TME: 1,
@@ -120,7 +142,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             for (var k in SAF_STATUS) {
                 if (SAF_STATUS[k] == safStatusNumber) {
                     if (asObject) {
-                        return { value: safStatusNumber, text: k }
+
+                        return { value: safStatusNumber, text: k, forceComment: safStatusNumber==SAF_STATUS.Rejected }
                     }
                     return k;
                 }
@@ -339,7 +362,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             var safTypes = [];
-            coreSQL.each(`select id as value, name as text from customrecord_twc_saf_type where isinactive='F' order by custrecord_twc_saf_type_sort`, t => {
+            coreSQL.each(`select id as value, name as text,	custrecord_twc_saf_type_require_srf as requires_srf from customrecord_twc_saf_type where isinactive='F' order by custrecord_twc_saf_type_sort`, t => {
                 if (allowedTypes) {
                     if (allowedTypes.indexOf(t.value) < 0) { return; }
                 }
@@ -542,13 +565,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sql = `
                 select  id as value, name as text, name || ' <span style="color: silver; font-style: italic;">[' || custrecord_twc_prof_position || ']</span>' as text_render,
                         custrecord_twc_prof_phone as phone, custrecord_twc_prof_email as email,
-                        (case when custrecord_twc_prof_safe_pass_expiry > CURRENT_DATE then 'T' else 'F' end) as valid_safe_pass,
-                        (case when custrecord_twc_prof_climber_cert_sts = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_climb_cert,
-                        (case when custrecord_twc_prof_rescue_cert_sts = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rescue_cert,
-                        (case when custrecord_twc_prof_rooftop_cert_sts = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rooftop_cert,
-                        (case when custrecord_twc_prof_elec_cert_sts = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_electrician_cert,
-                        (case when custrecord_twc_prof_rf_cert_sts = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rf_cert,
-                        (case when custrecord_twc_prof_drone_cert_sts = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_drone_cert,
+                        (case when ${PROFILE_CERT_FIELD.SAFE_PASS.field}  > CURRENT_DATE then 'T' else 'F' end) as valid_safe_pass,
+                        (case when ${PROFILE_CERT_FIELD.CLIMBER.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_climb_cert,
+                        (case when ${PROFILE_CERT_FIELD.RESCUE.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rescue_cert,
+                        (case when ${PROFILE_CERT_FIELD.ROOFTOP.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rooftop_cert,
+                        (case when ${PROFILE_CERT_FIELD.ELECTRICAL.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_electrician_cert,
+                        (case when ${PROFILE_CERT_FIELD.RF.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rf_cert,
+                        (case when ${PROFILE_CERT_FIELD.DRONE.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_drone_cert,
                 from    customrecord_twc_prof
                 where   custrecord_twc_prof_company = ${options.company}
                 and 	  custrecord_twc_prof_picw_acceptable='T'
@@ -567,13 +590,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var profiles = [];
             coreSQL.each(sql, p => {
-                var attendAs = [];
-                if (p.valid_safe_pass == 'T') { attendAs.push({ value: 'Visitor', text: 'Visitor' }); }
-                if (p.valid_climb_cert == 'T') { attendAs.push({ value: 'Climber Certified', text: 'Climber Certified' }); }
-                if (p.valid_rescue_cert == 'T') { attendAs.push({ value: 'Rescue Certified', text: 'Rescue Certified' }); }
-                if (p.valid_rooftop_cert == 'T') { attendAs.push({ value: 'Rooftop Certified', text: 'Rooftop Certified' }); }
-                if (p.valid_electrician_cert == 'T') { attendAs.push({ value: 'Electrician Certified', text: 'Electrician Certified' }); }
-                if (p.valid_drone_cert == 'T') { attendAs.push({ value: 'Drone Certified', text: 'Drone Certified' }); }
+                var attendAs = getAttendAs(p);
                 if (options.canAttend && attendAs.length == 0) { return; }
                 profiles.push({
                     value: p.value,
@@ -714,8 +731,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         return {
             ROOT_FILE_FOLDER: 'TWC Files',
-
             HEIGH_LIMIT_FOR_1_CLIMBER: 60,
+
+            Certs: PROFILE_CERT_FIELD,
+            NoActiveExpired: NO_ACTIVE_EXPIRED,
 
             InfraType: INFRA_TYPE,
 

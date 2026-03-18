@@ -88,7 +88,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             },
             logEx(saf, msg, error, profile) {
                 log(saf, LOG_TYPE.ERROR, `${msg}: ${error?.message || 'NO ERROR MESSAGE'}`, error?.stack, profile);
+            },
+
+            getStatusHtml(status) {
+                var backgroundColor = 'silver'; var color = 'white';
+
+                if (status == LOG_TYPE.WARNING) {
+                    color = 'white';
+                    backgroundColor = 'orange';
+                } else if (status == LOG_TYPE.ERROR) {
+                    color = 'white';
+                    backgroundColor = 'red';
+                } else if (status == LOG_TYPE.SYSTEM) {
+                    color = 'white';
+                    backgroundColor = 'magenta';
+                }
+
+                return `
+                    <span class="twc-record-status-row" style="color: ${color}; background-color: ${backgroundColor};" >
+                        ${status}
+                    </span>
+                `;   
             }
+
 
         }
     });

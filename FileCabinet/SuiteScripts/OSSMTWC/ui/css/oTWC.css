@@ -34,6 +34,7 @@ h4.twc {
 ul.twc {
     padding: 3px;
 }
+
 ul.twc>li {
     margin-left: 30px;
     list-style: disc;
@@ -2509,6 +2510,7 @@ div.twc_toggle_inner {
     cursor: pointer;
     margin-left: 3px;
 }
+
 div.twc_toggle_inner_small {
     width: 15px !important;
     height: 15px !important;
@@ -2558,18 +2560,28 @@ div.twc-control-panel-title {
     border-top-left-radius: 7px;
     border-top-right-radius: 7px;
     margin-bottom: 0px;
-    /* border-bottom: 1px solid var(--grid-color); */
+    border-bottom: 1px solid var(--grid-color);
 }
 
 span.twc-control-panel-expand {
     cursor: pointer;
 }
 
-div.twc-control-panel-fields {}
+div.twc-control-panel-fields {
+    padding: 0px 3px;
+
+}
+
+div.twc-control-panel-fields-border {
+    border-left: 1px solid var(--grid-color);
+    border-right: 1px solid var(--grid-color);
+    border-bottom: 1px solid var(--grid-color);
+}
 
 div.twc-control-panel-fields-table {
     display: table;
 }
+
 div.twc-control-panel-fields-table>div {
     display: table-cell;
     vertical-align: top;
@@ -2583,7 +2595,7 @@ div.twc-animate-height {
 
 span.twc-record-status {
     padding: 8px 7px 8px 7px;
-    
+
     border-radius: 7px;
     font-weight: bold;
 }
@@ -2603,6 +2615,7 @@ span.twc-record-status-row {
 div.twc-div-span-table {
     display: table;
 }
+
 div.twc-div-span-table>span {
     display: table-cell;
 }

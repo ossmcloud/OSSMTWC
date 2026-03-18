@@ -83,9 +83,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 ${whereClause} 
                 ${orderBy}
             `)
-            log.debug('sqlFields', sqlFields)
-            log.debug('sites', sites)
-
+            
 
             return {
                 siteFields: siteFields,

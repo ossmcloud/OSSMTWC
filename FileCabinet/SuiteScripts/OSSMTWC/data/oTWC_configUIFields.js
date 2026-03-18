@@ -69,14 +69,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 // @@NOTE: this means the field is a sub list
                 if (field.fields) {
-                    
+
                     var dataObj = getDataObject(field.recordType || field.id);
 
                     var columns = [];
                     for (var k in field.fields) {
-                        
+
                         var f = getDataFieldInfo(field, k);
-                        
+
                         var title = field.fields[k]; var link = undefined; var styles = undefined;
                         if (title.title) {
                             link = title.link || null;
@@ -111,6 +111,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             if (tbl.data.length > 0) {
                                 if (tbl.data[0][`${col.id}_name`] !== undefined) { return false; }
                             }
+
+                            if (field.onColumnInit) { return field.onColumnInit(tbl, col); }
                         }
                     }
 

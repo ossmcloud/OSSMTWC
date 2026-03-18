@@ -76,6 +76,11 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
             }
 
+            get valueObj() {
+                var val = this.#input.val();
+                return core.array.find(this.#options.dataSource, 'value', val);
+            }
+
             setDataSource(dataSource) {
                 if (this.#options.type != ctrlBase.CTRL_TYPE.SELECT) { return; }
                 this.#options.dataSource = dataSource;
@@ -160,7 +165,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
 
                 var html = `
-                    <div class="twc_ctrl" data-id="${this.#options.id}" data-type="${this.#options.type}" data-type="${this.#options.type}" data-value="${this.#options.value?.value || ''}" style="width: ${defaultWidth};">
+                    <div class="twc_ctrl" data-id="${this.#options.id}" data-type="${this.#options.type}" data-type="${this.#options.type}" data-value="${this.#options.value?.value || this.#options.value || ''}" style="width: ${defaultWidth};">
                         ${label}
                         <div class="twc_ctrl_table" style="border: 1px solid var(--grid-color); border-radius: 7px;">
                             <div>

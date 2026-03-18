@@ -122,21 +122,17 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var blocksRequired = coreSQL.first(`select custrecord_twc_saf_type_timeblocks as time_blocks from customrecord_twc_saf_type where id = ${options['saf-type']}`).time_blocks;
 
             var conditions = [];
-            var climberCount = 0; var rescueCount = 0; var roofTopVisitorCount = 0; var electricianCount = 0;
+            var climberCount = 0; var rescueCount = 0;
             if (options['saf-mast-access'] == 'T') {
                 climberCount = 1;
                 rescueCount = (infraInfo.height < twcUtils.HEIGH_LIMIT_FOR_1_CLIMBER) ? 2 : 3;
             }
-            if (climberCount > 0) { conditions.push({ quantity: climberCount, name: 'Climber' }) }
-            if (rescueCount > 0) { conditions.push({ quantity: rescueCount, name: 'Rescue Climber' }) }
-            if (options['saf-rooftop-access'] == 'T') {
-                //conditions.push({ quantity: 1, name: 'Rooftop Trained Visitor' })
-                conditions.push({ quantity: 'all', name: 'Rooftop Certified' })
-            }
-            if (options['saf-mast-access'] == 'T' || options['saf-rooftop-access'] == 'T') { conditions.push({ quantity: 'all', name: 'RF Certified' }) }
-            if (options['saf-electrical-access'] == 'T') { conditions.push({ quantity: 1, name: 'Electrician' }) }
-            if (options.safType == twcUtils.SafType.SURVEY_DRONE) { conditions.push({ quantity: 1, name: 'Drone Certified' }) }
-
+            if (climberCount > 0) { conditions.push({ quantity: climberCount, name: 'Climber', cert: twcUtils.Certs.CLIMBER }) }
+            if (rescueCount > 0) { conditions.push({ quantity: rescueCount, name: 'Rescue Climber', cert: twcUtils.Certs.RESCUE }) }
+            if (options['saf-rooftop-access'] == 'T') { conditions.push({ quantity: 'all', name: 'Rooftop Certified', cert: twcUtils.Certs.ROOFTOP }) }
+            if (options['saf-mast-access'] == 'T' || options['saf-rooftop-access'] == 'T') { conditions.push({ quantity: 'all', name: 'RF Certified', cert: twcUtils.Certs.RT }) }
+            if (options['saf-electrical-access'] == 'T') { conditions.push({ quantity: 1, name: 'Electrician', cert: twcUtils.Certs.ELECTRICAL }) }
+            if (options.safType == twcUtils.SafType.SURVEY_DRONE) { conditions.push({ quantity: 1, name: 'Drone Certified', cert: twcUtils.Certs.DRONE }) }
 
             var customer = options['saf-customer'];
             var vendor = options['saf-vendor'];
@@ -159,8 +155,11 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 if (autoApprove && options['saf-accommodation']) { if (!recu.lookUp('customrecord_twc_infra', options['saf-accommodation'], 'custrecord_twc_infra_saf_auto_apprv')) { autoApprove = false; } }
             }
 
+            var requiresSrf = recu.lookUp('customrecord_twc_saf_type', options.safType, 'custrecord_twc_saf_type_require_srf');
+
             return {
                 autoApprove: autoApprove,
+                requiresSrf: requiresSrf,
                 timeBlocksRequired: blocksRequired,
                 conditions: conditions,
 
@@ -218,10 +217,23 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             if (!payload['saf-picw-staff']) { validationErrors.push(`Specify a PICW`); }
             if (payload['saf-mast-access'] == 'T' && !payload['saf-structure']) { validationErrors.push(`Specify a structure`); }
             if (payload['saf-building-access'] == 'T' && !payload['saf-accommodation']) { validationErrors.push(`Specify an accommodation`); }
-
             core.array.each(options.accessRequirements.conditions, cond => {
-                // @@TODO: SAF: validations: make sure all conditions are met
+                var certCount = payload.crews.filter(c => { return c['saf-crew-attend-as'] == cond.cert.attendAs; }).length;
+                if (certCount < cond.quantity) {
+                    if (certCount == 0) {
+                        validationErrors.push(`${cond.quantity} ${cond.name} are required, there are none in the crew`);
+                    } else {
+                        validationErrors.push(`${cond.quantity} ${cond.name} are required, there ${certCount == 1 ? 'is' : 'are'} only ${certCount} in the crew`);
+                    }
+
+                }
             })
+
+            var requiresSrf = recu.lookUp('customrecord_twc_saf_type', payload['saf-type'], 'custrecord_twc_saf_type_require_srf');
+            if (requiresSrf) {
+                if (!payload['saf-srf']) { validationErrors.push(`Specify an S.R.F.`); }
+                if (payload.actions.length == 0) { validationErrors.push(`Specify at least one action`); }
+            }
 
 
             if (validationErrors.length > 0) {
@@ -232,7 +244,6 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 errorHtml += '</ul>';
                 throw new Error(errorHtml);
             }
-
 
 
             var earliestBlock = 99;
@@ -296,7 +307,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var safId = saf.save();
             if (payload.id) {
                 if (payload.reUse) {
-                    saf.logInfo('SAF Reused from ' + recu.lookUp(twcSaf.Type, payload.id, 'name'));
+                    saf.logInfo('SAF Reused from: ' + recu.lookUp(twcSaf.Type, payload.id, 'name'));
                 } else {
                     saf.logInfo('SAF Edited');
                 }
@@ -350,30 +361,31 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var saf = twcSaf.get(options.saf);
             try {
                 var statusChanged = saf.status != options.status;
-                var commentCHanged = saf.statusComments != options.comment;
+                var commentCHanged = options.comment ? saf.statusComments != options.comment : false;
                 if (!statusChanged && !commentCHanged) { return; }
 
 
                 var logMsg = ''; var info = '';
                 if (statusChanged) {
-                    logMsg = 'status';
+                    logMsg = 'status changed to: ' + twcSaf.getSafStatusName(options.status);
                     info = 'old status: ' + saf.statusName;
                 }
                 if (commentCHanged) {
-                    if (logMsg) { logMsg += ' and ' }
-                    if (info) { info += ' - ' }
-                    logMsg += 'comment';
-                    info = 'old comment: ' + saf.statusComments
+                    if (logMsg) { logMsg += ', ' }
+                    if (info) { info += ', ' }
+                    logMsg += 'comment changed';
+                    info += 'old comment: ' + saf.statusComments
                 }
 
-                logMsg += ' changed';
-
                 saf.status = options.status;
-                saf.statusComments = options.comment;
+                if (options.comment) { saf.statusComments = options.comment; }
                 saf.save();
 
-                saf.logInfo(logMsg, info);
-
+                if (statusChanged && options.status == twcSaf.Status.Rejected) {
+                    saf.logWarn(logMsg, info);
+                } else {
+                    saf.logInfo(logMsg, info);
+                }
             } catch (error) {
                 saf.logEx('Error while changing status/comments', error);
                 throw error;

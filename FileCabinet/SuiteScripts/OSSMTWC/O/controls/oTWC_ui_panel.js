@@ -29,9 +29,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             render(container) {
 
                 var styles = '';
-                if (this.#options.styles) {
-                    for (var s in this.#options.styles) {
-                        styles += `${s}: ${this.#options.styles[s]}; `;
+                if (this.#options.contentStyles) {
+                    for (var s in this.#options.contentStyles) {
+                        styles += `${s}: ${this.#options.contentStyles[s]}; `;
                     }
                 }
 
@@ -64,6 +64,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 html = ctrlBase.render(html, {
                     client: this.ui != null,
                     type: 'panel',
+                    styles: this.#options.styles
                 });
 
                 if (container) {

@@ -28,7 +28,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             var content = `
                 <div class="twc-control-panel" ${id} ${hidden}>
                     ${title}
-                    <div class="twc-control-panel-fields" ${collapsed}>
+                    <div class="twc-control-panel-fields ${title ? 'twc-control-panel-fields-border' : ''}" ${collapsed}>
             `;
 
             if (controlGroup.renderAsTable) {
