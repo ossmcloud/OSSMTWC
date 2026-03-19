@@ -304,7 +304,7 @@ div.o-calendar-nav>div {
     vertical-align: middle;
     text-align: center;
     padding: 0px 7px;
-    
+
 }
 
 div.o-calendar-nav>div:last-child,
@@ -339,7 +339,7 @@ div.o-calendar-row>div:hover {
 
 div.o-calendar-header {
     display: table-row;
-    
+
 }
 
 div.o-calendar-header>div {
@@ -354,24 +354,28 @@ div.o-calendar-header>div {
 div.o-calendar-day {
     padding: 7px;
     border: 3px solid transparent;
-    
+
 }
+
 div.o-calendar-day-c {
     padding: 0px;
     border-right: 1px solid var(--grid-color);
     border-bottom: 1px solid var(--grid-color);
     border-top: 1px solid var(--grid-color);
-    
+
 }
+
 div.o-calendar-day-c:first-child {
     border-left: 1px solid var(--grid-color);
 }
+
 div.o-calendar-day-c>div:first-child {
     padding: 3px;
     border-bottom: 1px solid var(--grid-color);
     background-color: var(--highlight-color-bkgd);
     color: var(--highlight-color);
 }
+
 div.o-calendar-day-content {
     display: grid;
     align-content: center;
@@ -384,10 +388,12 @@ div.o-calendar-day-content {
 .o-calendar-green {
     background-color: green !important;
 }
+
 .o-calendar-orange {
     background-color: orange !important;
 }
-.o-calendar-red  {
+
+.o-calendar-red {
     background-color: red !important;
 }
 
@@ -405,7 +411,7 @@ div.o-calendar-day-content {
 
 .o-calendar-current {
     border: 3px solid var(--highlight-color-bkgd) !important;
-    
+
 }
 
 .o-calendar-special {
@@ -420,5 +426,6 @@ div.o-calendar-day-content {
 }
 
 .o-calendar-past {
+    color: var(--input-color-disabled) !important;
     background-color: var(--input-bkgd-color-disabled) !important;
 }

@@ -885,7 +885,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
                 var form = twcUI.init(formConfig);
                 dialog.open({
-                    title: 'Assign a completion photo reviewer',
+                    title: 'Completion photo reviewed',
                     content: form.ui,
                     size: { width: '350px', height: '250px' },
                     ok: () => {
