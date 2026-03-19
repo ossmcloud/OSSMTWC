@@ -32,7 +32,16 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             `;
 
             if (controlGroup.renderAsTable) {
-                content += '<div class="twc-control-panel-fields-table">';
+                var styles = '';
+                if (controlGroup.renderAsTable.constructor.name == 'Object') {
+                    for (var s in controlGroup.renderAsTable) {
+                        styles += `${s}: ${controlGroup.renderAsTable[s]};`
+                    }
+                }
+                if (styles) {
+                    styles = ` style="${styles}"`;
+                }
+                content += `<div class="twc-control-panel-fields-table" ${styles}>`;
             }
             core.array.each(controlGroup.controls, ctrl => {
                 if (controlGroup.renderAsTable) { content += '<div>'; }

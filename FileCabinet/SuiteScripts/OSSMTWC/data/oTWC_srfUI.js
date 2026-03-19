@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItemUI.js', './oTWC_fileUI.js', './oTWC_configUIFields.js'],
-    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItemUI, twcFileUI, configUIFields) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItemUI.js', './oTWC_fileUI.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js'],
+    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItemUI, twcFileUI, configUIFields, twcUI) => {
 
         function getSrfTableFields() {
             // @@TODO: this list of fields to display can be set by user
@@ -19,28 +19,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 { field: twcSrf.Fields.CUSTOMER },
                 { field: twcSrf.Fields.SRF_SUBMITTED_BY },
                 { field: twcSrf.Fields.SRF_REQUESTED_DATE },
-                
+
             ];
             return siteFields;
         }
 
         function getSRFInfoPanels(dataSource, userInfo) {
-            var fieldGroup = { id: 'site-request', title: (dataSource.id)?`Space Request [${dataSource.name}]`: 'Create New Space Request', collapsed: false, controls: [] };
+            var fieldGroup = { id: 'site-request', title: (dataSource.id) ? `Space Request [${dataSource.name}]` : 'Create New Space Request', collapsed: false, controls: [] };
 
             var basicInfo = { id: 'site-request-struct', title: 'Customer Information', fields: [] };
             fieldGroup.controls.push(basicInfo);
 
             var customers = null;
             if (userInfo.isVendor) {
-                customers = coreSQL.run(`
-                    select  c.id as value, c.companyname as text
-                    from    customer c
-                    join    entity e on e.id = c.id and BUILTIN.DF(e.type) = 'Customer'
-                    join    customrecord_twc_vendcust_link link on link.custrecord_twc_vendcust_link_cust = c.id
-                    where   c.isinactive = 'F'
-                    and     link.custrecord_twc_vendcust_link_vend = ${userInfo.id}
-                    order by c.companyname
-                `)
+                customers = twcUtils.getCustomers({ vendor: userInfo.profile });
             }
 
             basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: userInfo.isCustomer, dataSource: customers })
@@ -49,7 +41,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.TME)] });
             fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.ATME)] });
             fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 3 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.GIE)] });
-            
             fieldGroup.controls.push({ id: 'site-request-step-4', title: 'Step 4 of 5', fields: [twcSrfItemUI.getFileTableUIControl(dataSource)] });
 
             var step5 = {
@@ -65,12 +56,18 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             fieldGroup.controls.push(step5);
 
+            fieldGroup.controls.push({
+                id: 'site-request-step-6', fields: [
+                    { type: twcUI.CTRL_TYPE.BUTTON, id: 'save-button', value: 'Submit' }
+                ]
+            });
+
             configUIFields.formatPanelFields(dataSource, fieldGroup);
 
             return fieldGroup;
         }
 
-      
+
 
         function getSRFUIPanels(dataSource, userInfo) {
             if (!dataSource) { dataSource = {}; }
@@ -103,7 +100,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
-       
+
 
         return {
             getSrfTableFields: getSrfTableFields,

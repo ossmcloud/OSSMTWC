@@ -66,7 +66,9 @@ define(['N/file', 'N/search', 'N/record', 'N/https', 'SuiteBundles/Bundle 548734
             } else if (mimeType == 'text/csv') {
                 return 'CSV';
             } else if (mimeType.indexOf('image') == 0) {
-                return mimeType.replace('image/', '').toUpperCase() + 'IMAGE';
+                var imgType = mimeType.replace('image/', '').toUpperCase();
+                if (imgType == 'JPEG') { imgType = 'JPG'; }
+                return imgType + 'IMAGE';
             } else {
                 return 'PLAINTEXT'
             }

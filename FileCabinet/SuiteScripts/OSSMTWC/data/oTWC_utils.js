@@ -6,13 +6,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, cored, coreSQL, twcProfile, twcSafCrew, twcFile, twcIcons) => {
 
         const PROFILE_CERT_FIELD = {
-            SAFE_PASS: { field: 'custrecord_twc_prof_safe_pass_expiry', attendAs: 'SAFE_PASS' },
-            CLIMBER: { field: 'custrecord_twc_prof_climber_cert_sts', attendAs: 'CLIMBER' },
-            RESCUE: { field: 'custrecord_twc_prof_rescue_cert_sts', attendAs: 'RESCUE' },
-            ROOFTOP: { field: 'custrecord_twc_prof_rooftop_cert_sts', attendAs: 'ROOFTOP' },
-            ELECTRICAL: { field: 'custrecord_twc_prof_elec_cert_sts', attendAs: 'ELECTRICAL' },
-            RF: { field: 'custrecord_twc_prof_rf_cert_sts', attendAs: 'RF' },
-            DRONE: { field: 'custrecord_twc_prof_drone_cert_sts', attendAs: 'DRONE' }
+            SAFE_PASS: { field: 'custrecord_twc_prof_safe_pass_expiry', attendAs: 'SAFE_PASS', attendAsText: 'Visitor' },
+            CLIMBER: { field: 'custrecord_twc_prof_climber_cert_sts', attendAs: 'CLIMBER', attendAsText: 'Climber Certified' },
+            RESCUE: { field: 'custrecord_twc_prof_rescue_cert_sts', attendAs: 'RESCUE', attendAsText: 'Rescue Certified' },
+            ROOFTOP: { field: 'custrecord_twc_prof_rooftop_cert_sts', attendAs: 'ROOFTOP', attendAsText: 'Rooftop Certified' },
+            ELECTRICAL: { field: 'custrecord_twc_prof_elec_cert_sts', attendAs: 'ELECTRICAL', attendAsText: 'Electrician Certified' },
+            RF: { field: 'custrecord_twc_prof_rf_cert_sts', attendAs: 'RF', attendAsText: 'RF Certified' },
+            DRONE: { field: 'custrecord_twc_prof_drone_cert_sts', attendAs: 'DRONE', attendAsText: 'Drone Certified' }
         }
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const NO_ACTIVE_EXPIRED = {
@@ -29,6 +29,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (p.valid_rooftop_cert == 'T') { attendAs.push({ value: 'ROOFTOP', text: 'Rooftop Certified' }); }
             if (p.valid_electrician_cert == 'T') { attendAs.push({ value: 'ELECTRICAL', text: 'Electrician Certified' }); }
             if (p.valid_drone_cert == 'T') { attendAs.push({ value: 'DRONE', text: 'Drone Certified' }); }
+            if (p.valid_rf_cert == 'T') { attendAs.push({ value: 'RF', text: 'RF Certified' }); }
             return attendAs;
         }
 
@@ -95,7 +96,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSrfStatusStyle(srfStatusNumber) {
             if (!srfStatusNumber) { srfStatusNumber = 11; }
             if (isNaN(parseInt(srfStatusNumber))) {
-                return SRF_STATUS_STYLE[srfStatusNumber];
+                return SRF_STATUS_STYLE[srfStatusNumber.replaceAll(' ', '')];
             } else {
                 return SRF_STATUS_STYLE[getSrfStatusName(srfStatusNumber)];
             }
@@ -135,7 +136,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Complete: { color: 'white', backgroundColor: 'green' },
             Cancelled: { color: 'white', backgroundColor: 'silver' },
             AwaitingPhotos: { color: 'white', backgroundColor: 'orange' },
-            PhotosReceived: { color: 'white', backgroundColor: 'lime' },
+            PhotosReceived: { color: 'mediumblue', backgroundColor: 'limegreen' },
         }
         function getSafStatusName(safStatusNumber, asObject) {
             if (!safStatusNumber) { safStatusNumber = 1; }
@@ -143,7 +144,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (SAF_STATUS[k] == safStatusNumber) {
                     if (asObject) {
 
-                        return { value: safStatusNumber, text: k, forceComment: safStatusNumber==SAF_STATUS.Rejected }
+                        return { value: safStatusNumber, text: k, forceComment: safStatusNumber == SAF_STATUS.Rejected }
                     }
                     return k;
                 }
@@ -152,7 +153,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSafStatusStyle(safStatusNumber) {
             if (!safStatusNumber) { safStatusNumber = 1; }
             if (isNaN(parseInt(safStatusNumber))) {
-                return SAF_STATUS_STYLE[safStatusNumber];
+                return SAF_STATUS_STYLE[safStatusNumber.replaceAll(' ', '')];
             } else {
                 return SAF_STATUS_STYLE[getSafStatusName(safStatusNumber)];
             }
@@ -374,6 +375,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+        function getSafType(id) {
+
+            return coreSQL.first(`
+                select  id as value, name as text, custrecord_twc_saf_type_require_srf as requires_srf 
+                from    customrecord_twc_saf_type 
+                where   isinactive='F'
+                and     id = ${id || 0}
+            `);
+
+        }
+
         function getSafCrew(options) {
             return coreSQL.run(`
                 select  ${twcSafCrew.Fields.MEMBER}, BUILTIN.DF(${twcSafCrew.Fields.MEMBER}) as ${twcSafCrew.Fields.MEMBER}_name, ${twcSafCrew.Fields.ATTEND_AS}, 
@@ -404,7 +416,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 where   ${twcFile.Fields.RECORD_TYPE} = 'customrecord_twc_saf'
                 and     ${twcFile.Fields.RECORD_ID} = ${options.id}
                 ${fileTypeFilter}
-                order by f.name
+                order by f.created desc
             `
 
             var files = [];
@@ -417,9 +429,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getSafContractorFiles(options) {
-            var fileIds = options['custrecord_twc_saf_method_statement'];
+            var fileIds = options['custrecord_twc_saf_method_statement'] || '';
             if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
             fileIds += options['custrecord_twc_saf_health_safety'];
+
+
 
             var sql = `
                 select  ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'dd/MM/yyyy HH:mi') as created, f.name, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name,
@@ -562,6 +576,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getProfiles(options) {
+            var filters = '';
+            if (options.company) {
+                filters = `where custrecord_twc_prof_company = ${options.company}`
+            } else if (options.id) {
+                if (Array.isArray(options.id)) {
+                    filters = `where id in (${options.id.join(',')})`;
+                } else {
+                    filters = `where id = ${options.id}`
+                }
+            } else {
+                filters = `where 1 = 1`;
+            }
             var sql = `
                 select  id as value, name as text, name || ' <span style="color: silver; font-style: italic;">[' || custrecord_twc_prof_position || ']</span>' as text_render,
                         custrecord_twc_prof_phone as phone, custrecord_twc_prof_email as email,
@@ -573,8 +599,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         (case when ${PROFILE_CERT_FIELD.RF.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rf_cert,
                         (case when ${PROFILE_CERT_FIELD.DRONE.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_drone_cert,
                 from    customrecord_twc_prof
-                where   custrecord_twc_prof_company = ${options.company}
-                and 	  custrecord_twc_prof_picw_acceptable='T'
+                ${filters}
+                --and 	custrecord_twc_prof_picw_acceptable = 'T'
             `
             if (options.filters) {
                 for (var f in options.filters) {
@@ -621,6 +647,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return coreSQL.run(`select id as value, name as text from ${SAF_TIME_BLOCKS} order by id`);
         }
 
+        function getSafReviewers(options) {
+            return coreSQL.run(`
+                select  p.id as value, p.name as text 
+                from    employee e
+                join    customrecord_twc_prof p on p.custrecord_twc_prof_username = e.id
+                where   e.isinactive = 'F' 
+                and     p.isinactive = 'F' 
+                order by e.entityid
+            `)
+        }
+
         function getSafDropDown(options) {
             var siteSafs = [];
             coreSQL.each(`
@@ -653,10 +690,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `, srf => {
                 siteSrfs.push({
                     value: srf.value,
-                    text: `<b>${srf.name}</b> [${srf.date}] <i>${srf.customer}</i> @ ${srf.site}`
+                    text: `${srf.name} [${srf.date}] ${srf.customer} @ ${srf.site}`,
+                    text_render: `<b>${srf.name}</b> [${srf.date}] <i>${srf.customer}</i> @ ${srf.site}`
                 })
             })
             return siteSrfs;
+        }
+
+        function getSrfActions(options) {
+            var safFilter = (options.saf) ? `and custrecord_twc_eq_action_saf = ${options.saf}` : '';
+            return coreSQL.run(`
+                select  a.id as value, a.name as text, custrecord_twc_equip_id as equipment, BUILTIN.DF(custrecord_twc_eq_action_srf) as srf, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
+                        BUILTIN.DF(custrecord_twc_eq_action_type) as action_type, BUILTIN.DF(custrecord_twc_eq_real_ea) as related_action, 
+                        custrecord_twc_eq_action_sts as status, BUILTIN.DF(custrecord_twc_eq_action_sts) as status_name
+                from    customrecord_twc_eq_action a
+                join    customrecord_twc_equip e on e.id = a.custrecord_twc_eq_action_eq
+                where   custrecord_twc_eq_action_srf = ${options.srf}
+                ${safFilter}
+                order by a.id
+            `)
         }
 
         function getInfraStructures(options) {
@@ -760,7 +812,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             getSafDropDown: getSafDropDown,
             getSafTimeBlocks: getSafTimeBlocks,
+            getSafReviewers: getSafReviewers,
             getSrfDropDown: getSrfDropDown,
+            getSrfActions: getSrfActions,
 
             getFields: getCustomTableFields,
             getSiteNames: getSiteNames,
@@ -770,6 +824,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getRegions: getRegions,
             getPortfolios: getPortfolios,
             getSafStatus: getSafStatus,
+            getSafType: getSafType,
             getSafTypes: getSafTypes,
             getSafCrew: getSafCrew,
             getSafImages: getSafImages,
@@ -785,9 +840,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             getYesNoOptions: getYesNoOptions,
-
             getFiles: getFiles,
+            formatLongDate: formatLongDate,
 
-            formatLongDate: formatLongDate
+            today: function () {
+                return coreSQL.first(`select TO_CHAR(CURRENT_DATE, 'YYYY-MM-dd') as today`).today;
+            }
         }
     });

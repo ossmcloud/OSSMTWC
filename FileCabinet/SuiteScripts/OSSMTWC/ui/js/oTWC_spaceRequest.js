@@ -163,7 +163,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // @@TODO: test only
                     if (core.ossm()) {
                         if (this.data.editMode && !this.data.siteRequestInfo.id) {
-                            this.ui.getControl(twcSrf.Fields.CUSTOMER).value = 219;
+                            // this.ui.getControl(twcSrf.Fields.CUSTOMER).value = 219;
                         }
                     }
 
@@ -322,19 +322,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 const targetId = e.id || e.target.id;
                 try {
                     
-                    if (!targetId == 'submit-button') {
+                    if (targetId != 'submit-button') {
                         if (!this.dirty) { throw new Error('The record has not changed'); }
                     }
                     
-                    // else if (!targetId == 'submit-button-fffff') {
-                    //     var res = await dialog.openAsync({ ...})
-                    //     if (!dlg.find('#my-message-input-id')) {
-                    //         await dialog.errorAsync('please enter a message')
-                    //         await this.onSave(e)
-                    //         return ;
-                    //     }
-                    // }
-
                     var payload = this.data.siteRequestInfo;
                     if (targetId == 'submit-button') {
                         if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft) {

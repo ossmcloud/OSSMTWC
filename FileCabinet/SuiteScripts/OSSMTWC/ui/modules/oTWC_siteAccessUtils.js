@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_safCrew.js', '../../data/oTWC_safTimeBlock.js', '../../data/oTWC_safLog.js'],
-    (record, core, coreSQL, b64, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew, twcSafTimeBlock, twcSafLog) => {
+define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_safCrew.js', '../../data/oTWC_safAction.js', '../../data/oTWC_safTimeBlock.js', '../../data/oTWC_safLog.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js'],
+    (record, core, coreSQL, b64, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile, nsFileUtils) => {
 
         function renderSiteAccessPanel(featureId) {
             // @@TODO: featureId will determine some change on fields in the criteria
@@ -44,10 +44,9 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                                 </div>
                                 <div>
                                     {FILTER_START_DATE}
-                                </div>
-                                 <div>
                                     {FILTER_END_DATE}
                                 </div>
+                                
                             </div>
 
                             <h3 class="twc">Site Actions</h3>
@@ -130,7 +129,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             if (climberCount > 0) { conditions.push({ quantity: climberCount, name: 'Climber', cert: twcUtils.Certs.CLIMBER }) }
             if (rescueCount > 0) { conditions.push({ quantity: rescueCount, name: 'Rescue Climber', cert: twcUtils.Certs.RESCUE }) }
             if (options['saf-rooftop-access'] == 'T') { conditions.push({ quantity: 'all', name: 'Rooftop Certified', cert: twcUtils.Certs.ROOFTOP }) }
-            if (options['saf-mast-access'] == 'T' || options['saf-rooftop-access'] == 'T') { conditions.push({ quantity: 'all', name: 'RF Certified', cert: twcUtils.Certs.RT }) }
+            if (options['saf-mast-access'] == 'T' || options['saf-rooftop-access'] == 'T') { conditions.push({ quantity: 'all', name: 'RF Certified', cert: twcUtils.Certs.RF }) }
             if (options['saf-electrical-access'] == 'T') { conditions.push({ quantity: 1, name: 'Electrician', cert: twcUtils.Certs.ELECTRICAL }) }
             if (options.safType == twcUtils.SafType.SURVEY_DRONE) { conditions.push({ quantity: 1, name: 'Drone Certified', cert: twcUtils.Certs.DRONE }) }
 
@@ -172,6 +171,15 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var childRecord = twcSafCrew.get(options.crew.id);
             childRecord.copyFromObject(options.crew);
             return twcSafUI.getSafCrewRecord(saf, childRecord, userInfo);
+        }
+
+        function getSafActionRecord(options, userInfo) {
+            var saf = twcSaf.get(options.saf.id);
+            saf.copyFromObject(options.saf);
+            saf.siteId = options.saf.siteId;
+            var childRecord = twcSafAction.get(options.action.id);
+            childRecord.copyFromObject(options.action);
+            return twcSafUI.getSafActionRecord(saf, childRecord, userInfo);
         }
 
         function getVendorDocs(options) {
@@ -217,9 +225,16 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             if (!payload['saf-picw-staff']) { validationErrors.push(`Specify a PICW`); }
             if (payload['saf-mast-access'] == 'T' && !payload['saf-structure']) { validationErrors.push(`Specify a structure`); }
             if (payload['saf-building-access'] == 'T' && !payload['saf-accommodation']) { validationErrors.push(`Specify an accommodation`); }
+
+            var crewIds = [];
+            core.array.each(payload.crews, c => { crewIds.push(c['saf-crew-member']); })
+            var crew = twcUtils.getProfiles({ id: crewIds });
+          // throw new Error(JSON.stringify(crew))
+
             core.array.each(options.accessRequirements.conditions, cond => {
-                var certCount = payload.crews.filter(c => { return c['saf-crew-attend-as'] == cond.cert.attendAs; }).length;
-                if (certCount < cond.quantity) {
+                var condQuantity = cond.quantity == 'all' ? payload.crews.length : cond.quantity;
+                var certCount = crew.filter(c => { return c.attendAs.find(cc => { return cc.value == cond.cert?.attendAs }) ; }).length || 0;
+                if (certCount < condQuantity) {
                     if (certCount == 0) {
                         validationErrors.push(`${cond.quantity} ${cond.name} are required, there are none in the crew`);
                     } else {
@@ -231,8 +246,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             var requiresSrf = recu.lookUp('customrecord_twc_saf_type', payload['saf-type'], 'custrecord_twc_saf_type_require_srf');
             if (requiresSrf) {
-                if (!payload['saf-srf']) { validationErrors.push(`Specify an S.R.F.`); }
-                if (payload.actions.length == 0) { validationErrors.push(`Specify at least one action`); }
+                if (!payload.actions || payload.actions.length == 0) { validationErrors.push(`Specify at least one action`); }
             }
 
 
@@ -315,6 +329,8 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 saf.logInfo('SAF Created');
             }
 
+            var errors = false;
+
             // time blocks
             for (var d in options.accessRequirements.timeBlocks) {
                 if (!options.accessRequirements.timeBlocks[d]['t']) { continue; }
@@ -327,6 +343,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                         tb.save();
                     } catch (error) {
                         saf.logEx('Error while saving time block', error);
+                        errors = true;
                     }
                 });
             }
@@ -343,24 +360,36 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                         crew.save();
                     } catch (error) {
                         saf.logEx('Error while saving crew record', error);
+                        errors = true;
                     }
                 })
             }
 
+            if (payload.actions) {
+                core.array.each(payload.actions, a => {
+                    try {
+                        var action = twcSafAction.get(payload.reUse ? null : a.id);
+                        action.sAF = safId;
+                        action.sAF_ACTIONEA = a['saf-eq-action'];
+                        action.sAF_ACTIONStatus = a['saf-eq-action-status'];
+                        action.save();
+                    } catch (error) {
+                        saf.logEx('Error while saving action record', error);
+                        errors = true;
+                    }
+                })
+            }
 
-            // @@TODO: SAF: if any error we should let the user know
-
-
-            return { id: safId }
+            return { id: safId, errors: errors }
 
         }
 
         function editSafStatus(options) {
 
-            // @@TODO: SAF: do we need validations here?
+            // @@TODO: SAF: we need validations here, for example cannot cancel if Saf Actions are pending (or eventually we need to detach)
             var saf = twcSaf.get(options.saf);
             try {
-                var statusChanged = saf.status != options.status;
+                var statusChanged = options.status ? saf.status != options.status : false;
                 var commentCHanged = options.comment ? saf.statusComments != options.comment : false;
                 if (!statusChanged && !commentCHanged) { return; }
 
@@ -377,8 +406,19 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     info += 'old comment: ' + saf.statusComments
                 }
 
-                saf.status = options.status;
+                if (options.status) {
+                    saf.status = options.status;
+                    if (options.status == twcSaf.Status.Approved) {
+                        saf.worksEndDate = (new Date()).addHours(12);
+                        saf.completionPhotosRequested = saf.worksEndDate.addDays(saf.worksPhotosReqDelay || 0);
+                    }
+                }
                 if (options.comment) { saf.statusComments = options.comment; }
+
+                if (statusChanged && options.status == twcSaf.Status.PhotosReceived) {
+                    saf.completionPhotosReceived = (new Date()).addHours(12);
+                }
+
                 saf.save();
 
                 if (statusChanged && options.status == twcSaf.Status.Rejected) {
@@ -392,6 +432,57 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             }
         }
 
+        function saveSafImage(options) {
+
+            var fileType = coreSQL.first(`select id from customrecord_twc_file_type where custrecord_twc_file_type_image = 'T' order by created`)?.id;
+
+            var safInfo = coreSQL.first(`
+                select  saf.name, site.${twcSite.Fields.SITE_ID} as site_id
+                from    ${twcSaf.Type} saf
+                join    ${twcSite.Type} site on site.id = ${twcSaf.Fields.SITE}
+                where   saf.id = ${options.saf}
+            `)
+            var safFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${safInfo.site_id}/${safInfo.name}`);
+
+            var nsFile = nsFileUtils.writeFile({
+                name: `${options.saf}_${options.photo.name}`,
+                fileType: nsFileUtils.getFileType(options.photo.type),
+                content: options.photo.content,
+                folder: safFolder,
+            });
+
+            var safImage = twcFile.get();
+            safImage.name = options.photo.name;
+            safImage.recordType = twcSaf.Type;
+            safImage.recordID = options.saf;
+            safImage.description = options.photo.notes || '';
+            safImage.file = nsFile.fileId;
+            safImage.r_type = fileType;
+            safImage.save();
+
+            //recu.submit(twcSaf.Type, options.saf, [twcSaf.Fields.STATUS, twcSaf.Fields.COMPLETION_PHOTOS_RECEIVED], [twcSaf.Status.PhotosReceived, new Date()])
+
+        }
+
+        function setSafReviewer(options) {
+            recu.submit(twcSaf.Type, options.saf, twcSaf.Fields.COMPLETION_REVIEWER, options.reviewer.value);
+            twcSafLog.logInfo(options.saf, `Reviewer [${options.reviewer.text}] assigned`);
+        }
+
+        function setSafReviewed(options) {
+            recu.submit(twcSaf.Type, options.saf, [twcSaf.Fields.STATUS, twcSaf.Fields.REVIEW_COMMENT], [twcSaf.Status.Complete, options.comment]);
+            twcSafLog.logInfo(options.saf, `Completion photos reviewed`, `Comment: ${options.comment}`);
+        }
+
+        function getSafTimeBlocks(id) {
+            return coreSQL.run(`
+                select  TO_CHAR(custrecord_twc_saf_tm_blk_date, 'dd/MM/yyyy') as date, BUILTIN.DF(custrecord_twc_saf_tm_blk_block) as block
+                from   	customrecord_twc_saf_tm_blk
+                where   custrecord_twc_saf_tm_blk_saf = ${id}
+                order by custrecord_twc_saf_tm_blk_date, custrecord_twc_saf_tm_blk_block
+            `)
+        }
+
         return {
             getSAFInfoPanels: twcSafUI.getSAFInfoPanels,
 
@@ -402,7 +493,10 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     //saf = coreSQL.first(`select * from ${twcSaf.Type} where id = ${pageData.recId}`);
                     saf = twcSaf.select({ noAlias: true, returnFirst: true, where: { id: pageData.recId } })
                     saf.siteId = saf[twcSaf.Fields.SITE];
-                    if (reUse) { saf.reUse = reUse; }
+                    if (reUse) {
+                        saf.reUse = reUse;
+                        saf[twcSaf.Fields.STATUS] = twcSaf.Status.Pending;
+                    }
 
 
                 } else {
@@ -418,11 +512,15 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             getAccessRequirements: getAccessRequirements,
             renderSiteAccessPanel: renderSiteAccessPanel,
             getSafCrewRecord: getSafCrewRecord,
+            getSafActionRecord: getSafActionRecord,
             getVendorDocs: getVendorDocs,
 
             saveNewSaf: saveNewSaf,
-            editSafStatus: editSafStatus
-
+            editSafStatus: editSafStatus,
+            saveSafImage: saveSafImage,
+            setSafReviewer: setSafReviewer,
+            setSafReviewed: setSafReviewed,
+            getSafTimeBlocks: getSafTimeBlocks
 
 
         }

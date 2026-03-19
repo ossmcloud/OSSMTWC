@@ -52,8 +52,12 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
                     // saf.health_and_Safety = [7]
                     // saf.save();
 
-                    console.log(otop.generateTOTPSecret())
+                    var options = { saf: 25 };
                     
+                    var saf = twcSaf.get(options.saf);
+                    saf.worksEndDate = (new Date()).addHours(12);
+                    saf.completionPhotosRequested = saf.worksEndDate.addDays(saf.worksPhotosReqDelay || 0);
+                    saf.save();
 
                     // coreSQL.each(`
                     //     select   id, name, 	custrecord_twc_prof_name

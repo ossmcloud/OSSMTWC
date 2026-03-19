@@ -364,7 +364,7 @@ div.twc-panel {
 div.twc-container-outer {
     width: 100%;
     border: 1px solid var(--grid-color);
-    height: 80vh;
+    height: calc(100vh - 180px);
     overflow: hidden;
 }
 
@@ -2576,6 +2576,7 @@ div.twc-control-panel-fields-border {
     border-left: 1px solid var(--grid-color);
     border-right: 1px solid var(--grid-color);
     border-bottom: 1px solid var(--grid-color);
+    padding-bottom: 3px; 
 }
 
 div.twc-control-panel-fields-table {

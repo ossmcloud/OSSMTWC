@@ -17,11 +17,29 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 pageData.siteRequestInfo = twcSiteRequestUtils.getSiteRequestInfo(pageData);
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteRequestInfo.siteId || context.request.parameters.siteId);
 
-                pageData.recordStatus =`<div class="twc-div-span-table">${twcSrf.getSrfStatusHtml(pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS])}</div>`;
+                pageData.recordStatus = `<div class="twc-div-span-table">${twcSrf.getSrfStatusHtml(pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS])}</div>`;
+                if (context.request.parameters.recId) {
+                    var srfCode = pageData.siteRequestInfo.name;
+                    s.form.f.title += ` - ${srfCode}`;
+                    pageData.recordStatus = `
+                        <div class="twc-div-span-table">
+                            <span class="twc-record-status" style="border: 1px solid var(--grid-color); padding: 0px 34px; font-size: 20px; vertical-align: middle; background-color: var(--accent-bkgd-color); color: var(--accent-fore-color)">
+                                ${srfCode}
+                            </span>
+                            <span style="width: 5px;"></span>
+                            ${pageData.recordStatus}
+                        </div>
+                    `
+                }
 
                 // @@NOTES: if the SRF is submitted we still let users with full access to edit it but only if we are a Towercom employee 
-                var canSubmit = pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued;
-                pageData.forceViewOnly = !(canSubmit ? true : (pageData.userInfo.isEmployee && pageData.userInfo.permission.lvl == twcConfig.PERMISSION_LEVEL.FULL));
+                if (context.request.parameters.recId) {
+                    var canSubmit = pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued;
+                    pageData.forceViewOnly = !(canSubmit ? true : (pageData.userInfo.isEmployee && pageData.userInfo.permission.lvl == twcConfig.PERMISSION_LEVEL.FULL));
+                } else {
+                    pageData.forceViewOnly = true;
+                }
+
 
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_spaceRequest');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)

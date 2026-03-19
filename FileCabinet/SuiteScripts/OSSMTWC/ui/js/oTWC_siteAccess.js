@@ -32,8 +32,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
                     id: 'omt_sites',
                     unboundCols: unboundCols,
-                    // fitScreen: false,
-                    // fitContainer: true
+                    fitScreen: true,
+                    fitContainer: false
                 });
 
                 this.#table.onInitEvents = (tbl) => {
@@ -174,9 +174,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         })
                         .catch(err => { dialog.error(err); });
                 });
-                this.ui.getControl('saf-srf')?.on('change', e => {
-                    
-                })
+
 
                 core.array.each(this.ui.controls, c => {
                     if (c.type !== 'table') { return; }
@@ -305,8 +303,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (this.ui.getControl('saf-accommodation')) { this.ui.getControl('saf-accommodation').hide = this.ui.getControl('saf-building-access')?.value != 'T' }
 
                 var requiresSrf = this.ui.getControl('saf-type').valueObj?.requires_srf == 'T';
-                this.ui.getControl('saf-srf').hide = !requiresSrf;
-                this.ui.getControl('saf-srf-equip').hide = !requiresSrf;
+                // this.ui.getControl('saf-srf').hide = !requiresSrf;
+                // this.ui.getControl('saf-srf-equip').hide = !requiresSrf;
                 this.ui.getControl('saf-photo-delay').hide = !requiresSrf;
                 this.ui.find('#site-access-step-3c').css('display', requiresSrf ? 'block' : 'none');
 
@@ -378,29 +376,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                     htmlCond.append(`
                         <div style="padding: 3px; border-bottom: 1px solid var(--grid-color);${colorStyle}">
-                            ${this.#accessRequirements.timeBlocksRequired} Time-Blocks Required (${this.#accessRequirements.timeBlocksAllocated} Allocated)
+                            ${this.#accessRequirements.timeBlocksRequired} Time-Blocks Required (${this.#accessRequirements.timeBlocksAllocated || 0} Allocated)
                         </div>
                     `);
 
-                    var allocatedBlocksTable = jQuery('<div class="twc-div-table-r" style="border-bottom: 1px solid var(--grid-color);"></div>');
-                    htmlCond.append(allocatedBlocksTable);
-                    for (var k in this.#accessRequirements.timeBlocks) {
-                        if (!this.#accessRequirements.timeBlocks[k]['t']) { continue; }
-                        core.array.each(this.#accessRequirements.timeBlocks[k]['t'].blocks, b => {
-                            if (forSave) {
+                    if (!forSave) {
+                        var allocatedBlocksTable = jQuery('<div class="twc-div-table-r" style="border-bottom: 1px solid var(--grid-color);"></div>');
+                        htmlCond.append(allocatedBlocksTable);
+                        for (var k in this.#accessRequirements.timeBlocks) {
+                            if (!this.#accessRequirements.timeBlocks[k]['t']) { continue; }
+                            core.array.each(this.#accessRequirements.timeBlocks[k]['t'].blocks, b => {
                                 var allocatedBlocksTableRow = jQuery(`
-                                    <div>
-                                        <div style="padding: 7px;">${b.block.name} - ${k}</div>
-                                    </div>
-                                `);
-                                allocatedBlocksTable.append(allocatedBlocksTableRow);
-                            } else {
-                                var allocatedBlocksTableRow = jQuery(`
-                                    <div>
-                                        <div data-action="remove" class="twc-clickable" style="width: 20px; text-align: center;">${twcIcons.get('trash', 16, 'red')}</div>
-                                        <div style="padding: 7px;">${b.block.name} - ${k}</div>
-                                    </div>
-                                `);
+                                        <div>
+                                            <div data-action="remove" class="twc-clickable" style="width: 20px; text-align: center;">${twcIcons.get('trash', 16, 'red')}</div>
+                                            <div style="padding: 7px;">${b.block.name} - ${k}</div>
+                                        </div>
+                                    `);
                                 allocatedBlocksTable.append(allocatedBlocksTableRow);
                                 allocatedBlocksTableRow.find('[data-action="remove"]').click(e => {
                                     console.log(b.date, this.#accessRequirements.timeBlocks[b.date]['t'], b)
@@ -423,11 +414,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     this.refreshInfo();
                                     this.#calendar.refresh();
                                     this.#calendar.on('change', e);
-
-
                                 })
-                            }
-                        })
+
+                            })
+                        }
                     }
 
                     core.array.each(this.#accessRequirements.conditions, cond => {
@@ -471,7 +461,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
 
                 this.ui.find('#site-access-step-5').find('.twc-control-panel-fields').html(html)
-                
+
                 var ui = twcUI.init({}, html);
                 this.#vendorDocuments = ui;
 
@@ -487,11 +477,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 // @@TODO: @@REVIEW: the 1st time I call the routine the events do not seem to be handled (in fact the DOM is refreshed but events do not work)
                 if (!what) { this.refreshVendorDocuments(documents, true) };
-                
+
             }
 
             manageVisitor(safCrew, table) {
                 try {
+                    var isNew = safCrew == null;
                     if (!safCrew) { safCrew = {}; }
                     if (this.deleteRecord(safCrew, table)) { return; }
 
@@ -530,6 +521,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             }
                             safCrew.dirty = true;
 
+                            if (isNew) {
+                                if (table.data.find(c => { return c['saf-crew-member'] == safCrew['saf-crew-member'] })) {
+                                    throw new Error('The member is already in the crew list');
+                                }
+                            }
+
                             safCrew.ui.controls.find(c => { return c.id == 'saf-crew-vendor' }).value = safCrew['saf-crew-vendor'];
                             safCrew.ui.controls.find(c => { return c.id == 'saf-crew-member' }).value = safCrew['saf-crew-member'];
                             safCrew.ui.controls.find(c => { return c.id == 'saf-crew-attend-as' }).value = safCrew['saf-crew-attend-as'];
@@ -550,10 +547,62 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
-            
+
 
             manageEqAction(safActions, table) {
-                dialog.error('not implemented')
+                try {
+                    if (!safActions) { safActions = {}; }
+                    if (this.deleteRecord(safActions, table)) { return; }
+
+                    if (!safActions.ui) {
+                        safActions.ui = this.#page.postSync({ action: 'saf-action-record' }, { saf: this.data.siteAccessInfo, action: safActions })
+                        safActions.ui.getControl = function (id) {
+                            return this.controls.find(c => { return c.id == id })
+                        }
+                    }
+
+                    var form = twcUIPanel.ui(safActions.ui);
+                    form.getControl('saf-action-srf').on('change', e => {
+                        // @@TODO: gte SAF Equip action
+                        this.#page.post({ action: 'get-srf-actions' }, { srf: e.value })
+                            .then(res => {
+                                form.getControl('saf-action-eq').setDataSource(res.data);
+                                safActions.ui.getControl('saf-action-eq').dataSource = res.data;
+                            })
+                            .catch(err => { dialog.error(err); });
+                    })
+                    if (form.getControl('saf-action-srf').value) { form.getControl('saf-action-srf').on('change'); }
+
+                    dialog.confirm({ title: 'manage action', message: form.ui, width: '300px', height: '300px' }, () => {
+                        try {
+                            var obj = form.getValues(true);
+
+                            safActions['saf-eq-action'] = obj['saf-action-eq'].value;
+                            safActions['saf-eq-action-id'] = obj['saf-action-eq'].text;
+                            safActions['saf-equipment_name'] = obj['saf-action-eq'].equipment;
+                            safActions['saf-eq-action-type_name'] = obj['saf-action-eq'].action_type;
+                            safActions['saf-eq-action-status'] = obj['saf-action-eq'].status;
+                            safActions['saf-eq-action-status_name'] = obj['saf-action-eq'].status_name;
+
+                            safActions.dirty = true;
+
+                            safActions.ui.getControl('saf-action-srf').value = safActions['saf-action-srf'];
+                            safActions.ui.getControl('saf-action-eq').value = safActions['saf-action-eq'];
+
+                            if (!this.data.siteAccessInfo.actions) { this.data.siteAccessInfo.actions = table.data; }
+                            if (this.data.siteAccessInfo.actions.indexOf(safActions) < 0) { this.data.siteAccessInfo.actions.push(safActions); }
+                            table.render(this.data.siteAccessInfo.actions, true)
+
+                            this.dirty = true
+                        } catch (error) {
+                            dialog.error(error);
+                            return false;
+                        }
+                    })
+
+                } catch (error) {
+                    dialog.error(error);
+                }
             }
 
             deleteRecord(safRecord, table) {
@@ -582,6 +631,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     if (this.#vendorDocuments) { saf.documents = this.#vendorDocuments.getValues(); }
                     if (!saf.crews) { saf.crews = this.#page.ui.getControl('saf-crew-table').data; }
+                    if (!saf.actions) { saf.actions = this.#page.ui.getControl('saf-eq-action-table').data; }
 
                     console.log(saf);
                     console.log(this.#accessRequirements);
@@ -593,8 +643,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             return;
                         }
 
+
+
                         this.#page.dirty = false;
-                        window.location.href = this.#page.url({ recId: resp.id });
+                        window.location.href = this.#page.url({ recId: resp.id, err: resp.errors ? 'T' : undefined });
 
                     }).catch(err => {
                         dialog.error(err);
@@ -640,63 +692,219 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var file = jQuery(e.currentTarget).data('file')
                     await this.previewFile(file, e)
                 })
+                this.ui.getControl('re-use-button')?.on('click', e => { location.href = safReuseLink(this.data.siteAccessInfo.id) });
+                this.ui.getControl('upload-photos-button')?.on('click', e => { this.uploadPhotos(); })
+                this.ui.getControl('change-status-button')?.on('click', e => { this.changeStatus(); })
+                this.ui.getControl('assign-reviewer-button')?.on('click', e => { this.assignReviewer(); })
+                this.ui.getControl('review-completion-button')?.on('click', e => { this.photosReviewed(); })
+            }
 
-                this.ui.getControl('re-use-button').on('click', e => {
-                    location.href = safReuseLink(this.data.siteAccessInfo.id)
-                });
-
-                this.ui.getControl('change-status-button').on('click', e => {
-                    var formConfig = {
-                        controls: [
-                            { type: twcUI.CTRL_TYPE.SELECT, id: 'status', dataSource: this.data.allowedStatues, value: this.data.siteAccessInfo[twcSaf.Fields.STATUS], lineBreak: true },
-                            { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', value: '', width: '100%', rows: 7 },
-                        ]
-                    }
-                    var form = twcUI.init(formConfig);
-                    dialog.open({
-                        title: 'Change Status / Comment',
-                        content: form.ui,
-                        size: { width: '500px', height: '300px' },
-                        ok: () => {
-                            try {
-
-                                
-                                this.wait();
-                                var payload = form.getValues();
-                                payload.saf = this.data.siteAccessInfo.id;
-
-                                if (form.getControl('status').valueObj.forceComment) {
-                                    if (!payload.comment) { throw new Error('Please, specify a comment'); }
-                                }
-
-
-                                this.post({ action: 'edit-saf-status' }, payload).then(resp => {
-                                    if (resp.error) {
-                                        this.waitClose();
-                                        dialog.error(resp.error);
-                                        return;
-                                    }
-                                    location.reload();
-
-                                }).catch(err => {
-                                    dialog.error(err);
-                                    this.waitClose();
-
-                                });
-
-                                return false;
-
-                            } catch (error) {
-                                this.waitClose();
-                                dialog.error(error);
-                                return false;
+            changeStatus() {
+                var formConfig = {
+                    controls: [
+                        { type: twcUI.CTRL_TYPE.SELECT, id: 'status', dataSource: this.data.allowedStatues, value: this.data.siteAccessInfo[twcSaf.Fields.STATUS], lineBreak: true },
+                        { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', value: '', width: '100%', rows: 7 },
+                    ]
+                }
+                var form = twcUI.init(formConfig);
+                dialog.open({
+                    title: 'Change Status / Comment',
+                    content: form.ui,
+                    size: { width: '500px', height: '300px' },
+                    ok: () => {
+                        try {
+                            this.wait();
+                            var payload = form.getValues();
+                            payload.saf = this.data.siteAccessInfo.id;
+                            if (form.getControl('status').valueObj.forceComment) {
+                                if (!payload.comment) { throw new Error('Please, specify a comment'); }
                             }
-                        }
-                    })
+                            this.post({ action: 'edit-saf-status' }, payload).then(resp => {
+                                if (resp.error) {
+                                    this.waitClose();
+                                    dialog.error(resp.error);
+                                    return;
+                                }
+                                location.reload();
 
+                            }).catch(err => {
+                                dialog.error(err);
+                                this.waitClose();
+                            });
+                            return true;
+                        } catch (error) {
+                            this.waitClose();
+                            dialog.error(error);
+                            return false;
+                        }
+                    }
                 })
             }
 
+            uploadPhotos() {
+
+                var html = jQuery(`
+                    <div>
+                        ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, id: 'upload-photo-button', value: 'Upload Photo' })}
+                        ${twcUI.render({ type: twcUI.CTRL_TYPE.FILE, id: 'upload-photo', accept: '.jpg, .jpeg, .png', hide: true })}
+                        <div id="upload-photo-list" class="twc-div-table-r">
+                        </div>
+                    </div>
+                `)
+
+                var photos = [];
+                var photoList = html.find('#upload-photo-list');
+
+                var form = twcUI.init({}, html);
+                form.getControl('upload-photo-button').on('click', e => {
+                    form.getControl('upload-photo').input.click()
+                })
+
+                form.getControl('upload-photo').on('change', e => {
+                    e.target.readFile(file => {
+                        console.log(file);
+                        photos.push(file);
+
+                        var photoListItem = jQuery(`
+                            <div>
+                                <div class="photo-upload-status" style="width: 35px;"></div>
+                                <div style="width: 250px; white-space: nowrap;">${file.name}</div>
+                                <div>
+                                    ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, id: 'upload-photo-' + photos.length, width: '100%', hint: 'enter some notes if required' })}
+                                </div>
+                                <div class="twc-clickable" style="width: 35px; text-align: center;">${twcIcons.get('trash', 20, 'red')}</div>
+                            </div>
+                        `);
+                        photoListItem.find('.twc-clickable').click(e => {
+                            photoListItem.remove();
+                            file.deleted = true;
+                        })
+                        photoListItem.find('input').change(e => {
+                            file.notes = jQuery(e.currentTarget).val().trim();
+                        })
+
+                        photoList.append(photoListItem);
+                    })
+                })
+
+                dialog.open({
+                    title: 'Upload Completion Photos',
+                    content: form.ui,
+                    size: { width: '1000px', height: '500px' },
+                    ok: (dlg) => {
+                        console.log(photos);
+
+                        this.uploadPhoto(photoList, photos, 0, () => {
+                            var errors = photos.filter(p => { return p.error !== undefined; })
+                            if (errors.length > 0) {
+                                var errorHtml = '';
+                                core.array.each(errors, e => { errorHtml += `<b>${e.name}</b>: ${e.error.error}<hr />`; });
+                                dialog.error(errorHtml, () => { location.reload(); });
+                                return;
+                            }
+
+                            this.postSync({ action: 'edit-saf-status' }, { saf: this.data.siteAccessInfo.id, status: twcSaf.Status.PhotosReceived });
+
+                            dlg.close();
+                            location.reload();
+                        });
+
+
+                        return false;
+                    }
+                });
+
+            }
+
+            uploadPhoto(photoList, photos, idx, callback) {
+                if (photos[idx] === undefined) {
+                    callback();
+                    return;
+                }
+
+                var photoListItem = photoList.find('.photo-upload-status').eq(idx);
+                photoListItem.html(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 16)}</span>`);
+
+                if (photos[idx].deleted) {
+                    this.uploadPhoto(photoList, photos, idx + 1, callback);
+                    return;
+                }
+
+                this.post({ action: 'upload-saf-photo' }, { saf: this.data.siteAccessInfo.id, photo: photos[idx] }).then(resp => {
+                    if (resp.error) {
+                        photoListItem.html(twcIcons.get('exclamation', 16, 'red'));
+                        photos[idx].error = resp;
+                    } else {
+                        photoListItem.html(twcIcons.get('shieldCheck', 16, 'lime'));
+                    }
+
+                    this.uploadPhoto(photoList, photos, idx + 1, callback);
+
+
+                }).catch(err => {
+                    photoListItem.html(twcIcons.get('exclamation', 16, 'red'));
+                    photos[idx].error = err;
+                    this.uploadPhoto(photoList, photos, idx + 1, callback);
+                });
+            }
+
+            assignReviewer() {
+                var resp = this.postSync({ action: 'saf-get-reviewers' }, { saf: this.data.siteAccessInfo.id });
+                var formConfig = {
+                    controls: [
+                        { type: twcUI.CTRL_TYPE.DROPDOWN, id: 'reviewer', label: 'Completion photo reviewer', dataSource: resp.data, width: '100%', mandatory: true, lineBreak: true },
+                    ]
+                }
+                var form = twcUI.init(formConfig);
+                dialog.open({
+                    title: 'Assign a completion photo reviewer',
+                    content: form.ui,
+                    size: { width: '350px', height: '200px' },
+                    ok: () => {
+                        try {
+                            var values = form.getValues(true);
+
+                            this.postSync({ action: 'saf-set-reviewer' }, { saf: this.data.siteAccessInfo.id, reviewer: values.reviewer });
+                            location.reload();
+
+                            return true;
+                        } catch (error) {
+                            dialog.error(error);
+                            return false;
+                        }
+
+                    }
+                });
+            }
+
+            photosReviewed() {
+                var formConfig = {
+                    controls: [
+                        { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Review Comment', width: '100%', rows: 5, mandatory: true, lineBreak: true },
+                    ]
+                }
+                var form = twcUI.init(formConfig);
+                dialog.open({
+                    title: 'Assign a completion photo reviewer',
+                    content: form.ui,
+                    size: { width: '350px', height: '250px' },
+                    ok: () => {
+                        try {
+                            var values = form.getValues();
+
+                            this.postSync({ action: 'saf-set-reviewed' }, { saf: this.data.siteAccessInfo.id, comment: values.comment });
+
+                            location.reload();
+
+                            return true;
+                        } catch (error) {
+                            dialog.error(error);
+                            return false;
+                        }
+
+                    }
+                });
+            }
         }
 
         return {

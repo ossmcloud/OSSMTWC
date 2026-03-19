@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteAccessUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_utils.js', '../data/oTWC_config.js', '../data/oTWC_saf.js', '../O/controls/oTWC_ui_ctrl.js'],
-    function (core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteAccessUtils, twcUIPanel, twcUtils, twcConfig, twcSaf, twcUI) {
+define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteAccessUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_utils.js', '../data/oTWC_config.js', '../data/oTWC_saf.js', '../data/oTWC_safTimeBlock.js', '../O/controls/oTWC_ui_ctrl.js'],
+    function (file, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteAccessUtils, twcUIPanel, twcUtils, twcConfig, twcSaf, twcSafTimeBlock, twcUI) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -14,11 +14,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var html = '';
             if (context.request.parameters.siteId || context.request.parameters.recId) {
+                if (context.request.parameters.err == 'T') { s.form.bannerError('SUBMIT ERRORS', 'some errors occurred during save, please look at the logs for more info', 5000) }
+
                 pageData.siteAccessInfo = twcSiteAccessUtils.getSiteAccessInfo(pageData, context.request.parameters.reUse == 'T');
+
+                var safStatus = pageData.siteAccessInfo[twcSaf.Fields.STATUS];
+                var safIsInThePast = context.request.parameters.recId ? pageData.siteAccessInfo[twcSaf.Fields.START_TIME_BLOCK].split(' ')[0] < twcUtils.today() : false;
+                var safRequiresSrf = twcUtils.getSafType(pageData.siteAccessInfo[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';
+
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteAccessInfo.siteId || context.request.parameters.siteId);
                 pageData.timeBlocks = twcUtils.getSafTimeBlocks();
                 pageData.siteTimeBlocks = twcSiteAccessUtils.getAllSafTimeBlocks(pageData.siteAccessInfo);
-                pageData.recordStatus = `<div class="twc-div-span-table">${twcSaf.getSafStatusHtml(pageData.siteAccessInfo[twcSaf.Fields.STATUS])}</div>`;
+                pageData.recordStatus = `<div class="twc-div-span-table">${twcSaf.getSafStatusHtml(safStatus)}</div>`;
                 if (context.request.parameters.recId) {
                     var safCode = pageData.siteAccessInfo.name;
                     if (context.request.parameters.reUse == 'T') { safCode = 'REUSE: ' + safCode; }
@@ -34,21 +41,30 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     `
                 }
                 // @@NOTE: if we have no recId is because we have a new SAF, we have a submit button at the bottom of the page for it, we use the forceViewOnly to hide the Save/Cancel buttons
-                var canEdit = true; // @@TODO: SAF: this depends on the user logged in ???
+                var canEdit = pageData.userInfo.isEmployee ? true : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Rejected);
+                if (canEdit && safIsInThePast) { canEdit = false; }
+
+                // @@NOTE: we set pageData.forceViewOnly = true because we do not want the baseView save/cancel buttons
                 pageData.forceViewOnly = canEdit ? context.request.parameters.recId === undefined : true;
                 if (pageData.editMode) { pageData.forceViewOnly = true; }
-                
 
-                // @@TODO: SAF: this depends on the logged in user
-                var canChangeStatus = pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Pending || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Approved || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Rejected || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Completed || pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.Cancelled;
+                //
+                var canChangeStatus = (pageData.userInfo.isEmployee) ? safStatus != twcSaf.Status.Complete : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Rejected);
+                if (core.me()) { canChangeStatus = true; }
                 if (canChangeStatus) {
                     pageData.allowedStatues = [];
-                    pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Pending, true));
-                    pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Approved, true));
-                    pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Rejected, true));
-                    pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Complete, true));
+                    if (!safIsInThePast) { pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Pending, true)); }
+                    if (pageData.userInfo.isEmployee) {
+                        pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Approved, true));
+                        pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Rejected, true));
+                        if (safRequiresSrf) {
+                            pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.AwaitingPhotos, true));
+                            pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.PhotosReceived, true));
+                        }
+                        pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.PartiallyComplete, true));
+                        pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Complete, true));
+                    }
                     pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Cancelled, true));
-
                 }
 
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteAccess');
@@ -60,17 +76,30 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 if (context.request.parameters.recId === undefined) {
                     html = html.replaceAll('{CONDITION_OF_ACCESS}', `<b>Select SAF Setup & Access Requirements to begin</b>`);
+                    html = html.replaceAll('{TIME_BLOCKS}', '');
 
                 } else {
-                    html = html.replaceAll('{CONDITION_OF_ACCESS}', pageData.siteAccessInfo[twcSaf.Fields.CONDITIONS_OF_ACCESS] || '');
+                    var timeBlocks = twcUI.render({ type: twcUI.CTRL_TYPE.TABLE, dataSource: twcSiteAccessUtils.getSafTimeBlocks(context.request.parameters.recId) })
+                    html = html.replaceAll('{CONDITION_OF_ACCESS}', `${pageData.siteAccessInfo[twcSaf.Fields.CONDITIONS_OF_ACCESS] || ''}`);
+                    html = html.replaceAll('{TIME_BLOCKS}', `<div class="twc-control-panel-title" style="padding: 6px;">Time Blocks</div>${timeBlocks}`);
 
                     var actions = '';
                     if (pageData.editMode) {
                         actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel', id: 'cancel-button' })
                     } else {
-                        var canCompleteWork = pageData.siteAccessInfo[twcSaf.Fields.STATUS] == twcSaf.Status.AwaitingPhotos
+                        if (safRequiresSrf && (safStatus == twcSaf.Status.Approved || safStatus == twcSaf.Status.AwaitingPhotos || safStatus == twcSaf.Status.PhotosReceived)) {
+                            if (pageData.userInfo.isEmployee && safStatus == twcSaf.Status.PhotosReceived) {
+                                if (pageData.siteAccessInfo[twcSaf.Fields.COMPLETION_REVIEWER] == pageData.userInfo.profile) {
+                                    actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Completion Reviewed', id: 'review-completion-button' });
+                                } else {
+                                    actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Assign Reviewer', id: 'assign-reviewer-button' });
+                                }
+                            } else {
+                                actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Upload Completion Photos', id: 'upload-photos-button' });
+                            }
+
+                        }
                         if (canChangeStatus) { actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Change Status / Comment', id: 'change-status-button' }); }
-                        if (canCompleteWork) { actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Complete Work', id: 'complete-work-button' }); }
                         actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Re Use', id: 're-use-button' });
                     }
 
@@ -116,11 +145,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return { data: twcUtils.getProfiles({ company: payload.vendor, canAttend: true }) };
 
             } else if (context.request.parameters.action == 'saf-crew-record') {
-                //throw new Error(context.request.body)
                 var userInfo = twcConfig.userInfo(context);
                 var payload = JSON.parse(context.request.body);
                 var fields = twcSiteAccessUtils.getSafCrewRecord(payload, userInfo);
                 return fields;
+
+            } else if (context.request.parameters.action == 'saf-action-record') {
+                var userInfo = twcConfig.userInfo(context);
+                var payload = JSON.parse(context.request.body);
+                var fields = twcSiteAccessUtils.getSafActionRecord(payload, userInfo);
+                return fields;
+
+            } else if (context.request.parameters.action == 'get-srf-actions') {
+                var payload = JSON.parse(context.request.body);
+                return { data: twcUtils.getSrfActions(payload) };
 
             } else if (context.request.parameters.action == 'save-new-saf') {
                 var userInfo = twcConfig.userInfo(context);
@@ -130,6 +168,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } else if (context.request.parameters.action == 'edit-saf-status') {
                 var payload = JSON.parse(context.request.body);
                 return twcSiteAccessUtils.editSafStatus(payload);
+
+            } else if (context.request.parameters.action == 'upload-saf-photo') {
+                twcSiteAccessUtils.saveSafImage(JSON.parse(context.request.body));
+                return { status: 'success' };
+
+            } else if (context.request.parameters.action == 'saf-get-reviewers') {
+                var payload = JSON.parse(context.request.body);
+                return { data: twcUtils.getSafReviewers(payload) };
+
+            } else if (context.request.parameters.action == 'saf-set-reviewer') {
+                var payload = JSON.parse(context.request.body);
+                twcSiteAccessUtils.setSafReviewer(payload);
+                return { status: 'success' };
+
+            } else if (context.request.parameters.action == 'saf-set-reviewed') {
+                var payload = JSON.parse(context.request.body);
+                twcSiteAccessUtils.setSafReviewed(payload);
+                return { status: 'success' };
 
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);

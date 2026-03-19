@@ -109,7 +109,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 var disabled = this.#options.disabled ? 'disabled' : '';
                 var readOnly = this.#options.readOnly ? 'readonly' : '';
 
-                if (this.#dataSource.length == 1 && !this.#options.value) {
+                if (this.#dataSource.length == 1 && !this.#options.value && !this.#options.noAutoSelect) {
                     this.#options.value = this.#dataSource[0].value;
                 }
 
@@ -233,6 +233,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             showDropDownList(src) {
+                this.#dropDown.css('min-width', this.#ui.width() + 'px');
 
                 var content = '';
 

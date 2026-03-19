@@ -34,11 +34,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 l.sAF = saf;
                 l.profile = profile;
                 l.logType = type;
-                l.message = msg;
+                l.message = msg.substring(0, 300);
                 l.additionalInfo = info;
                 l.save();
             } catch (error) {
-                // @@TODO: SAF: store original message
+                core.logError('SAF-LOG-ERROR-MSG', `saf: ${saf} - type: ${type} - msg: ${msg}`);
+                core.logError('SAF-LOG-ERROR-INFO', `saf: ${saf} - type: ${type} - info: ${info}`);
                 core.logError('SAF-LOG-ERROR', error.message);
             }
         }

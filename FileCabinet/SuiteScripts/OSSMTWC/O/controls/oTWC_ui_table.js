@@ -295,6 +295,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 if (this.options.sortIdx !== undefined) {
                     this.#sortIdx = this.options.sortIdx;
                 }
+                
                 this.#filters = new HtmlTableColumnFilter(this);
             }
 
@@ -327,6 +328,11 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.options.noSort = val;
             }
 
+            get hide() {
+                return this.options.hide;
+            } set hide(val) {
+                this.options.hide = val;
+            }
 
 
             get total() {
@@ -855,6 +861,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         core.array.each(this.#options.columns, c => {
                             var col = new HtmlTableColumn(this, c.options || c);
                             if (this.onColumnInit) { if (this.onColumnInit(this, col) === false) { return; } }
+                            if (col.hide) { return; }
                             this.#columns.push(col);
                             if (col.sortIdx == null) { col.sortIdx = this.#columns.length * 10; }
                         })
@@ -910,7 +917,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 if (this.#options.fitScreen) {
                     // @@REVIEW: i don't like the -50, also we should handle some actual size if needed
-                    this.#j.height(window.innerHeight - this.#j.parent().offset().top - 55);
+                    this.#j.height(window.innerHeight - this.#j.parent().offset().top - 27);
                 } else if (this.#options.fitContainer) {
                     this.#j.height(this.#j.parent().innerHeight());
                 }

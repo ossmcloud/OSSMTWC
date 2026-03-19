@@ -15,6 +15,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #dataFiltered = null;
             #tableData = null;
             #tableDataFiltered = null;
+            #initialTableHeight = null;
+            #tableLastScrollTop = 0;
             constructor(options) {
                 this.#page = options.page;
                 this.#sitesTable = options.table;
@@ -71,19 +73,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@TODO: @@REVIEW: we should hook this to this.#sitesTable object
                 var table = jQuery('ossm[data-type="table"]');
                 table.on('scroll', e => {
-                    if (!this.#sitesTableExpanded) {
-                        this.expandSiteTable();
-                    } else {
-                        if (table.scrollTop() == 0 && this.#sitesTableExpanded) {
+                    var currentScrollTop = table.scrollTop();
+                    if (currentScrollTop !== this.#tableLastScrollTop) {
+                        this.#tableLastScrollTop = currentScrollTop;
+                        if (!this.#sitesTableExpanded) {
                             this.expandSiteTable();
+                        } else {
+                            if (currentScrollTop == 0 && this.#sitesTableExpanded) { this.expandSiteTable(); }
                         }
                     }
                 })
+
+                this.#initialTableHeight = jQuery('#omt_sites').closest('ossm').height();
+                console.log(this.#initialTableHeight)
+
             }
 
             clearFilters() {
                 core.array.each(this.ui.controls, c => {
-                    if (c.id.startsWith('twc-coord') || c.id.startsWith('cust') || c.id=='record_id') {
+                    if (c.id.startsWith('twc-coord') || c.id.startsWith('cust') || c.id == 'record_id') {
                         c.value = (c.id == 'twc-coord-radius') ? 5 : null;
                     }
                 })
@@ -171,13 +179,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             expandSiteTable() {
                 var deltaHeight = 250;
                 if (this.#sitesTableExpanded) { deltaHeight *= -1; }
-                this.#sitesTableExpanded = !this.#sitesTableExpanded;
-                var topRowHeight = jQuery('#twc-google-map-container').height();
-                var tableHeight = jQuery('#omt_sites').closest('ossm').height();
 
+                var tableHeight = jQuery('#omt_sites').closest('ossm').height();
+                tableHeight = tableHeight + deltaHeight;
+                if (Math.ceil(tableHeight) < Math.floor(this.#initialTableHeight)) { return; }
+
+
+                this.#sitesTableExpanded = !this.#sitesTableExpanded;
+
+                var topRowHeight = jQuery('#twc-google-map-container').height();
                 jQuery('#twc-google-map-container').animate({ height: topRowHeight - deltaHeight }, 350, 'swing');
                 jQuery('#twc-google-map-filters').animate({ height: topRowHeight - deltaHeight }, 350, 'swing');
-                jQuery('#omt_sites').closest('ossm').animate({ height: tableHeight + deltaHeight }, 350, 'swing');
+                jQuery('#omt_sites').closest('ossm').animate({ height: tableHeight }, 350, 'swing');
             }
 
         }

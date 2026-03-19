@@ -32,7 +32,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 var errors = '';
                 var obj = {};
                 core.array.each(this.#controls, c => {
-                    if (asObj && c.valueObj) {
+                    if (asObj && (c.type == ctrlBase.CTRL_TYPE.DROPDOWN || c.type == ctrlBase.CTRL_TYPE.SELECT)) {
                         obj[c.id] = c.valueObj;
                     } else {
                         obj[c.id] = c.value;
