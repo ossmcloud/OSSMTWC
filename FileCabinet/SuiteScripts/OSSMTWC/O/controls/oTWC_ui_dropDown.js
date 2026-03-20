@@ -386,7 +386,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             setMultiTextValue(selectedValue) {
                 if (this.multiSelect) {
                     var selectedValueText = '';
-                    var items = (selectedValue || this.#ui?.attr('data-value') || '').split(',').filter(i => i);
+                    var items = (selectedValue || this.#ui?.attr('data-value') || '').toString().split(',').filter(i => i);
                     if (items.length > 0) {
                         if (items.length == 1) {
                             selectedValueText = this.#dataSource.find(ds => { return ds.value == items[0] })?.text || '';

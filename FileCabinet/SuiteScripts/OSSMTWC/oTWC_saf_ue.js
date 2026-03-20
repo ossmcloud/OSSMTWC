@@ -30,9 +30,9 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
                     `)
 
                     form.f.insertField({ field: condOfAccess.f, nextfield: twcSaf.Fields.CONDITIONS_OF_ACCESS });
-                    form.fieldHide(twcSaf.Fields.CONDITIONS_OF_ACCESS)
-
+                    form.fieldHide(twcSaf.Fields.CONDITIONS_OF_ACCESS);
                     
+                    form.buttonAdd('Open SAF', 'openSaf')
 
                     var styles = twcThemes.css('default')
                     styles += file.load('SuiteScripts/OSSMTWC/O/css/html.styles.css').getContents();

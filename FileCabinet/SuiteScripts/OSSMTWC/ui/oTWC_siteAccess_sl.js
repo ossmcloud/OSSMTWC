@@ -41,7 +41,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                     `
                 }
                 // @@NOTE: if we have no recId is because we have a new SAF, we have a submit button at the bottom of the page for it, we use the forceViewOnly to hide the Save/Cancel buttons
-                var canEdit = pageData.userInfo.isEmployee ? (safStatus != twcSaf.Status.Cancelled) : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Rejected);
+                var canEdit = pageData.userInfo.isEmployee ? (safStatus != twcSaf.Status.Cancelled) : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Rejected || safStatus == twcSaf.Status.Approved);
                 if (canEdit && safIsInThePast) { canEdit = false; }
 
                 // @@NOTE: we set pageData.forceViewOnly = true because we do not want the baseView save/cancel buttons
