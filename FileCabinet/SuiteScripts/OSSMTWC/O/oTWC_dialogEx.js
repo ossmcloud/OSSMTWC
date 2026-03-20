@@ -195,17 +195,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function error(error, callback) {
 
             var stackTrace = ''; var size = { width: '500px', height: '300px' }
-            // if (core.ossm() && error.stack) {
-            //     stackTrace = `<hr />`;
-            //     if (Array.isArray(error.stack)) {
-            //         core.array.each(error.stack, st => {
-            //             stackTrace += `${st.replaceAll(' ', '&nbsp;')}<br />`;    
-            //         })
-            //     } else {
-            //         stackTrace += error.stack.replaceAll(' ', '&nbsp;');
-            //     }
-            //     size = { width: '750px', height: '500px' }
-            // }
+            if (core.ossm() && error.stack) {
+                stackTrace = `<hr />`;
+                if (Array.isArray(error.stack)) {
+                    core.array.each(error.stack, st => {
+                        stackTrace += `${st.replaceAll(' ', '&nbsp;')}<br />`;    
+                    })
+                } else {
+                    stackTrace += error.stack.replaceAll(' ', '&nbsp;');
+                }
+                size = { width: '750px', height: '500px' }
+            }
 
             var dlg = dialog.open({
                 title: 'error',

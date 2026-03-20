@@ -109,7 +109,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     safCrew['saf-crew-member'] = crew.saf_crew_member;
                     safCrew['saf-crew-member_name'] = crew.saf_crew_member_name;
                     safCrew['saf-crew-attend-as'] = crew.saf_crew_attend;
-                    safCrew['saf-crew-attend-as_name'] = crew.saf_crew_attend;
                     safCrews.push(safCrew);
                 })
             }
@@ -305,7 +304,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 dataSource: getSafEqAction(dataSource),
                 showToolbar: true,
                 showEditDelete: !isExistingSaf,
-                
+
             }
             step3CInfo.fields.push(crewTableControl);
 
@@ -337,8 +336,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     { id: 'saf-crew-vendor_name', title: 'Contractor' },
                     { id: 'saf-crew-member', title: 'Visitor', hide: true },
                     { id: 'saf-crew-member_name', title: 'Visitor' },
-                    { id: 'saf-crew-attend-as', title: 'Attend As', hide: true },
-                    { id: 'saf-crew-attend-as_name', title: 'Attend As' },
+                    { id: 'saf-crew-attend-as', title: 'Certificates' },
                 ],
                 dataSource: getSafCrew(dataSource),
                 showToolbar: true,
@@ -441,7 +439,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fieldGroup = { id: 'saf-item', collapsed: false, fields: [] };
             fieldGroup.fields.push({ id: 'saf-crew-vendor', label: 'Contractor', type: twcUI.CTRL_TYPE.DROPDOWN, allowAll: false, dataSource: twcUtils.getVendors(userInfo), mandatory: true });
             fieldGroup.fields.push({ id: 'saf-crew-member', label: 'Person', type: twcUI.CTRL_TYPE.DROPDOWN, allowAll: false, dataSource: [], mandatory: true });
-            fieldGroup.fields.push({ id: 'saf-crew-attend-as', label: 'Attend As', type: twcUI.CTRL_TYPE.DROPDOWN, allowAll: false, dataSource: [], mandatory: true });
+            fieldGroup.fields.push({ id: 'saf-crew-attend-as', label: 'Certificates', type: twcUI.CTRL_TYPE.TEXTAREA, readOnly: true, width: '100%', rows: 7, mandatory: true });
             configUIFields.formatPanelFields(childRecord, fieldGroup);
             return fieldGroup;
         }
@@ -586,7 +584,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getSAFInfoPanels_WorkFlowInfo_Images(dataSource, userInfo) {
-            
+
             var fieldGroup = { id: 'site-access-workflow-images', title: 'Completion Photos', collapsed: false, controls: [] };
             var workFlowLogsInfo = { id: 'site-access-logs', collapsed: false, fields: [] };
             fieldGroup.controls.push(workFlowLogsInfo);
@@ -621,7 +619,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     ['preview_link']: { title: '', noFilter: true, styles: { width: '50px' } }
                 },
                 dataSource: twcUtils.getSafContractorFiles(dataSource),
-                FieldsInfo: twcSafLog.FieldsInfo,
+                FieldsInfo: twcFile.FieldsInfo,
                 showToolbar: false,
             });
             configUIFields.formatPanelFields(dataSource, fieldGroup);

@@ -5,8 +5,10 @@
 define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './oTWC_permissions.js'],
     (runtime, core, coreSQL, recu, permissions) => {
 
-        const FIELD_ENTITY_USER_PREF = 'custentity_twc_userpref';
+        // @@HARDCODED: 
+        const TOWERCOM_ENTITY = 822;
 
+        const FIELD_ENTITY_USER_PREF = 'custentity_twc_userpref';
 
 
 
@@ -25,10 +27,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             userInfo.permission = permissions.get(context);
 
             userInfo.recordId = userInfo.id;
+
             userInfo.companyProfile = coreSQL.first(`
                 select  id, name, custrecord_twc_co_fin_vend as is_vendor, custrecord_twc_co_fin_cust as is_customer
                 from    customrecord_twc_company
-                where   custrecordtwc_entity = ${userInfo.id}
+                where   custrecordtwc_entity = ${(userInfo.type == 'Employee') ? TOWERCOM_ENTITY : userInfo.id}
             `)
 
             if (userInfo.type != 'Employee') {

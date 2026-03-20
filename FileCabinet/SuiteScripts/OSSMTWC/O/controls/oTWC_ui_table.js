@@ -492,7 +492,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 if (this.cellMask) { formattedValue = this.cellMask.replaceAll('${value}', formattedValue); }
 
-                if (this.formatValue) { formattedValue = this.formatValue(value, formattedValue); }
+                if (this.formatValue) { formattedValue = this.formatValue(value, formattedValue, data); }
 
                 return `<div style="${this.baseStyles('cell')}">${formattedValue}</div>`;
             }

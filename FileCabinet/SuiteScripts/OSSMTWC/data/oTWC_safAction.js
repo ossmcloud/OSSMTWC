@@ -36,8 +36,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             },
 
 
-
+            // @@TODO: @@REVIEW: this should not use hardcoded names
             getStatusHtml(status) {
+                if (!status) { return ''; }
                 var backgroundColor = 'silver'; var color = 'white';
 
                 if (status == 'Pending') {

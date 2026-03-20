@@ -434,7 +434,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var files = [];
             coreSQL.each(sql, f => {
-                f.preview_link = `<div style="text-align: center;"><span class="twc-clickable saf-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
+                f.preview_link = `<div style="text-align: center;"><span class="twc-clickable twc-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
                 files.push(f)
             })
             //throw new Error(JSON.stringify(files))
@@ -446,23 +446,64 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
             fileIds += options['custrecord_twc_saf_health_safety'];
 
+            return getFiles({ filters: { id: { op: 'in', value: `(${fileIds})`}}})
 
+            // var sql = `
+            //     select  f.id, ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'dd/MM/yyyy HH:mi') as created, f.name,
+            //             BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as type,
+            //             ${twcFile.Fields.DESCRIPTION}
+            //     from    ${twcFile.Type} f
+            //     join    customrecord_twc_file_type t on t.id = f.${twcFile.Fields.R_TYPE}
+            //     where   f.id in (${fileIds})
+            //     order by BUILTIN.DF(${twcFile.Fields.R_TYPE}), f.name
+            // `
 
+            // var files = [];
+            // coreSQL.each(sql, f => {
+            //     f.preview_link = `<div style="text-align: center;"><span class="twc-clickable twc-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
+            //     files.push(f)
+            // })
+            // //throw new Error(JSON.stringify(files))
+            // return files;
+        }
+
+        function getFiles(options) {
+            // var sql = `
+            //     select  f.id, f.name, BUILTIN.DF(f.custrecord_twc_file_type) as type, f.custrecord_twc_file_recid as file_dsecr, f.custrecord_twc_file_doc as file_id,
+            //             t.custrecord_twc_file_type_hs as is_hs, t.custrecord_twc_file_type_method as is_method
+            //     from    customrecord_twc_file f
+            //     left join    customrecord_twc_file_type t on t.id = f.custrecord_twc_file_type
+
+            //     where  f.isinactive = 'F'
+            // `
+            
             var sql = `
-                select  ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'dd/MM/yyyy HH:mi') as created, f.name, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name,
+                select  f.id, ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'dd/MM/yyyy HH:mi') as created, f.name,
+                        BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as type,
                         ${twcFile.Fields.DESCRIPTION}
                 from    ${twcFile.Type} f
                 join    customrecord_twc_file_type t on t.id = f.${twcFile.Fields.R_TYPE}
-                where   f.id in (${fileIds})
-                order by BUILTIN.DF(${twcFile.Fields.R_TYPE}), f.name
+                where   f.isinactive = 'F'
             `
+
+            if (options.filters) {
+                for (var f in options.filters) {
+                    if (options.filters[f].op !== undefined) {
+                        sql += `and ${f} ${options.filters[f].op} ${options.filters[f].value}`;
+                    } else {
+                        sql += `and ${f} = '${options.filters[f]}'`;
+                    }
+                }
+            }
+
+            sql += ` order by BUILTIN.DF(${twcFile.Fields.R_TYPE}), f.name`;
 
             var files = [];
             coreSQL.each(sql, f => {
-                f.preview_link = `<div style="text-align: center;"><span class="twc-clickable saf-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
+                f.preview_link = `<div style="text-align: center;"><span class="twc-clickable twc-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
                 files.push(f)
             })
-            //throw new Error(JSON.stringify(files))
+            
             return files;
         }
 
@@ -634,13 +675,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             coreSQL.each(sql, p => {
                 var attendAs = getAttendAs(p);
                 if (options.canAttend && attendAs.length == 0) { return; }
+
+                var attendAsText = '';
+                core.array.each(attendAs, a => {
+                    if (attendAsText) { attendAsText += ', '; }
+                    attendAsText += `${a.text}`;
+                })
+
                 profiles.push({
                     value: p.value,
                     text: p.text,
                     text_render: p.text_render,
                     phone: p.phone,
                     email: p.email,
-                    attendAs: attendAs
+                    attendAs: attendAs,
+                    attendAsText: attendAsText
                 })
             })
             return profiles;
@@ -768,33 +817,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return info;
         }
 
-        function getFiles(options) {
-            var sql = ` 
-                select  f.id, f.name, BUILTIN.DF(f.custrecord_twc_file_type) as type, f.custrecord_twc_file_recid as file_dsecr, f.custrecord_twc_file_doc as file_id,
-                        t.custrecord_twc_file_type_hs as is_hs, t.custrecord_twc_file_type_method as is_method
-                from    customrecord_twc_file f
-                left join    customrecord_twc_file_type t on t.id = f.custrecord_twc_file_type
-
-                where  f.isinactive = 'F'
-            `
-            if (options.filters) {
-                for (var f in options.filters) {
-                    if (options.filters[f].op !== undefined) {
-                        sql += `and ${f} ${options.filters[f].op} ${options.filters[f].value}`;
-                    } else {
-                        sql += `and ${f} = '${options.filters[f]}'`;
-                    }
-                }
-            }
-
-            sql += ' order by f.name';
-
-            return coreSQL.run(sql)
-        }
+        
 
         function formatLongDate(d) {
             if (!d) { d = (new Date()).addHours(12); }
             return `${cored.WeekDays[d.getDay()]} ${d.getDate()} ${cored.Months[d.getMonth()]}, ${d.getFullYear()}`;
+        }
+
+        function fromJsToNs(nsDate) {
+            if (!nsDate) { return nsDate; }
+            var dateParts = nsDate.split('-');
+            if (dateParts.length != 3) { return 'Invalid Date'; }
+            var d = parseInt(dateParts[2], 10);
+            var m = parseInt(dateParts[1], 10);
+            return `${d}/${m}/${dateParts[0]}`;
         }
 
         return {
@@ -860,6 +896,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getYesNoOptions: getYesNoOptions,
             getFiles: getFiles,
             formatLongDate: formatLongDate,
+            fromJsToNs: fromJsToNs,
 
             today: function () {
                 return coreSQL.first(`select TO_CHAR(CURRENT_DATE, 'YYYY-MM-dd') as today`).today;

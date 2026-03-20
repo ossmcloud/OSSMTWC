@@ -510,17 +510,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.#page.post({ action: 'get-vendor-persons' }, { vendor: e.value })
                             .then(res => {
                                 form.getControl('saf-crew-member').setDataSource(res.data);
-                                form.getControl('saf-crew-attend-as').setDataSource([]);
                                 safCrew.ui.controls.find(c => { return c.id == 'saf-crew-member' }).dataSource = res.data;
                             })
                             .catch(err => { dialog.error(err); });
                     })
                     form.getControl('saf-crew-member').on('change', e => {
-                        form.getControl('saf-crew-attend-as').value = null; form.getControl('saf-crew-attend-as').setDataSource(e.object?.attendAs || []);
-                        safCrew.ui.controls.find(c => { return c.id == 'saf-crew-attend-as' }).dataSource = e.object?.attendAs || [];
+                        form.getControl('saf-crew-attend-as').value = e.object?.attendAsText.replaceAll(', ', '\n');
+                        
                     });
 
-                    dialog.confirm({ title: 'manage visitor', message: form.ui, width: '300px', height: '300px' }, () => {
+                    dialog.confirm({ title: 'manage visitor', message: form.ui, width: '300px', height: '425px' }, () => {
                         try {
                             var obj = form.getValues(true);
                             for (var k in obj) {
@@ -542,6 +541,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             safCrew.ui.controls.find(c => { return c.id == 'saf-crew-vendor' }).value = safCrew['saf-crew-vendor'];
                             safCrew.ui.controls.find(c => { return c.id == 'saf-crew-member' }).value = safCrew['saf-crew-member'];
                             safCrew.ui.controls.find(c => { return c.id == 'saf-crew-attend-as' }).value = safCrew['saf-crew-attend-as'];
+
+                            safCrew['saf-crew-attend-as'] = safCrew['saf-crew-attend-as'].replaceAll('\n', ', ');
 
                             if (!this.data.siteAccessInfo.crews) { this.data.siteAccessInfo.crews = table.data; }
                             if (this.data.siteAccessInfo.crews.indexOf(safCrew) < 0) { this.data.siteAccessInfo.crews.push(safCrew); }
@@ -710,7 +711,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             initSafMode() {
-                this.ui.find('.saf-file').click(async e => {
+                this.ui.find('.twc-file').click(async e => {
                     var file = jQuery(e.currentTarget).data('file')
                     await this.previewFile(file, e)
                 })
