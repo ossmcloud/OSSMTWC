@@ -33,10 +33,30 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             getFields: () => {
                 return twcUtils.getFields(twcSafAction.Type);
+            },
+
+
+
+            getStatusHtml(status) {
+                var backgroundColor = 'silver'; var color = 'white';
+
+                if (status == 'Pending') {
+                    color = 'white';
+                    backgroundColor = 'orange';
+                } else if (status == 'Complete') {
+                    color = 'white';
+                    backgroundColor = 'green';
+                } else if (status == 'AwaitingPhotos') {
+                    color = 'white';
+                    backgroundColor = 'magenta';
+                }
+
+                return `
+                    <span class="twc-record-status-row" style="color: ${color}; background-color: ${backgroundColor};" >
+                        ${status}
+                    </span>
+                `;
             }
-
-            
-
 
         }
     });

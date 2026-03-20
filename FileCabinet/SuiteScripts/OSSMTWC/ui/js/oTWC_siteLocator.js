@@ -46,7 +46,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (col.id == 'record_id') { return false; }
                 if (col.id == 'name') { return false; }
                 if (col.id == 'site_type_color') { return false; }
-                if (col.id == 'site_type_color') { return false; }
+                if (col.id == 'site_level_color') { return false; }
 
                 var uf = window.twc.page.data.data.sitesInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
                 if (uf) {

@@ -31,32 +31,31 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 where   custrecordtwc_entity = ${userInfo.id}
             `)
 
+            if (userInfo.type != 'Employee') {
+                if (!userInfo.companyProfile) {
+                    throw new Error('Your user is not associated to any company profile, please contact TWC administrator to set you up.')
+                }
+
+                userInfo.companyProfile.isVendor = userInfo.companyProfile.is_vendor == 'T';
+                userInfo.companyProfile.isCustomer = userInfo.companyProfile.is_customer == 'T';
+                userInfo.companyProfile.isBoth = userInfo.companyProfile.isVendor && userInfo.companyProfile.isCustomer;
+
+                delete userInfo.companyProfile.is_vendor;
+                delete userInfo.companyProfile.is_customer;
+            }
+
             if (userInfo.type == 'Employee') {
                 userInfo.isEmployee = true;
                 userInfo.recordType = 'employee';
-            } else if (userInfo.companyProfile?.is_vendor == 'T') {
+            } else if (userInfo.companyProfile?.isVendor) {
                 userInfo.isVendor = true;
                 userInfo.recordType = 'vendor';
-            } else if (userInfo.companyProfile?.is_customer == 'T') {
+            } else if (userInfo.companyProfile?.isCustomer) {
                 userInfo.isCustomer = true;
                 userInfo.recordType = 'customer';
             } else {
                 throw new Error('Could not determine login type');
             }
-
-            // if (userInfo.type.indexOf('Vendor') >= 0) {
-            //     userInfo.isVendor = true;
-            //     userInfo.recordType = 'vendor';
-            // } else if (userInfo.type.indexOf('CustJob') >= 0) {
-            //     userInfo.isCustomer = true;
-            //     userInfo.recordType = 'customer';
-            // } else {
-            //     userInfo.isEmployee = true;
-            //     userInfo.recordType = 'employee';
-            // }
-            
-            
-
 
             if (!userInfo.isEmployee) {
                 // @@NOTE: the oly way to detect that the logged in user is not the main customer but a contact with access is if the email on runtime is different than what we loaded for the customer
@@ -87,10 +86,29 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             userInfo.profile = coreSQL.first(`select id from customrecord_twc_prof where custrecord_twc_prof_username = ${userInfo.recordId}`)?.id || null;
 
+            if (!userInfo.profile) { throw new Error('Your user is not associated to any profile, please contact TWC administrator to set you up.') }
+
             return userInfo;
         }
 
 
+        function getUserAllowedCustomers(userInfo) {
+            var allowedCustomers = 'all';
+            if (userInfo.companyProfile?.isVendor) {
+                allowedCustomers = coreSQL.run(`select custrecord_twc_acl_cust as cust from customrecord_twc_acl where custrecord_twc_acl_cont = ${userInfo.companyProfile.id}`);
+                allowedCustomers.push({ cust: userInfo.companyProfile.id })
+            } else if (userInfo.companyProfile?.isCustomer) {
+                allowedCustomers = [];
+                allowedCustomers.push({ cust: userInfo.companyProfile.id })
+            }
+            return allowedCustomers;
+        }
+        function isUserAllowedCustomers(userInfo, customer) {
+            var allowedCustomers = getUserAllowedCustomers(userInfo);
+            if (allowedCustomers == 'all') { return true; }
+            if (allowedCustomers.find(c => { return c.cust == customer })) { return true; }
+            return false;
+        }
 
         function getUserPref(userInfo) {
             try {
@@ -112,7 +130,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 recu.submit(userInfo.recordType, userInfo.recordId, FIELD_ENTITY_USER_PREF, userPref);
 
             } catch (error) {
-                
+
                 core.log.error('SET-USER-PREF', `${userInfo?.recordType}:${userInfo?.recordId} :: ${error.message}`);
             }
         }
@@ -144,6 +162,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             getUserPref: getUserPref,
             setUserPref: setUserPref,
             getScriptId: getScriptId,
+            getUserAllowedCustomers: getUserAllowedCustomers,
+            isUserAllowedCustomers: isUserAllowedCustomers,
             cfg: getConfig,
         }
     });

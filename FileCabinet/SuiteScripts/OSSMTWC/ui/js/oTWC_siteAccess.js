@@ -62,6 +62,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var uf = window.twc.page.data.data.safInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
                 if (uf) {
                     col.title = uf.label;
+                    if (uf.type) { col.type = uf.type; }
                     if (uf.listRecord && !col.id.endsWith('_text')) { return false; }
                 }
 
@@ -81,6 +82,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
 
                 if (col.id == twcSite.Fields.LATITUDE || col.id == twcSite.Fields.LONGITUDE) { col.styles = { 'text-align': 'right' }; }
+
+                if (col.id == twcSaf.Fields.MAST_ACCESS || col.id == twcSaf.Fields.TL_BUILDING_ACCESS || col.id == twcSaf.Fields.CRANE__CHERRYPICKER || col.id == twcSaf.Fields.ROOFTOP_ACCESS || col.id == twcSaf.Fields.ELECTRICAL_WORKS) {
+                    col.title = col.title.replace(' Access', '');
+                    col.styles = { 'min-width': '100px', 'max-width': '100px' }
+                }
+
+
             }
 
             refresh(data) {
@@ -132,7 +140,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
                 this.ui.getControl('saf-type').on('change', e => {
                     this.ui.find('#site-access-step-2').css('display', 'block');
-
                     this.refreshAccessRequirements();
                 });
                 this.ui.getControl('saf-reuse').on('change', e => {
@@ -202,6 +209,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     e.rowData.delete = true;
                                     this.manageEqAction(e.rowData, e.table);
                                 })
+                            } else if (e.action == 'detach') {
+                                dialog.confirm('Are you sure you wish to detach this action', () => {
+                                    this.detachEqAction(e.rowData, e.table);
+                                })
                             }
                         }
                     }
@@ -213,6 +224,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var editable = this.#accessRequirements != null;
 
                     this.#calendarSelection.html(twcSafUI.renderTimeBlocks({
+                        defaultTimeBlocks: this.data.timeBlocks,
                         date: e.value.format(),
                         timeBlocks: this.data.siteTimeBlocks[e.value.format()],
                         editable: editable,
@@ -547,7 +559,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
+            detachEqAction(safActions, table) {
+                try {
+                    safActions['saf-eq-action-status'] = twcUtils.SafActionStatus.Detached;
+                    safActions['saf-eq-action-status_name'] = 'Detached';
+                    safActions['saf-detach'] = '';
+                    table.render(table.data, true)
 
+                } catch (error) {
+                    dialog.error(error);
+                }
+            }
 
             manageEqAction(safActions, table) {
                 try {

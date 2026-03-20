@@ -61,7 +61,9 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                         if (!this.#data.portlet) { jQuery('.twc_page').css('margin-top', '-39px'); }
                     }
 
-                    if (this.#data.portlet) {
+
+
+                    if (this.#data?.portlet) {
                         jQuery('.twc_page').css('height', PORTLET_STYLES_PROPS.Height);
                         jQuery('.twc-container-outer').css('height', '99vh');
                         jQuery('.twc_action_menu ').css('top', '5px');

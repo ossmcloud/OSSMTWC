@@ -40,6 +40,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SURVEY_DRONE: 5
         }
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const SAF_ACTION_STATUS = {
+            Pending: 1,
+            Complete: 2,
+            Detached: 3,
+            AwaitingPhotos: 4,
+        }
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const EA_ACTION_STATUS = {
+            Pending: 1,
+            Complete: 2,
+        }
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const INFRA_TYPE = {
             Accommodation: 1,
             Structure: 2,
@@ -389,7 +402,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSafCrew(options) {
             return coreSQL.run(`
                 select  ${twcSafCrew.Fields.MEMBER}, BUILTIN.DF(${twcSafCrew.Fields.MEMBER}) as ${twcSafCrew.Fields.MEMBER}_name, ${twcSafCrew.Fields.ATTEND_AS}, 
-                        BUILTIN.DF(p.${twcProfile.Fields.COMPANY}) as contractor
+                        BUILTIN.DF(p.${twcProfile.Fields.COMPANY}) as contractor_name, p.${twcProfile.Fields.COMPANY} as contractor
                 from    ${twcSafCrew.Type} c
                 join    ${twcProfile.Type} p on p.id = c.${twcSafCrew.Fields.MEMBER}
                 where   ${twcSafCrew.Fields.SAF} = ${options.id}
@@ -462,14 +475,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 and c.custrecord_twc_co_pl_expiry > CURRENT_DATE
                 and c.custrecord_twc_co_pi_expiry > CURRENT_DATE
             `
+            // @@TODO: SAF: Insurance Expiry date seems in the past or null for all
+            additionalFilters = '';
 
             if (options.isCustomer) {
                 options.customer = options.companyProfile.id;
             } else if (options.isVendor) {
                 options.vendor = options.companyProfile.id;
-            } else {
-                additionalFilters = '';
-            }
+            } 
 
             if (options.type == 'V') {
                 // @@TODO: SAF: Accredited Contractor Expiry date seems null for all
@@ -485,10 +498,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // @@NOTE: here we want to select customers the given vendor can work on behalf of
                     sql = `
                         select  distinct c.id as value, c.name as text
-                        from    customrecord_twc_acl acl
-                        join    customrecord_twc_company c on c.id = acl.custrecord_twc_acl_cust and c.custrecord_twc_co_fin_cust = 'T'
+                        from    customrecord_twc_company c 
+                        left join customrecord_twc_acl acl on c.id = acl.custrecord_twc_acl_cust and c.custrecord_twc_co_fin_cust = 'T'
                         where   c.isinactive = 'F'
-                        and     acl.custrecord_twc_acl_cont = ${options.vendor}
+                        and     (
+                                acl.custrecord_twc_acl_cont = ${options.vendor}
+                            or c.id = ${options.vendor}
+                        )
                         ${additionalFilters}
                         order by c.name
                     `
@@ -552,7 +568,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             }
 
-
+            //throw new Error(sql);
             try {
                 return coreSQL.run(sql);
             } catch (error) {
@@ -698,7 +714,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getSrfActions(options) {
-            var safFilter = (options.saf) ? `and custrecord_twc_eq_action_saf = ${options.saf}` : '';
+            var safFilter = (options.saf) ? `and custrecord_twc_eq_action_saf = ${options.saf}` : 'and custrecord_twc_eq_action_saf is null';
             return coreSQL.run(`
                 select  a.id as value, a.name as text, custrecord_twc_equip_id as equipment, BUILTIN.DF(custrecord_twc_eq_action_srf) as srf, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
                         BUILTIN.DF(custrecord_twc_eq_action_type) as action_type, BUILTIN.DF(custrecord_twc_eq_real_ea) as related_action, 
@@ -792,6 +808,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             SafType: SAF_TYPE,
             SafStatus: SAF_STATUS,
+            SafActionStatus: SAF_ACTION_STATUS,
+            EaActionStatus: EA_ACTION_STATUS,
 
             SrfStepType: SRF_ITEM_STEP_TYPE,
             SrfRequestType: SRF_ITEM_REQUEST_TYPE,

@@ -5,35 +5,53 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_icons.js', '../../data/oTWC_srf.js', '../../data/oTWC_saf.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_safUI.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js'],
     (core, coreSQL, twcUtils, twcIcons, twcSrf, twcSaf, twcSrfUI, twcSafUI, twcSite, twcSiteUI, twcUI, twcConfig) => {
 
-        // @@TODO:  this should really be on siteRequestUtils module
-        function getSiteSrf(options) {
-            var sqlFields = 's.id, s.id as record_id, s.name, s.custrecord_twc_srf_site as site_id, BUILTIN.DF(s.custrecord_twc_srf_site) as site_id_text';
-
-            var srfFields = twcUtils.getFields(twcSrf.Type);
-            var userFields = twcSrfUI.getSrfTableFields();
-
+        function formatUserFields(fields, userFields) {
+            var sqlFields = '';
             core.array.each(userFields, uf => {
                 if (uf.field == 'name' || uf.field == 'custrecord_twc_srf_site') { return; }
-                var nsField = srfFields.find(nsf => { return nsf.field_id == uf.field });
+                var nsField = fields.find(nsf => { return nsf.field_id == uf.field });
                 var sqlField = uf.field;
-                uf.type = nsField.field_type;
+                uf.type = twcUI.nsTypeToTableColumnType(nsField.field_type);
                 if (nsField.field_type == 'Date') {
                     sqlFields += `, TO_CHAR(s.${sqlField}, 'yyyy-MM-dd') as ${sqlField}`;
-                } else if (nsField.field_type == 'DateTimeZ') {
+                    
+                } else if (nsField.field_type == 'DateTimeZ' || nsField.field_type == 'Date/Time') {
                     sqlFields += `, TO_CHAR(s.${sqlField}, 'yyyy-MM-dd HH24:mm') as ${sqlField}`;
+                    
                 } else {
                     if (nsField.field_type == 'List/Record') {
                         uf.listRecord = true;
                         sqlField = `${sqlField} as ${sqlField}, BUILTIN.DF(${sqlField}) as ${sqlField}_text`;
                     }
                     sqlFields += `, s.${sqlField}`;
+
                 }
                 if (!uf.label) { uf.label = nsField.field_label; }
             })
-            
-            // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
+            return sqlFields;
+        }
+
+        // @@TODO:  this should really be on siteRequestUtils module
+        function getSiteSrf(options, userInfo) {
+            var srfFields = twcUtils.getFields(twcSrf.Type);
+            var userFields = twcSrfUI.getSrfTableFields();
+
+            var sqlFields = 's.id, s.id as record_id, s.name, s.custrecord_twc_srf_site as site_id, BUILTIN.DF(s.custrecord_twc_srf_site) as site_id_text';
+            sqlFields += formatUserFields(srfFields, userFields);
+
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSrf.Fields.SRF_REQUESTED_DATE} desc`;
+
+            if (userInfo.companyProfile?.isBoth) {
+                whereClause += `and (
+                       ${twcSrf.Fields.CUSTOMER} = ${userInfo.companyProfile.id || 0}
+                    or ${twcSrf.Fields.CUSTOMER} in (select custrecord_twc_acl_cust from customrecord_twc_acl where custrecord_twc_acl_cont = ${userInfo.companyProfile.id})
+                )`;
+            } else if (userInfo.companyProfile?.isVendor) {
+                whereClause += `and ${twcSrf.Fields.CUSTOMER} in (select custrecord_twc_acl_cust from customrecord_twc_acl where custrecord_twc_acl_cont = ${userInfo.companyProfile.id})`;
+            } else if (userInfo.companyProfile?.isCustomer) {
+                whereClause += `and ${twcSrf.Fields.CUSTOMER} = ${userInfo.companyProfile.id || 0}`;
+            }
 
             var srfs = coreSQL.run(`
                 select  ${sqlFields}
@@ -44,74 +62,72 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             return {
+                srfs: srfs,
                 srfFields: srfFields,
                 userFields: userFields,
-                srfs: srfs,
                 sites: getSites(options).sites
             }
         }
 
         // @@TODO:  this should really be on siteAccessUtils module
-        function getSiteSaf(options) {
-            var sqlFields = 's.id, s.id as record_id, s.name, s.custrecord_twc_saf_site as site_id, BUILTIN.DF(s.custrecord_twc_saf_site) as site_id_text';
-
-            var siteFields = twcUtils.getFields(twcSaf.Type);
+        function getSiteSaf(options, userInfo) {
+            
+            var safFields = twcUtils.getFields(twcSaf.Type);
             var userFields = twcSafUI.getSafTableFields();
 
-            core.array.each(userFields, uf => {
-                var nsField = siteFields.find(nsf => { return nsf.field_id == uf.field });
-                var sqlField = uf.field;
-                uf.type = nsField.field_type;
-                if (nsField.field_type == 'List/Record') {
-                    uf.listRecord = true;
-                    sqlField = `${sqlField} as ${sqlField}, BUILTIN.DF(${sqlField}) as ${sqlField}_text`;
-                }
-                sqlFields += `, s.${sqlField}`;
+            var sqlFields = 's.id, s.id as record_id, s.name, s.custrecord_twc_saf_site as site_id, BUILTIN.DF(s.custrecord_twc_saf_site) as site_id_text';
+            sqlFields += formatUserFields(safFields, userFields);
 
-                if (!uf.label) { uf.label = nsField.field_label; }
-
-            })
-
-
-            // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSaf.Fields.SAF_ID}`;
 
-            var sites = coreSQL.run(`
+            if (userInfo.companyProfile?.isBoth) {
+                whereClause += `and (
+                       ${twcSaf.Fields.PRIMARY_CONTRACTOR} = ${userInfo.companyProfile.id || 0}
+                    or ${twcSaf.Fields.CUSTOMER} = ${userInfo.companyProfile.id || 0}
+                )`;
+            } else if (userInfo.companyProfile?.isVendor) {
+                whereClause += `and ${twcSaf.Fields.PRIMARY_CONTRACTOR} = ${userInfo.companyProfile.id || 0}`;
+            } else if (userInfo.companyProfile?.isCustomer) {
+                whereClause += `and ${twcSaf.Fields.CUSTOMER} = ${userInfo.companyProfile.id || 0}`;
+            }
+
+            var safs = coreSQL.run(`
                 select  ${sqlFields},
                 from    ${twcSaf.Type} s
                 ${whereClause} 
                 ${orderBy}
             `)
-            
 
             return {
-                siteFields: siteFields,
+                safs: safs,
+                safFields: safFields,
                 userFields: userFields,
-                safs: sites,
                 sites: getSites(options).sites
             }
         }
 
-        function getSites(options) {
-            var sqlFields = 's.id, s.id as record_id, s.name';
-
+        function getSites(options, userInfo) {
+            
             var siteFields = twcUtils.getFields(twcSite.Type);
             var userFields = twcSiteUI.getSiteTableFields();
 
-            core.array.each(userFields, uf => {
-                var nsField = siteFields.find(nsf => { return nsf.field_id == uf.field });
-                var sqlField = uf.field;
-                uf.type = nsField.field_type;
-                if (nsField.field_type == 'List/Record') {
-                    uf.listRecord = true;
-                    sqlField = `${sqlField} as ${sqlField}, BUILTIN.DF(${sqlField}) as ${sqlField}_text`;
-                }
-                sqlFields += `, s.${sqlField}`;
+            var sqlFields = 's.id, s.id as record_id, s.name';
+            sqlFields += formatUserFields(siteFields, userFields);
 
-                if (!uf.label) { uf.label = nsField.field_label; }
+            // core.array.each(userFields, uf => {
+            //     var nsField = siteFields.find(nsf => { return nsf.field_id == uf.field });
+            //     var sqlField = uf.field;
+            //     uf.type = nsField.field_type;
+            //     if (nsField.field_type == 'List/Record') {
+            //         uf.listRecord = true;
+            //         sqlField = `${sqlField} as ${sqlField}, BUILTIN.DF(${sqlField}) as ${sqlField}_text`;
+            //     }
+            //     sqlFields += `, s.${sqlField}`;
 
-            })
+            //     if (!uf.label) { uf.label = nsField.field_label; }
+
+            // })
 
 
             // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here

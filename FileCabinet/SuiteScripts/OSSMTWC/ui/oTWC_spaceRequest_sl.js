@@ -63,10 +63,8 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
             } else {
                 // @@TODO: this should actually be the site access info
-                pageData.data.srfInfo = twcSiteLocatorUtils.getSiteSrf();
-
+                pageData.data.srfInfo = twcSiteLocatorUtils.getSiteSrf(null, pageData.userInfo);
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
-               // html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteLocatorUtils.renderSiteLocatorPanel(pageData.permission.featureId));
                 html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteRequestUtils.renderSiteLocatorPanel(pageData.permission.featureId));
 
             }

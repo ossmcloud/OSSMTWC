@@ -213,6 +213,28 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 } else {
                     return ctrlBase.CTRL_TYPE.TEXT;
                 }
+            },
+
+            nsTypeToTableColumnType: (nsType) => {
+                if (nsType == 'Integer Number' || nsType == 'Decimal Number') {
+                    return 'int';
+                } else if (nsType == 'Free-Form Text') {
+                    return 'text';
+                } else if (nsType == 'Long Text') {
+                    return 'text';
+                } else if (nsType == 'Text Area') {
+                    return 'text';
+                } else if (nsType == 'Date') {
+                    return 'date';
+                } else if (nsType == 'Date/Time') {
+                    return 'date';
+                } else if (nsType == 'Check Box') {
+                    return 'bool';
+                } else if (nsType == 'List/Record' || nsType == 'Multiple Select') {
+                    return 'text';
+                } else {
+                    return 'text';
+                }
             }
 
         }

@@ -110,8 +110,15 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 var readOnly = this.#options.readOnly ? 'readonly' : '';
 
                 if (this.#dataSource.length == 1 && !this.#options.value && !this.#options.noAutoSelect) {
+                    
                     this.#options.value = this.#dataSource[0].value;
                 }
+
+                // if (this.#options.id == 'saf-customer') {
+                //     throw new Error(this.#options.value)
+                // }
+
+
 
                 // @@TODO: we need to implement the disabled attr 
                 var label = '';

@@ -54,10 +54,7 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
 
                     var options = { saf: 25 };
                     
-                    var saf = twcSaf.get(options.saf);
-                    saf.worksEndDate = (new Date()).addHours(12);
-                    saf.completionPhotosRequested = saf.worksEndDate.addDays(saf.worksPhotosReqDelay || 0);
-                    saf.save();
+                    console.log(recu.lookUp('customrecord_twc_eq_action', 2, 'custrecord_twc_eq_action_saf'))
 
                     // coreSQL.each(`
                     //     select   id, name, 	custrecord_twc_prof_name

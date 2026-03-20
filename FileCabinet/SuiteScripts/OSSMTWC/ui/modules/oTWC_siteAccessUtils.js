@@ -5,7 +5,7 @@
 define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_safCrew.js', '../../data/oTWC_safAction.js', '../../data/oTWC_safTimeBlock.js', '../../data/oTWC_safLog.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js'],
     (record, core, coreSQL, b64, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile, nsFileUtils) => {
 
-        function renderSiteAccessPanel(featureId) {
+        function renderSiteAccessPanel(userInfo, featureId) {
             // @@TODO: featureId will determine some change on fields in the criteria
             var html = `
                 <script async defer src="https://maps.googleapis.com/maps/api/js?key=${twcConfig.cfg().GOOGLE_API_KEY}&loading=async"></script>
@@ -65,8 +65,8 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             html = html.replace('{FILTER_SAF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SAF ID', width: 'calc(25% - 2px)', multiSelect: true, id: twcSaf.Fields.SAF_ID, noEmpty: true, dataSource: twcUtils.getSafIds() })); // @@Note Free form field, filter not working
             html = html.replace('{FILTER_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Status', width: 'calc(25% - 2px)', multiSelect: true, id: twcSaf.Fields.STATUS, noEmpty: true, dataSource: twcUtils.getSafStatus() }));
             html = html.replace('{FILTER_ACCESS_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Access Type', width: '50%', multiSelect: true, id: twcSaf.Fields.TYPE, noEmpty: true, dataSource: twcUtils.getSafTypes() }));
-            html = html.replace('{FILTER_CUSTOMER}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Customer', width: '50%', multiSelect: true, id: twcSaf.Fields.CUSTOMER, noEmpty: true, dataSource: twcUtils.getCustomers() }));
-            html = html.replace('{FILTER_CONTRACTOR}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Contractor', width: '50%', multiSelect: true, id: twcSaf.Fields.PRIMARY_CONTRACTOR, noEmpty: true, dataSource: twcUtils.getCustomers() }));
+            html = html.replace('{FILTER_CUSTOMER}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Customer', width: '50%', multiSelect: true, id: twcSaf.Fields.CUSTOMER, noEmpty: true, dataSource: twcUtils.getCustomers(userInfo) }));
+            html = html.replace('{FILTER_CONTRACTOR}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Contractor', width: '50%', multiSelect: true, id: twcSaf.Fields.PRIMARY_CONTRACTOR, noEmpty: true, dataSource: twcUtils.getVendors(userInfo) }));
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: '50%', multiSelect: true, id: twcSaf.Fields.COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
             html = html.replace('{FILTER_REGION}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Region', width: '50%', multiSelect: true, id: twcSaf.Fields.REGION, noEmpty: true, dataSource: twcUtils.getRegions() }));
             html = html.replace('{FILTER_START_DATE}', twcUI.render({ type: twcUI.CTRL_TYPE.DATE, label: 'Start Date', id: 'twc-saf-start-date', width: '250px' }));
@@ -77,31 +77,47 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
         }
 
 
-        function getAllSafTimeBlocks(options) {
+        function getAllSafTimeBlocks(options, userInfo) {
             var timeBlocks = {};
+
+            var allowedCustomers = twcConfig.getUserAllowedCustomers(userInfo);
+
             coreSQL.each(`
                 select  b.id, b.custrecord_twc_saf_tm_blk_block as block_id, BUILTIN.DF(b.custrecord_twc_saf_tm_blk_block) as block_name, TO_CHAR(b.custrecord_twc_saf_tm_blk_date, 'yyyy-MM-dd') as block_date,
-                        saf.id as saf_id, saf.name as saf_code, saf.custrecord_twc_saf_site as site_id, BUILTIN.DF(saf.custrecord_twc_saf_site) as site_name
+                        saf.id as saf_id, saf.name as saf_code, saf.custrecord_twc_saf_site as site_id, BUILTIN.DF(saf.custrecord_twc_saf_site) as site_name,
+                        saf.custrecord_twc_saf_customer as saf_customer,
                 from    customrecord_twc_saf_tm_blk b
                 join    customrecord_twc_saf saf on saf.id = b.custrecord_twc_saf_tm_blk_saf
                 where   saf.custrecord_twc_saf_site = ${options?.siteId || 0}
-                and     saf.custrecord_twc_saf_status not in (${twcSaf.Status.Cancelled})
+                and     (
+                        saf.custrecord_twc_saf_status not in (${twcSaf.Status.Cancelled})
+                    or  saf.id = ${options.id || 0}
+                )
+                
                 order by b.custrecord_twc_saf_tm_blk_date desc
             `, tb => {
-
                 var safId = tb.saf_id; var safCode = tb.saf_code;
                 if (!options.reUse) {
                     if (safId == options.id) {
-                        safId = 't'
+                        safId = 't';
                         safCode = 'This';
                     }
                 }
 
                 if (!timeBlocks[tb.block_date]) { timeBlocks[tb.block_date] = { blocksCount: 0 }; }
                 if (!timeBlocks[tb.block_date][safId]) {
+
+                    var safLink = { id: tb.saf_id, code: safCode };
+                    if (allowedCustomers != 'all') {
+                        if (!allowedCustomers.find(c => { return c.cust == tb.saf_customer })) {
+                            safLink = { id: null, code: 'slot used' };
+                        }
+                    }
+
+
                     timeBlocks[tb.block_date][safId] = {
                         site: { id: tb.site_id, name: tb.site_name, },
-                        saf: { id: tb.saf_id, code: safCode },
+                        saf: safLink,
                         blocks: []
                     }
                 }
@@ -229,11 +245,11 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var crewIds = [];
             core.array.each(payload.crews, c => { crewIds.push(c['saf-crew-member']); })
             var crew = twcUtils.getProfiles({ id: crewIds });
-          // throw new Error(JSON.stringify(crew))
+            // throw new Error(JSON.stringify(crew))
 
             core.array.each(options.accessRequirements.conditions, cond => {
                 var condQuantity = cond.quantity == 'all' ? payload.crews.length : cond.quantity;
-                var certCount = crew.filter(c => { return c.attendAs.find(cc => { return cc.value == cond.cert?.attendAs }) ; }).length || 0;
+                var certCount = crew.filter(c => { return c.attendAs.find(cc => { return cc.value == cond.cert?.attendAs }); }).length || 0;
                 if (certCount < condQuantity) {
                     if (certCount == 0) {
                         validationErrors.push(`${cond.quantity} ${cond.name} are required, there are none in the crew`);
@@ -353,6 +369,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             if (payload.crews) {
                 core.array.each(payload.crews, c => {
                     try {
+
                         var crew = twcSafCrew.get(payload.reUse ? null : c.id);
                         crew.sAF = safId;
                         crew.member = c['saf-crew-member'];
@@ -360,6 +377,19 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                         crew.save();
                     } catch (error) {
                         saf.logEx('Error while saving crew record', error);
+                        errors = true;
+                    }
+                })
+            }
+
+            if (payload.crews_deleted) {
+                core.array.each(payload.crews_deleted, c => {
+                    try {
+                        if (!c.id) { return; }
+                        recu.del(twcSafCrew.Type, c.id);
+
+                    } catch (error) {
+                        saf.logEx('Error while deleting crew record', error);
                         errors = true;
                     }
                 })
@@ -373,6 +403,15 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                         action.sAF_ACTIONEA = a['saf-eq-action'];
                         action.sAF_ACTIONStatus = a['saf-eq-action-status'];
                         action.save();
+
+                        if (a['saf-eq-action-status'] == twcUtils.SafActionStatus.Detached) {
+                            if (recu.lookUp('customrecord_twc_eq_action', a['saf-eq-action'], 'custrecord_twc_eq_action_saf')?.value == safId) {
+                                recu.submit('customrecord_twc_eq_action', a['saf-eq-action'], 'custrecord_twc_eq_action_saf', null);
+                            }
+                            //
+                        } else {
+                            recu.submit('customrecord_twc_eq_action', a['saf-eq-action'], 'custrecord_twc_eq_action_saf', safId);
+                        }
                     } catch (error) {
                         saf.logEx('Error while saving action record', error);
                         errors = true;
@@ -385,14 +424,16 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
         }
 
         function editSafStatus(options) {
-
-            // @@TODO: SAF: we need validations here, for example cannot cancel if Saf Actions are pending (or eventually we need to detach)
             var saf = twcSaf.get(options.saf);
             try {
                 var statusChanged = options.status ? saf.status != options.status : false;
                 var commentCHanged = options.comment ? saf.statusComments != options.comment : false;
                 if (!statusChanged && !commentCHanged) { return; }
 
+                var safRequiresSrf = twcUtils.getSafType(saf.r_type)?.requires_srf == 'T';
+                if (statusChanged && (options.status == twcSaf.Status.Cancelled || options.status == twcSaf.Status.Rejected)) {
+                    if (safRequiresSrf) { validateAndDetachActions(options.saf); }
+                }
 
                 var logMsg = ''; var info = '';
                 if (statusChanged) {
@@ -419,6 +460,10 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     saf.completionPhotosReceived = (new Date()).addHours(12);
                 }
 
+                if (statusChanged && options.status == twcSaf.Status.Complete) {
+                    validateAndCompleteActions(options.saf);
+                }
+
                 saf.save();
 
                 if (statusChanged && options.status == twcSaf.Status.Rejected) {
@@ -430,6 +475,54 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 saf.logEx('Error while changing status/comments', error);
                 throw error;
             }
+        }
+
+        function validateAndDetachActions(saf) {
+            var safActions = coreSQL.run(`
+                select  sa.id saf_action_id, ea.id as ea_action_id, ea.name as eq_action, 
+                        sa.custrecord_twc_saf_a_status as saf_status, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as saf_status_name,
+                        ea.custrecord_twc_eq_action_sts as ea_status, BUILTIN.DF(ea.custrecord_twc_eq_action_sts) as ea_status_name
+                from    customrecord_twc_saf_action sa
+                join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea and ea.custrecord_twc_eq_action_saf = sa.custrecord_twc_saf_a_saf
+                where   sa.custrecord_twc_saf_a_saf = ${saf}
+            `);
+
+            var anyNotPendingOrDetached = false;
+            core.array.each(safActions, sa => {
+                if (sa.saf_status != twcUtils.SafActionStatus.Pending && sa.saf_status != twcUtils.SafActionStatus.Detached) {
+                    anyNotPendingOrDetached = true;
+                    return false;
+                }
+            })
+
+            if (anyNotPendingOrDetached) {
+                throw new Error('In order to cancel or reject the SAF all actions must either be pending or detached');
+            }
+
+            core.array.each(safActions, sa => {
+                recu.submit(twcSafAction.Type, sa.saf_action_id, twcSafAction.Fields.SAF_ACTION_STATUS, twcUtils.SafActionStatus.Detached);
+                // @@TODO: build twcEaAction object and use constants here
+                recu.submit('customrecord_twc_eq_action', sa.ea_action_id, 'custrecord_twc_eq_action_saf', null);
+            })
+        }
+
+        function validateAndCompleteActions(saf) {
+            var safActions = coreSQL.run(`
+                select  sa.id saf_action_id, ea.id as ea_action_id, ea.name as eq_action, 
+                        sa.custrecord_twc_saf_a_status as saf_status, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as saf_status_name,
+                        ea.custrecord_twc_eq_action_sts as ea_status, BUILTIN.DF(ea.custrecord_twc_eq_action_sts) as ea_status_name
+                from    customrecord_twc_saf_action sa
+                join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea and ea.custrecord_twc_eq_action_saf = sa.custrecord_twc_saf_a_saf
+                where   sa.custrecord_twc_saf_a_saf = ${saf}
+            `);
+
+            core.array.each(safActions, sa => {
+                if (sa.saf_status != twcUtils.SafActionStatus.Detached) {
+                    recu.submit(twcSafAction.Type, sa.saf_action_id, [twcSafAction.Fields.SAF_ACTION_STATUS, twcSafAction.Fields.SAF_ACTION_COMPLETE], [twcUtils.SafActionStatus.Complete, true]);
+                    // @@TODO: build twcEaAction object and use constants here
+                    recu.submit('customrecord_twc_eq_action', sa.ea_action_id, 'custrecord_twc_eq_action_sts', twcUtils.EaActionStatus.Complete);
+                }
+            })
         }
 
         function saveSafImage(options) {
@@ -472,6 +565,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
         function setSafReviewed(options) {
             recu.submit(twcSaf.Type, options.saf, [twcSaf.Fields.STATUS, twcSaf.Fields.REVIEW_COMMENT], [twcSaf.Status.Complete, options.comment]);
             twcSafLog.logInfo(options.saf, `Completion photos reviewed`, `Comment: ${options.comment}`);
+            validateAndCompleteActions(options.saf);
         }
 
         function getSafTimeBlocks(id) {
@@ -489,19 +583,22 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             getSiteAccessInfo: (pageData, reUse) => {
                 var saf = {};
                 if (pageData.recId) {
-                    // @@TODO: this is an existing record so load it
-                    //saf = coreSQL.first(`select * from ${twcSaf.Type} where id = ${pageData.recId}`);
+                    // @@NOTE: this is an existing record we need to make sure we can see it
                     saf = twcSaf.select({ noAlias: true, returnFirst: true, where: { id: pageData.recId } })
                     saf.siteId = saf[twcSaf.Fields.SITE];
+
+                    if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, saf[twcSaf.Fields.CUSTOMER])) {
+                        throw new Error('You do not have access to see this SAF record');
+                    }
+
                     if (reUse) {
                         saf.reUse = reUse;
                         saf[twcSaf.Fields.STATUS] = twcSaf.Status.Pending;
                     }
 
-
                 } else {
-                    // @@TODO: this is a new record for the given site id
-                    if (pageData.userInfo.isCustomer) { saf[twcSaf.Fields.CUSTOMER] = pageData.userInfo.id; }
+                    // @@NOTE: this is a new record for the given site id
+                    if (pageData.userInfo.isCustomer) { saf[twcSaf.Fields.CUSTOMER] = pageData.userInfo.companyProfile?.id; }
                     saf[twcSaf.Fields.SITE] = pageData.siteId;
                     saf.siteId = pageData.siteId;
 

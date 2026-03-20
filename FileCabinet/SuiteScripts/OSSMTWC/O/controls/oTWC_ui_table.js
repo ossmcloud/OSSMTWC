@@ -707,8 +707,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                             noResize: true, noSort: true, after: true,
                             initValue: (d) => {
                                 return `
-                                    <span class="o-table-action" data-action="edit" data-id="${d.id}">&#x270E;</span>
-                                    <span class="o-table-action" data-action="delete" data-id="${d.id}">&#x274C;</span>
+                                    <span class="o-table-action" data-action="edit" data-id="${d.id}">${icons.get('pencil', 16)}</span>
+                                    <span class="o-table-action" data-action="delete" data-id="${d.id}">${icons.get('trash', 16, 'red')}</span>
                                 `;
                             }
                         },

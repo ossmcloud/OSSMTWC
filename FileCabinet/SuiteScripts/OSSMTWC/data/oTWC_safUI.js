@@ -16,13 +16,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSafLink(saf) {
             if (saf.id == 'new') {
                 return '<span style="font-weight: bold; color: magenta">reserved</span>';
+            } else if (saf.id == null) {
+                return '<span style="font-weight: bold; color: silver">slot used</span>';
             }
             return `<a class="twc" href="${getSafUrl()}&recId=${saf.id}" target="_blank">${saf.code}</a>`
         }
 
         function renderTimeBlocks(options) {
             if (!options) { options = {}; }
-            var blocks = twcUtils.getSafTimeBlocks();
+            var blocks = options.defaultTimeBlocks || twcUtils.getSafTimeBlocks();
             var html = '<div class="twc-div-table-r">';
             core.array.each(blocks, tb => {
 
@@ -71,6 +73,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             //      site address
             var safFields = [
                 { field: twcSaf.Fields.R_TYPE },
+                { field: twcSaf.Fields.SAF_AUTHOR },
                 { field: twcSaf.Fields.CUSTOMER },
                 { field: twcSaf.Fields.PRIMARY_CONTRACTOR },
                 { field: twcSaf.Fields.PICW },
@@ -100,6 +103,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     where   custrecord_twc_saf_crew_saf = ${dataSource.id}
                 `, crew => {
                     var safCrew = {};
+                    safCrew.id = crew.id;
                     safCrew['saf-crew-vendor'] = crew.saf_crew_vendor;
                     safCrew['saf-crew-vendor_name'] = crew.saf_crew_vendor_name;
                     safCrew['saf-crew-member'] = crew.saf_crew_member;
@@ -113,155 +117,36 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getSafEqAction(dataSource) {
-            return [];
+            var safActions = [];
+            if (dataSource.id && !dataSource.reUse) {
+                coreSQL.each(`
+                    select  sa.id, ea.name as sa_eq_action_id, ea.custrecord_twc_eq_action_eq as saf_equipment, e.custrecord_twc_equip_id as saf_equipment_name,
+                            sa.custrecord_twc_saf_a_status as saf_status, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as saf_status_name,
+                            ea.id as ea_id, ea.custrecord_twc_eq_action_type as saf_type, BUILTIN.DF(ea.custrecord_twc_eq_action_type) as saf_type_name
+                    from    customrecord_twc_saf_action sa
+                    join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea
+                    join    customrecord_twc_equip e on e.id = ea.custrecord_twc_eq_action_eq
+                    where   sa.custrecord_twc_saf_a_saf = ${dataSource.id}
+                    order by sa.created desc
+                `, action => {
+                    var safAction = {};
+                    safAction.id = action.id;
+                    safAction.eaId = action.ea_id;
+                    safAction['saf-eq-action'] = action.ea_id;
+                    safAction['saf-eq-action-id'] = action.sa_eq_action_id;
+                    safAction['saf-equipment'] = action.saf_equipment;
+                    safAction['saf-equipment_name'] = action.saf_equipment_name;
+                    safAction['saf-eq-action-type'] = action.saf_type;
+                    safAction['saf-eq-action-type_name'] = action.saf_type_name;
+                    safAction['saf-eq-action-status'] = action.saf_status;
+                    safAction['saf-eq-action-status_name'] = action.saf_status_name;
+                    safAction['saf-detach'] = (action.saf_status == twcUtils.SafActionStatus.Pending) ? '<span class="o-table-action twc-clickable" data-action="detach">detach</span>' : '';
+                    safActions.push(safAction);
+                })
+            }
+            return safActions;
         }
 
-        /*
-        function getSAFInfoPanels_Builder_old(dataSource, userInfo, options) {
-            var isExistingSaf = dataSource.id !== undefined;
-
-            var fieldGroup = { id: 'site-access-builder', collapsed: false, controls: [] };
-
-            var allowedSafTypes = twcUtils.getSafTypes(dataSource);
-            if (allowedSafTypes.length == 0) {
-                var errorInfo = { id: 'site-access-error', collapsed: false, fields: [] };
-                fieldGroup.controls.push(errorInfo);
-                errorInfo.fields.push({ id: 'no-saf-access', type: twcUI.CTRL_TYPE.PANEL, title: `CANNOT PROCEED`, content: `This site does not allow Access of any type`, styles: { width: '750px' } });
-                configUIFields.formatPanelFields(dataSource, fieldGroup);
-                return fieldGroup;
-            }
-
-
-            var calenderInfo = { id: 'site-access-saf-builder', title: 'Create New Site Access', collapsed: false, renderAsTable: true, fields: [] };
-            fieldGroup.controls.push(calenderInfo);
-
-            var specialDates = {}; var datesContent = {};
-            if (options?.siteTimeBlocks) {
-                for (var k in options.siteTimeBlocks) {
-                    datesContent[k] = [];
-                    specialDates[k] = { css: options.siteTimeBlocks[k].blocksCount > 3 ? 'o-calendar-red' : 'o-calendar-orange' }
-                    for (var ks in options.siteTimeBlocks[k]) {
-                        if (ks == 'blocksCount') { continue; }
-                        datesContent[k].push(`${getSafLink(options.siteTimeBlocks[k][ks].saf)}`);
-
-                    }
-                }
-            }
-            calenderInfo.fields.push({ id: 'saf-calendar', type: twcUI.CTRL_TYPE.CALENDAR, dayClass: 'o-calendar-green', specialDates: specialDates, datesContent: datesContent })
-            calenderInfo.fields.push({
-                id: 'saf-calendar-panel', type: twcUI.CTRL_TYPE.PANEL,
-                title: `<div id="saf-cal-selection-title">${twcUtils.formatLongDate()}</div>`,
-                content: `<div id="saf-cal-selection-body">${renderTimeBlocks()}</div>`,
-            })
-            // calenderInfo.fields.push({
-            //     id: 'saf-calendar-access-panel', type: twcUI.CTRL_TYPE.PANEL,
-            //     title: `<div id="saf-cal-selection-access-title">Your Access Form</div>`,
-            //     content: '<div id="saf-cal-selection-access-body"><b>Select SAF Setup & Access Requirements below to begin</b></div>',
-            // })
-
-            var siteInfraStructures = twcUtils.getInfraStructures(dataSource);
-            var siteStructures = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Structure })
-            var accommodationStructure = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Accommodation })
-
-            var step1Info = { id: 'site-access-step-1', title: 'Step 1 of 5 : SAF SETUP', fields: [] };
-            fieldGroup.controls.push(step1Info);
-
-            var safType = dataSource[twcSaf.Fields.R_TYPE] || (allowedSafTypes.length == 1 ? allowedSafTypes[0].value : null);
-            step1Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-template', label: 'Template', hide: isExistingSaf, allowAll: false, dataSource: [{ value: 'new', text: 'Create new SAF' }, { value: 'reuse', text: 'Reuse previous SAF' }] })
-            step1Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-type', label: 'Type', hide: !isExistingSaf, allowAll: false, value: safType, dataSource: allowedSafTypes });
-            step1Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-reuse', label: 'S.A.F.', hide: !dataSource.reUse, value: dataSource.id, allowAll: false, dataSource: twcUtils.getSafDropDown(dataSource) });
-
-            var step2Info = { id: 'site-access-step-2', title: 'Step 2 of 5 : Access Requirements', hide: !isExistingSaf, fields: [] };
-            fieldGroup.controls.push(step2Info);
-
-            var structInfo = twcUtils.getStructureTypeInfo({ siteId: dataSource.siteId });
-            if (structInfo.mast || structInfo.tower) {
-                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-mast-access', label: 'Mast Access', width: '150px', value: dataSource[twcSaf.Fields.MAST_ACCESS], allowAll: false, dataSource: twcUtils.getYesNoOptions() });
-            }
-            if (accommodationStructure.length > 0) {
-                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-building-access', label: 'TL Building Access', width: '150px', value: dataSource[twcSaf.Fields.TL_BUILDING_ACCESS], allowAll: false, dataSource: twcUtils.getYesNoOptions() });
-            }
-            if (structInfo.roofTop) {
-                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-rooftop-access', label: 'Rooftop Access', width: '150px', value: dataSource[twcSaf.Fields.ROOFTOP_ACCESS], allowAll: false, dataSource: twcUtils.getYesNoOptions() });
-            }
-
-            step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-electrical-access', label: 'Electrical Work', width: '150px', value: dataSource[twcSaf.Fields.ELECTRICAL_WORKS], allowAll: false, dataSource: twcUtils.getYesNoOptions() });
-            step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-crane-access', label: 'Crane / Cherrypicker', width: '150px', value: dataSource[twcSaf.Fields.CRANE__CHERRYPICKER], allowAll: false, lineBreak: true, dataSource: twcUtils.getYesNoOptions() });
-
-            if (structInfo.mast || structInfo.tower) {
-                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-structure', label: 'Structure', width: '150px', allowAll: false, value: dataSource[twcSaf.Fields.STRUCTURE], hide: !isExistingSaf, dataSource: siteStructures });
-            }
-            if (accommodationStructure.length > 0) {
-                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-accommodation', label: 'Accommodation', width: '150px', allowAll: false, value: dataSource[twcSaf.Fields.ACCOMMODATION], hide: !isExistingSaf, dataSource: accommodationStructure });
-            }
-
-            var customers = twcUtils.getCustomers(userInfo);
-            var primaryContractors = twcUtils.getVendors(userInfo);
-
-            var customer = dataSource[twcSaf.Fields.CUSTOMER] || (customers.length == 1 ? customers[0].value : null);
-            var primaryContractor = dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR] || (primaryContractors.length == 1 ? primaryContractors[0].value : null);
-
-            var picwInfo = null; var picwContractorStaff = [];
-            if (isExistingSaf) {
-                picwInfo = coreSQL.first('select id, custrecord_twc_prof_company as contractor, custrecord_twc_prof_phone as phone from customrecord_twc_prof where id = ' + dataSource[twcSaf.Fields.PICW]);
-                picwContractorStaff = twcUtils.getProfiles({
-                    company: picwInfo.contractor,
-                    filters: {
-                        'custrecord_twc_prof_picw_acceptable': 'T',
-                        'custrecord_twc_prof_safe_pass_expiry': { op: '>', value: 'CURRENT_DATE' }
-                    }
-                });
-            }
-
-            var step3Info = { id: 'site-access-step-3', title: 'Step 3 of 5 : Access Details', hide: !isExistingSaf, fields: [] };
-            fieldGroup.controls.push(step3Info);
-            step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-customer', label: 'Customer', allowAll: false, value: customer, dataSource: customers });
-            step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-vendor', label: 'Primary Contractor', allowAll: false, value: primaryContractor, dataSource: primaryContractors, lineBreak: true });
-            step3Info.fields.push({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'saf-work-summary', label: 'Summary of Work', rows: 3, value: dataSource[twcSaf.Fields.SUMMARY_OF_WORKS], width: '100%', lineBreak: true });
-            step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-key', label: 'Key', allowAll: false, dataSource: [] });
-            step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-srf', label: 'S.R.F.', hide: true, allowAll: false, dataSource: twcUtils.getSrfDropDown(dataSource) });
-            step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-srf-equip', label: 'Equipment', hide: true, allowAll: false, dataSource: [], lineBreak: true });
-            //
-            step3Info.fields.push({ id: 'saf-planned-eq-actions', type: twcUI.CTRL_TYPE.PANEL, title: `Equipment Actions`, styles: { width: '100%', display: 'none' }, lineBreak: true });
-            step3Info.fields.push({ id: 'saf-planned-work-eq', type: twcUI.CTRL_TYPE.PANEL, title: `Planned Equipment Work`, styles: { width: '100%' }, lineBreak: true });
-            step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-psdp-design', label: 'PSDP (Design)', allowAll: false, dataSource: [] });
-            step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-psdp-construction', label: 'PSDP (Construction)', allowAll: false, dataSource: [], lineBreak: true });
-            step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw', label: 'PICW', allowAll: false, value: picwInfo?.contractor, dataSource: primaryContractors });
-            step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw-staff', label: 'Staff', hide: !isExistingSaf, value: picwInfo?.id, dataSource: picwContractorStaff, allowAll: false });
-            step3Info.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'saf-picw-staff-phone', label: 'Phone', hide: !isExistingSaf, value: picwInfo?.phone });
-
-
-            var crewTableControl = {
-                id: `saf-crew-table`,
-                type: twcUI.CTRL_TYPE.TABLE,
-                label: 'crews and visitors',
-                columns: [
-                    { id: 'saf-crew-vendor', title: 'Contractor' },
-                    { id: 'saf-crew-vendor_name', title: 'Contractor' },
-                    { id: 'saf-crew-member', title: 'Visitor' },
-                    { id: 'saf-crew-member_name', title: 'Visitor' },
-                    { id: 'saf-crew-attend-as', title: 'Attend As' },
-                    { id: 'saf-crew-attend-as_name', title: 'Attend As' },
-                ],
-                dataSource: getSafCrew(dataSource),
-                showToolbar: true,
-                showEditDelete: true,
-            }
-            var step4Info = { id: 'site-access-step-4', title: 'Step 4 of 5 : Crews Visitors', hide: !isExistingSaf, fields: [crewTableControl] };
-            fieldGroup.controls.push(step4Info);
-
-            var step5Info = { id: 'site-access-step-5', title: 'Step 5 of 5 : Documentation', hide: !isExistingSaf, fields: [] };
-            fieldGroup.controls.push(step5Info);
-
-            var step6Info = { id: 'site-access-step-6', hide: !isExistingSaf, fields: [] };
-            fieldGroup.controls.push(step6Info);
-            step6Info.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'saf-submit', value: 'Submit' });
-
-            configUIFields.formatPanelFields(dataSource, fieldGroup);
-
-            return fieldGroup;
-        }
-        */
 
         function getSAFInfoPanels_Builder(dataSource, userInfo, options) {
             _allowedSafTypes = twcUtils.getSafTypes(dataSource);
@@ -297,9 +182,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     specialDates[k] = { css: options.siteTimeBlocks[k].blocksCount > 3 ? 'o-calendar-red' : 'o-calendar-orange' }
                     for (var ks in options.siteTimeBlocks[k]) {
                         if (ks == 'blocksCount') { continue; }
-                        // @@TODO: SAF: if logged user is customer only add content if the saf belongs to them
-                        //         if logged user is vendor  only add content if the saf belongs to one of their customers
-                        datesContent[k].push(`${getSafLink(options.siteTimeBlocks[k][ks].saf)}`);
+                        if (options.siteTimeBlocks[k][ks].saf.id) {
+                            datesContent[k].push(`${getSafLink(options.siteTimeBlocks[k][ks].saf)}`);
+                        } else {
+                            // @@NOTE: a SAF wiht no ID means the saf exists but this user cannot see it, so we just mark the slots used
+                            datesContent[k].push(`${options.siteTimeBlocks[k][ks].blocks.length} slots used`);
+                        }
                     }
                 }
             }
@@ -412,10 +300,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     { id: 'saf-equipment_name', title: 'Equipment' },
                     { id: 'saf-eq-action-type_name', title: 'Type' },
                     { id: 'saf-eq-action-status_name', title: 'Status' },
+                    { id: 'saf-detach', title: '', styles: { 'width': '50px' }, noFilter: true },
                 ],
                 dataSource: getSafEqAction(dataSource),
                 showToolbar: true,
-                showEditDelete: true,
+                showEditDelete: !isExistingSaf,
+                
             }
             step3CInfo.fields.push(crewTableControl);
 
@@ -530,9 +420,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (options.editMode) {
                 fieldGroups = getSAFInfoPanels_Builder(dataSource, userInfo, options);
             } else {
+                var requiresSrf = twcUtils.getSafType(dataSource[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';
+
                 fieldGroups.push(getSAFInfoPanels_Info(dataSource, userInfo));
                 fieldGroups.push(getSAFInfoPanels_WorkFlowInfo(dataSource, userInfo));
-                fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Images(dataSource, userInfo));
+                if (requiresSrf) {
+                    fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Images(dataSource, userInfo));
+                }
                 fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Files(dataSource, userInfo));
                 fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo));
 
@@ -610,13 +504,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             //     FieldsInfo: twcSafTimeBlock.FieldsInfo
             // });
 
-            var requiresSrf = twcUtils.getSafType(dataSource[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';
 
+            // @@TODO: use constant
+            var profileLink = core.url.record('customrecord_twc_prof');
+            var companyLink = core.url.record('customrecord_twc_company');
             infoLists.fields.push({
                 id: `${twcSafCrew.Type}`, label: 'Crew / Visitors',
                 fields: {
-                    contractor: 'Contractor',
-                    [twcSafCrew.Fields.MEMBER]: 'Name',
+                    contractor_name: { title: 'Contractor', link: { url: companyLink + '&id=${contractor}', valueField: 'contractor' } },
+                    [twcSafCrew.Fields.MEMBER]: { title: 'Name', link: { url: profileLink + '&id=${' + twcSafCrew.Fields.MEMBER + '}', valueField: twcSafCrew.Fields.MEMBER } },
                     [twcSafCrew.Fields.ATTEND_AS]: 'Role',
                 },
                 dataSource: twcUtils.getSafCrew(dataSource),
@@ -628,23 +524,39 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             return twcUtils.Certs[v]?.attendAsText || v;
                         }
                     }
-
                 }
             });
 
-
+            var requiresSrf = twcUtils.getSafType(dataSource[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';
             if (requiresSrf) {
+                // @@TODO: use constant
+                var eaActionLink = core.url.record('customrecord_twc_eq_action');
+                var equipLink = core.url.record('customrecord_twc_equip');
+
                 infoLists.fields.push({
                     id: `${twcSafAction.Type}`, label: 'Eq. Actions',
+                    // fields: {
+                    //     [twcSafAction.Fields.SAF_ACTION_EA]: 'Action',
+                    //     [twcSafAction.Fields.SAF_ACTION_STATUS]: 'Status',
+                    //     [twcSafAction.Fields.SAF_ACTION_COMPLETE]: 'Complete',
+                    // },
                     fields: {
-                        [twcSafAction.Fields.SAF_ACTION_EA]: 'Action',
-                        [twcSafAction.Fields.SAF_ACTION_STATUS]: 'Status',
-                        [twcSafAction.Fields.SAF_ACTION_COMPLETE]: 'Complete',
+                        ['saf-eq-action-id']: { title: 'Eq. Action ID', link: { url: eaActionLink + '&id=${eaId}', valueField: 'eaId' } },
+                        ['saf-equipment_name']: { title: 'Equipment', link: { url: equipLink + '&id=${saf-equipment}', valueField: 'saf-equipment' } },
+                        ['saf-eq-action-type_name']: 'Type',
+                        ['saf-eq-action-status_name']: 'Status',
                     },
-                    //dataSource: twcUtils.getSafCrew(dataSource),
-                    where: { [twcSafAction.Fields.SAF]: dataSource.id },
+                    //where: { [twcSafAction.Fields.SAF]: dataSource.id },
+                    dataSource: getSafEqAction(dataSource),
                     FieldsInfo: twcSafAction.FieldsInfo,
-                    styles: { width: '100%', 'padding-left': '7px' }
+                    styles: { width: '100%', 'padding-left': '7px' },
+                    onColumnInit: (tbl, col) => {
+                        if (col.id == 'saf-eq-action-status_name') {
+                            col.formatValue = (v) => {
+                                return twcSafAction.getStatusHtml(v);
+                            }
+                        }
+                    }
                 });
 
             }
@@ -674,6 +586,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getSAFInfoPanels_WorkFlowInfo_Images(dataSource, userInfo) {
+            
             var fieldGroup = { id: 'site-access-workflow-images', title: 'Completion Photos', collapsed: false, controls: [] };
             var workFlowLogsInfo = { id: 'site-access-logs', collapsed: false, fields: [] };
             fieldGroup.controls.push(workFlowLogsInfo);
@@ -740,7 +653,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             return twcSafLog.getStatusHtml(v)
                         }
                     }
-
                 }
             });
 
@@ -749,170 +661,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroup;
         }
 
-
-
-
-        //#region JESNA
-
-        // function getSAFInfoPanels_Info(dataSource, userInfo) {
-        //     var fieldGroup = { id: 'site-access-details', title: 'SAF info', collapsed: false, controls: [] };
-
-        //     var detailsInfo = { id: 'site-access-details', title: 'Details', fields: [] };
-        //     fieldGroup.controls.push(detailsInfo);
-
-        //     detailsInfo.fields.push({ id: twcSaf.Fields.SAF_ID, label: 'SAF ID' })
-        //     detailsInfo.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Customer' })
-        //     detailsInfo.fields.push({ id: twcSaf.Fields.STATUS, label: 'Status' })
-        //     // detailsInfo.fields.push({ id: twcSaf.Fields.START_TIME_BLOCK, label: 'Start' })          
-        //     // detailsInfo.fields.push({ id: twcSaf.Fields.END_TIME_BLOCK, label: 'End' })          
-
-        //     configUIFields.formatPanelFields(dataSource, fieldGroup);
-
-        //     return fieldGroup;
-        // }
-
-        // function getSAFInfoPanels_Existing_details(dataSource, userInfo) {
-
-        //     var fieldGroup = { id: 'site-access-existing-info', collapsed: false, controls: [] };
-
-        //     var safDetailsInfo = { id: 'ite-access-existing-safs-det', title: 'Details', collapsed: true, fields: [] };
-        //     fieldGroup.controls.push(safDetailsInfo);
-
-        //     safDetailsInfo.fields.push({ id: twcSaf.Fields.SAF_ID, label: 'SAF ID' })
-        //     safDetailsInfo.fields.push({ id: twcSaf.Fields.STATUS, label: 'Submitted' })
-        //     safDetailsInfo.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Author' })
-
-        //     var safDetailsStatus = { id: 'ite-access-existing-safs-det-status', title: 'Status', collapsed: true, fields: [] };
-        //     fieldGroup.controls.push(safDetailsStatus);
-        //     safDetailsStatus.fields.push({ id: twcSaf.Fields.STATUS, label: 'Current Status' })
-        //     safDetailsStatus.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'History' })
-        //     configUIFields.formatPanelFields(dataSource, safDetailsStatus);
-
-
-        //     var safDetailsReq = { id: 'ite-access-existing-safs-det-accreq', title: 'Access Requirements', collapsed: true, fields: [] };
-        //     fieldGroup.controls.push(safDetailsReq);
-        //     safDetailsReq.fields.push({ id: twcSaf.Fields.R_TYPE, label: 'Access Type' })
-        //     safDetailsReq.fields.push({ id: twcSaf.Fields.MAST_ACCESS, label: 'Mast Access' })
-        //     safDetailsReq.fields.push({ id: twcSaf.Fields.ROOFTOP_ACCESS, label: 'Rooftop Access' })
-        //     safDetailsReq.fields.push({ id: twcSaf.Fields.TL_BUILDING_ACCESS, label: 'TC Building Access' })
-        //     configUIFields.formatPanelFields(dataSource, safDetailsReq);
-
-        //     var safDetailsAccDet = { id: 'ite-access-existing-safs-det-accdet', title: 'Access Details', collapsed: true, fields: [] };
-        //     fieldGroup.controls.push(safDetailsAccDet);
-        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Customer' })
-        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.PRIMARY_CONTRACTOR, label: 'Primary Contractor' })
-        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.SUMMARY_OF_WORKS, label: 'Summary of Works' })
-        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Key' })
-        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.STATUS, label: 'SRF' })
-        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.STATUS, label: 'PSDP' })
-        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'PSCS' })
-        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.PICW, label: 'PICW' })
-        //     safDetailsAccDet.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Key' })
-
-        //     configUIFields.formatPanelFields(dataSource, safDetailsAccDet);
-
-        //     safDetailsInfo.fields.push({
-        //         id: `${twcSaf.Type}`, label: 'Crew / Visitors',
-        //         fields: {
-        //             [twcSaf.Fields.SAF_ID]: 'Company',
-        //             [twcSaf.Fields.CUSTOMER]: 'Name',
-        //             [twcSaf.Fields.R_TYPE]: 'Role',
-        //         },
-        //         where: { [twcSaf.Fields.SITE]: dataSource.siteId },
-        //         FieldsInfo: twcSaf.FieldsInfo
-        //     });
-
-        //     var safDetailsAccDoc = { id: 'ite-access-existing-safs-det-doc', title: 'Documentation', collapsed: true, fields: [] };
-        //     fieldGroup.controls.push(safDetailsAccDoc);
-        //     safDetailsAccDoc.fields.push({ id: twcSaf.Fields.STATUS, label: 'Health & Safety' })
-        //     safDetailsAccDoc.fields.push({ id: twcSaf.Fields.STATUS, label: 'Method Statements' })
-        //     configUIFields.formatPanelFields(dataSource, safDetailsAccDoc);
-
-        //     safDetailsInfo.fields.push({
-        //         id: `${twcSaf.Type}`, label: 'Time Blocks',
-        //         fields: {
-        //             [twcSaf.Fields.SAF_ID]: 'Time',
-        //             [twcSaf.Fields.CUSTOMER]: 'Date',
-        //         },
-        //         where: { [twcSaf.Fields.SITE]: dataSource.siteId },
-        //         FieldsInfo: twcSaf.FieldsInfo
-        //     });
-
-        //     var safDetailsAccEq = { id: 'ite-access-existing-safs-det-eq', title: 'Planned Equipment Work', collapsed: true, fields: [] };
-        //     fieldGroup.controls.push(safDetailsAccEq);
-
-
-        //     safDetailsInfo.fields.push({
-        //         id: `${twcSaf.Type}`, label: 'Text In/Out',
-        //         fields: {
-        //             [twcSaf.Fields.SAF_ID]: 'Received',
-        //             [twcSaf.Fields.CUSTOMER]: 'Type',
-        //             [twcSaf.Fields.CUSTOMER]: 'Sender',
-        //             [twcSaf.Fields.CUSTOMER]: 'Number',
-        //         },
-        //         where: { [twcSaf.Fields.SITE]: dataSource.siteId },
-        //         FieldsInfo: twcSaf.FieldsInfo
-        //     });
-
-        //     configUIFields.formatPanelFields(dataSource, safDetailsInfo);
-        //     return safDetailsInfo;
-        // }
-
-        // function injectToggleColumn(panel) {
-
-        //     if (!panel || !panel.controls) return panel;
-        //     var displayState = ''
-
-        //     for (var i = 0; i < panel.controls.length; i++) {
-
-        //         var control = panel.controls[i];
-
-        //         if (control.type === "table" && control.id === "customrecord_twc_saf") {
-
-        //             control.columns.unshift({
-        //                 id: "toggle",
-        //                 title: " "
-        //             });
-
-        //             if (control.dataSource) {
-
-        //                 for (var j = 0; j < control.dataSource.length; j++) {
-
-        //                     var row = control.dataSource[j];
-        //                     var safId = row.custrecord_twc_saf_id;
-
-        //                     if (!row._isDisplay) {
-        //                         row._isDisplay = 'none';
-        //                     }
-
-        //                     var isOpen = row._isDisplay === 'block';
-        //                     var symbol = isOpen ? '-' : '+';
-        //                     displayState = isOpen ? 'none' : 'block';
-
-        //                     row.toggle =
-        //                         `<div data-saf-id="test123" style="text-align:center;cursor:pointer;"
-        //                 onclick="
-        //                 var d=this.getAttribute('data-display')==='block'?'none':'block';
-        //                 this.setAttribute('data-display',d);
-        //                  this.innerHTML=(d==='block'?'-':'+');
-
-        //                 ">
-        //                  ${symbol}
-        //                 </div>`;
-        //                 }
-        //             }
-
-        //             break;
-        //         }
-        //     }
-        //     let test = {};
-        //     test.obj = (panel)
-        //     test.display = displayState
-        //     //throw new Error(JSON.stringify(obj))
-        //     return test
-        // }
-
-        //#endregion
 
 
         return {

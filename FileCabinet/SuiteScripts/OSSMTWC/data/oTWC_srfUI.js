@@ -32,10 +32,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var customers = null;
             if (userInfo.isVendor) {
-                customers = twcUtils.getCustomers({ vendor: userInfo.profile });
+                customers = twcUtils.getCustomers(userInfo);
             }
 
-            basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: userInfo.isCustomer, dataSource: customers })
+            basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: userInfo.isCustomer, dataSource: customers, allowAll: false})
             basicInfo.fields.push({ id: twcSrf.Fields.OPERATOR_SITE_ID, label: 'Operator Site ID' })
 
             fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 5', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.TME)] });

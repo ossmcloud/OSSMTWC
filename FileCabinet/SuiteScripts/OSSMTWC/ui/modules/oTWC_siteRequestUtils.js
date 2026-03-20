@@ -226,6 +226,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (pageData.recId) {
                     srf = coreSQL.first(`select * from ${twcSrf.Type} where id = ${pageData.recId}`);
                     srf.siteId = srf[twcSrf.Fields.SITE];
+
+                    if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, srf[twcSrf.Fields.CUSTOMER])) {
+                        throw new Error('You do not have access to see this SRF record');
+                    }
+
                 } else {
                     // this is a new SRF, if the logged in user is a customer then set the customer field
                     if (pageData.userInfo.isCustomer) { srf[twcSrf.Fields.CUSTOMER] = pageData.userInfo.id; }

@@ -24,7 +24,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteAccessInfo.siteId || context.request.parameters.siteId);
                 pageData.timeBlocks = twcUtils.getSafTimeBlocks();
-                pageData.siteTimeBlocks = twcSiteAccessUtils.getAllSafTimeBlocks(pageData.siteAccessInfo);
+                pageData.siteTimeBlocks = twcSiteAccessUtils.getAllSafTimeBlocks(pageData.siteAccessInfo, pageData.userInfo);
                 pageData.recordStatus = `<div class="twc-div-span-table">${twcSaf.getSafStatusHtml(safStatus)}</div>`;
                 if (context.request.parameters.recId) {
                     var safCode = pageData.siteAccessInfo.name;
@@ -41,7 +41,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                     `
                 }
                 // @@NOTE: if we have no recId is because we have a new SAF, we have a submit button at the bottom of the page for it, we use the forceViewOnly to hide the Save/Cancel buttons
-                var canEdit = pageData.userInfo.isEmployee ? true : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Rejected);
+                var canEdit = pageData.userInfo.isEmployee ? (safStatus != twcSaf.Status.Cancelled) : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Rejected);
                 if (canEdit && safIsInThePast) { canEdit = false; }
 
                 // @@NOTE: we set pageData.forceViewOnly = true because we do not want the baseView save/cancel buttons
@@ -107,9 +107,9 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 }
 
             } else {
-                pageData.data.safInfo = twcSiteLocatorUtils.getSiteSaf();
+                pageData.data.safInfo = twcSiteLocatorUtils.getSiteSaf(null, pageData.userInfo);
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
-                html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteAccessUtils.renderSiteAccessPanel(pageData.permission.featureId));
+                html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteAccessUtils.renderSiteAccessPanel(pageData.userInfo, pageData.permission.featureId));
             }
 
             s.form.fieldHtml(html);
