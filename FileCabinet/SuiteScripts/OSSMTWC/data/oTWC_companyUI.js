@@ -2,22 +2,27 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_company.js', './oTWC_profile.js', './oTWC_file.js', './oTWC_fileUI.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js'],
-    (runtime, core, coreSQL, twcUtils, twcCompany, twcProfile, twcFile, twcFileUI, configUIFields, twcUI) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_company.js', './oTWC_profile.js', './oTWC_profileUI.js', './oTWC_file.js', './oTWC_fileUI.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js'],
+    (runtime, core, coreSQL, twcUtils, twcCompany, twcProfile, twcProfileUI, twcFile, twcFileUI, configUIFields, twcUI) => {
 
-        function getCompanyInfoPanels(dataSource, userInfo) {
+        const TEST_COLLAPSED = false;
+
+        function getCompanyInfoPanels(pageData) {
+            var dataSource = pageData.profileInfo;
+            var userInfo = pageData.userInfo;
+
             dataSource.Type = twcCompany.Type;
             var fieldGroups = [];
-            fieldGroups.push(getCompanyInfoPanels_mainInfo(dataSource, userInfo));
-            fieldGroups.push(getCompanyInfoPanels_insuranceInfo(dataSource, userInfo));
-            fieldGroups.push(getCompanyInfoPanels_accreditationInfo(dataSource, userInfo));
-            fieldGroups.push(getCompanyInfoPanels_profiles(dataSource, userInfo));
-
+            fieldGroups.push(getCompanyInfoPanels_mainInfo(dataSource, userInfo, pageData.editMode));
+            fieldGroups.push(getCompanyInfoPanels_insuranceInfo(dataSource, userInfo, pageData.editMode));
+            fieldGroups.push(getCompanyInfoPanels_accreditationInfo(dataSource, userInfo, pageData.editMode));
+            fieldGroups.push(getCompanyInfoPanels_documents(dataSource, userInfo, pageData.editMode));
+            fieldGroups.push(getCompanyInfoPanels_profiles(dataSource, userInfo, pageData.editMode));
             return fieldGroups;
 
         }
 
-        function getCompanyInfoPanels_mainInfo(dataSource, userInfo) {
+        function getCompanyInfoPanels_mainInfo(dataSource, userInfo, editMode) {
             var fieldGroup = { id: 'company-main-info', title: 'Main Information', renderAsTable: { width: '100%', 'table-layout': 'fixed' }, collapsed: false, controls: [] };
 
             var basicInfo = { id: 'company-main-info-basic', fields: [] };
@@ -46,8 +51,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
-        function getCompanyInfoPanels_insuranceInfo(dataSource, userInfo) {
-            var fieldGroup = { id: 'company-insurance', title: 'Insurance Info', renderAsTable: { width: '100%', 'table-layout': 'fixed' }, collapsed: false, controls: [] };
+        function getCompanyInfoPanels_insuranceInfo(dataSource, userInfo, editMode) {
+            var fieldGroup = { id: 'company-insurance', title: 'Insurance Info', renderAsTable: { width: '100%', 'table-layout': 'fixed' }, collapsed: !editMode, controls: [] };
 
             var basicInfo = { id: 'company-insurance-info', fields: [] };
             fieldGroup.controls.push(basicInfo);
@@ -74,8 +79,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroup;
         }
 
-        function getCompanyInfoPanels_accreditationInfo(dataSource, userInfo) {
-            var fieldGroup = { id: 'company-accreditation', title: 'Accreditation Info', collapsed: false, controls: [] };
+        function getCompanyInfoPanels_accreditationInfo(dataSource, userInfo, editMode) {
+            var fieldGroup = { id: 'company-accreditation', title: 'Accreditation Info', collapsed: !editMode, controls: [] };
 
             var basicInfo = { id: 'company-accreditation-info', fields: [] };
             fieldGroup.controls.push(basicInfo);
@@ -95,23 +100,25 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
-        function getCompanyInfoPanels_documents(dataSource, userInfo) {
-            var fieldGroup = { id: 'company-document', title: 'Documents', collapsed: false, controls: [] };
+        function getCompanyInfoPanels_documents(dataSource, userInfo, editMode) {
+            var fieldGroup = { id: 'company-document', title: 'Documents', collapsed: true, controls: [] };
 
             var basicInfo = { id: 'company-document-list', fields: [] };
             fieldGroup.controls.push(basicInfo);
 
-            basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'upload-file', value: 'Upload Document', lineBreak: true })
+            //basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'upload-file', value: 'Upload Document', lineBreak: true })
 
             basicInfo.fields.push({
                 id: `${twcFile.Type}`, label: 'Contractor Files',
                 fields: {
-                    ['preview_link']: { title: '', noFilter: true, styles: { width: '50px' } },
-                    [twcFile.Fields.CREATED]: { title: 'Uploaded', type: 'date' },
-                    [twcFile.Fields.R_TYPE + '_name']: 'Type',
-                    [twcFile.Fields.NAME]: 'File Name',
+                    ['preview_link']: { title: '', noFilter: true, noSort: true, styles: { width: '50px' } },
+                    [twcFile.Fields.CREATED]: { title: 'Uploaded', type: 'date', styles: { width: '120px' } },
+                    [twcFile.Fields.STATUS + '_name']: { title: 'Status', styles: { width: '120px', 'padding': '3px' } },
+                    [twcFile.Fields.R_TYPE + '_name']: { title: 'Type', styles: { width: '150px' } },
+                    [twcFile.Fields.NAME]: { title: 'File Name', styles: { width: '350px' } },
+                    [twcFile.Fields.REVISION]: { title: 'Rev.', nullText: '', noFilter: true, styles: { width: '70px', 'text-align': 'center' } },
                     [twcFile.Fields.DESCRIPTION]: { title: 'Description', nullText: '' },
-                    
+
                 },
                 dataSource: twcUtils.getFiles({
                     filters: {
@@ -120,16 +127,23 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     }
                 }),
                 FieldsInfo: twcFile.FieldsInfo,
-                showToolbar: false,
-
+                showToolbar: true,
+                readOnly: editMode || (userInfo.permission.lvl < 3),
+                onColumnInit: (tbl, col) => {
+                    if (col.id == (twcFile.Fields.STATUS + '_name')) {
+                        col.formatValue = (v, fv, d) => {
+                            return twcUtils.getFileStatusHtml(d[twcFile.Fields.STATUS], 'twc-record-status-row')
+                        }
+                    }
+                }
             });
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
         }
 
-        function getCompanyInfoPanels_profiles(dataSource, userInfo) {
-            var fieldGroup = { id: 'company-profiles', title: 'Profiles', collapsed: false, controls: [] };
+        function getCompanyInfoPanels_profiles(dataSource, userInfo, editMode) {
+            var fieldGroup = { id: 'company-profiles', title: 'Profiles', collapsed: editMode, controls: [] };
 
             var basicInfo = { id: 'company-profile-list', fields: [] };
             fieldGroup.controls.push(basicInfo);
@@ -155,31 +169,36 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcProfile.Fields.ELECTRICIAN_CERTIFIED_EXPIRY]: { hide: true },
                     [twcProfile.Fields.DRONE_CERTIFIED_STATUS]: { title: 'Drone', nullText: '' },
                     [twcProfile.Fields.DRONE_CERTIFIED_EXPIRY]: { hide: true },
-                    [twcProfile.Fields.SAFE_PASS_EXPIRY]: { title: 'Safe Pass', nullText: '', type: 'date' },
-                    
+                    [twcProfile.Fields.SAFE_PASS_STATUS]: { title: 'Safe Pass', nullText: '' },
+                    [twcProfile.Fields.SAFE_PASS_EXPIRY]: { hide: true },
+                    //[twcProfile.Fields.SAFE_PASS_EXPIRY]: { title: 'Safe Pass', nullText: '', type: 'date' },
+
 
                 },
                 where: { [twcProfile.Fields.COMPANY]: dataSource.id },
                 FieldsInfo: twcProfile.FieldsInfo,
                 showToolbar: true,
-                readOnly: (userInfo.permission.lvl < 3),
+                readOnly: editMode || (userInfo.permission.lvl < 3),
                 onColumnInit: (tbl, col) => {
                     if (col.id == (twcProfile.Fields.CLIMBER_CERTIFIED_STATUS + '_name') ||
                         col.id == (twcProfile.Fields.RESCUE_CERTIFIED_STATUS + '_name') ||
                         col.id == (twcProfile.Fields.RF_CERTIFIED_STATUS + '_name') ||
                         col.id == (twcProfile.Fields.ROOFTOP_CERTIFIED_STATUS + '_name') ||
                         col.id == (twcProfile.Fields.ELECTRICIAN_CERTIFIED_STATUS + '_name') ||
-                        col.id == (twcProfile.Fields.DRONE_CERTIFIED_STATUS + '_name')) {
+                        col.id == (twcProfile.Fields.DRONE_CERTIFIED_STATUS + '_name') ||
+                        col.id == (twcProfile.Fields.SAFE_PASS_STATUS + '_name')) {
+
+                        col.styles = { width: '130px' };
                         col.formatValue = (v, fv, d) => {
                             return twcProfile.getCertStatusHtml(v, d[col.id.replace('_sts_name', '_exp')])
                         }
                     }
 
-                    if (col.id == twcProfile.Fields.SAFE_PASS_EXPIRY) {
-                        col.formatValue = (v, fv, d) => {
-                            return twcProfile.getDateStatusHtml(v, today)
-                        }   
-                    }
+                    // if (col.id == twcProfile.Fields.SAFE_PASS_EXPIRY) {
+                    //     col.formatValue = (v, fv, d) => {
+                    //         return twcProfile.getDateStatusHtml(v, today)
+                    //     }
+                    // }
                 }
             });
 
@@ -188,20 +207,35 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
-        function getCompanyInfoPanels_xxx(dataSource, userInfo) {
-            var fieldGroup = { id: 'company-xxx', title: 'XXX', collapsed: false, controls: [] };
+        // function getCompanyInfoPanels_xxx(dataSource, userInfo) {
+        //     var fieldGroup = { id: 'company-xxx', title: 'XXX', collapsed: false, controls: [] };
 
-            var basicInfo = { id: 'company-xxx-a', title: 'Basic Information', fields: [] };
-            fieldGroup.controls.push(basicInfo);
-            basicInfo.fields.push({ id: twcCompany.Fields.NAME, label: 'Name' })
+        //     var basicInfo = { id: 'company-xxx-a', title: 'Basic Information', fields: [] };
+        //     fieldGroup.controls.push(basicInfo);
+        //     basicInfo.fields.push({ id: twcCompany.Fields.NAME, label: 'Name' })
 
-            configUIFields.formatPanelFields(dataSource, fieldGroup);
+        //     configUIFields.formatPanelFields(dataSource, fieldGroup);
+        //     return fieldGroup;
+        // }
+
+        function getCompanyChildRecord(company, childRecord, userInfo) {
+            var fieldGroup = [];
+            if (childRecord.type == twcProfile.Type) {
+                fieldGroup = twcProfileUI.getUIFields(childRecord, userInfo);
+            } else if (childRecord.type == twcFile.Type) {
+                fieldGroup = twcFileUI.getUIFields(childRecord, userInfo);
+            } else {
+                throw new Error(`No Child Record Found in payload (type: ${childRecord.type})`)
+            }
+            //configUIFields.formatPanelFields(childRecord, fieldGroup);
             return fieldGroup;
         }
 
+
         return {
             getCompanyInfoPanels: getCompanyInfoPanels,
-            getCompanyProfilesPanel: getCompanyInfoPanels_documents,
+            getCompanyChildRecord: getCompanyChildRecord
+            //getCompanyProfilesPanel: getCompanyInfoPanels_documents,
 
         }
     });

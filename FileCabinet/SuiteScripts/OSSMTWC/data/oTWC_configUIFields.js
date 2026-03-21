@@ -62,6 +62,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var siteFields = getFieldDefinitions(dataSource.Type);
             if (!panelFields.controls) { panelFields.controls = []; }
+            
             core.array.each(panelFields.fields, field => {
                 //if (field.type == twcUI.CTRL_TYPE.BUTTON) {
                 if (field.type !== undefined) {
@@ -171,7 +172,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 // @@NOTE: if we have the name of a foreign table we would have retrieved it using BUILTIN.DF and just appended _name to the field id
                 //         so the data-source would have the value as dataSource.[fkFieldName]_name
                 if (fieldId == 'name' && field.id.indexOf('.') > 0) { fieldId = `${field.id.split('.')[0]}_name`; }
-
+                
                 var control = {
                     type: field.type || twcUI.nsTypeToCtrlType(dataField.field_type),
                     value: dataSource[fieldId],
@@ -181,7 +182,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 // @@TODO: @@REVIEW: if the dataSource is a loaded object it would have property names determined by the alias
                 //                   but the field id could the the netsuite field id in which case we would not have got the vale with dataSource[fieldId]
                 //                   so we get the value using the .get method (NOTE: if the .get method is not there this may be a different object)
-                if (control.value === undefined && dataSource.get) { control.value = dataSource.get(fieldId); }
+
+                if (control.value === undefined && dataSource.get) {
+                    if (dataField?.field_type == 'Document') {
+                        control.value = dataSource.getText(fieldId);
+                    } else {
+                        control.value = dataSource.get(fieldId);
+                    }
+                    //if (fieldId == 'custrecord_twc_prof_climber_cert_exp') { throw new Error('x: ' + control.value) }
+
+                }
 
                 for (var k in field) {
                     if (k == 'type' || k == 'id') { continue; }

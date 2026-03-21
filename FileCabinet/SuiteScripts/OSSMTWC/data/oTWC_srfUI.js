@@ -86,12 +86,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroups;
         }
 
-        function getSrfChildRecord(srf, childRecord) {
+        function getSrfChildRecord(srf, childRecord, userInfo) {
             var fieldGroup = [];
             if (childRecord.type == twcSrfItemUI.RecordType) {
                 fieldGroup = twcSrfItemUI.getUIFields(srf, childRecord);
             } else if (childRecord.type == twcFileUI.RecordType) {
-                fieldGroup = twcFileUI.getUIFields(srf, childRecord);
+                fieldGroup = twcFileUI.getUIFields(childRecord, userInfo);
             } else {
                 throw new Error(`No Child Record Found in payload (type: ${childRecord.type})`)
             }

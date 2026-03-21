@@ -22,7 +22,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ENSUP_CARD: 'custrecord_twc_prof_ensup_card',
             TL_KEYS_ASSIGNED: 'custrecord_twc_prof_tl_key_assigned',
             SAFE_PASS_ID: 'custrecord_twc_prof_safe_pass_id',
-            SAFE_PASS_EXPIRY: 'custrecord_twc_prof_safe_pass_expiry',
+            SAFE_PASS_STATUS: 'custrecord_twc_prof_safe_pass_sts',
+            SAFE_PASS_EXPIRY: 'custrecord_twc_prof_safe_pass_exp',
             PICW_ACCEPTABLE: 'custrecord_twc_prof_picw_acceptable',
             SAF_AVAILABLE: 'custrecord_twc_prof_saf_available',
             ATHLONE_APPROVED: 'custrecord_twc_prof_athlone_approved',
@@ -58,10 +59,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             RADIX_PROFILE_TABLE_ENTRY_NUMBER: { name: 'custrecord_twc_prof_radix_entry_num', type: 'integer', alias: 'rADIXProfileTableentrynumber', display: 'normal', mandatory: false },
             COMPANY: { name: 'custrecord_twc_prof_company', type: 'select', alias: 'company', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             ACCREDITATION_STATUS: { name: 'custrecord_twc_prof_accred_status', type: 'select', alias: 'accreditationStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof_accred_status' },
-            ACCREDITATION_STATUS_COMMENT: { name: 'custrecord_twc_prof_accred_comment', type: 'text', alias: 'accreditationStatusComment', display: 'normal', mandatory: false },
+            ACCREDITATION_STATUS_COMMENT: { name: 'custrecord_twc_prof_accred_comment', type: 'clobtext', alias: 'accreditationStatusComment', display: 'normal', mandatory: false },
             ACCREDITATION_SUBMITTED: { name: 'custrecord_twc_prof_accred_submitted', type: 'date', alias: 'accreditationSubmitted', display: 'normal', mandatory: false },
             ACCREDITATION_STATUS_CHANGE_DATE: { name: 'custrecord_twc_prof_accred_sts_date', type: 'date', alias: 'accreditationStatusChangeDate', display: 'normal', mandatory: false },
-            COMMENTS: { name: 'custrecord_twc_prof_comments', type: 'text', alias: 'comments', display: 'normal', mandatory: false },
+            COMMENTS: { name: 'custrecord_twc_prof_comments', type: 'clobtext', alias: 'comments', display: 'normal', mandatory: false },
             E_MAIL: { name: 'custrecord_twc_prof_email', type: 'text', alias: 'e_mail', display: 'normal', mandatory: false },
             USERNAME: { name: 'custrecord_twc_prof_username', type: 'select', alias: 'username', display: 'normal', mandatory: false, recordType: '-9' },
             PHONE: { name: 'custrecord_twc_prof_phone', type: 'text', alias: 'phone', display: 'normal', mandatory: false },
@@ -70,7 +71,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ENSUP_CARD: { name: 'custrecord_twc_prof_ensup_card', type: 'text', alias: 'eNSUPCard', display: 'normal', mandatory: false },
             TL_KEYS_ASSIGNED: { name: 'custrecord_twc_prof_tl_key_assigned', type: 'select', alias: 'tLKeysAssigned', display: 'normal', mandatory: false, recordType: 'customrecord_twc_track_key' },
             SAFE_PASS_ID: { name: 'custrecord_twc_prof_safe_pass_id', type: 'text', alias: 'safePassID', display: 'normal', mandatory: false },
-            SAFE_PASS_EXPIRY: { name: 'custrecord_twc_prof_safe_pass_expiry', type: 'date', alias: 'safePassExpiry', display: 'normal', mandatory: false },
+            SAFE_PASS_STATUS: { name: 'custrecord_twc_prof_safe_pass_sts', type: 'select', alias: 'safePassStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_no_active_options' },
+            SAFE_PASS_EXPIRY: { name: 'custrecord_twc_prof_safe_pass_exp', type: 'date', alias: 'safePassExpiry', display: 'normal', mandatory: false },
             PICW_ACCEPTABLE: { name: 'custrecord_twc_prof_picw_acceptable', type: 'checkbox', alias: 'pICWAcceptable', display: 'normal', mandatory: false },
             SAF_AVAILABLE: { name: 'custrecord_twc_prof_saf_available', type: 'checkbox', alias: 'sAFAvailable', display: 'normal', mandatory: false },
             ATHLONE_APPROVED: { name: 'custrecord_twc_prof_athlone_approved', type: 'checkbox', alias: 'athloneApproved', display: 'normal', mandatory: false },
@@ -205,6 +207,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set safePassID(value) {
                 this.set(_recordFields.SAFE_PASS_ID, value)
             }
+            
+            get safePassStatus() {
+                return this.get(_recordFields.SAFE_PASS_STATUS);
+            } set safePassStatus(value) {
+                this.set(_recordFields.SAFE_PASS_STATUS, value)
+            }
+            get safePassStatusName() { return this.getText(_recordFields.SAFE_PASS_STATUS); }
             
             get safePassExpiry() {
                 return this.get(_recordFields.SAFE_PASS_EXPIRY);

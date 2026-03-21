@@ -203,7 +203,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
 
             getSRFInfoPanels: twcSrfUI.getSRFInfoPanels,
-            getSrfChildRecord: (options) => {
+            getSrfChildRecord: (options, userInfo) => {
                 var srf = twcSrf.get(options.srf.id);
                 srf.copyFromObject(options.srf);
                 var childRecord = null;
@@ -212,13 +212,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     childRecord.copyFromObject(options.item);
                 } else if (options.file) {
                     childRecord = twcFile.get(options.file.id);
-                    childRecord.copyFromObject(options.field);
+                    childRecord.copyFromObject(options.file);
                 } else {
                     throw new Error(`No Child Record Found in payload`)
                 }
 
                 
-                return twcSrfUI.getSrfChildRecord(srf, childRecord);
+                return twcSrfUI.getSrfChildRecord(srf, childRecord, userInfo);
             },
 
             getSiteRequestInfo: (pageData) => {

@@ -154,7 +154,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             copyFromObject(obj) {
                 for (var k in obj) {
-                    if (k == 'id') { return; }
+                    if (k == 'id') { continue; }
                     // @@NOTE: if we are copying from an object we could have fields that do not map to a persistent field, we just ignore these
                     if (!this.findField(k, true)) { continue; }
                     this.set(k, obj[k]);

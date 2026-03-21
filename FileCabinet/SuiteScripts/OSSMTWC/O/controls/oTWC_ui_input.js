@@ -20,11 +20,23 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     if (!this.#options.id) { this.#options.id = id; }
                     if (!this.#options.type) { this.#options.id = this.#ui.data('type'); }
 
+                    
                     this.initEvents();
 
                 } else {
                     this.#options = options || {};
                 }
+
+                if (this.#options.type == ctrlBase.CTRL_TYPE.DATE) {
+                    if (this.#options.value) {
+                        if (this.#options.value.constructor.name == 'Date') {
+                            this.#options.value = this.#options.value.format();
+                        } else if (this.#options.value.constructor.name == 'String') {
+                            this.#options.value = this.#options.value.split('T')[0];
+                        }
+                    }
+                }
+
             }
 
             get id() { return this.#options.id; }

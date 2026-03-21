@@ -49,11 +49,18 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 if (this.#options.label !== undefined) {
                     label = `<label class="inline">${this.#options.label || ''}</label>`;
                 }
+
+                var styles = ''
+                if (this.#options.styles) {
+                    for (var s in this.#options.styles) {
+                        if (s == 'width') { styles = 'width: 100%;' }
+                    }
+                }
                 var html = `
-                    <div class="twc_ctrl" data-type="button" data-id="${this.#options.id}">
+                    <div class="twc_ctrl" data-type="button" data-id="${this.#options.id}" style="${styles}">
                         ${label}
-                        <div class="twc_ctrl_table" style="">
-                            <input type="button" class="twc-button" id="${this.#options.id}" value="${this.#options.value}" ${disabled}/>
+                        <div class="twc_ctrl_table" style="width: 100%;">
+                            <input type="button" class="twc-button" style="width: 100%;" id="${this.#options.id}" value="${this.#options.value}" ${disabled}/>
                         </div>
                     </div>
                 `
@@ -61,6 +68,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 html = ctrlBase.render(html, {
                     client: this.ui != null,
                     type: 'button',
+                    styles: this.#options.styles
                 });
 
                 if (container) {

@@ -18,7 +18,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         const NO_ACTIVE_EXPIRED = {
             No: 1,
             Active: 2,
-            Expired: 3
+            Expired: 3,
+            Pending: 4
         }
 
         function getAttendAs(p) {
@@ -33,6 +34,94 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return attendAs;
         }
 
+        const FILE_STATUS = {
+            Pending: 1,
+            Rejected: 2,
+            Approved: 3,
+            Superseded: 4,
+            NA: 5
+        }
+        const FILE_STATUS_STYLE = {
+            Pending: { color: 'white', backgroundColor: 'orange' },
+            Approved: { color: 'white', backgroundColor: 'green' },
+            Rejected: { color: 'white', backgroundColor: 'red' },
+            Superseded: { color: 'white', backgroundColor: 'silver' },
+            NA: { color: 'var(--main-color)', backgroundColor: 'transparent' },
+        }
+        function getFileStatusName(fileStatusNumber) {
+            if (!fileStatusNumber) { fileStatusNumber = 1; }
+            for (var k in FILE_STATUS) {
+                if (FILE_STATUS[k] == fileStatusNumber) { return k; }
+            }
+        }
+        function getFileStatusStyle(fileStatusNumber) {
+            if (!fileStatusNumber) { fileStatusNumber = 1; }
+            if (isNaN(parseInt(fileStatusNumber))) {
+                return FILE_STATUS_STYLE[fileStatusNumber.replaceAll('/', '')];
+            } else {
+                return FILE_STATUS_STYLE[getFileStatusName(fileStatusNumber)];
+            }
+        }
+        function getFileStatusHtml(fileStatusNumber, spanClass) {
+            if (!fileStatusNumber) { fileStatusNumber = 11; }
+            var statusName = getFileStatusName(fileStatusNumber);
+            if (isNaN(parseInt(fileStatusNumber))) { statusName = fileStatusNumber; }
+            var statusStyle = getFileStatusStyle(statusName);
+            return `
+                <span class="${spanClass ? spanClass : 'twc-record-status'}" style="color: ${statusStyle.color}; background-color: ${statusStyle.backgroundColor};" >
+                    ${statusName}
+                </span>
+            `
+        }
+
+
+        function getFileTypes(options) {
+
+            var sql = `
+                select  t.id as value, t.name as text, p.name as parent_name,
+                        t.custrecord_twc_file_type_hs as is_hs, t.custrecord_twc_file_type_method as is_method, t.custrecord_twc_file_type_image as is_image
+                from    customrecord_twc_file_type t
+                join    customrecord_twc_file_type p on p.id = t.parent
+                where   t.isinactive = 'F'
+
+            `
+
+            if (options?.filters) {
+                if (options.filters.constructor.name == 'String') {
+                    sql += options.filters;
+                } else {
+                    for (var f in options.filters) {
+                        if (options.filters[f].op !== undefined) {
+                            sql += `and ${f} ${options.filters[f].op} ${options.filters[f].value}`;
+                        } else {
+                            sql += `and ${f} = '${options.filters[f]}'`;
+                        }
+                    }
+                }
+            }
+
+            sql += 'order by p.name, t.name'
+
+            var fileTypes = [];
+            coreSQL.each(sql, t => {
+                if (options?.isVendor) {
+                    if (t.is_method != 'T' && t.is_hs != 'T') { return; }
+                }
+
+                t.isMethod = t.is_method == 'T';
+                t.isHS = t.is_hs == 'T';
+                t.isImage = t.is_image == 'T';
+
+                delete t.is_hs;
+                delete t.is_method;
+                delete t.is_image;
+
+                fileTypes.push(t);
+            });
+            return fileTypes;
+
+
+        }
 
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
@@ -414,84 +503,70 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getSafFiles(options, type) {
-            var fileTypeFilter = '';
+            var fileTypeFilter = `
+                and ${twcFile.Fields.RECORD_TYPE} = 'customrecord_twc_saf'
+                and ${twcFile.Fields.RECORD_ID} = ${options.id}
+            `;
             if (type == 'image') {
-                fileTypeFilter = `AND t.custrecord_twc_file_type_image = 'T'`;
+                fileTypeFilter += `AND t.custrecord_twc_file_type_image = 'T'`;
             } else if (type == 'contractor') {
-                fileTypeFilter = `AND (t.custrecord_twc_file_type_hs = 'T' OR t.custrecord_twc_file_type_method = 'T')`;
+                fileTypeFilter += `AND (t.custrecord_twc_file_type_hs = 'T' OR t.custrecord_twc_file_type_method = 'T')`;
             }
-
-            var sql = `
-                select  ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'dd/MM/yyyy HH:mi') as created, f.name, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name,
-                        ${twcFile.Fields.DESCRIPTION}
-                from    ${twcFile.Type} f
-                join    customrecord_twc_file_type t on t.id = f.${twcFile.Fields.R_TYPE}
-                where   ${twcFile.Fields.RECORD_TYPE} = 'customrecord_twc_saf'
-                and     ${twcFile.Fields.RECORD_ID} = ${options.id}
-                ${fileTypeFilter}
-                order by f.created desc
-            `
-
-            var files = [];
-            coreSQL.each(sql, f => {
-                f.preview_link = `<div style="text-align: center;"><span class="twc-clickable twc-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
-                files.push(f)
-            })
-            //throw new Error(JSON.stringify(files))
-            return files;
-        }
-
-        function getSafContractorFiles(options) {
-            var fileIds = options['custrecord_twc_saf_method_statement'] || '';
-            if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
-            fileIds += options['custrecord_twc_saf_health_safety'];
-
-            return getFiles({ filters: { id: { op: 'in', value: `(${fileIds})`}}})
+            return getFiles({ filters: fileTypeFilter });
 
             // var sql = `
-            //     select  f.id, ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'dd/MM/yyyy HH:mi') as created, f.name,
-            //             BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as type,
+            //     select  ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'dd/MM/yyyy HH:mi') as created, f.name, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name,
             //             ${twcFile.Fields.DESCRIPTION}
             //     from    ${twcFile.Type} f
             //     join    customrecord_twc_file_type t on t.id = f.${twcFile.Fields.R_TYPE}
-            //     where   f.id in (${fileIds})
-            //     order by BUILTIN.DF(${twcFile.Fields.R_TYPE}), f.name
+            //     where   ${twcFile.Fields.RECORD_TYPE} = 'customrecord_twc_saf'
+            //     and     ${twcFile.Fields.RECORD_ID} = ${options.id}
+            //     ${fileTypeFilter}
+            //     order by f.created desc
             // `
 
             // var files = [];
             // coreSQL.each(sql, f => {
-            //     f.preview_link = `<div style="text-align: center;"><span class="twc-clickable twc-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
+            //     f.preview_link = `<div style="text-align: center;"><span class="twc-clickable twc-preview-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
             //     files.push(f)
             // })
             // //throw new Error(JSON.stringify(files))
             // return files;
         }
 
-        function getFiles(options) {
-            // var sql = `
-            //     select  f.id, f.name, BUILTIN.DF(f.custrecord_twc_file_type) as type, f.custrecord_twc_file_recid as file_dsecr, f.custrecord_twc_file_doc as file_id,
-            //             t.custrecord_twc_file_type_hs as is_hs, t.custrecord_twc_file_type_method as is_method
-            //     from    customrecord_twc_file f
-            //     left join    customrecord_twc_file_type t on t.id = f.custrecord_twc_file_type
+        function getSafContractorFiles(options) {
+            var fileIds = options['custrecord_twc_saf_method_statement'] || '';
+            if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
+            fileIds += options['custrecord_twc_saf_health_safety'];
+            return getFiles({ filters: { id: { op: 'in', value: `(${fileIds})`, 'customrecord_twc_file': FILE_STATUS.Approved } } })
+        }
 
-            //     where  f.isinactive = 'F'
-            // `
-            
+        function getFilePreviewLink(file_id) {
+            return `<div style="text-align: center;"><span class="twc-clickable twc-preview-file" data-file="${file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`
+        }
+
+        function getFiles(options) {
             var sql = `
-                select  f.id, ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'dd/MM/yyyy HH:mi') as created, f.name,
-                        BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as type,
-                        ${twcFile.Fields.DESCRIPTION}
+                select  f.id, ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'yyyy-MM-dd HH:mi') as created, f.name,
+                        ${twcFile.Fields.R_TYPE}, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name, 
+                        ${twcFile.Fields.STATUS}, BUILTIN.DF(${twcFile.Fields.STATUS}) as ${twcFile.Fields.STATUS}_name, 
+                        ${twcFile.Fields.REVISION}, ${twcFile.Fields.UPLOADED_BY}, BUILTIN.DF(${twcFile.Fields.UPLOADED_BY}) as ${twcFile.Fields.UPLOADED_BY}_name, 
+                        BUILTIN.DF(${twcFile.Fields.R_TYPE}) as type,
+                        ${twcFile.Fields.DESCRIPTION}, 
                 from    ${twcFile.Type} f
                 join    customrecord_twc_file_type t on t.id = f.${twcFile.Fields.R_TYPE}
                 where   f.isinactive = 'F'
             `
-
             if (options.filters) {
-                for (var f in options.filters) {
-                    if (options.filters[f].op !== undefined) {
-                        sql += `and ${f} ${options.filters[f].op} ${options.filters[f].value}`;
-                    } else {
-                        sql += `and ${f} = '${options.filters[f]}'`;
+                if (options.filters.constructor.name == 'String') {
+                    sql += options.filters;
+                } else {
+                    for (var f in options.filters) {
+                        if (options.filters[f].op !== undefined) {
+                            sql += `and ${f} ${options.filters[f].op} ${options.filters[f].value}`;
+                        } else {
+                            sql += `and ${f} = '${options.filters[f]}'`;
+                        }
                     }
                 }
             }
@@ -500,10 +575,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var files = [];
             coreSQL.each(sql, f => {
-                f.preview_link = `<div style="text-align: center;"><span class="twc-clickable twc-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
+                //f.preview_link = `<div style="text-align: center;"><span class="twc-clickable twc-preview-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
+                f.preview_link = getFilePreviewLink(f.file_id);
                 files.push(f)
             })
-            
+
             return files;
         }
 
@@ -523,7 +599,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 options.customer = options.companyProfile.id;
             } else if (options.isVendor) {
                 options.vendor = options.companyProfile.id;
-            } 
+            }
 
             if (options.type == 'V') {
                 // @@TODO: SAF: Accredited Contractor Expiry date seems null for all
@@ -817,7 +893,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return info;
         }
 
-        
+
 
         function formatLongDate(d) {
             if (!d) { d = (new Date()).addHours(12); }
@@ -837,6 +913,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ROOT_FILE_FOLDER: 'TWC Files',
             HEIGH_LIMIT_FOR_1_CLIMBER: 60,
 
+            FileStatus: FILE_STATUS,
+
             Certs: PROFILE_CERT_FIELD,
             NoActiveExpired: NO_ACTIVE_EXPIRED,
 
@@ -850,6 +928,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SrfStepType: SRF_ITEM_STEP_TYPE,
             SrfRequestType: SRF_ITEM_REQUEST_TYPE,
             SrfStatus: SRF_STATUS,
+
+            getFileStatusName: getFileStatusName,
+            getFileStatusHtml: getFileStatusHtml,
+            getFileTypes: getFileTypes,
 
             getTimeBlockTimeRange: getTimeBlockTimeRange,
 
@@ -895,6 +977,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             getYesNoOptions: getYesNoOptions,
             getFiles: getFiles,
+            getFilePreviewLink: getFilePreviewLink,
             formatLongDate: formatLongDate,
             fromJsToNs: fromJsToNs,
 

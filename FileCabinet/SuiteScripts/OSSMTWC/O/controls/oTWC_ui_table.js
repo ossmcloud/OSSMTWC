@@ -295,7 +295,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 if (this.options.sortIdx !== undefined) {
                     this.#sortIdx = this.options.sortIdx;
                 }
-                
+
+                this.formatValue = this.options.formatValue;
+
                 this.#filters = new HtmlTableColumnFilter(this);
             }
 
@@ -451,7 +453,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 return styles;
             }
 
-            renderCell(value, data) {
+            renderCell(value, data, asTableCell) {
                 var formattedValue = value;
                 if (value && value.value !== undefined) {
                     formattedValue = value.value;
@@ -464,7 +466,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     if (this.type == 'float') {
                         formattedValue = toFloat(value).formatMoney();
                     } else if (this.type == 'bool' || formattedValue === 'T' || formattedValue === 'F') {
-                        if (formattedValue === 'T') {
+                        if (formattedValue === 'T' || formattedValue === 'true' || formattedValue === true) {
                             formattedValue = '&#9989;'
                         } else if (formattedValue === 'F') {
                             formattedValue = '';
@@ -492,8 +494,11 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 if (this.cellMask) { formattedValue = this.cellMask.replaceAll('${value}', formattedValue); }
 
-                if (this.formatValue) { formattedValue = this.formatValue(value, formattedValue, data); }
+                if (this.formatValue) { formattedValue = this.formatValue(value, formattedValue, data, this); }
 
+                if (asTableCell) {
+                    return `<td style="${this.baseStyles('cell')}; padding: 3px; vertical-align: top; border-bottom: 1px solid silver; border-right: 1px solid silver;">${formattedValue}</td>`;
+                }
                 return `<div style="${this.baseStyles('cell')}">${formattedValue}</div>`;
             }
 
@@ -597,6 +602,21 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 return html;
             }
 
+            renderPlainTable() {
+                var html = `<tr>`;
+                core.array.each(this.table.columns, c => {
+                    var v = '';
+                    if (c.unbound) {
+                        if (c.options.initValue) { v = c.options.initValue(this.data); }
+                    } else {
+                        v = this.data[c.options.id];
+                    }
+                    html += c.renderCell(v, this.data, true);
+                })
+                html += '</tr>'
+                return html;
+            }
+
             toCsv(forCopy) {
                 var csv = '';
                 var sep = forCopy ? '\t' : ',';
@@ -632,6 +652,14 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 return html;
             }
 
+            renderPlainTable() {
+                var html = `<thead><tr>`;
+                core.array.each(this.table.columns, c => {
+                    html += `<th style="padding: 3px; font-weight: bold; border-bottom: 1px solid black; border-right: 1px solid black;">${c.title}</th>`;
+                })
+                html += '<thead></tr>'
+                return html;
+            }
 
         }
 
@@ -653,6 +681,15 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     html += c.renderFooter();
                 })
                 html += '</div>'
+                return html;
+            }
+
+            renderPlainTable() {
+                var html = `<tfoot><tr>`;
+                core.array.each(this.table.columns, c => {
+                    html += `<td style="padding: 3px; font-weight: bold; border-top: 1px solid black; border-right: 1px solid black;">${c.title}</td>`;
+                })
+                html += '<tfoot></tr>'
                 return html;
             }
         }
@@ -728,6 +765,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.initEvents();  // @@NOTE: this will only work if this.#j is not empty
             }
 
+
+
             get type() { return ctrlBase.CTRL_TYPE.TABLE; }
             get id() { return this.#tableId; }
 
@@ -769,6 +808,13 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             } set onRowInit(val) {
                 if (!core.utils.isEmpty(val) && !core.utils.isFunc(val)) { throw new err.OInvalidArgumentType('val', 'function'); }
                 this.#rowInit = val;
+            }
+
+            getColumn(id) {
+                return this.#columns.find(c => { return c.id == id })
+            }
+            getColumnOption(id) {
+                return this.#options.columns.find(c => { return c.id == id })
             }
 
             closeAllFilters() {
@@ -1188,8 +1234,27 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.initEvents();
             }
 
-
-
+            renderPlainTable() {
+                var html = '<table>';
+                if (this.#data.length == 0) {
+                    html += '<div style="padding: 7px">no table data</div>';
+                } else {
+                    var headerRendered = false; var footerRendered = false;
+                    core.array.each(this.#rows, r => {
+                        if (r.hide) { return; }
+                        if (r.header) { headerRendered = true; }
+                        if (headerRendered) { html += '<tbody>'; }
+                        if (r.footer) {
+                            footerRendered = true;
+                            html += '</tbody>';
+                        }
+                        html += r.renderPlainTable();
+                    })
+                    if (!footerRendered) { html += '</tbody>'; }
+                }
+                html += '</table>';
+                return html;
+            }
 
             on(eventName, callBack) {
                 if (callBack) {
@@ -1357,12 +1422,17 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             var ctrl = new HtmlTable(options, options.dataSource || dataSource);
             return ctrl.render();
         }
+        function renderPlainTable(options, dataSource) {
+            var ctrl = new HtmlTable(options, dataSource);
+            return ctrl.renderPlainTable();
+        }
 
         return {
             Table: HtmlTable,
             TableControl: TableControl,
-
+            
             render: render,
+            renderPlainTable: renderPlainTable,
             ui: (element) => {
                 return new HtmlTable(element);
             }

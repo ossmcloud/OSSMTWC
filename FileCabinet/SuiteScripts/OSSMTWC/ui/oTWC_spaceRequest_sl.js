@@ -77,7 +77,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
             var userInfo = twcConfig.userInfo(context);
             if (context.request.parameters.action == 'child-record') {
                 var payload = JSON.parse(context.request.body);
-                var fields = twcSiteRequestUtils.getSrfChildRecord(payload);
+                var fields = twcSiteRequestUtils.getSrfChildRecord(payload, userInfo);
                 return fields;
             } else if (context.request.parameters.action == 'save') {
                 var payload = JSON.parse(context.request.body);

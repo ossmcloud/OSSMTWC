@@ -217,13 +217,35 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                             `);
 
                             content.find('#send-email').click(e => {
-                                email.send({
-                                    author: core.env.user(),
-                                    recipients: 'development@ossmcloud.ie',
-                                    subject: 'TWC Page Error - ' + this.constructor.name,
-                                    body: html,
-                                });
-                                alert('email has been sent');
+                                try {
+                                    email.send({
+                                        author: core.env.user(),
+                                        recipients: 'giuseppegalligani@ossmcloud.ie',
+                                        subject: 'OMT Page Error - ' + this.constructor.name,
+                                        body: `
+                                        <style>
+                                            o-table {
+                                                width: 100%;
+                                                display: table;
+                                                table-layout: auto;
+                                                border-collapse: collapse;
+                                            }
+                                            o-table>div {
+                                                display: table-row;
+                                            }
+                                            o-table>div>div {
+                                                display: table-cell;
+                                            }
+                                        </style>
+                                        URL: ${location.href}
+                                        <hr />
+                                        ${uiTable.renderPlainTable({}, this.#unHandledErrors)}
+                                    `,
+                                    });
+                                    dialog.message('email has been sent');
+                                } catch (error) {
+                                    dialog.error(error);
+                                }
                             })
 
 
@@ -272,12 +294,15 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             }
 
             async previewFile(file, e) {
-                var icon = jQuery(e.currentTarget).html();
-                jQuery(e.currentTarget).html(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 16)}</span>`);
+                var icon = '';
+                if (e) {
+                    icon = jQuery(e.currentTarget).html();
+                    jQuery(e.currentTarget).html(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 16)}</span>`);
+                }
 
                 var url = core.url.script('otwc_microsvc_sl', { action: 'view-file' });
-                var res = await https.promise.post({ url: url, body: { file: file, getUrl: e.ctrlKey } });
-                if (e.ctrlKey) {
+                var res = await https.promise.post({ url: url, body: { file: file, getUrl: e?.ctrlKey } });
+                if (e?.ctrlKey) {
                     jQuery(e.currentTarget).html(icon);
                     window.open(res.url);
                     return;
@@ -289,8 +314,10 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                     html = `<img style="width: 100%; border: 1px solid var(--grid-color);" src="${dataType};base64,${res.fileContent}" />`;
                 }
 
-                jQuery(e.currentTarget).html(icon);
-              
+                if (e) {
+                    jQuery(e.currentTarget).html(icon);
+                }
+                
                 dialog.message({
                     title: res.name,
                     message: html,

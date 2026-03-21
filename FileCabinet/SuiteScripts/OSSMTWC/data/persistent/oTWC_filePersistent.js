@@ -13,6 +13,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             REVISION: 'custrecord_twc_file_revision',
             FILE: 'custrecord_twc_file_doc',
             R_TYPE: 'custrecord_twc_file_type',
+            STATUS: 'custrecord_twc_file_status',
+            UPLOADED_BY: 'custrecord_twc_file_uploaded_by',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -22,10 +24,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             RECORD_TYPE: { name: 'custrecord_twc_file_rectype', type: 'text', alias: 'recordType', display: 'normal', mandatory: false },
             RECORD_ID: { name: 'custrecord_twc_file_recid', type: 'integer', alias: 'recordID', display: 'normal', mandatory: false },
-            DESCRIPTION: { name: 'custrecord_twc_file_description', type: 'text', alias: 'description', display: 'normal', mandatory: false },
+            DESCRIPTION: { name: 'custrecord_twc_file_description', type: 'clobtext', alias: 'description', display: 'normal', mandatory: false },
             REVISION: { name: 'custrecord_twc_file_revision', type: 'integer', alias: 'revision', display: 'normal', mandatory: false },
             FILE: { name: 'custrecord_twc_file_doc', type: 'document', alias: 'file', display: 'normal', mandatory: false },
             R_TYPE: { name: 'custrecord_twc_file_type', type: 'select', alias: 'r_type', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file_type' },
+            STATUS: { name: 'custrecord_twc_file_status', type: 'select', alias: 'status', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file_status' },
+            UPLOADED_BY: { name: 'custrecord_twc_file_uploaded_by', type: 'select', alias: 'uploadedBy', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -78,6 +82,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.R_TYPE, value)
             }
             get r_typeName() { return this.getText(_recordFields.R_TYPE); }
+            
+            get status() {
+                return this.get(_recordFields.STATUS);
+            } set status(value) {
+                this.set(_recordFields.STATUS, value)
+            }
+            get statusName() { return this.getText(_recordFields.STATUS); }
+            
+            get uploadedBy() {
+                return this.get(_recordFields.UPLOADED_BY);
+            } set uploadedBy(value) {
+                this.set(_recordFields.UPLOADED_BY, value)
+            }
+            get uploadedByName() { return this.getText(_recordFields.UPLOADED_BY); }
             
             get created() {
                 return this.get(_recordFields.CREATED);

@@ -711,7 +711,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             initSafMode() {
-                this.ui.find('.twc-file').click(async e => {
+                this.ui.find('.twc-preview-file').click(async e => {
                     var file = jQuery(e.currentTarget).data('file')
                     await this.previewFile(file, e)
                 })

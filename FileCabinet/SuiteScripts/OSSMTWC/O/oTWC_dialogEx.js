@@ -181,7 +181,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     message: options.toString()
                 }
             }
-            dialog.open({
+            return dialog.open({
                 title: options.title,
                 content: options.message,
                 size: {
@@ -199,7 +199,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 stackTrace = `<hr />`;
                 if (Array.isArray(error.stack)) {
                     core.array.each(error.stack, st => {
-                        stackTrace += `${st.replaceAll(' ', '&nbsp;')}<br />`;    
+                        stackTrace += `${st.replaceAll(' ', '&nbsp;')}<br />`;
                     })
                 } else {
                     stackTrace += error.stack.replaceAll(' ', '&nbsp;');
@@ -315,7 +315,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
             },
 
-            siteFinder: siteFinder
+            siteFinder: siteFinder,
+
+            wait: function (dlg) {
+                dlg.dialog.find('#o-dialog_content').append(`
+                    <div class="twc-overlay" style="padding-top: 150px;">
+                        <span class="twc-wait-cursor">
+                            ${twcIcons.ICONS.waitWheel}
+                        </span>
+                    </div>
+                `);
+            },
+            waitClose: function (dlg) {
+                dlg.dialog.find('#o-dialog_content').find('.twc-overlay').remove();
+            }
 
         }
     })

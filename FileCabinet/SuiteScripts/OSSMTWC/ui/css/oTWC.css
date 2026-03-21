@@ -2620,3 +2620,7 @@ div.twc-div-span-table {
 div.twc-div-span-table>span {
     display: table-cell;
 }
+
+.twc-preview-file {
+    padding: 0px !important;
+}
