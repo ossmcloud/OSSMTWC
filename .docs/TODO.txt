@@ -10,16 +10,30 @@ TODO-NEXT:
     04. implement functionalities:
             Space Request (SRF)
             Space Access Request (SAF)
+            Inventory
+            Trouble Ticket
             ...
 
-    04. OSSMTWC - Profile
+    04. OSSMTWC - Profile:
         each employee or customer or customer contact must be associated with a profile
         we should automate this as follow:
             new employees => create the profile record on save and ask user to complete 
             new customers => create the profile record on save and ask user to complete 
             new contact => if possible do same as above
             new vendors => create the profile record on save and ask user to complete 
-            
+    
+    05. twcUI:
+		dropdown: 	
+			allow to open record 
+			if readonly/disabled do not show arrow
+		table: 
+			does not store the 'options' if renderd on server
+
+	06. OSSMTWC - ACL List, OSSMTWC - ASCL List
+            make sure no duplicates are created
+
+
+
 
 
 

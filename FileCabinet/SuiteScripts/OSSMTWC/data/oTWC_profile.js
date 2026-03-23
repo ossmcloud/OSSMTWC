@@ -48,8 +48,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var backgroundColor = 'silver'; var color = 'white';
 
                 if (status == 'No') {
-                    color = 'white';
-                    backgroundColor = 'silver';
+                    color = 'var(--main-color)';
+                    backgroundColor = 'transparent';
                 } else if (status == 'Active') {
                     color = 'white';
                     backgroundColor = 'green';
