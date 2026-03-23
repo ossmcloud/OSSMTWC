@@ -131,7 +131,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                         company: payload.vendor,
                         filters: {
                             'custrecord_twc_prof_picw_acceptable': 'T',
-                            'custrecord_twc_prof_safe_pass_expiry': { op: '>', value: 'CURRENT_DATE' }
+                            'custrecord_twc_prof_safe_pass_cert_exp': { op: '>', value: 'CURRENT_DATE' }
                         }
                     })
                 };

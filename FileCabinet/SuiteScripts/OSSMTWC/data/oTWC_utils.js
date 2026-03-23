@@ -6,13 +6,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, cored, coreSQL, twcProfile, twcSafCrew, twcFile, twcIcons) => {
 
         const PROFILE_CERT_FIELD = {
-            SAFE_PASS: { field: 'custrecord_twc_prof_safe_pass_expiry', attendAs: 'SAFE_PASS', attendAsText: 'Visitor' },
-            CLIMBER: { field: 'custrecord_twc_prof_climber_cert_sts', attendAs: 'CLIMBER', attendAsText: 'Climber Certified' },
-            RESCUE: { field: 'custrecord_twc_prof_rescue_cert_sts', attendAs: 'RESCUE', attendAsText: 'Rescue Certified' },
-            ROOFTOP: { field: 'custrecord_twc_prof_rooftop_cert_sts', attendAs: 'ROOFTOP', attendAsText: 'Rooftop Certified' },
-            ELECTRICAL: { field: 'custrecord_twc_prof_elec_cert_sts', attendAs: 'ELECTRICAL', attendAsText: 'Electrician Certified' },
-            RF: { field: 'custrecord_twc_prof_rf_cert_sts', attendAs: 'RF', attendAsText: 'RF Certified' },
-            DRONE: { field: 'custrecord_twc_prof_drone_cert_sts', attendAs: 'DRONE', attendAsText: 'Drone Certified' }
+            SAFE_PASS: { field: 'custrecord_twc_prof_safe_pass_cert_sts', fieldEx: 'custrecord_twc_prof_safe_pass_cert_exp', code: 'safe_pass', attendAs: 'SAFE_PASS', attendAsText: 'Visitor' },
+            CLIMBER: { field: 'custrecord_twc_prof_climber_cert_sts', fieldEx: 'custrecord_twc_prof_climber_cert_exp', code: 'climber', attendAs: 'CLIMBER', attendAsText: 'Climber Certified' },
+            RESCUE: { field: 'custrecord_twc_prof_rescue_cert_sts', fieldEx: 'custrecord_twc_prof_rescue_cert_exp', code: 'rescue', attendAs: 'RESCUE', attendAsText: 'Rescue Certified' },
+            ROOFTOP: { field: 'custrecord_twc_prof_rooftop_cert_sts', fieldEx: 'custrecord_twc_prof_rooftop_cert_exp', code: 'rooftop', attendAs: 'ROOFTOP', attendAsText: 'Rooftop Certified' },
+            ELECTRICAL: { field: 'custrecord_twc_prof_elec_cert_sts', fieldEx: 'custrecord_twc_prof_elec_cert_exp', code: 'elec', attendAs: 'ELECTRICAL', attendAsText: 'Electrician Certified' },
+            RF: { field: 'custrecord_twc_prof_rf_cert_sts', fieldEx: 'custrecord_twc_prof_rf_cert_exp', code: 'rf', attendAs: 'rf', attendAsText: 'RF Certified' },
+            DRONE: { field: 'custrecord_twc_prof_drone_cert_sts', fieldEx: 'custrecord_twc_prof_drone_cert_exp', code: 'drone', attendAs: 'DRONE', attendAsText: 'Drone Certified' }
         }
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const NO_ACTIVE_EXPIRED = {
@@ -24,13 +24,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getAttendAs(p) {
             var attendAs = [];
-            if (p.valid_safe_pass == 'T') { attendAs.push({ value: 'SAFE_PASS', text: 'Visitor' }); }
-            if (p.valid_climb_cert == 'T') { attendAs.push({ value: 'CLIMBER', text: 'Climber Certified' }); }
-            if (p.valid_rescue_cert == 'T') { attendAs.push({ value: 'RESCUE', text: 'Rescue Certified' }); }
-            if (p.valid_rooftop_cert == 'T') { attendAs.push({ value: 'ROOFTOP', text: 'Rooftop Certified' }); }
-            if (p.valid_electrician_cert == 'T') { attendAs.push({ value: 'ELECTRICAL', text: 'Electrician Certified' }); }
-            if (p.valid_drone_cert == 'T') { attendAs.push({ value: 'DRONE', text: 'Drone Certified' }); }
-            if (p.valid_rf_cert == 'T') { attendAs.push({ value: 'RF', text: 'RF Certified' }); }
+            if (p.valid_safe_pass == 'T') { attendAs.push({ value: 'SAFE_PASS', text: 'Visitor', exp: p.safe_pass_exp }); }
+            if (p.valid_climb_cert == 'T') { attendAs.push({ value: 'CLIMBER', text: 'Climber Certified', exp: p.climber_exp }); }
+            if (p.valid_rescue_cert == 'T') { attendAs.push({ value: 'RESCUE', text: 'Rescue Certified', exp: p.rescue_exp }); }
+            if (p.valid_rooftop_cert == 'T') { attendAs.push({ value: 'ROOFTOP', text: 'Rooftop Certified', exp: p.rooftop_exp }); }
+            if (p.valid_elec_cert == 'T') { attendAs.push({ value: 'ELECTRICAL', text: 'Electrician Certified', exp: p.elec_exp }); }
+            if (p.valid_drone_cert == 'T') { attendAs.push({ value: 'DRONE', text: 'Drone Certified', exp: p.drone_exp }); }
+            if (p.valid_rf_cert == 'T') { attendAs.push({ value: 'RF', text: 'RF Certified', exp: p.rf_exp }); }
             return attendAs;
         }
 
@@ -538,7 +538,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var fileIds = options['custrecord_twc_saf_method_statement'] || '';
             if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
             fileIds += options['custrecord_twc_saf_health_safety'];
-            return getFiles({ filters: { id: { op: 'in', value: `(${fileIds})`, 'customrecord_twc_file': FILE_STATUS.Approved } } })
+            return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})`, 'customrecord_twc_file': FILE_STATUS.Approved } } })
         }
 
         function getFilePreviewLink(file_id) {
@@ -724,16 +724,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sql = `
                 select  id as value, name as text, name || ' <span style="color: silver; font-style: italic;">[' || custrecord_twc_prof_position || ']</span>' as text_render,
                         custrecord_twc_prof_phone as phone, custrecord_twc_prof_email as email,
-                        (case when ${PROFILE_CERT_FIELD.SAFE_PASS.field}  > CURRENT_DATE then 'T' else 'F' end) as valid_safe_pass,
+                        (case when ${PROFILE_CERT_FIELD.SAFE_PASS.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_safe_pass,
                         (case when ${PROFILE_CERT_FIELD.CLIMBER.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_climb_cert,
                         (case when ${PROFILE_CERT_FIELD.RESCUE.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rescue_cert,
                         (case when ${PROFILE_CERT_FIELD.ROOFTOP.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rooftop_cert,
-                        (case when ${PROFILE_CERT_FIELD.ELECTRICAL.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_electrician_cert,
+                        (case when ${PROFILE_CERT_FIELD.ELECTRICAL.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_elec_cert,
                         (case when ${PROFILE_CERT_FIELD.RF.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rf_cert,
                         (case when ${PROFILE_CERT_FIELD.DRONE.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_drone_cert,
+                        ${PROFILE_CERT_FIELD.SAFE_PASS.fieldEx} as safe_pass_exp,
+                        ${PROFILE_CERT_FIELD.CLIMBER.fieldEx} as climber_exp,
+                        ${PROFILE_CERT_FIELD.RESCUE.fieldEx} as rescue_exp,
+                        ${PROFILE_CERT_FIELD.ROOFTOP.fieldEx} as rooftop_exp,
+                        ${PROFILE_CERT_FIELD.ELECTRICAL.fieldEx} as elec_exp,
+                        ${PROFILE_CERT_FIELD.RF.fieldEx} as rf_exp,
+                        ${PROFILE_CERT_FIELD.DRONE.fieldEx} as drone_exp,
                 from    customrecord_twc_prof
                 ${filters}
-                --and 	custrecord_twc_prof_picw_acceptable = 'T'
             `
             if (options.filters) {
                 for (var f in options.filters) {
@@ -749,13 +755,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var profiles = [];
             coreSQL.each(sql, p => {
-                var attendAs = getAttendAs(p);
+                var attendAs = getAttendAs(p, options.date);
                 if (options.canAttend && attendAs.length == 0) { return; }
 
                 var attendAsText = '';
                 core.array.each(attendAs, a => {
                     if (attendAsText) { attendAsText += ', '; }
-                    attendAsText += `${a.text}`;
+                    attendAsText += `${a.text} [${a.exp}]`;
                 })
 
                 profiles.push({

@@ -249,7 +249,12 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             core.array.each(options.accessRequirements.conditions, cond => {
                 var condQuantity = cond.quantity == 'all' ? payload.crews.length : cond.quantity;
-                var certCount = crew.filter(c => { return c.attendAs.find(cc => { return cc.value == cond.cert?.attendAs }); }).length || 0;
+                // @@TODO
+                var certCount = crew.filter(c => {
+                    return c.attendAs.find(cc => {
+                        return cc.value == cond.cert?.attendAs && cc.exp > latestDate;
+                    });
+                }).length || 0;
                 if (certCount < condQuantity) {
                     if (certCount == 0) {
                         validationErrors.push(`${cond.quantity} ${cond.name} are required, there are none in the crew`);

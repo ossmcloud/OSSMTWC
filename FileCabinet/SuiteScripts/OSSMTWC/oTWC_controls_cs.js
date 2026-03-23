@@ -3,8 +3,8 @@
  *@NScriptType ClientScript
  *@NModuleScope public
  */
-define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_saf.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js', './O/oTWC_nsFileUtils.js', './O/controls/oTWC_ui_ctrl.js', './oTWC_otop_test.js', './data/oTWC_profile.js'],
-    function (core, coreSQL, dialog, recu, twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields, siteInfoUtils, twcSaf, twcSrfUI, twcEquipment, nsFileUtils, twcUI, otop, twcProfile) {
+define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_saf.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js', './O/oTWC_nsFileUtils.js', './O/controls/oTWC_ui_ctrl.js', './oTWC_otop_test.js', './data/oTWC_profile.js', './modules/oTWC_certStatusEngine.js'],
+    function (core, coreSQL, dialog, recu, twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields, siteInfoUtils, twcSaf, twcSrfUI, twcEquipment, nsFileUtils, twcUI, otop, twcProfile, twcCertStatusEngine) {
         var _ui;
 
         function pageInit(context) {
@@ -46,14 +46,16 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             deleteAllSrf: deleteAllSrf,
             testFunction() {
                 try {
+
+                    twcCertStatusEngine.validateCertStatuses();
                     //twcUtils.getSafImages()
 
                     // var saf = twcSaf.get(11);
                     // saf.health_and_Safety = [7]
                     // saf.save();
 
-                    var p = twcProfile.get(1088);
-                    console.log(p.climberFilenameName)
+                    // var p = twcProfile.get(1088);
+                    // console.log(p.climberFilenameName)
 
                     // coreSQL.each(`
                     //     select   id, name, 	custrecord_twc_prof_name

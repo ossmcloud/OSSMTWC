@@ -2569,14 +2569,14 @@ span.twc-control-panel-expand {
 
 div.twc-control-panel-fields {
     padding: 0px 3px;
-
+    overflow: auto;
 }
 
 div.twc-control-panel-fields-border {
     border-left: 1px solid var(--grid-color);
     border-right: 1px solid var(--grid-color);
     border-bottom: 1px solid var(--grid-color);
-    padding-bottom: 3px; 
+    padding-bottom: 3px;
 }
 
 div.twc-control-panel-fields-table {
