@@ -34,10 +34,11 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
                     
                     form.buttonAdd('Open SAF', 'openSaf')
 
-                    var styles = twcThemes.css('default')
-                    styles += file.load('SuiteScripts/OSSMTWC/O/css/html.styles.css').getContents();
-                    styles += file.load('SuiteScripts/OSSMTWC/ui/css/oTWC.css').getContents();
-                    form.fieldHtml(`<style>${styles}</style>`)
+                    // @@TODO: style #body prevents the page to scroll
+                    // var styles = twcThemes.css('default')
+                    // styles += file.load('SuiteScripts/OSSMTWC/O/css/html.styles.css').getContents();
+                    // styles += file.load('SuiteScripts/OSSMTWC/ui/css/oTWC.css').getContents();
+                    // form.fieldHtml(`<style>${styles}</style>`)
                 }
             } catch (error) {
                 core.logDebug('BEFORE-LOAD', error.message);

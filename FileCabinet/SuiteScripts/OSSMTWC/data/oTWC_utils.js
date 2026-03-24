@@ -10,7 +10,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CLIMBER: { field: 'custrecord_twc_prof_climber_cert_sts', fieldEx: 'custrecord_twc_prof_climber_cert_exp', code: 'climber', attendAs: 'CLIMBER', attendAsText: 'Climber Certified' },
             RESCUE: { field: 'custrecord_twc_prof_rescue_cert_sts', fieldEx: 'custrecord_twc_prof_rescue_cert_exp', code: 'rescue', attendAs: 'RESCUE', attendAsText: 'Rescue Certified' },
             ROOFTOP: { field: 'custrecord_twc_prof_rooftop_cert_sts', fieldEx: 'custrecord_twc_prof_rooftop_cert_exp', code: 'rooftop', attendAs: 'ROOFTOP', attendAsText: 'Rooftop Certified' },
-            ELECTRICAL: { field: 'custrecord_twc_prof_elec_cert_sts', fieldEx: 'custrecord_twc_prof_elec_cert_exp', code: 'elec', attendAs: 'ELECTRICAL', attendAsText: 'Electrician Certified' },
+            ELECTRICAL: { field: 'custrecord_twc_prof_elec_cert_sts', fieldEx: 'custrecord_twc_prof_elec_cert_exp', code: 'elec', attendAs: 'ELEC', attendAsText: 'Electrician Certified' },
             RF: { field: 'custrecord_twc_prof_rf_cert_sts', fieldEx: 'custrecord_twc_prof_rf_cert_exp', code: 'rf', attendAs: 'rf', attendAsText: 'RF Certified' },
             DRONE: { field: 'custrecord_twc_prof_drone_cert_sts', fieldEx: 'custrecord_twc_prof_drone_cert_exp', code: 'drone', attendAs: 'DRONE', attendAsText: 'Drone Certified' }
         }
@@ -28,7 +28,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (p.valid_climb_cert == 'T') { attendAs.push({ value: 'CLIMBER', text: 'Climber Certified', exp: p.climber_exp }); }
             if (p.valid_rescue_cert == 'T') { attendAs.push({ value: 'RESCUE', text: 'Rescue Certified', exp: p.rescue_exp }); }
             if (p.valid_rooftop_cert == 'T') { attendAs.push({ value: 'ROOFTOP', text: 'Rooftop Certified', exp: p.rooftop_exp }); }
-            if (p.valid_elec_cert == 'T') { attendAs.push({ value: 'ELECTRICAL', text: 'Electrician Certified', exp: p.elec_exp }); }
+            if (p.valid_elec_cert == 'T') { attendAs.push({ value: 'ELEC', text: 'Electrician Certified', exp: p.elec_exp }); }
             if (p.valid_drone_cert == 'T') { attendAs.push({ value: 'DRONE', text: 'Drone Certified', exp: p.drone_exp }); }
             if (p.valid_rf_cert == 'T') { attendAs.push({ value: 'RF', text: 'RF Certified', exp: p.rf_exp }); }
             return attendAs;
@@ -714,9 +714,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 filters = `where custrecord_twc_prof_company = ${options.company}`
             } else if (options.id) {
                 if (Array.isArray(options.id)) {
+                    if (options.id.length == 0) { return []; }
                     filters = `where id in (${options.id.join(',')})`;
                 } else {
-                    filters = `where id = ${options.id}`
+                    filters = `where id = ${options.id || 0}`
                 }
             } else {
                 filters = `where 1 = 1`;

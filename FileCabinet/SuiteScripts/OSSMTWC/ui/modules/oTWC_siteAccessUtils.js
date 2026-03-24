@@ -201,8 +201,10 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
         function getVendorDocs(options) {
             var files = twcUtils.getFiles({
                 filters: {
-                    'custrecord_twc_file_rectype': 'customrecord_twc_company',
-                    'custrecord_twc_file_recid': options.vendor,
+                    [twcFile.Fields.RECORD_TYPE]: 'customrecord_twc_company',
+                    [twcFile.Fields.RECORD_ID]: options.vendor,
+                    [twcFile.Fields.STATUS]: twcUtils.FileStatus.Approved
+
                 }
             });
 
@@ -252,7 +254,8 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 // @@TODO
                 var certCount = crew.filter(c => {
                     return c.attendAs.find(cc => {
-                        return cc.value == cond.cert?.attendAs && cc.exp > latestDate;
+                        // @@TODO: there are still few inconsistencies with casing here
+                        return cc.value.toLowerCase() == cond.cert?.code.toLowerCase() && cc.exp > latestDate;
                     });
                 }).length || 0;
                 if (certCount < condQuantity) {
