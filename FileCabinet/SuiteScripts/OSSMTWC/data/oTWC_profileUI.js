@@ -48,7 +48,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getProfileInfoPanels_certs(dataSource, userInfo) {
 
             var fieldGroup = { id: 'profile-cert-1', collapsed: false, renderAsTable: { width: '100%', 'table-layout': 'fixed' }, controls: [] };
-            fieldGroup.controls.push(getProfileInfoPanels_safePass(userInfo));
+            //fieldGroup.controls.push(getProfileInfoPanels_safePass(userInfo));
+            fieldGroup.controls.push(getProfileInfoPanels_cert(userInfo, dataSource, 'SAFE_PASS', 'SAFE_PASS', twcProfile.Fields.SAFE_PASS_STATUS, twcProfile.Fields.SAFE_PASS_EXPIRY, twcProfile.Fields.SAFE_PASS_FILENAME));
             fieldGroup.controls.push(getProfileInfoPanels_cert(userInfo, dataSource, 'CLIMBER', 'CLIMBER', twcProfile.Fields.CLIMBER_CERTIFIED_STATUS, twcProfile.Fields.CLIMBER_CERTIFIED_EXPIRY, twcProfile.Fields.CLIMBER_FILENAME));
             fieldGroup.controls.push(getProfileInfoPanels_cert(userInfo, dataSource, 'RESCUE', 'RESCUE', twcProfile.Fields.RESCUE_CERTIFIED_STATUS, twcProfile.Fields.RESCUE_CERTIFIED_EXPIRY, twcProfile.Fields.RESCUE_FILENAME));
             fieldGroup.controls.push(getProfileInfoPanels_cert(userInfo, dataSource, 'ROOFTOP', 'ROOFTOP', twcProfile.Fields.ROOFTOP_CERTIFIED_STATUS, twcProfile.Fields.ROOFTOP_CERTIFIED_EXPIRY, twcProfile.Fields.ROOFTOP_FILENAME));
@@ -59,14 +60,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroup;
         }
 
-        function getProfileInfoPanels_safePass(userInfo) {
-            var nonTwcReadOnly = userInfo.isEmployee ? undefined : true;
-            var certGroup = { id: 'profile-cart-safe-pass', title: 'SAFE-PASS', fields: [] };
-            certGroup.fields.push({ id: twcProfile.Fields.SAFE_PASS_STATUS, label: 'Status', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
-            certGroup.fields.push({ id: twcProfile.Fields.SAFE_PASS_EXPIRY, label: 'Expiry', width: '100%', lineBreak: true })
-            certGroup.fields.push({ id: twcProfile.Fields.SAFE_PASS_ID, label: 'Safe Pass ID', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
-            return certGroup;
-        }
+        // function getProfileInfoPanels_safePass(userInfo) {
+        //     var nonTwcReadOnly = userInfo.isEmployee ? undefined : true;
+        //     var certGroup = { id: 'profile-cart-safe-pass', title: 'SAFE-PASS', fields: [] };
+        //     certGroup.fields.push({ id: twcProfile.Fields.SAFE_PASS_STATUS, label: 'Status', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
+        //     certGroup.fields.push({ id: twcProfile.Fields.SAFE_PASS_EXPIRY, label: 'Expiry', width: '100%', lineBreak: true })
+        //     certGroup.fields.push({ id: twcProfile.Fields.SAFE_PASS_ID, label: 'Safe Pass ID', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
+        //     return certGroup;
+        // }
 
         function getProfileInfoPanels_cert(userInfo, dataSource, title, certCode, fieldStatus, fieldExpiry, fieldFileName) {
             var fileId = dataSource.get(fieldFileName)
@@ -76,9 +77,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             certGroup.fields.push({ id: fieldExpiry, label: 'Expiry', width: '100%', lineBreak: true })
             certGroup.fields.push({ id: certCode.toLowerCase() + '_file_name', type: 'text', value: dataSource.getText(fieldFileName), label: 'File', width: '100%', readOnly: true, lineBreak: true })
 
+            
             if (fileId) { certGroup.fields.push({ id: 'view-file-' + fileId, value: 'View File', styles: { width: 'calc(50% - 5px)', display: 'inline-block', 'margin-top': '3px' }, type: 'button' }) }
             certGroup.fields.push({ id: 'upload-file-' + certCode.toLowerCase(), value: 'Upload New', styles: { width: 'calc(50% - 5px)', display: 'inline-block', 'margin-top': '3px' }, type: 'button' })
 
+            if (certCode == 'SAFE_PASS') {
+                certGroup.fields.push({ id: twcProfile.Fields.SAFE_PASS_ID, label: 'Safe Pass ID', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
+            }
+
+            
             certGroup.fields.push({ id: 'upload-file-input-' + certCode.toLowerCase(), type: 'file', accept: '.pdf', hide: true });
 
             return certGroup;

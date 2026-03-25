@@ -95,8 +95,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             getProfileInfo(pageData) {
-                if (!pageData.userInfo.companyProfile) { throw new Error('There is no company profile associated to your profile, contact TWC Administrator to get this rsesolved') }
-                return twcCompany.select({ noAlias: true, where: { id: pageData.userInfo.companyProfile?.id || 0 } })[0];
+                if (pageData.userInfo.isEmployee) {
+                    return twcCompany.select({ noAlias: true, where: { id: pageData.recId || pageData.userInfo.companyProfile?.id || 0 } })[0];   
+                } else {
+                    if (!pageData.userInfo.companyProfile) { throw new Error('There is no company profile associated to your profile, contact TWC Administrator to get this resolved') }
+                    return twcCompany.select({ noAlias: true, where: { id: pageData.userInfo.companyProfile?.id || 0 } })[0];
+                }
             },
 
             saveCompanyChildRecord: (options, userInfo) => {

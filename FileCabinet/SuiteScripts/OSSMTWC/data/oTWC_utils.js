@@ -5,6 +5,22 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_profile.js', './oTWC_safCrew.js', './oTWC_file.js', './oTWC_icons.js'],
     (core, cored, coreSQL, twcProfile, twcSafCrew, twcFile, twcIcons) => {
 
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const COMPANY_ACCREDITATION_STATUS = {
+            Inactive: 1,
+            Accredited: 2,
+            CertsExpired: 3,
+            Pending: 4,
+            Approved: 5,
+            ToBeRenewed: 6
+        }
+
+        const COMPANY_INSURANCE_FIELDS = {
+            EL: { field: 'custrecord_twc_co_el_status', fieldEx: 'custrecord_twc_co_el_expiry', code: 'el' },
+            PL: { field: 'custrecord_twc_co_pl_status', fieldEx: 'custrecord_twc_co_pl_expiry', code: 'pl' },
+            PI: { field: 'custrecord_twc_co_pi_status', fieldEx: 'custrecord_twc_co_pi_expiry', code: 'pi' },
+        }
+
         const PROFILE_CERT_FIELD = {
             SAFE_PASS: { field: 'custrecord_twc_prof_safe_pass_cert_sts', fieldEx: 'custrecord_twc_prof_safe_pass_cert_exp', code: 'safe_pass', attendAs: 'SAFE_PASS', attendAsText: 'Visitor' },
             CLIMBER: { field: 'custrecord_twc_prof_climber_cert_sts', fieldEx: 'custrecord_twc_prof_climber_cert_exp', code: 'climber', attendAs: 'CLIMBER', attendAsText: 'Climber Certified' },
@@ -102,7 +118,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             sql += 'order by p.name, t.name'
-
+            
             var fileTypes = [];
             coreSQL.each(sql, t => {
                 if (options?.isVendor) {
@@ -587,29 +603,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getCompanies(options) {
             //
-            // @@TODO: SAF: what are the insurance filters we need?
+            // @@NOTE: the accreditation status field is maintained by a task, no need to check each date and stuff
             var additionalFilters = `
-                and c.custrecord_twc_co_el_expiry > CURRENT_DATE
-                and c.custrecord_twc_co_pl_expiry > CURRENT_DATE
-                and c.custrecord_twc_co_pi_expiry > CURRENT_DATE
+                and c.custrecord_twc_co_accred_status = ${COMPANY_ACCREDITATION_STATUS.Accredited}
             `
-            // @@TODO: SAF: Insurance Expiry date seems in the past or null for all
-            additionalFilters = '';
-
+            
             if (options.isCustomer) {
                 options.customer = options.companyProfile.id;
             } else if (options.isVendor) {
                 options.vendor = options.companyProfile.id;
             }
-
-            if (options.type == 'V') {
-                // @@TODO: SAF: Accredited Contractor Expiry date seems null for all
-                // additionalFilters += `
-                //     and 	custrecord_twc_co_accred_appr <= CURRENT_DATE
-                //     and     custrecord_twc_co_accred_cont_exp > CURRENT_DATE
-                // `;
-            }
-
+            
             var sql = '';
             if (options.vendor) {
                 if (options.type == 'C') {
@@ -925,6 +929,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             Certs: PROFILE_CERT_FIELD,
             NoActiveExpired: NO_ACTIVE_EXPIRED,
+
+            Insurances: COMPANY_INSURANCE_FIELDS,
+
+            CompanyAccreditationStatus: COMPANY_ACCREDITATION_STATUS,
 
             InfraType: INFRA_TYPE,
 

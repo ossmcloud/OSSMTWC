@@ -11,6 +11,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         suiteLet.get = (context, s) => {
             var pageData = twcBaseView.initPageData(context);
 
+            
+
             pageData.profileInfo = twcCompanyProfileUtils.getProfileInfo(pageData);
             pageData.recId = pageData.profileInfo.id;
 

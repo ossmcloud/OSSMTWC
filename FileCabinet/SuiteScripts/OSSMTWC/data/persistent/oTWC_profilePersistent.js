@@ -23,6 +23,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             TL_KEYS_ASSIGNED: 'custrecord_twc_prof_tl_key_assigned',
             SAFE_PASS_ID: 'custrecord_twc_prof_safe_pass_id',
             SAFE_PASS_STATUS: 'custrecord_twc_prof_safe_pass_cert_sts',
+            SAFE_PASS_FILENAME: 'custrecord_twc_prof_safe_pass_filename',
             SAFE_PASS_EXPIRY: 'custrecord_twc_prof_safe_pass_cert_exp',
             PICW_ACCEPTABLE: 'custrecord_twc_prof_picw_acceptable',
             SAF_AVAILABLE: 'custrecord_twc_prof_saf_available',
@@ -72,6 +73,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             TL_KEYS_ASSIGNED: { name: 'custrecord_twc_prof_tl_key_assigned', type: 'select', alias: 'tLKeysAssigned', display: 'normal', mandatory: false, recordType: 'customrecord_twc_track_key' },
             SAFE_PASS_ID: { name: 'custrecord_twc_prof_safe_pass_id', type: 'text', alias: 'safePassID', display: 'normal', mandatory: false },
             SAFE_PASS_STATUS: { name: 'custrecord_twc_prof_safe_pass_cert_sts', type: 'select', alias: 'safePassStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_no_active_options' },
+            SAFE_PASS_FILENAME: { name: 'custrecord_twc_prof_safe_pass_filename', type: 'document', alias: 'safePassFilename', display: 'normal', mandatory: false },
             SAFE_PASS_EXPIRY: { name: 'custrecord_twc_prof_safe_pass_cert_exp', type: 'date', alias: 'safePassExpiry', display: 'normal', mandatory: false },
             PICW_ACCEPTABLE: { name: 'custrecord_twc_prof_picw_acceptable', type: 'checkbox', alias: 'pICWAcceptable', display: 'normal', mandatory: false },
             SAF_AVAILABLE: { name: 'custrecord_twc_prof_saf_available', type: 'checkbox', alias: 'sAFAvailable', display: 'normal', mandatory: false },
@@ -214,6 +216,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.SAFE_PASS_STATUS, value)
             }
             get safePassStatusName() { return this.getText(_recordFields.SAFE_PASS_STATUS); }
+            
+            get safePassFilename() {
+                return this.get(_recordFields.SAFE_PASS_FILE);
+            } set safePassFilename(value) {
+                this.set(_recordFields.SAFE_PASS_FILE, value)
+            }
             
             get safePassExpiry() {
                 return this.get(_recordFields.SAFE_PASS_EXPIRY);

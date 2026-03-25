@@ -25,13 +25,13 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
                             <div style="padding: 6px; border-radius: 0px; background-color: var(--nsn-uif-refreshed-color-primary-lighter)">
                                 Conditions of Access
                             </div>
-                            ${context.newRecord.getValue(twcSaf.Fields.CONDITIONS_OF_ACCESS) }
+                            ${context.newRecord.getValue(twcSaf.Fields.CONDITIONS_OF_ACCESS)}
                         </div>
                     `)
 
                     form.f.insertField({ field: condOfAccess.f, nextfield: twcSaf.Fields.CONDITIONS_OF_ACCESS });
                     form.fieldHide(twcSaf.Fields.CONDITIONS_OF_ACCESS);
-                    
+
                     form.buttonAdd('Open SAF', 'openSaf')
 
                     // @@TODO: style #body prevents the page to scroll
@@ -42,9 +42,6 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
                 }
             } catch (error) {
                 core.logDebug('BEFORE-LOAD', error.message);
-                if (context.type == 'create') {
-                    throw error;
-                }
             }
         }
 

@@ -98,6 +98,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.on('change', e => {
                     this.#changes[e.id] = e.value;
                     this.dirty = true
+                    if (e.id.startsWith('custrecord_twc_co_el_') || e.id.startsWith('custrecord_twc_co_pl_') || e.id.startsWith('custrecord_twc_co_pi_')) {
+                        var statusId = `${e.id.substring(0, 'custrecord_twc_co_el_'.length)}status`;
+                        this.ui.getControl(statusId).value = twcUtils.NoActiveExpired.Pending;
+                    }
+                    console.log(e)
                 })
 
 
@@ -142,7 +147,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 form.getControl(`custrecord_twc_prof_${certType}_cert_exp`).value = '';
                                 form.getControl(`custrecord_twc_prof_${certType}_cert_sts`).value = twcUtils.NoActiveExpired.Pending;
                             })
+                        } else if (e.target.id.endsWith('_cert_exp')) {
+                            var certType = e.target.id.replace('custrecord_twc_prof_', '').replace('_cert_exp', '')
+                            form.getControl(`custrecord_twc_prof_${certType}_cert_sts`).value = twcUtils.NoActiveExpired.Pending;
                         }
+
                     });
 
                     dialog.confirm({ title: profile.id ? 'manage company profile' : 'new company profile', message: form.ui, width: '75%', height: '70hv' }, (dlg) => {

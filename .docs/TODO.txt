@@ -1,6 +1,21 @@
+QUESTIONS:
+----------
+	Profile Table => SAF Available Field (if this is intended to control who can enter SAFs then we should use roles, otherwise what is this?)
+	Company Table => Promary Contact , it does not make sense to me, and in any case we have no actual primary contact field 
+					 (this could be a flag o the profile table nd we could allow more that one primary contact)
+	SAFE PASS	  => shouldn't we need the PDF for this as well?
+	EL/PL 		  => if not mandatory should we let them to process a SAF?
+
+
+________________________________________________________________________________________________________________________________________________________________
+
 
 TODO-NEXT:
 ----------
+    00. SAF:
+       	// @@TODO: SAF 
+    	// @@TODO: COMPANY PROFILE: 
+
     00. UserEvent - Inject Styles
         oTWC.css => style #body prevents the page to scroll
         // @@TODO: style #body prevents the page to scroll
