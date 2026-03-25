@@ -323,7 +323,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
                 try {
                     var sql = `
-                        select  f.id, ft.custrecord_twc_file_type_hs as health_safety, ft.custrecord_twc_file_type_method as method_stat
+                        select  f.id, ft.custrecord_twc_file_type_hs as health_safety, ft.custrecord_twc_file_type_method as method_stat, ft.custrecord_twc_file_type_insurance as insurance
                         from    customrecord_twc_file f
                         join    customrecord_twc_file_type ft on ft.id = f.custrecord_twc_file_type
                         where   f.id in (${docIds.join(',')})

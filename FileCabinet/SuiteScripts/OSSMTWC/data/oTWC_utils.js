@@ -79,7 +79,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var sql = `
                 select  t.id as value, t.name as text, p.name as parent_name,
-                        t.custrecord_twc_file_type_hs as is_hs, t.custrecord_twc_file_type_method as is_method, t.custrecord_twc_file_type_image as is_image
+                        t.custrecord_twc_file_type_hs as is_hs, t.custrecord_twc_file_type_method as is_method, t.custrecord_twc_file_type_insurance as is_insurance,
+                        t.custrecord_twc_file_type_image as is_image
                 from    customrecord_twc_file_type t
                 join    customrecord_twc_file_type p on p.id = t.parent
                 where   t.isinactive = 'F'
@@ -510,7 +511,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (type == 'image') {
                 fileTypeFilter += `AND t.custrecord_twc_file_type_image = 'T'`;
             } else if (type == 'contractor') {
-                fileTypeFilter += `AND (t.custrecord_twc_file_type_hs = 'T' OR t.custrecord_twc_file_type_method = 'T')`;
+                fileTypeFilter += `AND (t.custrecord_twc_file_type_hs = 'T' OR t.custrecord_twc_file_type_method = 'T' OR t.custrecord_twc_file_type_insurance = 'T')`;
             }
             return getFiles({ filters: fileTypeFilter });
 

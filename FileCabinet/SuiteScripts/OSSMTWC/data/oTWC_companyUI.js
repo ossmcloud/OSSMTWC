@@ -29,7 +29,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push(basicInfo);
 
             basicInfo.fields.push({ id: twcCompany.Fields.RADIX_COMPANY_TABLE_ENTRY_NUMBER, width: '75px', label: 'Radix ID', readOnly: true })
-            basicInfo.fields.push({ id: twcCompany.Fields.NAME, width: 'calc(100% - 85px)', label: 'Name', lineBreak: true })
+            basicInfo.fields.push({ id: twcCompany.Fields.NAME, width: 'calc(100% - 85px)', label: 'Name', readOnly: true, lineBreak: true })
             basicInfo.fields.push({ id: twcCompany.Fields.COMPANY_TYPE, width: '150px', label: 'Company Type', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.COMPANY_CLASSIFICATION, width: '150px', label: 'Company Classification', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.COMPANY_NUMBER, width: '150px', label: 'Company Number', readOnly: true, lineBreak: true })
@@ -40,11 +40,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push(accountingInfo);
 
             accountingInfo.fields.push({ id: twcCompany.Fields.REGISTERED_OFFICE, width: '200px', label: 'Registered Office' })
-            accountingInfo.fields.push({ id: twcCompany.Fields.PRIMARY_CONTACT, width: '200px', label: 'Primary Contact', lineBreak: true })
-            accountingInfo.fields.push({ id: twcCompany.Fields.SAF_AUTO_APPROVE, label: 'SAF Auto Approve' })
-            accountingInfo.fields.push({ id: twcCompany.Fields.ON_LINE_LICENCING, label: 'On-Line Licensing' })
-            accountingInfo.fields.push({ id: twcCompany.Fields.FINANCE_VENDOR, label: 'Finance Vendor' })
-            accountingInfo.fields.push({ id: twcCompany.Fields.FINANCE_CUSTOMER, label: 'Finance Customer' })
+            accountingInfo.fields.push({ id: twcCompany.Fields.PRIMARY_CONTACT, width: '200px', label: 'Primary Contact', readOnly: true, lineBreak: true })
+            accountingInfo.fields.push({ id: twcCompany.Fields.SAF_AUTO_APPROVE, label: 'SAF Auto Approve', readOnly: true })
+            accountingInfo.fields.push({ id: twcCompany.Fields.ON_LINE_LICENCING, label: 'On-Line Licensing', readOnly: true })
+            accountingInfo.fields.push({ id: twcCompany.Fields.FINANCE_VENDOR, label: 'Finance Vendor', readOnly: true })
+            accountingInfo.fields.push({ id: twcCompany.Fields.FINANCE_CUSTOMER, label: 'Finance Customer', readOnly: true })
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
@@ -60,13 +60,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             basicInfo.fields.push({ id: twcCompany.Fields.EL_INSURANCE_MANDATORY, label: 'Mandatory' })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_AVAILABLETYPE, width: '100px', label: 'EL Available/Type' })
-            basicInfo.fields.push({ id: twcCompany.Fields.EL_LIMIT, width: '100px', label: 'EL Limit' })
+            basicInfo.fields.push({ id: twcCompany.Fields.EL_LIMIT, width: '100px', label: 'EL Limit (millions)' })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_LIMIT_CURRENCY, width: '100px', label: 'EL Currency' })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_EXPIRY, label: 'EL Expiry', lineBreak: true })
 
             basicInfo.fields.push({ id: twcCompany.Fields.PL_INSURANCE_MANDATORY, label: 'Mandatory' })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_AVAILABLETYPE, width: '100px', label: 'PL Available/Type' })
-            basicInfo.fields.push({ id: twcCompany.Fields.PL_LIMIT, width: '100px', label: 'PL Limit' })
+            basicInfo.fields.push({ id: twcCompany.Fields.PL_LIMIT, width: '100px', label: 'PL Limit (millions)' })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_LIMIT_CURRENCY, width: '100px', label: 'PL Currency' })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_EXPIRY, label: 'PL Expiry', lineBreak: true })
 
