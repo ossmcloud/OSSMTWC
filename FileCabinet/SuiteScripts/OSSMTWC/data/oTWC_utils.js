@@ -318,6 +318,107 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
+        const TKT_STATUS = {
+            New: 1,
+            Assessed: 2,
+            Resolved: 3,
+        }
+
+        const TKT_STATUS_STYLE = {
+            New: { color: 'white', backgroundColor: 'silver' },
+            Assessed: { color: 'white', backgroundColor: 'orange' },
+            Resolved: { color: 'white', backgroundColor: 'green' },
+        }
+        function getTktStatusName(tktStatusNumber, asObject) {
+            if (!tktStatusNumber) { tktStatusNumber = 1; }
+            for (var k in TKT_STATUS) {
+                if (TKT_STATUS[k] == tktStatusNumber) {
+                    return k;
+                }
+            }
+        }
+        function getTktStatusStyle(tktStatusNumber) {
+            if (!tktStatusNumber) { tktStatusNumber = 1; }
+            if (isNaN(parseInt(tktStatusNumber))) {
+                return TKT_STATUS_STYLE[tktStatusNumber.replaceAll(' ', '')];
+            } else {
+                return TKT_STATUS_STYLE[getTktStatusName(tktStatusNumber)];
+            }
+        }
+        function getTktStatusHtml(tktStatusNumber, spanClass) {
+            if (!tktStatusNumber) { tktStatusNumber = 1; }
+            var statusName = getTktStatusName(tktStatusNumber);
+            if (isNaN(parseInt(tktStatusNumber))) { statusName = tktStatusNumber; }
+            var statusStyle = getTktStatusStyle(statusName);
+            return `
+                <span class="${spanClass ? spanClass : 'twc-record-status'}" style="color: ${statusStyle.color}; background-color: ${statusStyle.backgroundColor};" >
+                    ${statusName}
+                </span>
+            `
+        }
+
+
+        const TKT_PRIORITY = {
+            Urgent: 1,
+            High: 2,
+            Medium: 3,
+            Low: 4,
+            Monitored: 5,
+            UTS: 6,
+            Corrective_Action: 7
+        };
+
+        const TKT_PRIORITY_STYLE = {
+            Urgent: { color: 'white', backgroundColor: 'red' },
+            High: { color: 'white', backgroundColor: 'orange' },
+            Medium: { color: 'black', backgroundColor: 'yellow' },
+            Low: { color: 'black', backgroundColor: 'limegreen' },
+            Monitored: { color: 'white', backgroundColor: 'blue' },
+            UTS: { color: 'white', backgroundColor: 'purple' },
+            Corrective_Action: { color: 'white', backgroundColor: 'darkcyan' }
+        };
+
+        function getTktPriorityName(tktPriorityNumber) {
+            if (!tktPriorityNumber) { tktPriorityNumber = 1; }
+
+            for (var k in TKT_PRIORITY) {
+                if (TKT_PRIORITY[k] == tktPriorityNumber) {
+                    return k;
+                }
+            }
+        }
+
+        function getTktPriorityStyle(tktPriorityNumber) {
+            if (!tktPriorityNumber) { tktPriorityNumber = 1; }
+
+            if (isNaN(parseInt(tktPriorityNumber))) {
+                return TKT_PRIORITY_STYLE[tktPriorityNumber];
+            } else {
+                return TKT_PRIORITY_STYLE[getTktPriorityName(tktPriorityNumber)];
+            }
+        }
+
+        function getTktPriorityHtml(tktPriorityNumber, spanClass) {
+            if (!tktPriorityNumber) { tktPriorityNumber = 1; }
+            var priorityName = getTktPriorityName(tktPriorityNumber);
+            if (isNaN(parseInt(tktPriorityNumber))) {
+                priorityName = tktPriorityNumber;
+            }
+
+            var priorityStyle = getTktPriorityStyle(priorityName);
+            return `
+                <span class="${spanClass ? spanClass : 'twc-record-status'}"
+                    style="color: ${priorityStyle.color}; background-color: ${priorityStyle.backgroundColor};">
+                    ${priorityName}
+                </span>
+            `;
+        }
+
+
+
+
+
+
         function getYesNoOptions() {
             return [{ value: 'T', text: 'Yes' }, { value: 'F', text: 'No' }]
         };
@@ -921,6 +1022,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return `${d}/${m}/${dateParts[0]}`;
         }
 
+        function getTicketStatus(){
+             return getLookUpTableValues('customrecord_twc_trbl_tkt_status');
+        }
+        function getTicketCategory(){
+             return getLookUpTableValues('customrecord_twc_trbl_tkt_category');
+        }
+        function getTicketAssignedTo(){
+             return getLookUpTableValues('customrecord_twc_prof');
+        }
+        function getTicketPriority(){
+             return getLookUpTableValues('customrecord_twc_trbl_tkt_priority');
+        }
+         
+        
+        
+
         return {
             ROOT_FILE_FOLDER: 'TWC Files',
             HEIGH_LIMIT_FOR_1_CLIMBER: 60,
@@ -962,6 +1079,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafStatusStyle: getSafStatusStyle,
             getSafStatusHtml: getSafStatusHtml,
 
+            tktStatus: TKT_STATUS,
+            getTktStatusName: getTktStatusName,
+            getTktStatusStyle: getTktStatusStyle,
+            getTktStatusHtml: getTktStatusHtml,
+
+            tktPriority: TKT_PRIORITY,
+            getTktPriorityName: getTktPriorityName,
+            getTktPriorityStyle: getTktPriorityStyle,
+            getTktPriorityHtml: getTktPriorityHtml,
+
             getSafDropDown: getSafDropDown,
             getSafTimeBlocks: getSafTimeBlocks,
             getSafReviewers: getSafReviewers,
@@ -988,7 +1115,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafIds: getSafIds,
             getSrfIds: getSrfIds,
             getSrfStatus: getSrfStatus,
-
+            getTicketStatus:getTicketStatus,
+            getTicketCategory:getTicketCategory,
+            getTicketAssignedTo:getTicketAssignedTo,
+            getTicketPriority:getTicketPriority,
 
 
             getYesNoOptions: getYesNoOptions,
