@@ -11,13 +11,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         suiteLet.get = (context, s) => {
             var pageData = twcBaseView.initPageData(context);
 
+            pageData.data.inventoryInfo = twcInventoryUtils.getInventoryData();
+            html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
+            // html = html.replace('{SITE_LOCATOR_PANEL}', twcInventoryUtils.renderInventoryPanel(pageData.userInfo, pageData.permission.featureId));
+
             var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_inventory');
 
             var readOnly = context.request.parameters.edit != 'T';
             // @@NOTE: if permission lvl is 1 it means view only so even if parameter passed force to read only
             if (pageData.userInfo.permission.lvl == 1) { readOnly = true; }
 
-            html = html.replace('{INVENTORY_DETAILS}', 'hello, dude...')
+            // html = html.replace('{INVENTORY_DETAILS}', 'hello, dude...')
+            html = html.replace('{INVENTORY_DETAILS}', twcInventoryUtils.renderInventoryPanel(pageData.userInfo, pageData.permission.featureId));
+
 
             s.form.fieldHtml(html);
         };
