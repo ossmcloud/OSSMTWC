@@ -3,8 +3,8 @@
  * @NScriptType Suitelet
 
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_troubleTicketUtils.js', '../O/controls/oTWC_ui_fieldPanel.js','../ui/modules/oTWC_siteInfoUtils.js','../data/oTWC_troubleTickets.js'],
-    function (core, cored, coreSql, uis, twcBaseView, twcConfig, twcTroubleTicketUtils, twcUIPanel,twcSiteInfoUtils,twcTkt) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_troubleTicketUtils.js', '../O/controls/oTWC_ui_fieldPanel.js','../ui/modules/oTWC_siteInfoUtils.js','../data/oTWC_troubleTickets.js', '../O/controls/oTWC_ui_ctrl.js'],
+    function (core, cored, coreSql, uis, twcBaseView, twcConfig, twcTroubleTicketUtils, twcUIPanel,twcSiteInfoUtils, twcTkt, twcUI) {
         var PAGE_VERSION = 'v0.01';
 
         var suiteLet = uis.new({ title: 'TWC Trouble Ticket', script: 'SuiteScripts/OSSMTWC/ui/oTWC_troubleTicket_cs.js' });
@@ -45,19 +45,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
 
-                // var actions = '';
-                //     if (pageData.editMode) {
-                //         actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel', id: 'cancel-button' })
-                //     } else {
-                //         if (tktStatus != twcTkt.Status.Resolved) {
-                //             actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Resolve', id: 'resolve-button' });
-                //         }
-                //         if (tktStatus == twcTkt.Status.New) {
-                //             actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Delete', id: 'delete-button' });
-                //         }
-                //     }
+                var actions = '';
+                    if (pageData.editMode) {
+                        actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel', id: 'cancel-button' })
+                    } else {
+                        if (tktStatus != twcTkt.Status.Resolved) {
+                            actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Resolve', id: 'resolve-button' });
+                        }
+                        if (tktStatus == twcTkt.Status.New) {
+                            actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Delete', id: 'delete-button' });
+                        }
+                    }
 
-                //     if (actions) { html = html.replaceAll('<div id="custom-actions"></div>', `<div id="custom-actions">${actions}</div>`); }
+                    if (actions) { html = html.replaceAll('<div id="custom-actions"></div>', `<div id="custom-actions">${actions}</div>`); }
                 
 
 
@@ -83,12 +83,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@TODO: TROUBLE_TICKET: implement save
                 return { status: 'success' };
             } 
-            // else  if (context.request.parameters.action == 'resolve-tkt-status') {
-            //     var payload = JSON.parse(context.request.body);
-            //     log.debug("payload",payload)
-            //     return twcTroubleTicketUtils.resolveTicket(payload);
+            else  if (context.request.parameters.action == 'resolve-tkt-status') {
+                var recId = JSON.parse(context.request.body);
+                log.debug("recId",recId)
+                return twcTroubleTicketUtils.resolveTicket(recId);
 
-            // }
+            }
             else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);
             }
