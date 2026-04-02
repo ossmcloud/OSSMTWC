@@ -118,7 +118,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             sql += 'order by p.name, t.name'
-            
+
             var fileTypes = [];
             coreSQL.each(sql, t => {
                 if (options?.isVendor) {
@@ -317,11 +317,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return range;
         }
 
-
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const TKT_STATUS = {
             New: 1,
             Assessed: 2,
             Resolved: 3,
+            Cancelled: 4,
         }
 
         const TKT_STATUS_STYLE = {
@@ -357,7 +358,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `
         }
 
-
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const TKT_PRIORITY = {
             Urgent: 1,
             High: 2,
@@ -367,7 +368,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             UTS: 6,
             Corrective_Action: 7
         };
-
+        
         const TKT_PRIORITY_STYLE = {
             Urgent: { color: 'white', backgroundColor: 'red' },
             High: { color: 'white', backgroundColor: 'orange' },
@@ -631,25 +632,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 fileTypeFilter += `AND (t.custrecord_twc_file_type_hs = 'T' OR t.custrecord_twc_file_type_method = 'T' OR t.custrecord_twc_file_type_insurance = 'T')`;
             }
             return getFiles({ filters: fileTypeFilter });
-
-            // var sql = `
-            //     select  ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'dd/MM/yyyy HH:mi') as created, f.name, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name,
-            //             ${twcFile.Fields.DESCRIPTION}
-            //     from    ${twcFile.Type} f
-            //     join    customrecord_twc_file_type t on t.id = f.${twcFile.Fields.R_TYPE}
-            //     where   ${twcFile.Fields.RECORD_TYPE} = 'customrecord_twc_saf'
-            //     and     ${twcFile.Fields.RECORD_ID} = ${options.id}
-            //     ${fileTypeFilter}
-            //     order by f.created desc
-            // `
-
-            // var files = [];
-            // coreSQL.each(sql, f => {
-            //     f.preview_link = `<div style="text-align: center;"><span class="twc-clickable twc-preview-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
-            //     files.push(f)
-            // })
-            // //throw new Error(JSON.stringify(files))
-            // return files;
         }
 
         function getSafContractorFiles(options) {
@@ -708,13 +690,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var additionalFilters = `
                 and c.custrecord_twc_co_accred_status = ${COMPANY_ACCREDITATION_STATUS.Accredited}
             `
-            
+
             if (options.isCustomer) {
                 options.customer = options.companyProfile.id;
             } else if (options.isVendor) {
                 options.vendor = options.companyProfile.id;
             }
-            
+
             var sql = '';
             if (options.vendor) {
                 if (options.type == 'C') {
@@ -729,7 +711,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             or c.id = ${options.vendor}
                         )
                         ${additionalFilters}
-                        order by c.name
+                        order by LOWER(c.name)
                     `
                 } else {
                     // @@NOTE: here we want to select sub-contractors the given vendor can use
@@ -747,7 +729,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         where   c.isinactive = 'F'
                         and     acl.custrecord_twc_acl_contractor = ${options.vendor}
                         ${additionalFilters}
-                        order by text
+                        order by LOWER(text)
                     `;
 
                 }
@@ -761,7 +743,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         where   c.isinactive = 'F'
                         and     c.id = ${options.customer}
                         ${additionalFilters}
-                        order by c.name
+                        order by LOWER(c.name)
                     `;
                 } else {
                     // @@NOTE: here we want to select only vendors this customer can use
@@ -772,7 +754,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         where   c.isinactive = 'F'
                         and     acl.custrecord_twc_acl_cust = ${options.customer}
                         ${additionalFilters}
-                        order by c.name
+                        order by LOWER(c.name)
                     `
                 }
             } else {
@@ -786,7 +768,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     from    customrecord_twc_company c
                     where   c.isinactive = 'F'
                     ${additionalFilters}
-                    order by c.name
+                    order by LOWER(c.name)
                 `;
 
             }
@@ -1022,21 +1004,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return `${d}/${m}/${dateParts[0]}`;
         }
 
-        function getTicketStatus(){
-             return getLookUpTableValues('customrecord_twc_trbl_tkt_status');
+        function getTicketStatus() {
+            return coreSQL.run(`select id as value, name as text from customrecord_twc_trbl_tkt_status where isinactive = 'F' order by custrecord_twc_trbl_tkt_status_sort`)
         }
-        function getTicketCategory(){
-             return getLookUpTableValues('customrecord_twc_trbl_tkt_category');
+        function getTicketCategory() {
+            return getLookUpTableValues('customrecord_twc_trbl_tkt_category');
         }
-        function getTicketAssignedTo(){
-             return getLookUpTableValues('customrecord_twc_prof');
+        function getTicketAssignedTo() {
+            return getLookUpTableValues('customrecord_twc_prof');
         }
-        function getTicketPriority(){
-             return getLookUpTableValues('customrecord_twc_trbl_tkt_priority');
+        function getTicketPriority() {
+            return getLookUpTableValues('customrecord_twc_trbl_tkt_priority');
         }
-         
-        
-        
+
+        function getInventoryStatus() {
+            return getLookUpTableValues('customrecord_twc_equip');
+        }
+
 
         return {
             ROOT_FILE_FOLDER: 'TWC Files',
@@ -1115,11 +1099,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafIds: getSafIds,
             getSrfIds: getSrfIds,
             getSrfStatus: getSrfStatus,
-            getTicketStatus:getTicketStatus,
-            getTicketCategory:getTicketCategory,
-            getTicketAssignedTo:getTicketAssignedTo,
-            getTicketPriority:getTicketPriority,
-
+            getTicketStatus: getTicketStatus,
+            getTicketCategory: getTicketCategory,
+            getTicketAssignedTo: getTicketAssignedTo,
+            getTicketPriority: getTicketPriority,
+            getInventoryStatus: getInventoryStatus,
 
             getYesNoOptions: getYesNoOptions,
             getFiles: getFiles,

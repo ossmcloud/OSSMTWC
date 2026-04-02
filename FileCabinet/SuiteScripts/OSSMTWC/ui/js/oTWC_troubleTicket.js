@@ -3,13 +3,18 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_config.js', '../../data/oTWC_troubleTickets', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', './oTWC_siteInfoPanel.js','../../O/controls/oTWC_ui_ctrl.js'],
-    (core, coreSql, twcPageBase, dialog, twcConfig, twcTkt, uiTable, twcSiteLocatorPanel, twcSiteInfoPanel,twcUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../data/oTWC_troubleTickets', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', './oTWC_siteInfoPanel.js', '../../O/controls/oTWC_ui_ctrl.js'],
+    (core, coreSql, twcPageBase, dialog, twcIcons, twcConfig, twcTkt, uiTable, twcSiteLocatorPanel, twcSiteInfoPanel, twcUI) => {
 
         var _tktLink = null;
         function ticketViewLink(id) {
             if (!_tktLink) { _tktLink = core.url.script('oTWC_troubleTicket_sl'); }
-            return `${_tktLink}&recId=${id}&edit=T`
+            return `${_tktLink}&recId=${id}`
+        }
+
+        function ticketNewLink(id) {
+            if (!_tktLink) { _tktLink = core.url.script('oTWC_troubleTicket_sl'); }
+            return `${_tktLink}&siteId=${id}&edit=T`
         }
 
         class TWCTicketTable {
@@ -19,6 +24,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#page = page;
 
                 var unboundCols = [];
+                // @@TODO: use icons and actions 
                 unboundCols.push({
                     id: 'open_tkt', title: '', unbound: true,
                     styles: { 'text-align': 'center' },
@@ -26,6 +32,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     sortIdx: 0,
                     initValue: (d) => {
                         return `<a href="${ticketViewLink(d.id)}">View</a>`;
+                    }
+                })
+                unboundCols.push({
+                    id: 'new_tkt', title: '', unbound: true,
+                    styles: { 'text-align': 'center' },
+                    noSort: true,
+                    sortIdx: 0,
+                    initValue: (d) => {
+                        return `<a href="${ticketNewLink(d.site_id)}">New</a>`;
                     }
                 })
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
@@ -58,9 +73,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         valueField: 'id'
                     }
                 }
- 
+
                 var uf = window.twc.page.data.data.ticketInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
-               console.log('uf', uf)
+                console.log('uf', uf)
                 if (uf) {
                     col.title = uf.label;
                     if (uf.type) { col.type = uf.type; }
@@ -112,7 +127,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #map = null;
             #sitesTable = null;
             #sitePanel = null;
-            #safBuilder = null;
             constructor() {
                 super({ scriptId: 'otwc_troubleticket_sl' });
 
@@ -125,7 +139,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     console.log('test data sites', window.twc.page.data.data.ticketInfo.sites)
 
                     this.#sitesTable = new TWCTicketTable(this);
-                    // this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.data.ticketInfo.tickets });
                     this.#sitePanel = twcSiteLocatorPanel.get({ page: this, table: this.#sitesTable, data: window.twc.page.data.data.ticketInfo.sites, tableData: window.twc.page.data.data.ticketInfo.tickets });
                     console.log('123', this.#sitePanel)
 
@@ -147,37 +160,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             initTrblTktMode(recId) {
-                console.log('test')
+
+                this.ui.on('change', e => {
+                    this.#changes[e.id] = e.value;
+                    this.dirty = true
+                })
+
                 this.ui.find('#resolve-button').on('click', async (e) => {
-                    this.resolveTicket(recId);
+                    await this.resolveTicket(recId);
                 });
-               
+
             }
 
-            resolveTicket(recId){
-                    console.log('clicked',recId)
-                const confirmResolve = confirm('Are you sure you want to resolve this ticket?');
+            async resolveTicket(recId) {
+                try {
+                    await dialog.confirmAsync('Are you sure you want to resolve this ticket?')
+                    await this.post({ action: 'resolve-tkt-status' }, recId);
+                    location.reload();
 
-                if (!confirmResolve) {
-                    return false;
+                } catch (error) {
+                    dialog.error(error);
                 }
+            }
 
-                this.post({ action: 'resolve-tkt-status' }, recId)
-                    .then(resp => {
-                        if (resp.error) {
-                            this.waitClose();
-                            dialog.error(resp.error);
-                            return;
-                        }
-                        location.reload();
-                    })
-                    .catch(err => {
-                        dialog.error(err);
-                        this.waitClose();
-                    });
-         
-                        }
-           
 
 
             async onSave() {

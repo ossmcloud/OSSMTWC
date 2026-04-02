@@ -2,12 +2,31 @@
 TODO:
 -----
 
-01. Site Locator Panel :
-    like for SAF for SRF add SRF ID/Status in the filters
 
-02. New SAF :
-    create UI with:
-        Panel for Step 1
-        Panel for Existing SAFs
+SAVE:   
+    check FileCabinet\SuiteScripts\OSSMTWC\ui\modules\oTWC_siteInfoUtils.js =>saveSiteInfo
 
-    Calendar Control
+UI:
+    upload photos:
+        FileCabinet\SuiteScripts\OSSMTWC\ui\js\oTWC_siteAccess.js   => uploadPhotos
+
+    resolution photos
+        // @@TODO: JESNA: show list of attached files, see as example:
+
+ACTIONS:
+    Cancel Ticket
+    
+
+
+TEST WORKFLOW:
+    create new ticket as contractor
+    create new ticket as customer
+
+    cancel ticket as customer
+
+    asses ticket as employee
+
+    resolve ticket with images as employee
+
+    make sure customers can only see their tickets
+    make sure contractors can only see their tickets and their customer tickets

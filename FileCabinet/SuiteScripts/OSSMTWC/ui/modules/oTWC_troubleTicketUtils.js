@@ -2,13 +2,13 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_troubleTickets.js', '../../data/oTWC_troubleTicketsUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js','../../data/oTWC_site.js','../../data/oTWC_siteUI.js','SuiteBundles/Bundle 548734/O/data/rec.utils.js'],
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_troubleTickets.js', '../../data/oTWC_troubleTicketsUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js'],
     (core, coreSQL, twcUtils, twcTrblTkts, twcTrblTktsUI, twcUI, twcConfig, twcSite, twcSiteUI, recu) => {
 
         function getTroubleTickets(options, userInfo) {
 
             var ticketFields = twcUtils.getFields(twcTrblTkts.Type);
-           // throw new Error(JSON.stringify(ticketFields))
+            // throw new Error(JSON.stringify(ticketFields))
             var userFields = twcTrblTktsUI.getTicketsTableFields();
 
             var sqlFields = 's.id, s.id as record_id, s.custrecord_twc_trbl_tkt_site as site_id, BUILTIN.DF(s.custrecord_twc_trbl_tkt_site) as site_id_text';
@@ -40,7 +40,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 ${orderBy}
             `)
 
- //throw new Error(tickets)
+            //throw new Error(tickets)
             return {
                 // getTroubleTickets: getTroubleTickets,
                 userFields: userFields,
@@ -50,8 +50,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
         }
 
-         function getSites(options, userInfo) {
-            
+        function getSites(options, userInfo) {
+
             var siteFields = twcUtils.getFields(twcSite.Type);
             var userFields = twcSiteUI.getSiteTableFields();
 
@@ -195,38 +195,43 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return html;
         }
 
-            function resolveTicket(tkt_id) {
+        function resolveTicket(tkt_id) {
             try {
                 if (!tkt_id) { return; }
-                log.debug('tkt_id',tkt_id)
+                log.debug('tkt_id', tkt_id)
                 recu.submit(twcTrblTkts.Type, tkt_id, [twcTrblTkts.Fields.STATUS], [twcUtils.tktStatus.Resolved, true]);
-              //  tkt.save();
-                } catch (error) {
-                    throw error;
-                }
+                //  tkt.save();
+            } catch (error) {
+                throw error;
+            }
         }
 
-        
+
         return {
             getTroubleTickets: getTroubleTickets,
-            resolveTicket:resolveTicket,
+            resolveTicket: resolveTicket,
             getTKTInfoPanels: twcTrblTktsUI.getTKTInfoPanels,
             renderTroubleTicketsPanel: renderTroubleTicketsPanel,
             getTrblTktInfo: (pageData) => {
                 var tkt = {};
                 if (pageData.recId) {
                     tkt = coreSQL.first(`select * from ${twcTrblTkts.Type} where id = ${pageData.recId}`);
+                    // @@NOTE: we need field siteId to be populated for the UI to work
                     tkt.siteId = tkt[twcTrblTkts.Fields.SITE];
-
                     if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, tkt[twcTrblTkts.Fields.CUSTOMER])) {
-                        throw new Error('You do not have access to see this SRF record');
+                        throw new Error('You do not have access to see this Trouble Ticket record');
                     }
 
                 } else {
                     // this is a new SRF, if the logged in user is a customer then set the customer field
                     if (pageData.userInfo.isCustomer) { tkt[twcTrblTkts.Fields.CUSTOMER] = pageData.userInfo.id; }
                     tkt[twcTrblTkts.Fields.SITE] = pageData.siteId;
+                    // @@NOTE: we need field siteId to be populated for the UI to work
+                    tkt.siteId = pageData.siteId;
                 }
+
+                
+
                 return tkt;
             },
         }

@@ -97,6 +97,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var siteLink = core.url.script('otwc_siteinfo_sl');
                 var safLink = core.url.script('otwc_siteaccess_sl');
                 var srfLink = core.url.script('otwc_spacerequest_sl');
+                var tktLink = core.url.script('oTWC_troubleTicket_sl');
                 // @@TODO: this suitelet is not there yet
                 //var actionLink = core.url.script('otwc_siteaction_sl');        
                 var actionLink = siteLink;
@@ -116,6 +117,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 <a class="twc" href="${actionLink}&siteId=${data[dx].id}&edit=T" target="_blank">[Action]</a>
                                 <a class="twc" href="${safLink}&siteId=${data[dx].id}&edit=T" target="_blank">[S.A.F.]</a>
                                 <a class="twc" href="${srfLink}&siteId=${data[dx].id}&edit=T" target="_blank">[S.R.F.]</a>
+                                <a class="twc" href="${tktLink}&siteId=${data[dx].id}&edit=T" target="_blank">[T.TK.]</a>
                             </div>
                         `,
                         ariaLabel: data[dx].name,
