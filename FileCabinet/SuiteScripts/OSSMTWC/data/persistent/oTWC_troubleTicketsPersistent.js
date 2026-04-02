@@ -2,10 +2,11 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js'],
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js' ],
     (core, coreSQL, recu, customRec) => {
         var _recordType = 'customrecord_twc_trbl_tkt';
         var _recordFields = {
+            NAME: 'name',
             TROUBLE_TICKET_ID: 'custrecord_twc_trbl_tkt_id',
             SITE: 'custrecord_twc_trbl_tkt_site',
             STATUS: 'custrecord_twc_trbl_tkt_status',
@@ -26,28 +27,37 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SCHEDULED_COMPLETION_DATE: 'custrecord_twc_trbl_tkt_sch_compltn_date',
             CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE: 'custrecord_twc_trbl_tkt_cor_act_tkn_root',
             RESOLUTION_PHOTOS_TAKEN: 'custrecord_twc_trbl_tkt_resltn_photo_tkn',
+            CREATED: 'created',
+            MODIFIED: 'lastmodified',
+            OWNER: 'owner',
+            MODIFIED_BY: 'lastmodifiedby',
         }
         var _recordFieldInfo = {
+            NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             TROUBLE_TICKET_ID: { name: 'custrecord_twc_trbl_tkt_id', type: 'integer', alias: 'troubleTicketID', display: 'normal', mandatory: false },
-            SITE: { name: 'custrecord_twc_trbl_tkt_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site,' },
-            STATUS: { name: 'custrecord_twc_trbl_tkt_status', type: 'select', alias: 'status', display: 'normal', mandatory: false, recordType: 'customrecord_twc_trbl_tkt_status,' },
+            SITE: { name: 'custrecord_twc_trbl_tkt_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
+            STATUS: { name: 'custrecord_twc_trbl_tkt_status', type: 'select', alias: 'status', display: 'normal', mandatory: false, recordType: 'customrecord_twc_trbl_tkt_status' },
             SUBMITTED: { name: 'custrecord_twc_trbl_tkt_submitted', type: 'datetimetz', alias: 'submitted', display: 'normal', mandatory: false },
             AUTHOR: { name: 'custrecord_twc_trbl_tkt_author', type: 'text', alias: 'author', display: 'normal', mandatory: false },
             AUTHOR_PHONE_NUMBER: { name: 'custrecord_twc_trbl_tkt_author_ph_no', type: 'text', alias: 'authorPhoneNumber', display: 'normal', mandatory: false },
-            REPORT_ISSUE__WORKS_REQUIRED: { name: 'custrecord_twc_trbl_tkt_issue_works', type: 'text', alias: 'reportIssueWorksRequired', display: 'normal', mandatory: false },
-            PHOTOS_TAKEN: { name: 'custrecord_twc_trbl_tkt_photos_tkn', type: 'select', alias: 'photosTaken', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file,' },
-            ASSESSED_BY: { name: 'custrecord_twc_trbl_tkt_assessed_by', type: 'select', alias: 'assessedby', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
+            REPORT_ISSUE__WORKS_REQUIRED: { name: 'custrecord_twc_trbl_tkt_issue_works', type: 'clobtext', alias: 'reportIssueWorksRequired', display: 'normal', mandatory: false },
+            PHOTOS_TAKEN: { name: 'custrecord_twc_trbl_tkt_photos_tkn', type: 'select', alias: 'photosTaken', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
+            ASSESSED_BY: { name: 'custrecord_twc_trbl_tkt_assessed_by', type: 'select', alias: 'assessedby', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             ASSESSED: { name: 'custrecord_twc_trbl_tkt_assessed', type: 'date', alias: 'assessed', display: 'normal', mandatory: false },
-            CATEGORY: { name: 'custrecord_twc_trbl_tkt_category', type: 'select', alias: 'category', display: 'normal', mandatory: false, recordType: 'customrecord_twc_trbl_tkt_category,' },
-            CUSTOMER: { name: 'custrecord_twc_trbl_tkt_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company,' },
-            ASSIGNED_TO: { name: 'custrecord_twc_trbl_tkt_assigned_to', type: 'select', alias: 'assignedTo', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof,' },
-            ASSIGNED_TO_COMPANY: { name: 'custrecord_twc_trbl_tkt_assigned_to_comp', type: 'select', alias: 'assignedToCompany', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company,' },
-            PRIORITY: { name: 'custrecord_twc_trbl_tkt_priority', type: 'select', alias: 'priority', display: 'normal', mandatory: false, recordType: 'customrecord_twc_trbl_tkt_priority,' },
-            WORKS_REQUIRED: { name: 'custrecord_twc_trbl_tkt_works_req', type: 'textarea', alias: 'worksRequired', display: 'normal', mandatory: false },
+            CATEGORY: { name: 'custrecord_twc_trbl_tkt_category', type: 'select', alias: 'category', display: 'normal', mandatory: false, recordType: 'customrecord_twc_trbl_tkt_category' },
+            CUSTOMER: { name: 'custrecord_twc_trbl_tkt_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
+            ASSIGNED_TO: { name: 'custrecord_twc_trbl_tkt_assigned_to', type: 'select', alias: 'assignedTo', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
+            ASSIGNED_TO_COMPANY: { name: 'custrecord_twc_trbl_tkt_assigned_to_comp', type: 'select', alias: 'assignedToCompany', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
+            PRIORITY: { name: 'custrecord_twc_trbl_tkt_priority', type: 'select', alias: 'priority', display: 'normal', mandatory: false, recordType: 'customrecord_twc_trbl_tkt_priority' },
+            WORKS_REQUIRED: { name: 'custrecord_twc_trbl_tkt_works_req', type: 'clobtext', alias: 'worksRequired', display: 'normal', mandatory: false },
             CORRECTIVE_ACTION: { name: 'custrecord_twc_trbl_tkt_corrective_act', type: 'date', alias: 'correctiveAction', display: 'normal', mandatory: false },
             SCHEDULED_COMPLETION_DATE: { name: 'custrecord_twc_trbl_tkt_sch_compltn_date', type: 'date', alias: 'scheduledCompletionDate', display: 'normal', mandatory: false },
-            CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE: { name: 'custrecord_twc_trbl_tkt_cor_act_tkn_root', type: 'textarea', alias: 'correctiveActionTakeninclRootCause', display: 'normal', mandatory: false },
-            RESOLUTION_PHOTOS_TAKEN: { name: 'custrecord_twc_trbl_tkt_resltn_photo_tkn', type: 'select', alias: 'resolutionPhotosTaken', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file,' },
+            CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE: { name: 'custrecord_twc_trbl_tkt_cor_act_tkn_root', type: 'clobtext', alias: 'correctiveActionTakeninclRootCause', display: 'normal', mandatory: false },
+            RESOLUTION_PHOTOS_TAKEN: { name: 'custrecord_twc_trbl_tkt_resltn_photo_tkn', type: 'select', alias: 'resolutionPhotosTaken', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
+            CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
+            MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
+            OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
+            MODIFIED_BY: { name: 'lastmodifiedby', type: 'select', alias: 'last_modified_by', display: 'inline', recordType: 'employee'}, 
         }
 
         class OSSMTWC_TroubleTickets extends customRec.RecordBase {
@@ -189,6 +199,30 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.RESOLUTION_PHOTOS_TAKEN, value)
             }
             get resolutionPhotosTakenName() { return this.getText(_recordFields.RESOLUTION_PHOTOS_TAKEN); }
+            
+            get created() {
+                return this.get(_recordFields.CREATED);
+            } set created(value) {
+                this.set(_recordFields.CREATED, value)
+            }
+            
+            get last_modified() {
+                return this.get(_recordFields.MODIFIED);
+            } set last_modified(value) {
+                this.set(_recordFields.MODIFIED, value)
+            }
+            
+            get created_by() {
+                return this.get(_recordFields.OWNER);
+            } set created_by(value) {
+                this.set(_recordFields.OWNER, value)
+            }
+            
+            get last_modified_by() {
+                return this.get(_recordFields.MODIFIED_BY);
+            } set last_modified_by(value) {
+                this.set(_recordFields.MODIFIED_BY, value)
+            }
             
         }
 
