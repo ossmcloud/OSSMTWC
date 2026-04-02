@@ -248,8 +248,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     srfItem.custrecord_twc_srf_itm_stype = table.id.replace('customrecord_twc_srf_itm_', '');
 
-                    // @@TODO: dev only
-                    if (!srfItem.id) { builtTestObjects(srfItem); }
+                    // // @@TODO: dev only
+                    // if (!srfItem.id) { builtTestObjects(srfItem); }
 
                     var res = this.postSync({ action: 'child-record' }, { srf: this.data.siteRequestInfo, item: srfItem })
                     var form = twcUIPanel.ui(res);
