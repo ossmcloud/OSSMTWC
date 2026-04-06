@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_troubleTickets.js', '../../data/oTWC_troubleTicketsUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js'],
-    (core, coreSQL, twcUtils, twcTrblTkts, twcTrblTktsUI, twcUI, twcConfig, twcSite, twcSiteUI, recu) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_troubleTickets.js', '../../data/oTWC_troubleTicketsUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js','../../O/oTWC_nsFileUtils.js','../../data/oTWC_file.js'],
+    (core, coreSQL, twcUtils, twcTrblTkts, twcTrblTktsUI, twcUI, twcConfig, twcSite, twcSiteUI, recu, nsFileUtils,twcFile) => {
 
         function getTroubleTickets(options, userInfo) {
 
@@ -205,11 +205,116 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 throw error;
             }
         }
+         function cancelTicket(tkt_id) {
+            try {
+                if (!tkt_id) { return; }
+                log.debug('tkt_id', tkt_id)
+                recu.submit(twcTrblTkts.Type, tkt_id, [twcTrblTkts.Fields.STATUS], [twcUtils.tktStatus.Cancelled, true]);
+                //  tkt.save();
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        function saveTktInfo(payload) {
+            // @@NOTE: @@REVIEW: this routine could be generalised to be used with different record types, not only twcSite
+
+            var submitInfo = {};
+            submitInfo[twcTrblTkts.Type] = { id: payload.id, fields: [], values: [] };
+
+            for (var k in payload) {
+                if (k == 'id') { continue; }
+                // @@NOTE: fields with '___' means they are linked record fields, we first update the site info, then the linked records
+                var fieldPath = k.split('___');
+                if (fieldPath.length == 1) {
+                    submitInfo[twcTrblTkts.Type].fields.push(k);
+                    submitInfo[twcTrblTkts.Type].values.push(payload[k])
+                }
+            }
+
+            recu.submit(twcTrblTkts.Type, payload.id, submitInfo[twcTrblTkts.Type].fields, submitInfo[twcTrblTkts.Type].values);
+
+            // @@NOTE: now we load the linked record fields changes into submitInfo object as we could have more than one
+            var tktFields = twcTrblTkts.getFields();
+            var tkt = twcTrblTkts.get(payload.id);
+            for (var k in payload) {
+                if (k == 'id') { continue; }
+                var fieldPath = k.split('___');
+                if (fieldPath.length > 1) {
+                    var tktField = tktFields.find(tk => { return tk.field_id == fieldPath[0]; })
+                    if (!tktField || !tktField.field_foreign_table) {
+                        // @@TODO: this should not happen really ???
+                    } else {
+                        // @@NOTE: @@IMPORTANT: we use fieldPath[0] as object property and NOT siteField.field_foreign_table because we could have more than one field linking to the same record type
+                        if (!submitInfo[fieldPath[0]]) {
+                            submitInfo[fieldPath[0]] = { id: tkt.get(fieldPath[0]), type: tktField.field_foreign_table, fields: [], values: [] };
+                        }
+                        submitInfo[fieldPath[0]].fields.push(fieldPath[1]);
+                        submitInfo[fieldPath[0]].values.push(payload[k])
+                    }
+                }
+            }
+
+
+            var errors = [];
+            for (var recType in submitInfo) {
+                if (recType == twcTrblTkts.Type) { continue; }
+                try {
+                    recu.submit(submitInfo[recType].type, submitInfo[recType].id, submitInfo[recType].fields, submitInfo[recType].values);
+                } catch (error) {
+                    core.logError('SAVE-TROURBLE TICKET-INFO', `${JSON.stringify(submitInfo[recType])}: ${error.message}`);
+                    submitInfo[recType].error = error.message;
+                    errors.push(submitInfo[recType])
+                }
+
+            }
+
+            // @@TODO: better error message
+            if (errors.length > 0) { throw new Error(JSON.stringify(errors)); }
+        }
+
+            function saveTktImage(options) {
+
+            var fileType = coreSQL.first(`select id from customrecord_twc_file_type where custrecord_twc_file_type_image = 'T' order by created`)?.id;
+ 
+            var tktInfo = coreSQL.first(`
+                select  tk.id, site.${twcSite.Fields.SITE_ID} as site_id
+                from    ${twcTrblTkts.Type} tk
+                join    ${twcSite.Type} site on site.id = tk.${twcTrblTkts.Fields.SITE}
+                where   tk.id = ${options.tkt}
+            `)
+            log.debug('tktInfo',tktInfo)
+            var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/${tktInfo.id}`);
+            log.debug('tktFolder',tktFolder)
+
+            var nsFile = nsFileUtils.writeFile({
+                name: `${options.tkt}_${options.photo.name}`,
+                fileType: nsFileUtils.getFileType(options.photo.type),
+                content: options.photo.content,
+                folder: tktFolder,
+            });
+            log.debug('nsFile',nsFile)
+
+            var tktImage = twcFile.get();
+            tktImage.name = options.photo.name;
+            tktImage.recordType = twcTrblTkts.Type;
+            tktImage.recordID = options.tkt;
+            tktImage.description = options.photo.notes || '';
+            tktImage.file = nsFile.fileId;
+            tktImage.r_type = fileType;
+            tktImage.save();
+            log.debug('tktImage',tktImage)
+            //recu.submit(twcSaf.Type, options.saf, [twcSaf.Fields.STATUS, twcSaf.Fields.COMPLETION_PHOTOS_RECEIVED], [twcSaf.Status.PhotosReceived, new Date()])
+
+        }
 
 
         return {
             getTroubleTickets: getTroubleTickets,
             resolveTicket: resolveTicket,
+            cancelTicket:cancelTicket,
+            saveTktInfo:saveTktInfo,
+            saveTktImage:saveTktImage,
             getTKTInfoPanels: twcTrblTktsUI.getTKTInfoPanels,
             renderTroubleTicketsPanel: renderTroubleTicketsPanel,
             getTrblTktInfo: (pageData) => {

@@ -90,12 +90,26 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (context.request.parameters.action == 'save') {
                 var payload = JSON.parse(context.request.body);
                 // @@TODO: TROUBLE_TICKET: implement save
+                log.debug("payload", payload)
+                twcTroubleTicketUtils.saveTktInfo(payload);
                 return { status: 'success' };
             }
             else if (context.request.parameters.action == 'resolve-tkt-status') {
                 var recId = JSON.parse(context.request.body);
                 log.debug("recId", recId)
                 return twcTroubleTicketUtils.resolveTicket(recId);
+
+            }
+            else if (context.request.parameters.action == 'cancel-tkt-status') {
+                var recId = JSON.parse(context.request.body);
+                log.debug("recId", recId)
+                return twcTroubleTicketUtils.cancelTicket(recId);
+
+            }
+            else if (context.request.parameters.action == 'upload-tkt-photo') {
+                   log.debug("Image det", JSON.parse(context.request.body))
+                twcTroubleTicketUtils.saveTktImage(JSON.parse(context.request.body));
+                return { status: 'success' };
 
             }
             else {
