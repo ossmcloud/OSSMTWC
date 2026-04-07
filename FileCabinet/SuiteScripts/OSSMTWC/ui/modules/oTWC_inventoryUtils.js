@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_config.js', '../../data/oTWC_equipmentUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_equipment.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js'],
-    (core, coreSQL, twcConfig, twcInventoryUI, twcUI, twcUtils, twcSaf, twcEqip, twcSite, twcSiteUI, twcSrfUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_config.js', '../../data/oTWC_equipment.js', '../../data/oTWC_equipmentUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_equipment.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js'],
+    (core, coreSQL, twcConfig, twcInventory, twcInventoryUI, twcUI, twcUtils, twcSaf, twcEqip, twcSite, twcSiteUI, twcSrfUI) => {
 
         function renderInventoryPanel(userInfo, featureId) {
             var html = `
@@ -72,27 +72,40 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             // let sqlFields = 'id, BUILTIN.DF(custrecord_twc_equip_site), custrecord_twc_equip_class, custrecord_twc_equip_status, BUILTIN.DF(custrecord_twc_equip_customer), custrecord_twc_equip_description, custrecord_twc_equip_length_mm, custrecord_twc_equip_width_mm, custrecord_twc_equip_ht_depth_mm, custrecord_twc_equip_ht_on_twr_m, custrecord_twc_equip_voltage_type, custrecord_twc_equip_azimuth, custrecord_twc_equip_b_end, custrecord_twc_equip_inv_flag, custrecord_twc_equip_feeder_count, custrecord_twc_equip_location'
             // sqlFields += formatUserFields(srfFields, window.twc.page.data.data.equipmentInfo.userFields);
             // BUILTIN.DF(custrecord_twc_equip_site), BUILTIN.DF(custrecord_twc_equip_customer), 
-            const sqlQuery = `
-                SELECT 
-                    id,
-                    custrecord_twc_equip_site as site_id,
-                    custrecord_twc_equip_class, 
-                    custrecord_twc_equip_status,
-                    custrecord_twc_equip_description, 
-                    custrecord_twc_equip_length_mm, 
-                    custrecord_twc_equip_width_mm, 
-                    custrecord_twc_equip_ht_depth_mm, 
-                    custrecord_twc_equip_ht_on_twr_m, 
-                    custrecord_twc_equip_voltage_type, 
-                    custrecord_twc_equip_azimuth, 
-                    custrecord_twc_equip_b_end, 
-                    custrecord_twc_equip_inv_flag, 
-                    custrecord_twc_equip_feeder_count, 
-                    custrecord_twc_equip_location 
-                    FROM 
-                        customrecord_twc_equip;
-                `;
-            const inventoryDetails = coreSQL.run(sqlQuery);
+            // const sqlQuery = `
+            //     SELECT 
+            //         id,
+            //         custrecord_twc_equip_site as site_id,
+            //         custrecord_twc_equip_class as equipment_class,
+            //         custrecord_twc_equip_status as equipment_status,
+            //         custrecord_twc_equip_description, 
+            //         custrecord_twc_equip_length_mm, 
+            //         custrecord_twc_equip_width_mm, 
+            //         custrecord_twc_equip_ht_depth_mm, 
+            //         custrecord_twc_equip_ht_on_twr_m, 
+            //         custrecord_twc_equip_voltage_type, 
+            //         custrecord_twc_equip_azimuth, 
+            //         custrecord_twc_equip_b_end, 
+            //         custrecord_twc_equip_inv_flag, 
+            //         custrecord_twc_equip_feeder_count, 
+            //         custrecord_twc_equip_location 
+            //         FROM 
+            //             customrecord_twc_equip;
+            //     `;
+            // const inventoryDetails = coreSQL.run(sqlQuery);
+
+            var sqlFields = 's.id, s.id as record_id, s.custrecord_twc_equip_site as site_id, BUILTIN.DF(s.custrecord_twc_equip_site) as site_id_text';
+            sqlFields += formatUserFields(inventoryFields, userFields);
+            // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
+            var whereClause = 'where 1 = 1 ';
+            var orderBy = `order by s.${twcInventory.Fields.EQUIPMENT_ID}`;
+            // throw new Error(orderBy)  join    ${twcSite.Type} site on site.id = ${twcInventory.Fields.SITE}
+            var inventoryDetails = coreSQL.run(`
+                select  ${sqlFields}
+                from    ${twcInventory.Type} s
+                ${whereClause} 
+                ${orderBy}
+            `)
 
             return {
                 inventoryDetails: inventoryDetails,
@@ -100,6 +113,96 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 userFields: userFields,
                 sites: getSites(options).sites
             }
+        }
+
+        function getSiteInfo(siteId) {
+            if (!siteId) { throw new Error('No site id provided!'); }
+
+            // @@TODO: move to rec.custom.js
+
+            var siteFields = twcSite.getFields();
+
+            var joinTables = [];
+            core.array.each(siteFields, f => {
+                if (f.field_type != 'List/Record') { return; }
+                joinTables.push(f.field_foreign_table);
+            })
+
+            var foreignFields = twcUtils.getFields(joinTables);
+
+            var joins = ''; var selectList = 's.id, ';
+            core.array.each(siteFields, f => {
+                selectList += `s.${f.field_id}, `
+                if (f.field_type != 'List/Record') { return; }
+
+                var tblAlias = f.field_foreign_table.replace('customrecord_', '');
+                selectList += `BUILTIN.DF(s.${f.field_id}) as ${f.field_id}_name, `
+
+                var foreignTableFields = foreignFields.filter(ff => { return ff.table_name == f.field_foreign_table; })
+                core.array.each(foreignTableFields, ff => {
+                    if (!ff.field_id.startsWith('cust')) { return; }
+                    selectList += `${ff.field_id}, `
+                })
+
+                joins += `
+                    left join ${f.field_foreign_table} as ${tblAlias} on ${tblAlias}.id = s.${f.field_id}
+                `
+            })
+
+            var siteInfo = coreSQL.first({
+                query: `
+                    select  ${selectList}
+                    from    ${twcSite.Type} s
+                    ${joins}
+                    where   s.id = ?
+                `,
+                params: [siteId]
+            })
+
+            var mainFields = twcSiteUI.getSiteMainInfoFields();
+
+            core.array.each(mainFields, mfg => {
+                core.array.each(mfg.fields, mf => {
+                    if (mf.childTable) {
+                        siteInfo[mf.id] = '';
+
+                        var url = core.url.record(mf.childTable.table)
+                        var fields = '';
+                        if (mf.childTable.fields) {
+                            core.array.each(mf.childTable.fields, mff => {
+                                fields += mff.isForeignKey ? `BUILTIN.DF(${mff.id}) as ${mff.id}, ` : `${mff.id}, `;
+                            })
+                        } else {
+                            fields = mf.childTable.isForeignKey ? `BUILTIN.DF(${mf.id}) as ${mf.id}` : `${mf.id}`;
+                        }
+
+                        coreSQL.each(`select id, ${fields} from ${mf.childTable.table} where ${mf.childTable.siteField} = ${siteId}`, childRecord => {
+                            var fieldValue = childRecord[mf.id];
+                            if (mf.childTable.mask) {
+                                fieldValue = mf.childTable.mask;
+                                core.array.each(mf.childTable.fields, mff => {
+                                    var value = childRecord[mff.id];
+                                    if (value === null || value === undefined) {
+                                        value = mff.nullText;
+                                    } else {
+                                        if (mff.mask) {
+                                            value = mff.mask.replaceAll(mff.id, value)
+                                        }
+                                    }
+                                    fieldValue = fieldValue.replaceAll(mff.id, value);
+                                });
+                            }
+                            siteInfo[mf.id] += `<a href="${url}&id=${childRecord.id}" target="_blank">${fieldValue}</a><br />`;
+                        })
+                    }
+                })
+            })
+
+
+            return {
+                site: siteInfo,
+                mainFields: mainFields,
+            };
         }
 
 
@@ -176,6 +279,26 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             renderInventoryPanel: renderInventoryPanel,
             getInventoryData: getInventoryData,
-            getSites: getSites
+            getSites: getSites,
+            getSiteInfo: getSiteInfo,
+            getInvInfoPanels: twcInventoryUI.getInvInfoPanels,
+            getInventoryInfo: (pageData) => {
+                var srf = {};
+                if (pageData.siteId) {
+                    srf = coreSQL.first(`select * from ${twcInventory.Type} where id = ${pageData.siteId}`);
+                    srf.siteId = srf[twcInventory.Fields.SITE];
+                    srf.type = twcInventory.Type;
+
+                    if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, srf[twcInventory.Fields.CUSTOMER])) {
+                        throw new Error('You do not have access to see this SRF record');
+                    }
+
+                } else {
+                    // this is a new SRF, if the logged in user is a customer then set the customer field
+                    if (pageData.userInfo.isCustomer) { srf[twcInventory.Fields.CUSTOMER] = pageData.userInfo.id; }
+                    srf[twcInventory.Fields.SITE] = pageData.siteId;
+                }
+                return srf;
+            },
         }
     });

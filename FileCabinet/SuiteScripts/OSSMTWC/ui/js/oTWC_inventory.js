@@ -20,6 +20,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     noSort: true,
                     sortIdx: 999,
                     initValue: (d) => {
+                        console.log('site id for link', `<a href="${safLink}&siteId=${d.id}">view</a>`);
                         return `<a href="${safLink}&siteId=${d.id}">view</a>`;
                     }
                 })

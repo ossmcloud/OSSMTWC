@@ -17,6 +17,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             Type: twcEquipment.Type,
             Fields: twcEquipment.Fields,
+            getInvStatusName: twcUtils.getInvStatusName,
+            getInvStatusStyle: twcUtils.getInvStatusStyle,
+            getTktStatusHtml: twcUtils.getTktStatusHtml,
+            Status: twcUtils.SrfStatus,
+            StepType: twcUtils.SrfStepType,
 
             get: function (id) {
                 var rec = new OSSMTWC_Equipment(id);
