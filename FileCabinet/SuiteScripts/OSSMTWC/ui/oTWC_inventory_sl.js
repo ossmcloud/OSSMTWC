@@ -3,8 +3,8 @@
  * @NScriptType Suitelet
 
  */
-define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_inventoryUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../ui/modules/oTWC_siteInfoUtils.js', '../data/oTWC_equipment.js'],
-    function (redirect, core, cored, coreSql, uis, twcBaseView, twcConfig, twcInventoryUtils, twcUIPanel, twcSiteInfoUtils, twcInventory) {
+define(['N/redirect', 'N/url', 'N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_inventoryUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../ui/modules/oTWC_siteInfoUtils.js', '../data/oTWC_equipment.js', '../O/controls/oTWC_ui_ctrl.js'],
+    function (redirect, url, record, core, cored, coreSql, uis, twcBaseView, twcConfig, twcInventoryUtils, twcUIPanel, twcSiteInfoUtils, twcInventory, twcUI) {
         var PAGE_VERSION = 'v0.01';
 
         var suiteLet = uis.new({ title: 'TWC Inventory', script: 'SuiteScripts/OSSMTWC/ui/oTWC_inventory_cs.js' });
@@ -34,10 +34,11 @@ define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bund
                     `
                 }
 
-                // @@NOTES: if the SRF is submitted we still let users with full access to edit it but only if we are a Towercom employee 
-                if (context.request.parameters.recId) {
-                    var canSubmit = pageData.inventoryInfo[twcInventory.Fields.EQUIPMENT_STATUS] == twcInventory.Status.Draft || pageData.inventoryInfo[twcInventory.Fields.EQUIPMENT_STATUS] == twcInventory.Status.FeedbackIssued;
-                    pageData.forceViewOnly = !(canSubmit ? true : (pageData.userInfo.isEmployee && pageData.userInfo.permission.lvl == twcConfig.PERMISSION_LEVEL.FULL));
+                let actions = '';
+
+                // @@NOTES: User can add Inventory by clicking on Add Equipment Button. 
+                if (context.request.parameters.siteId) {
+                    actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Add Equipment', id: 'add-equipment-button' });
                 } else {
                     pageData.forceViewOnly = true;
                 }
@@ -56,12 +57,8 @@ define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bund
 
                 var fieldGroups = twcInventoryUtils.getInvInfoPanels(pageData.siteInfo.site, pageData.userInfo);
                 html = html.replaceAll('{SITE_REQUEST_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
-                if (canSubmit) {
-                    html = html.replaceAll('<div id="custom-actions"></div>', `
-                        <div id="custom-actions">
-                            ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Submit', id: 'submit-button' })}
-                        </div>
-                    `);
+                if (actions) {
+                    html = html.replaceAll('<div id="custom-actions"></div>', `<div id="custom-actions">${actions}</div>`);
                 }
 
             } else {
@@ -94,6 +91,39 @@ define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bund
                 var payload = JSON.parse(context.request.body);
                 // @@TODO: INVENTORY: implement save
                 return { status: 'success' };
+            } else if(context.request.parameters.action == 'add-equipment') {
+                var params = JSON.parse(context.request.body);
+                log.debug("siteIddddddddddddddd", params.siteId + "eqType: " + params.eqType);
+                // return;
+                const siteId = params.siteId;
+                // 1. Generate URL for NEW record (create mode)
+                // const recordUrl = url.resolveRecord({
+                //     recordType: 'customrecord_twc_equip',
+                //     isEditMode: true,
+                //     params: {
+                //         custrecord_twc_equip_site: siteId
+                //     }
+                // }); 
+
+                // log.debug('Redirecting to', recordUrl);
+                // redirect.redirect({
+                //     url: recordUrl
+                // });
+
+                // 2. Returning the URL to Client-Side to handle the redirection
+                // const recordUrl = url.resolveRecord({
+                //     recordType: 'customrecord_twc_equip',
+                //     isEditMode: true,
+                //     params: {
+                //         custrecord_twc_equip_site: siteId,
+                //         custrecord_twc_equip_type: params.eqType
+                //     }
+                // });
+
+                // return {
+                //     status: 'redirect',
+                //     url: recordUrl
+                // };
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);
             }

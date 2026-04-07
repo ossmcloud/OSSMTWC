@@ -140,7 +140,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                     //throw new Error(JSON.stringify( control.dataSource[0]))
 
-
+                    // Replace nulls with "-"
+                    control.dataSource = control.dataSource.map(item => {
+                        const newItem = {};
+                        for (let key in item) {
+                            newItem[key] = item[key] === null ? '-' : item[key];
+                        }
+                        return newItem;
+                    });
 
                     panelFields.controls.push(control);
                     return;

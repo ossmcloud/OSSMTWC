@@ -11,15 +11,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             GIE: 3
         }
 
+        const EQ_TYPE_TITLES = {
+            [EQ_TYPE_ENUM.TME]: "TME / Tower Mounted Equipment",
+            [EQ_TYPE_ENUM.ATME]: "ATME / Additional Tower Mounted Equipment",
+            [EQ_TYPE_ENUM.GIE]: "GIE / Ground & Indoor Equipment"
+        };
+
         function getInventoryTableFields() {
             var inventoryFields = [
                 { field: twcInventory.Fields.EQUIPMENT_ID },
                 { field: twcInventory.Fields.EQUIPMENT_STATUS },
-                { field: twcInventory.Fields.SITE },
-                // { field: twcSite.Fields.ADDRESS_COUNTY },
-                // { field: twcSite.Fields.ADDRESS_REGION },
+                // { field: twcInventory.Fields.SITE },
                 { field: twcInventory.Fields.INFRASTRUCTURE },
-                { field: twcInventory.Fields.LOCATION },
+                // { field: twcInventory.Fields.LOCATION },
                 { field: twcInventory.Fields.LENGTH_MM },
                 { field: twcInventory.Fields.WIDTH_MM },
                 { field: twcInventory.Fields.CUSTOMER },
@@ -30,10 +34,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getInvInfoPanels_Type(dataSource, userInfo, eqType) {
             //throw new Error(JSON.stringify(dataSource.id   ))
-
-            
-
-            var fieldGroup = { id: 'site-inventory', title: 'TME / Tower Mounted Equipment', collapsed: false, controls: [] };
+            const title = EQ_TYPE_TITLES[eqType] || "Unknown Equipment";
+            var fieldGroup = { id: 'site-inventory', title: title, collapsed: false, controls: [] };
 
             var tmeInventories = { id: 'site-inventory-info', fields: [] };
             fieldGroup.controls.push(tmeInventories);
@@ -41,15 +43,24 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             tmeInventories.fields.push({
                 id: `${twcInventory.Type}`, label: 'Site TME Equipment',
                 fields: {
-                    [twcInventory.Fields.EQUIPMENT_ID]: 'Name',
-                    [twcInventory.Fields.EQ_TYPE]: 'Type',
+                    // [twcInventory.Fields.SITE]: 'ID',
+                    [twcInventory.Fields.EQUIPMENT_STATUS]: 'Status',
+                    [twcInventory.Fields.CUSTOMER]: 'Customer',
+                    [twcInventory.Fields.VOLTAGE_TYPE]: 'Type',
+                    [twcInventory.Fields.DESCRIPTION]: 'Desc',
+                    [twcInventory.Fields.LOCATION_NOTES]: 'Location',
+                    [twcInventory.Fields.LENGTH_MM]: 'L/W/D',
+                    [twcInventory.Fields.AZIMUTH]: 'Az',
+                    [twcInventory.Fields.B_END]: 'B-End',
+                    [twcInventory.Fields.CUSTOMER_REF]: 'Cust. Ref',
+                    [twcInventory.Fields.INVENTORY_FLAG]: 'Inventory Flag',
+                    [twcInventory.Fields.CREATED]: 'Date',
+                    [twcInventory.Fields.FEEDERS]: 'Feeders'
                 },
                 where: { [twcInventory.Fields.SITE]: dataSource.id, [twcInventory.Fields.EQ_TYPE]: eqType },
                 FieldsInfo: twcInventory.FieldsInfo,
             });
 
-            log.debug('Panel before format', JSON.stringify(fieldGroup))
-            log.debug('dataSource before format', JSON.stringify(dataSource))
             configUIFields.formatPanelFields(dataSource, fieldGroup);
 
             return fieldGroup;

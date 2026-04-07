@@ -252,6 +252,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function formatUserFields(fields, userFields) {
+            try {
             var sqlFields = '';
             core.array.each(userFields, uf => {
                 if (uf.field == 'name' || uf.field == 'custrecord_twc_srf_site') { return; }
@@ -275,6 +276,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (!uf.label) { uf.label = nsField.field_label; }
             })
             return sqlFields;
+            } catch (e) {
+                throw new Error(`Error formatting user fields: ${e.message} - ${JSON.stringify(userFields)}`);
+            }
         }
 
         return {

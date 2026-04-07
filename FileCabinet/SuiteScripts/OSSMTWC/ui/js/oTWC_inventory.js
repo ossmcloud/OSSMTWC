@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_config.js', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', '../../data/oTWC_site.js', './oTWC_siteInfoPanel.js'],
-    (core, coreSql, twcPageBase, dialog, twcConfig, uiTable, twcSiteLocatorPanel, twcSite, twcSiteInfoPanel) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'N/record', 'N/url', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_config.js', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', '../../data/oTWC_site.js', './oTWC_siteInfoPanel.js'],
+    (core, coreSql, record, url, twcPageBase, dialog, twcConfig, uiTable, twcSiteLocatorPanel, twcSite, twcSiteInfoPanel) => {
 
         class TWCSiteTable {
             #page = null;
@@ -88,6 +88,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             initPage() {
                 if (this.data.siteInfo) {
+                    this.initInventoryMode();
                     this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
                 } else {
                     console.log('init inventory page', this.data)
@@ -109,6 +110,70 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         tableData: window.twc.page.data.data.inventoryInfo.inventoryDetails
                     });
                     console.log('site locator panel', this.#sitePanel)
+                }
+            }
+            initInventoryMode(recId) {
+                this.ui.find('#add-equipment-button').on('click', async (e) => {
+                    await this.addEquipment();
+                });
+            }
+
+            // When clicked on Add Equipment Button, redirect to Equipment custom record with some parameters like Equipment Type and Site Id.
+            async addEquipment() {
+                try {
+                    this.wait();
+
+                    var siteId = window.twc.page.data.inventoryInfo.custrecord_twc_equip_site;
+                    var eqType = window.twc.page.data.inventoryInfo.custrecord_twc_equip_type;
+
+                    siteId = siteId?.value || siteId;
+                    eqType = eqType?.value || eqType;
+
+                    // 1. Create the Custom Record and load the record in edit mode
+                    // var newRec = record.create({
+                    //     type: 'customrecord_twc_equip',
+                    //     isDynamic: true
+                    // });
+
+                    // newRec.setValue({ fieldId: 'custrecord_twc_equip_site', value: parseInt(siteId, 10) });
+                    // newRec.setValue({ fieldId: 'custrecord_twc_equip_type', value: parseInt(eqType, 10) });
+
+                    // var recId = newRec.save();
+
+                    // var recordUrl = url.resolveRecord({
+                    //     recordType: 'customrecord_twc_equip',
+                    //     recordId: recId,
+                    //     isEditMode: true
+                    // });
+
+                    // window.location.href = recordUrl;
+
+                    // 2. Calling using the resolveRecord
+                    var recordUrl = core.url.record('customrecord_twc_equip', null, true) +
+                        `&custrecord_twc_equip_site=${siteId}` +
+                        `&custrecord_twc_equip_type=${eqType}`;
+
+                    window.location.href = recordUrl;
+
+                    // 3. Calling using the resolveRecord with parameters
+                    // var recordUrl = url.resolveRecord({
+                    //     recordType: 'customrecord_twc_equip',
+                    //     isEditMode: true,
+                    //     params: {
+                    //         custrecord_twc_equip_site: siteId.id,
+                    //         custrecord_twc_equip_type: eqType
+                    //     }
+                    // });
+
+                    // window.location.href = recordUrl;
+
+                    // 4. Calling using the suitelet redirect with parameters
+                    // await this.post({ action: 'add-equipment' }, { siteId, eqType });
+
+                } catch (error) {
+                    await dialog.errorAsync(error);
+                } finally {
+                    this.waitClose();
                 }
             }
 
