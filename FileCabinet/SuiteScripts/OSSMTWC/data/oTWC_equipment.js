@@ -17,6 +17,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             Type: twcEquipment.Type,
             Fields: twcEquipment.Fields,
+            FieldsInfo: twcEquipment.FieldsInfo,
             getInvStatusName: twcUtils.getInvStatusName,
             getInvStatusStyle: twcUtils.getInvStatusStyle,
             getTktStatusHtml: twcUtils.getTktStatusHtml,

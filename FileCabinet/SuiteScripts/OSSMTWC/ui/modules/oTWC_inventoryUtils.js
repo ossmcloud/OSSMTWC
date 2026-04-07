@@ -198,6 +198,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
             })
 
+            siteInfo.Type = twcSite.Type;
 
             return {
                 site: siteInfo,

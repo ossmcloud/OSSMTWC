@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_srfItem.js', './oTWC_file.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_safAction.js', './oTWC_profile.js','./oTWC_troubleTickets.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSrfItem, twcFile, twcUI, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafTimeBlock, twcSafLog, twcSafAction, twcProfile, twcTroubleTkts) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_srfItem.js', './oTWC_file.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_safAction.js', './oTWC_profile.js', './oTWC_troubleTickets.js', './oTWC_equipment.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSrfItem, twcFile, twcUI, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafTimeBlock, twcSafLog, twcSafAction, twcProfile, twcTroubleTkts, twcEquipment) => {
 
         // @@TODO: need to find a way to make this as handy as possible
         function getDataObject(recordType, callback) {
@@ -22,6 +22,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (recordType == twcSafAction.Type) { return twcSafAction; }
             if (recordType == twcProfile.Type) { return twcProfile; }
             if (recordType == twcTroubleTkts.Type) { return twcTroubleTkts; }
+            if (recordType == twcEquipment.Type) { return twcEquipment; }
             
             throw new Error(`Unrecognised record type: ${recordType}`);
         }
@@ -93,6 +94,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         columns.push(columnOptions);
 
 
+
                         // var title = field.fields[k]; var link = undefined; var styles = undefined;
                         // if (title.title) {
                         //     link = title.link || null;
@@ -109,7 +111,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         // }
                     }
 
-
+                   
                     //if (field.id == "customrecord_twc_prof"){throw new Error(JSON.stringify(columns))}
 
 
@@ -135,6 +137,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             if (field.onColumnInit) { return field.onColumnInit(tbl, col); }
                         }
                     }
+
+                    //throw new Error(JSON.stringify( control.dataSource[0]))
 
 
 

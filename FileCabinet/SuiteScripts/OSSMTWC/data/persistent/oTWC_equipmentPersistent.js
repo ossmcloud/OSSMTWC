@@ -2,18 +2,21 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js'],
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js' ],
     (core, coreSQL, recu, customRec) => {
         var _recordType = 'customrecord_twc_equip';
         var _recordFields = {
+            NAME: 'name',
             EQUIPMENT_ID: 'custrecord_twc_equip_id',
             RADIX_EQUIPMENT_TABLE_ROW: 'custrecord_twc_equip_radix_tbl_row',
             SITE: 'custrecord_twc_equip_site',
             EQ_TYPE: 'custrecord_twc_equip_type',
             INFRASTRUCTURE: 'custrecord_twc_equip_str',
             ACCOMMODATION: 'custrecord_twc_equip_ac',
-            LOCATION: 'custrecord_twc_equip_location',
+            LOCATION_NOTES: 'custrecord_twc_equip_location',
             EQUIPMENT_STATUS: 'custrecord_twc_equip_status',
+            EQUIPMENT_INSTALL_STATUS: 'custrecordtwc_eq_install_status',
+            EQUIPMENT_LICENCE_STATUS: 'custrecord_twc_eq_licence_status',
             EQUIPMENT_PROPOSED_STATUS: 'custrecord_twc_equip_prop_sts',
             CUSTOMER: 'custrecord_twc_equip_customer',
             PARENT_TME_ID: 'custrecord_twc_equip_parent_tme_id',
@@ -28,9 +31,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WIDTH_MM: 'custrecord_twc_equip_width_mm',
             HEIGHTDEPTH_MM: 'custrecord_twc_equip_ht_depth_mm',
             WEIGHT_KG: 'custrecord_twc_equip_weight_kg',
-            WIND_LOADING_NM2: 'custrecord_twc_equip_wind_ldg_nm2',
+            WIND_LOADING_NM2_FRONT: 'custrecord_twc_equip_wind_ldg_nm2',
+            WIND_LOADING_NM2_SIDE: 'custrecordtwc_equip_wind_ldg_nm2_side',
+            WIND_LOADING_NM2_REAR: 'custrecord_twc_equip_wind_ldg_nm2_rear',
+            WIND_LOADING_NM2_MAX: 'custrecord_twc_equip_wind_ldg_nm2_max',
+            WIND_REGIME: 'custrecord_twc_equip_wind_regime',
             VOLTAGE_TYPE: 'custrecord_twc_equip_voltage_type',
             VOLTAGE_RANGE: 'custrecord_twc_equip_voltage_range',
+            CUSTOMER_NOTE: 'custrecord_twc_cus_note',
+            TL_NOTE: 'custrecord_twc_equip_tl_note',
             ASSOCIATED_EQUIP_ACTIONS: 'custrecord_twc_equip_assoc_eq_action',
             TO_BE_BILLED: 'custrecord_twc_equip_to_be_billed',
             BILL_FROM: 'custrecord_twc_equip_bill_from',
@@ -46,21 +55,28 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             INVENTORY_FLAG: 'custrecord_twc_equip_inv_flag',
             FEEDER_COUNT: 'custrecord_twc_equip_feeder_count',
             FEEDERS: 'custrecord_twc_equip_feeders',
+            CREATED: 'created',
+            MODIFIED: 'lastmodified',
+            OWNER: 'owner',
+            MODIFIED_BY: 'lastmodifiedby',
         }
         var _recordFieldInfo = {
+            NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             EQUIPMENT_ID: { name: 'custrecord_twc_equip_id', type: 'text', alias: 'equipmentID', display: 'normal', mandatory: false },
             RADIX_EQUIPMENT_TABLE_ROW: { name: 'custrecord_twc_equip_radix_tbl_row', type: 'integer', alias: 'rADIXEquipmentTableRow', display: 'normal', mandatory: false },
             SITE: { name: 'custrecord_twc_equip_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
             EQ_TYPE: { name: 'custrecord_twc_equip_type', type: 'select', alias: 'eqType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_eqtype' },
             INFRASTRUCTURE: { name: 'custrecord_twc_equip_str', type: 'select', alias: 'infrastructure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
             ACCOMMODATION: { name: 'custrecord_twc_equip_ac', type: 'select', alias: 'accommodation', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
-            LOCATION: { name: 'custrecord_twc_equip_location', type: 'text', alias: 'location', display: 'normal', mandatory: false },
+            LOCATION_NOTES: { name: 'custrecord_twc_equip_location', type: 'text', alias: 'locationNotes', display: 'normal', mandatory: false },
             EQUIPMENT_STATUS: { name: 'custrecord_twc_equip_status', type: 'text', alias: 'equipmentStatus', display: 'normal', mandatory: false },
+            EQUIPMENT_INSTALL_STATUS: { name: 'custrecordtwc_eq_install_status', type: 'select', alias: 'equipmentInstallStatus', display: 'normal', mandatory: false, recordType: 'customlisttwc_eq_install_status' },
+            EQUIPMENT_LICENCE_STATUS: { name: 'custrecord_twc_eq_licence_status', type: 'select', alias: 'equipmentLicenceStatus', display: 'normal', mandatory: false, recordType: 'customlist_twc_eq_licence_status' },
             EQUIPMENT_PROPOSED_STATUS: { name: 'custrecord_twc_equip_prop_sts', type: 'text', alias: 'equipmentProposedStatus', display: 'normal', mandatory: false },
-            CUSTOMER: { name: 'custrecord_twc_equip_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: '-2' },
+            CUSTOMER: { name: 'custrecord_twc_equip_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             PARENT_TME_ID: { name: 'custrecord_twc_equip_parent_tme_id', type: 'text', alias: 'parentTMEID', display: 'normal', mandatory: false },
             USE_LIBRARY: { name: 'custrecord_twc_equip_use_lib', type: 'select', alias: 'useLibrary', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_use_lib' },
-            EQUIPMENT_LIBRARY_ENTRY: { name: 'custrecord_twc_equip_lib_entry', type: 'text', alias: 'equipmentLibraryEntry', display: 'normal', mandatory: false },
+            EQUIPMENT_LIBRARY_ENTRY: { name: 'custrecord_twc_equip_lib_entry', type: 'select', alias: 'equipmentLibraryEntry', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_lib' },
             EQUIPMENT_CLASS: { name: 'custrecord_twc_equip_class', type: 'text', alias: 'equipmentClass', display: 'normal', mandatory: false },
             ACTIVEPASSIVE: { name: 'custrecord_twc_equip_act_passive', type: 'text', alias: 'activePassive', display: 'normal', mandatory: false },
             MAKE: { name: 'custrecord_twc_equip_make', type: 'text', alias: 'make', display: 'normal', mandatory: false },
@@ -70,10 +86,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WIDTH_MM: { name: 'custrecord_twc_equip_width_mm', type: 'integer', alias: 'widthmm', display: 'normal', mandatory: false },
             HEIGHTDEPTH_MM: { name: 'custrecord_twc_equip_ht_depth_mm', type: 'integer', alias: 'heightDepthmm', display: 'normal', mandatory: false },
             WEIGHT_KG: { name: 'custrecord_twc_equip_weight_kg', type: 'float', alias: 'weightkg', display: 'normal', mandatory: false },
-            WIND_LOADING_NM2: { name: 'custrecord_twc_equip_wind_ldg_nm2', type: 'integer', alias: 'windLoadingNm2', display: 'normal', mandatory: false },
-            VOLTAGE_TYPE: { name: 'custrecord_twc_equip_voltage_type', type: 'text', alias: 'voltageType', display: 'normal', mandatory: false },
-            VOLTAGE_RANGE: { name: 'custrecord_twc_equip_voltage_range', type: 'text', alias: 'voltageRange', display: 'normal', mandatory: false },
-            ASSOCIATED_EQUIP_ACTIONS: { name: 'custrecord_twc_equip_assoc_eq_action', type: 'text', alias: 'associatedEQUIP_ACTIONs', display: 'normal', mandatory: false },
+            WIND_LOADING_NM2_FRONT: { name: 'custrecord_twc_equip_wind_ldg_nm2', type: 'integer', alias: 'windLoadingNm2Front', display: 'normal', mandatory: false },
+            WIND_LOADING_NM2_SIDE: { name: 'custrecordtwc_equip_wind_ldg_nm2_side', type: 'integer', alias: 'windLoadingNm2Side', display: 'normal', mandatory: false },
+            WIND_LOADING_NM2_REAR: { name: 'custrecord_twc_equip_wind_ldg_nm2_rear', type: 'integer', alias: 'windLoadingNm2Rear', display: 'normal', mandatory: false },
+            WIND_LOADING_NM2_MAX: { name: 'custrecord_twc_equip_wind_ldg_nm2_max', type: 'integer', alias: 'windLoadingNm2Max', display: 'normal', mandatory: false },
+            WIND_REGIME: { name: 'custrecord_twc_equip_wind_regime', type: 'select', alias: 'windRegime', display: 'normal', mandatory: false, recordType: 'customlist_twc_equip_wind_regime' },
+            VOLTAGE_TYPE: { name: 'custrecord_twc_equip_voltage_type', type: 'select', alias: 'voltageType', display: 'normal', mandatory: false, recordType: 'customlist_twc_equip_voltage_type' },
+            VOLTAGE_RANGE: { name: 'custrecord_twc_equip_voltage_range', type: 'select', alias: 'voltageRange', display: 'normal', mandatory: false, recordType: 'customlist_twc_equip_voltage_range' },
+            CUSTOMER_NOTE: { name: 'custrecord_twc_cus_note', type: 'text', alias: 'customerNote', display: 'normal', mandatory: false },
+            TL_NOTE: { name: 'custrecord_twc_equip_tl_note', type: 'text', alias: 'tLNote', display: 'normal', mandatory: false },
+            ASSOCIATED_EQUIP_ACTIONS: { name: 'custrecord_twc_equip_assoc_eq_action', type: 'select', alias: 'associatedEQUIP_ACTIONs', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action' },
             TO_BE_BILLED: { name: 'custrecord_twc_equip_to_be_billed', type: 'checkbox', alias: 'toBeBilled', display: 'normal', mandatory: false },
             BILL_FROM: { name: 'custrecord_twc_equip_bill_from', type: 'date', alias: 'billFrom', display: 'normal', mandatory: false },
             BILL_TO: { name: 'custrecord_twc_equip_bill_to', type: 'date', alias: 'billTo', display: 'normal', mandatory: false },
@@ -88,12 +110,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             INVENTORY_FLAG: { name: 'custrecord_twc_equip_inv_flag', type: 'text', alias: 'inventoryFlag', display: 'normal', mandatory: false },
             FEEDER_COUNT: { name: 'custrecord_twc_equip_feeder_count', type: 'integer', alias: 'feederCount', display: 'normal', mandatory: false },
             FEEDERS: { name: 'custrecord_twc_equip_feeders', type: 'text', alias: 'feeders', display: 'normal', mandatory: false },
+            CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
+            MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
+            OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
+            MODIFIED_BY: { name: 'lastmodifiedby', type: 'select', alias: 'last_modified_by', display: 'inline', recordType: 'employee'}, 
         }
 
         class OSSMTWC_Equipment extends customRec.RecordBase {
             constructor(id, staticLoad) {
                 super(_recordType, _recordFieldInfo, id, staticLoad);
             }
+            get name() {
+                return this.get('name');
+            } set name(value) {
+                this.set('name', value)
+            }
+            
             get equipmentID() {
                 return this.get(_recordFields.EQUIPMENT_ID);
             } set equipmentID(value) {
@@ -134,10 +166,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get accommodationName() { return this.getText(_recordFields.ACCOMMODATION); }
             
-            get location() {
-                return this.get(_recordFields.LOCATION);
-            } set location(value) {
-                this.set(_recordFields.LOCATION, value)
+            get locationNotes() {
+                return this.get(_recordFields.LOCATION_NOTES);
+            } set locationNotes(value) {
+                this.set(_recordFields.LOCATION_NOTES, value)
             }
             
             get equipmentStatus() {
@@ -145,6 +177,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set equipmentStatus(value) {
                 this.set(_recordFields.EQUIPMENT_STATUS, value)
             }
+            
+            get equipmentInstallStatus() {
+                return this.get(_recordFields.EQUIPMENT_INSTALL_STATUS);
+            } set equipmentInstallStatus(value) {
+                this.set(_recordFields.EQUIPMENT_INSTALL_STATUS, value)
+            }
+            get equipmentInstallStatusName() { return this.getText(_recordFields.EQUIPMENT_INSTALL_STATUS); }
+            
+            get equipmentLicenceStatus() {
+                return this.get(_recordFields.EQUIPMENT_LICENCE_STATUS);
+            } set equipmentLicenceStatus(value) {
+                this.set(_recordFields.EQUIPMENT_LICENCE_STATUS, value)
+            }
+            get equipmentLicenceStatusName() { return this.getText(_recordFields.EQUIPMENT_LICENCE_STATUS); }
             
             get equipmentProposedStatus() {
                 return this.get(_recordFields.EQUIPMENT_PROPOSED_STATUS);
@@ -177,6 +223,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set equipmentLibraryEntry(value) {
                 this.set(_recordFields.EQUIPMENT_LIBRARY_ENTRY, value)
             }
+            get equipmentLibraryEntryName() { return this.getText(_recordFields.EQUIPMENT_LIBRARY_ENTRY); }
             
             get equipmentClass() {
                 return this.get(_recordFields.EQUIPMENT_CLASS);
@@ -232,22 +279,61 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.WEIGHT_KG, value)
             }
             
-            get windLoadingNm2() {
-                return this.get(_recordFields.WIND_LOADING_NM2);
-            } set windLoadingNm2(value) {
-                this.set(_recordFields.WIND_LOADING_NM2, value)
+            get windLoadingNm2Front() {
+                return this.get(_recordFields.WIND_LOADING_NM2_FRONT);
+            } set windLoadingNm2Front(value) {
+                this.set(_recordFields.WIND_LOADING_NM2_FRONT, value)
             }
+            
+            get windLoadingNm2Side() {
+                return this.get(_recordFields.WIND_LOADING_NM2_SIDE);
+            } set windLoadingNm2Side(value) {
+                this.set(_recordFields.WIND_LOADING_NM2_SIDE, value)
+            }
+            
+            get windLoadingNm2Rear() {
+                return this.get(_recordFields.WIND_LOADING_NM2_REAR);
+            } set windLoadingNm2Rear(value) {
+                this.set(_recordFields.WIND_LOADING_NM2_REAR, value)
+            }
+            
+            get windLoadingNm2Max() {
+                return this.get(_recordFields.WIND_LOADING_NM2_MAX);
+            } set windLoadingNm2Max(value) {
+                this.set(_recordFields.WIND_LOADING_NM2_MAX, value)
+            }
+            
+            get windRegime() {
+                return this.get(_recordFields.WIND_REGIME);
+            } set windRegime(value) {
+                this.set(_recordFields.WIND_REGIME, value)
+            }
+            get windRegimeName() { return this.getText(_recordFields.WIND_REGIME); }
             
             get voltageType() {
                 return this.get(_recordFields.VOLTAGE_TYPE);
             } set voltageType(value) {
                 this.set(_recordFields.VOLTAGE_TYPE, value)
             }
+            get voltageTypeName() { return this.getText(_recordFields.VOLTAGE_TYPE); }
             
             get voltageRange() {
                 return this.get(_recordFields.VOLTAGE_RANGE);
             } set voltageRange(value) {
                 this.set(_recordFields.VOLTAGE_RANGE, value)
+            }
+            get voltageRangeName() { return this.getText(_recordFields.VOLTAGE_RANGE); }
+            
+            get customerNote() {
+                return this.get(_recordFields.CUSTOMER_NOTE);
+            } set customerNote(value) {
+                this.set(_recordFields.CUSTOMER_NOTE, value)
+            }
+            
+            get tLNote() {
+                return this.get(_recordFields.TL_NOTE);
+            } set tLNote(value) {
+                this.set(_recordFields.TL_NOTE, value)
             }
             
             get associatedEQUIP_ACTIONs() {
@@ -255,6 +341,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set associatedEQUIP_ACTIONs(value) {
                 this.set(_recordFields.ASSOCIATED_EQUIP_ACTIONS, value)
             }
+            get associatedEQUIP_ACTIONsName() { return this.getText(_recordFields.ASSOCIATED_EQUIP_ACTIONS); }
             
             get toBeBilled() {
                 return this.get(_recordFields.TO_BE_BILLED);
@@ -340,11 +427,36 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.FEEDERS, value)
             }
             
+            get created() {
+                return this.get(_recordFields.CREATED);
+            } set created(value) {
+                this.set(_recordFields.CREATED, value)
+            }
+            
+            get last_modified() {
+                return this.get(_recordFields.MODIFIED);
+            } set last_modified(value) {
+                this.set(_recordFields.MODIFIED, value)
+            }
+            
+            get created_by() {
+                return this.get(_recordFields.OWNER);
+            } set created_by(value) {
+                this.set(_recordFields.OWNER, value)
+            }
+            
+            get last_modified_by() {
+                return this.get(_recordFields.MODIFIED_BY);
+            } set last_modified_by(value) {
+                this.set(_recordFields.MODIFIED_BY, value)
+            }
+            
         }
 
         return {
             Type: _recordType,
             Fields: _recordFields,
+            FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_Equipment,
 
             get: function (id) {

@@ -54,7 +54,7 @@ define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bund
                     readOnly = true;
                 }
 
-                var fieldGroups = twcInventoryUtils.getInvInfoPanels(pageData.inventoryInfo, pageData.userInfo);
+                var fieldGroups = twcInventoryUtils.getInvInfoPanels(pageData.siteInfo.site, pageData.userInfo);
                 html = html.replaceAll('{SITE_REQUEST_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
                 if (canSubmit) {
                     html = html.replaceAll('<div id="custom-actions"></div>', `
