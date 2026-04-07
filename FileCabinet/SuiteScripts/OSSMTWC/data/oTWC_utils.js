@@ -329,6 +329,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             New: { color: 'white', backgroundColor: 'silver' },
             Assessed: { color: 'white', backgroundColor: 'orange' },
             Resolved: { color: 'white', backgroundColor: 'green' },
+            Cancelled: { color: 'white', backgroundColor: 'yellow' },
         }
         function getTktStatusName(tktStatusNumber, asObject) {
             if (!tktStatusNumber) { tktStatusNumber = 1; }
@@ -638,6 +639,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var fileIds = options['custrecord_twc_saf_method_statement'] || '';
             if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
             fileIds += options['custrecord_twc_saf_health_safety'];
+            return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})`, 'customrecord_twc_file': FILE_STATUS.Approved } } })
+        }
+
+          function getTktResolutionFiles(options) {
+            var fileIds = options['custrecord_twc_trbl_tkt_res_files'] || '';
+            // if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
+            // fileIds += options['custrecord_twc_saf_health_safety'];
+             if (!fileIds || !fileIds.trim()) {
+                fileIds = '0'; 
+            }
             return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})`, 'customrecord_twc_file': FILE_STATUS.Approved } } })
         }
 
@@ -1098,6 +1109,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafCrew: getSafCrew,
             getSafImages: getSafImages,
             getSafContractorFiles: getSafContractorFiles,
+            getTktResolutionFiles: getTktResolutionFiles,
             getProfiles: getProfiles,
             getCompanies: getCompanies,
             getCustomers: getCustomers,

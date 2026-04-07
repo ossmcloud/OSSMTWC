@@ -169,6 +169,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.find('#resolve-button').on('click', async (e) => {
                     await this.resolveTicket(recId);
                 });
+                 this.ui.find('#cancel-ticket-button').on('click', async (e) => {
+                    await this.cancelTicket(recId);
+                });
+                this.ui.getControl('upload-resolution-photo')?.on('click', e => { 
+                    console.log("'Uplaod button clicked")
+                    this.uploadPhotos(); 
+                })
+
 
             }
 
@@ -183,6 +191,129 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
+            async cancelTicket(recId) {
+                try {
+                    await dialog.confirmAsync('Are you sure you want to cancel this ticket?')
+                    await this.post({ action: 'cancel-tkt-status' }, recId);
+                    location.reload();
+
+                } catch (error) {
+                    dialog.error(error);
+                }
+            }
+
+
+            uploadPhotos() {
+
+                var html = jQuery(`
+                    <div>
+                        ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, id: 'upload-photo-button', value: 'Upload Photo' })}
+                        ${twcUI.render({ type: twcUI.CTRL_TYPE.FILE, id: 'upload-photo', accept: '.jpg, .jpeg, .png', hide: true })}
+                        <div id="upload-photo-list" class="twc-div-table-r">
+                        </div>
+                    </div>
+                `)
+
+                var photos = [];
+                var photoList = html.find('#upload-photo-list');
+
+                var form = twcUI.init({}, html);
+                form.getControl('upload-photo-button').on('click', e => {
+                    form.getControl('upload-photo').input.click()
+                })
+
+                form.getControl('upload-photo').on('change', e => {
+                    e.target.readFile(file => {
+                        console.log("file",file);
+                        photos.push(file);
+
+                        var photoListItem = jQuery(`
+                            <div>
+                                <div class="photo-upload-status" style="width: 35px;"></div>
+                                <div style="width: 250px; white-space: nowrap;">${file.name}</div>
+                                <div>
+                                    ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, id: 'upload-photo-' + photos.length, width: '100%', hint: 'enter some notes if required' })}
+                                </div>
+                                <div class="twc-clickable" style="width: 35px; text-align: center;">${twcIcons.get('trash', 20, 'red')}</div>
+                            </div>
+                        `);
+                        photoListItem.find('.twc-clickable').click(e => {
+                            photoListItem.remove();
+                            file.deleted = true;
+                        })
+                        photoListItem.find('input').change(e => {
+                            file.notes = jQuery(e.currentTarget).val().trim();
+                        })
+
+                        console.log('Photolist',photoListItem)
+                        photoList.append(photoListItem);
+                    })
+                })
+
+                dialog.open({
+                    title: 'Upload Resolution Photos',
+                    content: form.ui,
+                    size: { width: '1000px', height: '500px' },
+                    ok: (dlg) => {
+                        console.log('pic',photos);
+
+                        this.uploadPhoto(photoList, photos, 0, () => {
+                            var errors = photos.filter(p => { return p.error !== undefined; })
+                            if (errors.length > 0) {
+                                var errorHtml = '';
+                                core.array.each(errors, e => { errorHtml += `<b>${e.name}</b>: ${e.error.error}<hr />`; });
+                                dialog.error(errorHtml, () => { location.reload(); });
+                                return;
+                            }
+
+                           // this.postSync({ action: 'edit-saf-status' }, { saf: this.data.siteAccessInfo.id, status: twcSaf.Status.PhotosReceived });
+
+                            dlg.close();
+                            location.reload();
+                        });
+
+
+                        return false;
+                    }
+                });
+
+            }
+
+            uploadPhoto(photoList, photos, idx, callback) {
+                console.log('Photolist in upload',photoList)
+                console.log('photos in upload',photos)
+
+                if (photos[idx] === undefined) {
+                    callback();
+                    return;
+                }
+
+                var photoListItem = photoList.find('.photo-upload-status').eq(idx);
+                photoListItem.html(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 16)}</span>`);
+
+                if (photos[idx].deleted) {
+                    this.uploadPhoto(photoList, photos, idx + 1, callback);
+                    return;
+                }
+  console.log('this.data.data.ticketInfo.id',this.data.trblTktInfo.id)
+                this.post({ action: 'upload-tkt-photo' }, { tkt: this.data.trblTktInfo.id, photo: photos[idx] }).then(resp => {
+                    if (resp.error) {
+                        photoListItem.html(twcIcons.get('exclamation', 16, 'red'));
+                        photos[idx].error = resp;
+                    } else {
+                        photoListItem.html(twcIcons.get('shieldCheck', 16, 'lime'));
+                    }
+
+                    this.uploadPhoto(photoList, photos, idx + 1, callback);
+
+
+                }).catch(err => {
+                    photoListItem.html(twcIcons.get('exclamation', 16, 'red'));
+                    photos[idx].error = err;
+                    this.uploadPhoto(photoList, photos, idx + 1, callback);
+                });
+            }
+
 
 
             async onSave() {
@@ -192,6 +323,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (!this.dirty) { throw new Error('The record has not changed'); }
 
                     var payload = this.#changes;
+                    payload.id = window.twc.page.data.recId
 
                     await this.post({ action: 'save' }, payload);
                     this.dirty = false;

@@ -144,6 +144,27 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroup;
         }
 
+     function getTKPanelFiles(dataSource, userInfo) {
+            var fieldGroup = { id: 'trbl-tkts-workflow-files', title: 'Resolution Files', collapsed: false, controls: [] };
+            var resolutionFilesInfo = { id: 'trbl-tkts-files', collapsed: false, fields: [] };
+            fieldGroup.controls.push(resolutionFilesInfo);
+            resolutionFilesInfo.fields.push({
+                id: `${twcFile.Type}`, label: 'Resolution Files',
+                fields: {
+                    [twcFile.Fields.CREATED]: 'Uploaded Date',
+                    [twcFile.Fields.NAME]: 'File Name',
+                    [twcFile.Fields.R_TYPE + '_name']: 'Type',
+                    [twcFile.Fields.DESCRIPTION]: { title: 'Description', nullText: '' },
+                    ['preview_link']: { title: '', noFilter: true, styles: { width: '50px' } }
+                },
+                dataSource: twcUtils.getTktResolutionFiles(dataSource),
+                FieldsInfo: twcFile.FieldsInfo,
+                showToolbar: false,
+            });
+            configUIFields.formatPanelFields(dataSource, fieldGroup);
+            return fieldGroup;
+        }
+
 
         function getTKTUIPanels(dataSource, userInfo) {
             if (!dataSource) { dataSource = {}; }
@@ -161,6 +182,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (userInfo.isEmployee) {
                 fieldGroups.push(getTKPanelAssessment(dataSource, userInfo));
                 fieldGroups.push(getTKPanelResolution(dataSource, userInfo));
+                fieldGroups.push(getTKPanelFiles(dataSource, userInfo));
+
             }
 
             if (!dataSource.id) { fieldGroups.push(getTKPanelSubmit(dataSource)) }
