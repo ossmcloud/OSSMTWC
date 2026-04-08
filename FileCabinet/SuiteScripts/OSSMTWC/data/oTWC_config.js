@@ -36,7 +36,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             if (userInfo.type != 'Employee') {
                 if (!userInfo.companyProfile) {
-                    throw new Error('Your user is not associated to any company profile, please contact TWC administrator to set you up.')
+                    throw new Error(`Your user [${userInfo.id}] is not associated to any company profile, please contact TWC administrator to set you up.`)
                 }
 
                 userInfo.companyProfile.isVendor = userInfo.companyProfile.is_vendor == 'T';
@@ -95,14 +95,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
-        function getUserAllowedCustomers(userInfo) {
+        function getUserAllowedCustomers(userInfo, returnIdArray) {
             var allowedCustomers = 'all';
             if (userInfo.companyProfile?.isVendor) {
-                allowedCustomers = coreSQL.run(`select custrecord_twc_acl_cust as cust from customrecord_twc_acl where custrecord_twc_acl_cont = ${userInfo.companyProfile.id}`);
+                allowedCustomers = coreSQL.run(`select custrecord_twc_acl_cust as cust from customrecord_twc_acl where isinactive='F' and custrecord_twc_acl_cont = ${userInfo.companyProfile.id}`);
                 allowedCustomers.push({ cust: userInfo.companyProfile.id })
             } else if (userInfo.companyProfile?.isCustomer) {
                 allowedCustomers = [];
                 allowedCustomers.push({ cust: userInfo.companyProfile.id })
+            }
+            if (allowedCustomers != 'all' && returnIdArray) {
+                var ids = [];
+                core.array.each(allowedCustomers, c => { ids.push(c.cust); })
+                return ids;
             }
             return allowedCustomers;
         }

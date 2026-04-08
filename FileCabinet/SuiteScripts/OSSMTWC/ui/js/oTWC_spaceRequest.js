@@ -59,8 +59,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
                     id: 'omt_site_srf',
                     unboundCols: unboundCols,
-                    // fitScreen: false,
-                    // fitContainer: true
                 });
             }
 

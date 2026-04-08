@@ -44,7 +44,7 @@ define(['N/redirect', 'N/url', 'N/record', 'SuiteBundles/Bundle 548734/O/core.js
                 }
 
 
-                html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_spaceRequest');
+                html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_inventory');
                 log.debug('pageDataaaaa', JSON.stringify(pageData.inventoryInfo))
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
 
@@ -62,7 +62,7 @@ define(['N/redirect', 'N/url', 'N/record', 'SuiteBundles/Bundle 548734/O/core.js
                 }
 
             } else {
-                pageData.data.inventoryInfo = twcInventoryUtils.getInventoryData();
+                pageData.data.inventoryInfo = twcInventoryUtils.getInventoryData(null, pageData.userInfo);
                 log.debug("ticketInfo", pageData.data.ticketInfo)
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
                 html = html.replace('{SITE_LOCATOR_PANEL}', twcInventoryUtils.renderInventoryPanel(pageData.userInfo, pageData.permission.featureId));

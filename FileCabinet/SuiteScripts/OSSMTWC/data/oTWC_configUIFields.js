@@ -79,11 +79,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                     var columns = [];
                     for (var k in field.fields) {
-
                         var f = getDataFieldInfo(field, k);
-                        
+                       
                         var columnOptions = { id: (f) ? f.name.toLowerCase() : k.toLowerCase() }
-                        if (f?.type == 'select') { columnOptions.id += '_name' };
+                        if (f?.type == 'select') {
+                            columnOptions.id += '_name'
+                        } else if (f?.type == 'integer') {
+                            columnOptions.type = 'int';
+                        } else if (f?.type == 'datetimetz' || f?.type == 'date') {
+                            columnOptions.type = 'date';
+                        };
                         if (field.fields[k].constructor.name == 'Object') {
                             for (var ok in field.fields[k]) {
                                 columnOptions[ok] = field.fields[k][ok]
@@ -92,29 +97,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             columnOptions.title = field.fields[k];
                         }
                         columns.push(columnOptions);
-
-
-
-                        // var title = field.fields[k]; var link = undefined; var styles = undefined;
-                        // if (title.title) {
-                        //     link = title.link || null;
-                        //     styles = title.styles || undefined;;
-                        //     title = title.title;
-
-                        // }
-
-                        // if (f) {
-                        //     columns.push({ id: f.name.toLowerCase(), title: title, link: link, styles: styles })
-                        //     if (f.type == 'select') { columns.push({ id: f.name.toLowerCase() + '_name', title: title, link: link, styles: styles }); }
-                        // } else {
-                        //     columns.push({ id: k.toLowerCase(), title: title, link: link, styles: styles })
-                        // }
                     }
-
-                   
-                    //if (field.id == "customrecord_twc_prof"){throw new Error(JSON.stringify(columns))}
-
-
 
                     var control = {
                         label: field.label,
@@ -137,17 +120,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             if (field.onColumnInit) { return field.onColumnInit(tbl, col); }
                         }
                     }
-
-                    //throw new Error(JSON.stringify( control.dataSource[0]))
-
-                    // Replace nulls with "-"
-                    control.dataSource = control.dataSource.map(item => {
-                        const newItem = {};
-                        for (let key in item) {
-                            newItem[key] = item[key] === null ? '-' : item[key];
-                        }
-                        return newItem;
-                    });
 
                     panelFields.controls.push(control);
                     return;

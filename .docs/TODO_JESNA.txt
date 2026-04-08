@@ -3,6 +3,11 @@ TODO:
 -----
 
 
+Field:
+    custrecord_twc_trbl_tkt_res_files => this is not required, the resolution files are in a related table
+
+
+
 SAVE:   
     check FileCabinet\SuiteScripts\OSSMTWC\ui\modules\oTWC_siteInfoUtils.js =>saveSiteInfo
 

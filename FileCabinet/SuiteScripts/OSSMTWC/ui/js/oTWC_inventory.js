@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'N/record', 'N/url', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_config.js', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', '../../data/oTWC_site.js', './oTWC_siteInfoPanel.js'],
-    (core, coreSql, record, url, twcPageBase, dialog, twcConfig, uiTable, twcSiteLocatorPanel, twcSite, twcSiteInfoPanel) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'N/record', 'N/url', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_config.js', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', '../../data/oTWC_site.js', './oTWC_siteInfoPanel.js', '../../data/oTWC_equipment.js'],
+    (core, coreSql, record, url, twcPageBase, dialog, twcConfig, uiTable, twcSiteLocatorPanel, twcSite, twcSiteInfoPanel, twcInventory) => {
 
         class TWCSiteTable {
             #page = null;
@@ -20,7 +20,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     noSort: true,
                     sortIdx: 999,
                     initValue: (d) => {
-                        console.log('site id for link', `<a href="${safLink}&siteId=${d.id}">view</a>`);
+                        //console.log('site id for link', `<a href="${safLink}&siteId=${d.id}">view</a>`);
                         return `<a href="${safLink}&siteId=${d.id}">view</a>`;
                     }
                 })
@@ -28,8 +28,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
                     id: 'omt_sites',
                     unboundCols: unboundCols,
-                    fitScreen: false,
-                    fitContainer: true
+                    
                 });
                 console.log('unboundCols', unboundCols)
                 console.log('twc site table', this.#table)
@@ -47,24 +46,39 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             colInit(tbl, col) {
                 if (col.id == 'id') { return false; }
                 if (col.id == 'record_id') { return false; }
+                if (col.id == 'site_id') { return false; }
                 if (col.id == 'name') { return false; }
-                console.log('col init', col.id)
-
+                
                 var uf = window.twc.page.data.data.inventoryInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
-                console.log('uf', uf)
                 if (uf) {
-                    col.title = uf.label;
+                    if (uf.label) { col.title = uf.label; }
                     if (uf.listRecord && !col.id.endsWith('_text')) { return false; }
+                    col.type = uf.type?.toLowerCase() || '';
                 }
 
-                if (col.id == twcSite.Fields.SITE_NAME || col.id == twcSite.Fields.SITE_ID) {
-                    col.addCount = col.id == twcSite.Fields.SITE_NAME;
+                if (col.id == 'site_id_text') {
+                    col.title = 'Site';
                     col.link = {
-                        url: core.url.script('otwc_siteinfo_sl') + '&recId=${id}',
-                        valueField: 'id'
+                        url: core.url.script('otwc_siteinfo_sl') + '&recId=${site_id}',
+                        valueField: 'site_id'
                     }
                 }
-                if (col.id == twcSite.Fields.LATITUDE || col.id == twcSite.Fields.LONGITUDE) { col.styles = { 'text-align': 'right' }; }
+
+                if (col.id == 'infra_id') {
+                    col.sortIdx = 51;
+                    col.title = 'Infra. ID';
+                }
+                if (col.id == 'infra_type') {
+                    col.sortIdx = 52;
+                    col.title = 'Infrastructure';
+                }
+                if (col.id == 'infra_str_type') {
+                    col.sortIdx = 53;
+                    col.title = 'Infra. Type';
+                }
+                
+                if (col.id == twcInventory.Fields.EQUIPMENT_ID) { col.addCount = true; }
+                
             }
 
             refresh(data) {
@@ -91,25 +105,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.initInventoryMode();
                     this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
                 } else {
-                    console.log('init inventory page', this.data)
-                    console.log("TESTTTTT", window.twc.page.data)
                     this.#sitesTable = new TWCSiteTable(this);
-                    console.log('inventory page data', window.twc.page.data)
-                    console.log('thissssssssssssss', this)
-                    // this.#sitePanel = twcSiteLocatorPanel.get(
-                    //     {
-                    //         page: this,
-                    //         table: this.#sitesTable,
-                    //         data: window.twc.page.data.data.inventoryInfo.sites,
-                    //     }
-                    // );
                     this.#sitePanel = twcSiteLocatorPanel.get({
                         page: this,
                         table: this.#sitesTable,
                         data: window.twc.page.data.data.inventoryInfo.sites,
                         tableData: window.twc.page.data.data.inventoryInfo.inventoryDetails
                     });
-                    console.log('site locator panel', this.#sitePanel)
                 }
             }
             initInventoryMode(recId) {

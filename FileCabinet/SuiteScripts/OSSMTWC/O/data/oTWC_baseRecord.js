@@ -337,14 +337,36 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (Array.isArray(options.where)) {
                             core.array.each(options.where, filter => {
                                 var field = this.findField(filter.field);
-                                sql += `\nand     ${field.name} ${filter.op || filter.operator || '='} ?`
-                                params.push(filter.values);
+                                var placeholders = '?';
+                                if (Array.isArray(filter.values)) {
+                                    placeholders = filter.values.map(() => '?').join(', ');
+                                    placeholders = `(${placeholders})`;
+                                    params.push(...filter.values);
+                                } else {
+                                    params.push(filter.values);
+                                }
+
+                                sql += `\nand     ${field.name} ${filter.op || filter.operator || '='} ${placeholders}`
+                                
                             })
                         } else {
                             for (var f in options.where) {
                                 var field = this.findField(f);
-                                sql += `\nand     ${field.name} = ?`
-                                params.push(options.where[f]);
+                                if (options.where[f].constructor.name == 'Object') {
+                                    var placeholders = '?';
+                                    if (Array.isArray(options.where[f].values)) {
+                                        placeholders = options.where[f].values.map(() => '?').join(', ');
+                                        placeholders = `(${placeholders})`;
+                                        params.push(...options.where[f].values);   
+                                    } else {
+                                        params.push(options.where[f].values);   
+                                    }
+                                    sql += `\nand     ${field.name} ${options.where[f].op || options.where[f].operator || '='} ${placeholders}`
+                                    
+                                } else {
+                                    sql += `\nand     ${field.name} = ?`
+                                    params.push(options.where[f]);
+                                }
                             }
                         }
                     }
@@ -377,7 +399,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var sql = { query: sql, params: params }
                 if (options?.getSql) { return sql; }
 
-                //throw new Error(sql.query)
+               //throw new Error(JSON.stringify( sql.query))
 
                 if (options?.returnFirst) { return coreSql.first(sql); }
                 return coreSql.run(sql);

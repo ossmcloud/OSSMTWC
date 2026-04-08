@@ -67,7 +67,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 html = html.replaceAll('{TROUBLE_TICKET_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
 
                 // @@NOTE: in edit mode we only want to see the 'edit/cancel' buttons
-                if (pageData.editMode) { actions = ''; }
+                // if (pageData.editMode) { actions = ''; }
+                if (pageData.editMode) {
+                    actions = '';
+                    actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Upload Resolution Photos', id: 'upload-resolution-photo' });
+
+                }
 
                 if (actions) { html = html.replaceAll('<div id="custom-actions"></div>', `<div id="custom-actions">${actions}</div>`); }
 
@@ -107,7 +112,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             }
             else if (context.request.parameters.action == 'upload-tkt-photo') {
-                   log.debug("Image det", JSON.parse(context.request.body))
+                log.debug("Image det", JSON.parse(context.request.body))
                 twcTroubleTicketUtils.saveTktImage(JSON.parse(context.request.body));
                 return { status: 'success' };
 

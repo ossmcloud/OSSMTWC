@@ -14,7 +14,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             AUTHOR: 'custrecord_twc_trbl_tkt_author',
             AUTHOR_PHONE_NUMBER: 'custrecord_twc_trbl_tkt_author_ph_no',
             REPORT_ISSUE__WORKS_REQUIRED: 'custrecord_twc_trbl_tkt_issue_works',
-            PHOTOS_TAKEN: 'custrecord_twc_trbl_tkt_photos_tkn',
             ASSESSED_BY: 'custrecord_twc_trbl_tkt_assessed_by',
             ASSESSED: 'custrecord_twc_trbl_tkt_assessed',
             CATEGORY: 'custrecord_twc_trbl_tkt_category',
@@ -31,6 +30,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
             MODIFIED_BY: 'lastmodifiedby',
+            RESOLUTION_FILES: 'custrecord_twc_trbl_tkt_res_files',
+
         }
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
@@ -41,7 +42,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             AUTHOR: { name: 'custrecord_twc_trbl_tkt_author', type: 'text', alias: 'author', display: 'normal', mandatory: false },
             AUTHOR_PHONE_NUMBER: { name: 'custrecord_twc_trbl_tkt_author_ph_no', type: 'text', alias: 'authorPhoneNumber', display: 'normal', mandatory: false },
             REPORT_ISSUE__WORKS_REQUIRED: { name: 'custrecord_twc_trbl_tkt_issue_works', type: 'clobtext', alias: 'reportIssueWorksRequired', display: 'normal', mandatory: false },
-            PHOTOS_TAKEN: { name: 'custrecord_twc_trbl_tkt_photos_tkn', type: 'select', alias: 'photosTaken', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
             ASSESSED_BY: { name: 'custrecord_twc_trbl_tkt_assessed_by', type: 'select', alias: 'assessedby', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             ASSESSED: { name: 'custrecord_twc_trbl_tkt_assessed', type: 'date', alias: 'assessed', display: 'normal', mandatory: false },
             CATEGORY: { name: 'custrecord_twc_trbl_tkt_category', type: 'select', alias: 'category', display: 'normal', mandatory: false, recordType: 'customrecord_twc_trbl_tkt_category' },
@@ -53,7 +53,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CORRECTIVE_ACTION: { name: 'custrecord_twc_trbl_tkt_corrective_act', type: 'date', alias: 'correctiveAction', display: 'normal', mandatory: false },
             SCHEDULED_COMPLETION_DATE: { name: 'custrecord_twc_trbl_tkt_sch_compltn_date', type: 'date', alias: 'scheduledCompletionDate', display: 'normal', mandatory: false },
             CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE: { name: 'custrecord_twc_trbl_tkt_cor_act_tkn_root', type: 'clobtext', alias: 'correctiveActionTakeninclRootCause', display: 'normal', mandatory: false },
-            RESOLUTION_PHOTOS_TAKEN: { name: 'custrecord_twc_trbl_tkt_resltn_photo_tkn', type: 'select', alias: 'resolutionPhotosTaken', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
+            RESOLUTION_FILES: { name: 'custrecord_twc_trbl_tkt_res_files', type: 'multiselect', alias: 'resolutionFiles', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file,' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -223,6 +223,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set last_modified_by(value) {
                 this.set(_recordFields.MODIFIED_BY, value)
             }
+
+            get resolutionFiles() {
+                return this.get(_recordFields.RESOLUTION_FILES);
+            } set resolutionFiles(value) {
+                this.set(_recordFields.RESOLUTION_FILES, value)
+            }
+            get resolutionFilesName() { return this.getText(_recordFields.RESOLUTION_FILES); }
             
         }
 

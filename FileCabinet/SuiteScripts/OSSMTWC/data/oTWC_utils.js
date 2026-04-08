@@ -1074,12 +1074,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafStatusStyle: getSafStatusStyle,
             getSafStatusHtml: getSafStatusHtml,
 
-            invStatus: INV_STATUS,
-            getInvStatusName: getInvStatusName,
-            getInvStatusStyle: getInvStatusStyle,
-            getInvStatusHtml: getInvStatusHtml,
-            getInvPriorityHtml: getInvPriorityHtml,
-
             tktStatus: TKT_STATUS,
             getTktStatusName: getTktStatusName,
             getTktStatusStyle: getTktStatusStyle,

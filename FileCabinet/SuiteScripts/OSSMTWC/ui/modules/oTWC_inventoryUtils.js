@@ -54,10 +54,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             html = html.replace('{FILTER_SAF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Equipment ID', width: 'calc(25% - 2px)', multiSelect: true, id: twcSaf.Fields.SAF_ID, noEmpty: true, dataSource: twcUtils.getSafIds() })); // @@Note Free form field, filter not working
             html = html.replace('{FILTER_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Status', width: 'calc(25% - 2px)', multiSelect: true, id: twcSaf.Fields.STATUS, noEmpty: true, dataSource: twcUtils.getSafStatus() }));
             html = html.replace('{FILTER_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Type', width: '50%', multiSelect: true, id: twcSaf.Fields.TYPE, noEmpty: true, dataSource: twcUtils.getSafTypes() }));
-            html = html.replace('{FILTER_CUSTOMER}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Customer', width: '50%', multiSelect: true, id: twcSaf.Fields.CUSTOMER, noEmpty: true, dataSource: twcUtils.getCustomers(userInfo), noAutoSelect:true }));
+            html = html.replace('{FILTER_CUSTOMER}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Customer', width: '50%', multiSelect: true, id: twcSaf.Fields.CUSTOMER, noEmpty: true, dataSource: twcUtils.getCustomers(userInfo), noAutoSelect: true }));
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: '50%', multiSelect: true, id: twcSaf.Fields.COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
             html = html.replace('{FILTER_REGION}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Region', width: '50%', multiSelect: true, id: twcSaf.Fields.REGION, noEmpty: true, dataSource: twcUtils.getRegions() }));
-            
+
             html = html.replace('{FILTER_LAT}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Latitude', id: 'twc-coord-latitude', width: '250px' }));
             html = html.replace('{FILTER_LNG}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Longitude', id: 'twc-coord-longitude', width: '250px' }));
             html = html.replace('{FILTER_RADIUS}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Radius (Km)', id: 'twc-coord-radius', value: 5, width: '75px', min: 5, max: 300 }));
@@ -67,42 +67,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getInventoryData(options, userInfo) {
             const inventoryFields = twcUtils.getFields(twcEqip.Type);
-            // log.debug("twcInventoryUI", twcInventoryUI)
             const userFields = twcInventoryUI.getInventoryTableFields();
-            // let sqlFields = 'id, BUILTIN.DF(custrecord_twc_equip_site), custrecord_twc_equip_class, custrecord_twc_equip_status, BUILTIN.DF(custrecord_twc_equip_customer), custrecord_twc_equip_description, custrecord_twc_equip_length_mm, custrecord_twc_equip_width_mm, custrecord_twc_equip_ht_depth_mm, custrecord_twc_equip_ht_on_twr_m, custrecord_twc_equip_voltage_type, custrecord_twc_equip_azimuth, custrecord_twc_equip_b_end, custrecord_twc_equip_inv_flag, custrecord_twc_equip_feeder_count, custrecord_twc_equip_location'
-            // sqlFields += formatUserFields(srfFields, window.twc.page.data.data.equipmentInfo.userFields);
-            // BUILTIN.DF(custrecord_twc_equip_site), BUILTIN.DF(custrecord_twc_equip_customer), 
-            // const sqlQuery = `
-            //     SELECT 
-            //         id,
-            //         custrecord_twc_equip_site as site_id,
-            //         custrecord_twc_equip_class as equipment_class,
-            //         custrecord_twc_equip_status as equipment_status,
-            //         custrecord_twc_equip_description, 
-            //         custrecord_twc_equip_length_mm, 
-            //         custrecord_twc_equip_width_mm, 
-            //         custrecord_twc_equip_ht_depth_mm, 
-            //         custrecord_twc_equip_ht_on_twr_m, 
-            //         custrecord_twc_equip_voltage_type, 
-            //         custrecord_twc_equip_azimuth, 
-            //         custrecord_twc_equip_b_end, 
-            //         custrecord_twc_equip_inv_flag, 
-            //         custrecord_twc_equip_feeder_count, 
-            //         custrecord_twc_equip_location 
-            //         FROM 
-            //             customrecord_twc_equip;
-            //     `;
-            // const inventoryDetails = coreSQL.run(sqlQuery);
-
             var sqlFields = 's.id, s.id as record_id, s.custrecord_twc_equip_site as site_id, BUILTIN.DF(s.custrecord_twc_equip_site) as site_id_text';
             sqlFields += formatUserFields(inventoryFields, userFields);
+
             // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcInventory.Fields.EQUIPMENT_ID}`;
-            // throw new Error(orderBy)  join    ${twcSite.Type} site on site.id = ${twcInventory.Fields.SITE}
+
+            var allowedCustomers = twcConfig.getUserAllowedCustomers(userInfo, true);
+            if (allowedCustomers != 'all') {
+                whereClause += `and ${twcInventory.Fields.CUSTOMER} in (${allowedCustomers.join(',')})`;
+            } 
+
             var inventoryDetails = coreSQL.run(`
-                select  ${sqlFields}
+                select  ${sqlFields}, BUILTIN.DF(i.custrecord_twc_infra_type) as infra_type, BUILTIN.DF(i.custrecord_twc_infra_str_type) as infra_str_type, i.custrecord_twc_infra_id as infra_id
                 from    ${twcInventory.Type} s
+                join    customrecord_twc_infra i on i.id = ${twcInventory.Fields.INFRASTRUCTURE}
                 ${whereClause} 
                 ${orderBy}
             `)
@@ -253,29 +234,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function formatUserFields(fields, userFields) {
             try {
-            var sqlFields = '';
-            core.array.each(userFields, uf => {
-                if (uf.field == 'name' || uf.field == 'custrecord_twc_srf_site') { return; }
-                var nsField = fields.find(nsf => { return nsf.field_id == uf.field });
-                var sqlField = uf.field;
-                uf.type = twcUI.nsTypeToTableColumnType(nsField.field_type);
-                if (nsField.field_type == 'Date') {
-                    sqlFields += `, TO_CHAR(s.${sqlField}, 'yyyy-MM-dd') as ${sqlField}`;
+                var sqlFields = '';
+                core.array.each(userFields, uf => {
+                    if (uf.field == 'name' || uf.field == 'custrecord_twc_srf_site') { return; }
+                    var nsField = fields.find(nsf => { return nsf.field_id == uf.field });
+                    var sqlField = uf.field;
+                    uf.type = twcUI.nsTypeToTableColumnType(nsField.field_type);
+                    if (nsField.field_type == 'Date') {
+                        sqlFields += `, TO_CHAR(s.${sqlField}, 'yyyy-MM-dd') as ${sqlField}`;
 
-                } else if (nsField.field_type == 'DateTimeZ' || nsField.field_type == 'Date/Time') {
-                    sqlFields += `, TO_CHAR(s.${sqlField}, 'yyyy-MM-dd HH24:mm') as ${sqlField}`;
+                    } else if (nsField.field_type == 'DateTimeZ' || nsField.field_type == 'Date/Time') {
+                        sqlFields += `, TO_CHAR(s.${sqlField}, 'yyyy-MM-dd HH24:mm') as ${sqlField}`;
 
-                } else {
-                    if (nsField.field_type == 'List/Record') {
-                        uf.listRecord = true;
-                        sqlField = `${sqlField} as ${sqlField}, BUILTIN.DF(${sqlField}) as ${sqlField}_text`;
+                    } else {
+                        if (nsField.field_type == 'List/Record') {
+                            uf.listRecord = true;
+                            sqlField = `${sqlField} as ${sqlField}, BUILTIN.DF(${sqlField}) as ${sqlField}_text`;
+                        }
+                        sqlFields += `, s.${sqlField}`;
+
                     }
-                    sqlFields += `, s.${sqlField}`;
-
-                }
-                if (!uf.label) { uf.label = nsField.field_label; }
-            })
-            return sqlFields;
+                    if (!uf.label) { uf.label = nsField.field_label; }
+                })
+                return sqlFields;
             } catch (e) {
                 throw new Error(`Error formatting user fields: ${e.message} - ${JSON.stringify(userFields)}`);
             }
