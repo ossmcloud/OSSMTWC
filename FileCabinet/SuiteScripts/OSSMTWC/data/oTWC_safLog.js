@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './persistent/oTWC_safLogPersistent.js', './oTWC_utils.js'],
-    (core, coreSQL, twcSafLog, twcUtils) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './persistent/oTWC_safLogPersistent.js', './oTWC_utils.js'],
+    (runtime, core, coreSQL, twcSafLog, twcUtils) => {
 
         const LOG_TYPE = {
             INFO: 'Info',
@@ -25,6 +25,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (!profile) {
                     if (!_profile) {
                         _profile = coreSQL.first(`select id from customrecord_twc_prof where custrecord_twc_prof_username = ${core.env.user()}`)?.id || null;
+                        if (!_profile) {
+                            // @@NOTE: the logged in user could be a contact of a customer in which case we can only find the profile using the email
+                            var contactId = coreSQL.first({
+                                query: `
+                                    select  id, email, entitytitle as name
+                                    from    entity e
+                                    join    customercompanycontact ce on ce.contactscompany = ?
+                                    where email = ?
+                                `,
+                                params: [
+                                    core.env.user(),
+                                    runtime.getCurrentUser().email
+                                ]
+                            })?.id
+                            if (contactId) {
+                                _profile = coreSQL.first(`select id from customrecord_twc_prof where custrecord_twc_prof_username = ${contactId}`)?.id || null;
+                            }
+                        }
                     }
                     profile = _profile;
                 }

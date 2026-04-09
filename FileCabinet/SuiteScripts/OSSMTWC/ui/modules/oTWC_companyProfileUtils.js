@@ -17,6 +17,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function saveCompanyChildRecord(company, childRecord, options, userInfo) {
             var response = {};
+
+            if (childRecord.delete) {
+                recu.submit(childRecord.type, childRecord.id, 'isinactive', true);
+                return response;
+            }
+
             if (childRecord.type == twcFile.Type) {
                 childRecord.recordType = twcCompany.Type;
                 childRecord.recordID = company.id;
@@ -79,9 +85,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (options.profile) {
                 childRecord = twcProfile.get(options.profile.id);
                 childRecord.copyFromObject(options.profile);
+                childRecord.delete = options.profile.delete;
             } else if (options.document) {
                 childRecord = twcFile.get(options.document.id);
                 childRecord.copyFromObject(options.document);
+                childRecord.delete = options.document.delete;
             } else {
                 throw new Error(`No Child Record Found in payload`)
             }

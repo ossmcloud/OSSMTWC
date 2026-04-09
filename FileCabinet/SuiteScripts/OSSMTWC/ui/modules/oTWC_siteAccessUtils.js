@@ -316,34 +316,39 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             saf.conditionsofAccess = b64.decode(options.conditionsOfAccessHtml);
             saf.worksPhotosReqDelay = payload['saf-photo-delay'] || null;
 
+            var safId = saf.save();
+
             // attachments
             if (payload.documents) {
+                saf = twcSaf.get(safId);
+
                 var docIds = [];
                 for (var d in payload.documents) { if (payload.documents[d]) { docIds.push(d.replace('file_toggle_', '')); } }
 
                 try {
-                    var sql = `
-                        select  f.id, ft.custrecord_twc_file_type_hs as health_safety, ft.custrecord_twc_file_type_method as method_stat, ft.custrecord_twc_file_type_insurance as insurance
-                        from    customrecord_twc_file f
-                        join    customrecord_twc_file_type ft on ft.id = f.custrecord_twc_file_type
-                        where   f.id in (${docIds.join(',')})
-                    `;
+                    if (docIds.length > 0) {
+                        var sql = `
+                            select  f.id, ft.custrecord_twc_file_type_hs as health_safety, ft.custrecord_twc_file_type_method as method_stat, ft.custrecord_twc_file_type_insurance as insurance
+                            from    customrecord_twc_file f
+                            join    customrecord_twc_file_type ft on ft.id = f.custrecord_twc_file_type
+                            where   f.id in (${docIds.join(',')})
+                        `;
 
-                    var health_and_Safety = [];
-                    var methodStatement = [];
-                    coreSQL.each(sql, f => {
-                        if (f.health_safety == 'T') { health_and_Safety.push(f.id); }
-                        if (f.method_stat == 'T') { methodStatement.push(f.id); }
-                    });
-                    saf.health_and_Safety = health_and_Safety;
-                    saf.methodStatement = methodStatement;
-
+                        var health_and_Safety = [];
+                        var methodStatement = [];
+                        coreSQL.each(sql, f => {
+                            if (f.health_safety == 'T') { health_and_Safety.push(f.id); }
+                            if (f.method_stat == 'T') { methodStatement.push(f.id); }
+                        });
+                        saf.health_and_Safety = health_and_Safety;
+                        saf.methodStatement = methodStatement;
+                    }
                 } catch (error) {
                     saf.logEx('Error while attaching files', error);
                 }
             }
 
-            var safId = saf.save();
+            
             if (payload.id) {
                 if (payload.reUse) {
                     saf.logInfo('SAF Reused from: ' + recu.lookUp(twcSaf.Type, payload.id, 'name'));

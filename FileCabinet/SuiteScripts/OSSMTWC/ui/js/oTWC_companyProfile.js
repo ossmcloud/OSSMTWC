@@ -122,7 +122,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 try {
 
                     if (!profile) { profile = {}; }
-                    if (this.deleteRecord(profile, table)) { return; }
+                    if (this.deleteRecord(profile, table)) {
+                        this.postSync({ action: 'save-child-record' }, { company: this.data.profileInfo, profile: profile });
+                        return;
+                    }
 
                     var res = this.postSync({ action: 'child-record' }, { company: this.data.profileInfo, profile: profile })
                     var form = twcUIPanel.ui(res.ui);
@@ -158,7 +161,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         try {
                             var obj = form.getValues(true);
                             for (var k in obj) {
-                                if (k == 'name') { continue; }
+                                if (profile.id && k == 'name') { continue; }
                                 if (obj[k]?.value !== undefined) {
                                     profile[k] = obj[k].value;
                                     profile[k + '_name'] = obj[k].text;
@@ -204,7 +207,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             manageFile(companyFile, table) {
                 try {
                     if (!companyFile) { companyFile = {}; }
-                    if (this.deleteRecord(companyFile, table)) { return; }
+                    if (this.deleteRecord(companyFile, table)) {
+                        this.postSync({ action: 'save-child-record' }, { company: this.data.profileInfo, document: companyFile });
+                        return;
+                    }
 
                     var res = this.postSync({ action: 'child-record' }, { company: this.data.profileInfo, document: companyFile })
                     var form = twcUIPanel.ui(res.ui);
@@ -261,16 +267,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
-            deleteRecord(srfRecord, table) {
-                var deleteRecordCollectionName = table.id == twcFile.Type ? 'files_deleted' : 'profiles_deleted';
-                if (srfRecord.delete) {
-                    if (srfRecord.id) {
-                        if (!this.data.profileInfo[deleteRecordCollectionName]) { this.data.profileInfo[deleteRecordCollectionName] = []; }
-                        this.data.profileInfo[deleteRecordCollectionName].push(srfRecord);
-                    }
-                    table.data.splice(table.data.indexOf(srfRecord), 1);
+            deleteRecord(companyRecord, table) {
+                if (companyRecord.delete) {
+                    table.data.splice(table.data.indexOf(companyRecord), 1);
                     table.render(table.data, true);
-                    this.dirty = true
                     return true;
                 }
             }
