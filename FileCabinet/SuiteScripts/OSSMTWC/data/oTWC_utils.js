@@ -642,6 +642,35 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})`, 'customrecord_twc_file': FILE_STATUS.Approved } } })
         }
 
+
+
+        function getTktImages(options) {
+            return getTktFiles(options, 'image')
+        }
+        
+        function getTktFiles(options, type) {
+             if(options.id == 'undefined' || options.id == undefined ){
+                options.id=0
+             }
+            var fileTypeFilter = `
+                and ${twcFile.Fields.RECORD_TYPE} = 'customrecord_twc_trbl_tkt'
+                and ${twcFile.Fields.RECORD_ID} = ${options.id}
+            `;
+            if (type == 'image') {
+                fileTypeFilter += `AND t.custrecord_twc_file_type_image = 'T'`;
+            } 
+            log.debug("Filter",fileTypeFilter)
+           
+                //log.debug("getFiles({ filters: fileTypeFilter })",getFiles({ filters: fileTypeFilter }))
+                return getFiles({ filters: fileTypeFilter });
+            // }
+            // else{
+            //     log.debug("else case")
+            //     return []
+            // }
+            
+        }
+
           function getTktResolutionFiles(options) {
             var fileIds = options['custrecord_twc_trbl_tkt_res_files'] || '';
             // if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
@@ -1108,6 +1137,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafImages: getSafImages,
             getSafContractorFiles: getSafContractorFiles,
             getTktResolutionFiles: getTktResolutionFiles,
+            getTktImages:getTktImages,
             getProfiles: getProfiles,
             getCompanies: getCompanies,
             getCustomers: getCustomers,
