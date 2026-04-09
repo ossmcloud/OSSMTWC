@@ -166,6 +166,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         return {
             PERMISSION_LEVEL: permissions.LEVEL,
+            PERMISSION_FEATURE: permissions.FEATURE,
             userInfo: getUserInfo,
             getUserPref: getUserPref,
             setUserPref: setUserPref,

@@ -16,7 +16,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             }
-          
+
             initPage() {
 
                 this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
@@ -34,6 +34,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         // @@TODO: this is just a sample, remove later
                         window.open(`https://www.google.com/maps?q=${this.ui.getControl(twcSite.Fields.LATITUDE).value},${this.ui.getControl(twcSite.Fields.LONGITUDE).value}`);
 
+                    }
+                    if (e.id == 'twc-action-new-saf') {
+                        location.href = core.url.script('otwc_siteaccess_sl', { siteId: this.data.siteInfo.site.id, edit: 'T' })
                     }
                 })
 

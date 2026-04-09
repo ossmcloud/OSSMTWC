@@ -3,8 +3,8 @@
  * @NScriptType Suitelet
  
  */
-define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js'],
-    function (redirect, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcUI, twcUIPanel) {
+define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js'],
+    function (redirect, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcUI, twcUIPanel, twcConfig) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -12,7 +12,7 @@ define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bund
         suiteLet.get = (context, s) => {
 
             if (!context.request.parameters.recId) {
-                redirect.toSuitelet({ scriptId: 'customscript_otwc_siteLocator_sl', deploymentId: 'customdeploy_otwc_sitelocator_sl'});
+                redirect.toSuitelet({ scriptId: 'customscript_otwc_siteLocator_sl', deploymentId: 'customdeploy_otwc_sitelocator_sl' });
                 return false;
             }
 
@@ -22,6 +22,15 @@ define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bund
             var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteInfo');
             html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
 
+            let actions = '';
+            // @@NOTE: Show Add Button if user has edit permission
+            if (pageData.userInfo.permission.permissions.find(p => { return p.feature_id == twcConfig.PERMISSION_FEATURE.SITE_ACCESS })?.lvl >= twcConfig.PERMISSION_LEVEL.EDIT) {
+                actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'New SAF', id: 'twc-action-new-saf' });
+            }
+
+            if (actions) {
+                html = html.replaceAll('<div id="custom-actions"></div>', `<div id="custom-actions">${actions}</div>`);
+            }
 
             var readOnly = context.request.parameters.edit != 'T';
             // @@NOTE: if permission lvl is 1 it means view only so even if parameter passed force to read only

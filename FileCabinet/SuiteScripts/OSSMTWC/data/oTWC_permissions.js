@@ -13,8 +13,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FULL: 3                     // create / edit / delete and other actions
         }
 
+        const FEATURE_ID = {
+            SITE_ACCESS: 'site_access',
+            SPACE_REQUEST: 'space_request',
+            TROUBLE_TICKET: 'trouble_ticket'
+        }
 
-        const TEST_ROLE = 0;
+
+        const TEST_ROLE = 1;
 
         function loadPermissions(roleId) {
             var sql = {
@@ -84,6 +90,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
 
             LEVEL: PERMISSION_LEVEL,
+            FEATURE: FEATURE_ID,
 
             get: get,
 
