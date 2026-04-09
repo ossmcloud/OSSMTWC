@@ -3,7 +3,7 @@
  * @NModuleScope public
  */
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_config.js', '../../data/oTWC_equipment.js', '../../data/oTWC_equipmentUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_equipment.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js'],
-    (core, coreSQL, twcConfig, twcInventory, twcInventoryUI, twcUI, twcUtils, twcSaf, twcEqip, twcSite, twcSiteUI, twcSrfUI) => {
+    (core, coreSQL, twcConfig, twcInventory, twcInventoryUI, twcUI, twcUtils, twcSaf, twcEqip, twcSite, twcSiteUI) => {
 
         function renderInventoryPanel(userInfo, featureId) {
             var html = `
@@ -78,7 +78,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var allowedCustomers = twcConfig.getUserAllowedCustomers(userInfo, true);
             if (allowedCustomers != 'all') {
                 whereClause += `and ${twcInventory.Fields.CUSTOMER} in (${allowedCustomers.join(',')})`;
-            } 
+            }
 
             var inventoryDetails = coreSQL.run(`
                 select  ${sqlFields}, BUILTIN.DF(i.custrecord_twc_infra_type) as infra_type, BUILTIN.DF(i.custrecord_twc_infra_str_type) as infra_str_type, i.custrecord_twc_infra_id as infra_id
@@ -100,7 +100,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (!siteId) { throw new Error('No site id provided!'); }
 
             // @@TODO: move to rec.custom.js
-
             var siteFields = twcSite.getFields();
 
             var joinTables = [];
@@ -196,21 +195,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sqlFields = 's.id, s.id as record_id, s.name';
             sqlFields += formatUserFields(siteFields, userFields);
 
-            // core.array.each(userFields, uf => {
-            //     var nsField = siteFields.find(nsf => { return nsf.field_id == uf.field });
-            //     var sqlField = uf.field;
-            //     uf.type = nsField.field_type;
-            //     if (nsField.field_type == 'List/Record') {
-            //         uf.listRecord = true;
-            //         sqlField = `${sqlField} as ${sqlField}, BUILTIN.DF(${sqlField}) as ${sqlField}_text`;
-            //     }
-            //     sqlFields += `, s.${sqlField}`;
-
-            //     if (!uf.label) { uf.label = nsField.field_label; }
-
-            // })
-
-
             // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSite.Fields.NAME}`;
@@ -269,22 +253,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSiteInfo: getSiteInfo,
             getInvInfoPanels: twcInventoryUI.getInvInfoPanels,
             getInventoryInfo: (pageData) => {
-                var srf = {};
+                var inv = {};
                 if (pageData.siteId) {
-                    srf = coreSQL.first(`select * from ${twcInventory.Type} where id = ${pageData.siteId}`);
-                    srf.siteId = srf[twcInventory.Fields.SITE];
-                    srf.type = twcInventory.Type;
+                    inv = coreSQL.first(`select * from ${twcInventory.Type} where id = ${pageData.siteId}`);
+                    inv.siteId = inv[twcInventory.Fields.SITE];
+                    inv.type = twcInventory.Type;
 
-                    if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, srf[twcInventory.Fields.CUSTOMER])) {
-                        throw new Error('You do not have access to see this SRF record');
+                    if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, inv[twcInventory.Fields.CUSTOMER])) {
+                        throw new Error('You do not have access to see this Inventory record');
                     }
 
                 } else {
-                    // this is a new SRF, if the logged in user is a customer then set the customer field
-                    if (pageData.userInfo.isCustomer) { srf[twcInventory.Fields.CUSTOMER] = pageData.userInfo.id; }
-                    srf[twcInventory.Fields.SITE] = pageData.siteId;
+                    if (pageData.userInfo.isCustomer) { inv[twcInventory.Fields.CUSTOMER] = pageData.userInfo.id; }
+                    inv[twcInventory.Fields.SITE] = pageData.siteId;
                 }
-                return srf;
+                return inv;
             },
         }
     });
