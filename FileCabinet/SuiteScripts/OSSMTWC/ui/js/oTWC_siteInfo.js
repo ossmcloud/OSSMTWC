@@ -38,6 +38,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (e.id == 'twc-action-new-saf') {
                         location.href = core.url.script('otwc_siteaccess_sl', { siteId: this.data.siteInfo.site.id, edit: 'T' })
                     }
+                    if(e.id == 'twc-action-new-srf') {
+                        location.href = core.url.script('otwc_spacerequest_sl', { siteId: this.data.siteInfo.site.id, edit: 'T' })
+                    }
+                    if(e.id == 'twc-action-new-trbltkt') {
+                        location.href = core.url.script('oTWC_troubleTicket_sl', { siteId: this.data.siteInfo.site.id, edit: 'T' })
+                    }
                 })
 
                 core.array.each(this.ui.controls, c => {

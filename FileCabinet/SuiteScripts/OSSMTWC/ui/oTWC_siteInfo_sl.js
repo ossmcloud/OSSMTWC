@@ -27,6 +27,12 @@ define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bund
             if (pageData.userInfo.permission.permissions.find(p => { return p.feature_id == twcConfig.PERMISSION_FEATURE.SITE_ACCESS })?.lvl >= twcConfig.PERMISSION_LEVEL.EDIT) {
                 actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'New SAF', id: 'twc-action-new-saf' });
             }
+            if(pageData.userInfo.permission.permissions.find(p => { return p.feature_id == twcConfig.PERMISSION_FEATURE.SPACE_REQUEST})?.lvl >= twcConfig.PERMISSION_LEVEL.EDIT){
+                actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'New SRF', id: 'twc-action-new-srf' });
+            }
+            if(pageData.userInfo.permission.permissions.find(p => { return p.feature_id == twcConfig.PERMISSION_FEATURE.TROUBLE_TICKET})?.lvl >= twcConfig.PERMISSION_LEVEL.EDIT){
+                actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'New Trouble Ticket', id: 'twc-action-new-trbltkt' });
+            }
 
             if (actions) {
                 html = html.replaceAll('<div id="custom-actions"></div>', `<div id="custom-actions">${actions}</div>`);
