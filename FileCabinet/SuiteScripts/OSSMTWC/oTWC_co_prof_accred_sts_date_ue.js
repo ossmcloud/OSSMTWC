@@ -35,8 +35,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/da
                     const oldValue = oldRecord.getValue(config.statusField);
                     const newValue = newRecord.getValue(config.statusField);
 
-                    if (Number(oldValue) == config.trigger.from && Number(newValue) == config.trigger.to) {
-                        recu.submit( config.recordType, newRecord.id, [config.dateField], new Date() );
+                    if (Number(oldValue) != Number(newValue)) {
+                        recu.submit(config.recordType, newRecord.id, [config.dateField], new Date());
                     }
                 }
             } catch (error) {
