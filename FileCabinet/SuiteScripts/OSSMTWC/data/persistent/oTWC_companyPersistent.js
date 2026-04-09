@@ -12,6 +12,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ACCREDITATION_STATUS: 'custrecord_twc_co_accred_status',
             ACCREDITATION_STATUS_COMMENT: 'custrecord_twc_co_accred_sts_cmt',
             ACCREDITATION_SUBMITTED: 'custrecord_twc_co_accred_submitted',
+            ACCREDITATION_STATUS_CHANGE_DATE: 'custrecord_twc_co_accred_sts_date',
             COMPANY_ADDRESS: 'custrecord_twc_co_address',
             COMPANY_TYPE: 'custrecord_twc_co_type',
             COMPANY_CLASSIFICATION: 'custrecord_twc_co_classification',

@@ -32,6 +32,14 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                     `
                 }
 
+                let actions = '';
+                // @@NOTE: Add 
+                if (context.request.parameters.siteId && pageData.userInfo.isEmployee) {
+                    actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Add Equipment', id: 'add-equipment-button' });
+                } else {
+                    pageData.forceViewOnly = true;
+                }
+
                 // @@NOTES: if the SRF is submitted we still let users with full access to edit it but only if we are a Towercom employee 
                 if (context.request.parameters.recId) {
                     var canSubmit = pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued;
