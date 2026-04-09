@@ -35,6 +35,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         window.open(`https://www.google.com/maps?q=${this.ui.getControl(twcSite.Fields.LATITUDE).value},${this.ui.getControl(twcSite.Fields.LONGITUDE).value}`);
 
                     }
+                    if (e.id == 'twc-action-new-site') {
+                        window.open(core.url.record(twcSite.Type));
+                    }
                 })
 
                 core.array.each(this.ui.controls, c => {

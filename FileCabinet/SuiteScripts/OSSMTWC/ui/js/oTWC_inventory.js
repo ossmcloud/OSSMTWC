@@ -123,7 +123,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var recordUrl = core.url.record('customrecord_twc_equip', null, true) +
                         `&custrecord_twc_equip_site=${siteId}`;
 
-                    window.location.href = recordUrl;
+                    // window.location.href = recordUrl;
+                    window.open(recordUrl);
 
                 } catch (error) {
                     await dialog.errorAsync(error);
