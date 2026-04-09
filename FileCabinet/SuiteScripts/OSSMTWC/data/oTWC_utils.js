@@ -727,19 +727,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 } else {
                     // @@NOTE: here we want to select sub-contractors the given vendor can use
                     sql = `
-                        select  c.id as value, c.name as text
-                        from    customrecord_twc_company c
-                        where   c.id = ${options.vendor}
-                        ${additionalFilters}
+                        select *
+                        from (
+                            select  c.id as value, c.name as text
+                            from    customrecord_twc_company c
+                            where   c.id = ${options.vendor}
+                            ${additionalFilters}
 
-                        UNION
+                            UNION
 
-                        select  distinct c.id as value, c.name as text
-                        from    customrecord_twc_ascl acl
-                        join    customrecord_twc_company c on c.id = acl.custrecord_twc_acl_sub_contractor and c.custrecord_twc_co_fin_vend = 'T'
-                        where   c.isinactive = 'F'
-                        and     acl.custrecord_twc_acl_contractor = ${options.vendor}
-                        ${additionalFilters}
+                            select  distinct c.id as value, c.name as text
+                            from    customrecord_twc_ascl acl
+                            join    customrecord_twc_company c on c.id = acl.custrecord_twc_acl_sub_contractor and c.custrecord_twc_co_fin_vend = 'T'
+                            where   c.isinactive = 'F'
+                            and     acl.custrecord_twc_acl_contractor = ${options.vendor}
+                            ${additionalFilters}
+                        )
                         order by LOWER(text)
                     `;
 
@@ -788,7 +791,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             try {
                 return coreSQL.run(sql);
             } catch (error) {
-                throw new Error(sql);
+                throw new Error(error.message + '<hr />' + sql);
             }
 
 
@@ -840,6 +843,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         ${PROFILE_CERT_FIELD.DRONE.fieldEx} as drone_exp,
                 from    customrecord_twc_prof
                 ${filters}
+                and     isinactive = 'F'
             `
             if (options.filters) {
                 for (var f in options.filters) {

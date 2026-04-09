@@ -170,6 +170,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcProfile.Fields.NAME]: 'Profile Name',
                     [twcProfile.Fields.E_MAIL]: 'Email',
                     [twcProfile.Fields.PHONE]: 'Phone',
+                    [twcProfile.Fields.ACCREDITATION_STATUS]: 'Accreditation Status',
                     [twcProfile.Fields.PICW_ACCEPTABLE]: { title: 'PICW', type: 'bool' },
                     [twcProfile.Fields.CLIMBER_CERTIFIED_STATUS]: { title: 'Climber', nullText: '' },
                     [twcProfile.Fields.CLIMBER_CERTIFIED_EXPIRY]: { hide: true },

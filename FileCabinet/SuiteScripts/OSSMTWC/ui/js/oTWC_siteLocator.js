@@ -15,15 +15,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 var safLink = core.url.script('otwc_siteaccess_sl');
                 var unboundCols = [];
-                unboundCols.push({
-                    id: 'open_saf', title: 'SAF', unbound: true,
-                    styles: { 'text-align': 'center' },
-                    noSort: true,
-                    sortIdx: 999,
-                    initValue: (d) => {
-                        return `<a href="${safLink}&siteId=${d.id}">view</a>`;
-                    }
-                })
+                // unboundCols.push({
+                //     id: 'open_saf', title: 'SAF', unbound: true,
+                //     styles: { 'text-align': 'center' },
+                //     noSort: true,
+                //     sortIdx: 999,
+                //     initValue: (d) => {
+                //         return `<a href="${safLink}&siteId=${d.id}">view</a>`;
+                //     }
+                // })
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
                     id: 'omt_sites',
                     unboundCols: unboundCols,

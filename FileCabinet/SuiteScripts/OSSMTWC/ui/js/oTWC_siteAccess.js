@@ -388,7 +388,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                     htmlCond.append(`
                         <div style="padding: 3px; border-bottom: 1px solid var(--grid-color);${colorStyle}">
-                            ${this.#accessRequirements.timeBlocksRequired} Time-Blocks Required (${this.#accessRequirements.timeBlocksAllocated || 0} Allocated)
+                            ${this.#accessRequirements.timeBlocksRequired} Time-Blocks Limit (${this.#accessRequirements.timeBlocksAllocated || 0} Allocated)
                         </div>
                     `);
 
