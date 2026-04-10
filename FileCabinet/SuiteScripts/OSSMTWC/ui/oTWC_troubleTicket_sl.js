@@ -117,6 +117,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return { status: 'success' };
 
             }
+            //  else if (context.request.parameters.action == 'save-new-tkt') {
+            //     var userInfo = twcConfig.userInfo(context);
+            //     var payload = JSON.parse(context.request.body);
+            //     log.debug("PAYLOAD",payload)
+            //     return twcTroubleTicketUtils.saveNewTkt(payload, userInfo);
+
+            // }
             else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);
             }

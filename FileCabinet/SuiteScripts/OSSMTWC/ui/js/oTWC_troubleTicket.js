@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../data/oTWC_troubleTickets', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', './oTWC_siteInfoPanel.js', '../../O/controls/oTWC_ui_ctrl.js'],
-    (core, coreSql, twcPageBase, dialog, twcIcons, twcConfig, twcTkt, uiTable, twcSiteLocatorPanel, twcSiteInfoPanel, twcUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../data/oTWC_troubleTickets', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', './oTWC_siteInfoPanel.js', '../../O/controls/oTWC_ui_ctrl.js','SuiteBundles/Bundle 548734/O/core.base64.js'],
+    (core, coreSql, twcPageBase, dialog, twcIcons, twcConfig, twcTkt, uiTable, twcSiteLocatorPanel, twcSiteInfoPanel, twcUI,b64) => {
 
         var _tktLink = null;
         function ticketViewLink(id) {
@@ -127,6 +127,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #map = null;
             #sitesTable = null;
             #sitePanel = null;
+            #tktBuilder = null;
             constructor() {
                 super({ scriptId: 'otwc_troubleticket_sl' });
 
@@ -142,11 +143,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#sitePanel = twcSiteLocatorPanel.get({ page: this, table: this.#sitesTable, data: window.twc.page.data.data.ticketInfo.sites, tableData: window.twc.page.data.data.ticketInfo.tickets });
                     console.log('123', this.#sitePanel)
 
-                    // if (this.data.editMode) {
-                    //   //  this.#safBuilder = new TWCSiteAccessBuilder(this);
-                    // } else {
+                    if (this.data.editMode) {
+                        this.#tktBuilder = new TWCTrblTktBuilder(this);
+                    } else {
                     this.initTrblTktMode();
-                    // }
+                    }
                 } else {
                     this.initLocatorMode();
                     this.initTrblTktMode(window.twc.page.data.recId);
@@ -161,6 +162,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             initTrblTktMode(recId) {
 
+                this.ui.find('.twc-preview-file').click(async e => {
+                    var file = jQuery(e.currentTarget).data('file')
+                    console.log(e.currentTarget.outerHTML)
+                    console.log("File",file)
+                    await this.previewFile(file, e)
+                })
                 this.ui.on('change', e => {
                     this.#changes[e.id] = e.value;
                     this.dirty = true
@@ -175,6 +182,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.getControl('upload-resolution-photo')?.on('click', e => { 
                     console.log("'Uplaod button clicked")
                     this.uploadPhotos(); 
+                })
+                 this.ui.getControl('tk-submit')?.on('click', e => {
+                    console.log("Submit clicked")
+                    dialog.confirm('Are you sure you wish to submit the Trouble Ticket?', () => {
+                      // this.submitForm();
+                       this.onSave(e);
+                    })
                 })
 
 
@@ -201,7 +215,38 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     dialog.error(error);
                 }
             }
+               #page = null;
+            #accessRequirements = null;
+            submitForm() {
+                try {
 
+                   // this.#page.wait();
+                    console.log('this',this)
+                    var values = this.ui.getValues();
+                    console.log('values',values)
+                    var tkt = this.data.trblTktInfo;
+                    for (var k in values) { tkt[k] = values[k]; }
+
+                    console.log(tkt);
+
+                     this.post({ action: 'save' }, { tkt: tkt, accessRequirements: this.#accessRequirements }).then(resp => {
+                        if (resp.error) {
+                            dialog.error(resp.error);
+                            return;
+                        }
+
+                        this.dirty = false;
+                        window.location.href = this.url({ recId: resp.id, err: resp.errors ? 'T' : undefined });
+
+                    }).catch(err => {
+                        dialog.error(err);
+                        this.#page.waitClose();
+                    });
+
+                } catch (error) {
+                    dialog.error(error);
+                }
+            }
 
             uploadPhotos() {
 
@@ -324,6 +369,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     var payload = this.#changes;
                     payload.id = window.twc.page.data.recId
+                    console.log("site",window.twc.page.data.siteInfo.site )
+
+                    payload.siteId=window.twc.page.data.siteInfo.site.id
 
                     await this.post({ action: 'save' }, payload);
                     this.dirty = false;
@@ -339,6 +387,54 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+         class TWCTrblTktBuilder {
+             #page = null;
+            #accessRequirements = null;
+              constructor(page) {
+                this.#page = page;
+                this.init();
+            }
+              init() {
+                //  this.ui.getControl('tk-submit').on('click', e => {
+                //     console.log("Submit clicked")
+                //     dialog.confirm('Are you sure you wish to submit the Access Request?', () => {
+                //         this.submitForm();
+                //     })
+                // })
+              }
+                // submitForm() {
+                // try {
+
+                //     this.#page.wait();
+
+                //     var values = this.ui.getValues();
+            //         var tkt = this.data.trblTktInfo;
+            //         for (var k in values) { tkt[k] = values[k]; }
+
+            //         console.log(tkt);
+
+
+            //        // this.#page.post({ action: 'save-new-tkt' }, { tkt: tkt, accessRequirements: this.#accessRequirements, conditionsOfAccessHtml: b64.encode(this.refreshInfo(true)) }).then(resp => {
+            //         this.#page.post({ action: 'save-new-tkt' }, { tkt: tkt, accessRequirements: this.#accessRequirements }).then(resp => {
+ 
+            //         if (resp.error) {
+            //                 dialog.error(resp.error);
+            //                 return;
+            //             }
+
+            //             this.#page.dirty = false;
+            //             window.location.href = this.#page.url({ recId: resp.id, err: resp.errors ? 'T' : undefined });
+
+            //         }).catch(err => {
+            //             dialog.error(err);
+            //             this.#page.waitClose();
+            //         });
+
+            //     } catch (error) {
+            //         dialog.error(error);
+            //     }
+            // }
+         }
         return {
 
             init: function () {

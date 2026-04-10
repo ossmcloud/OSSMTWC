@@ -224,6 +224,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             for (var k in payload) {
                 if (k == 'id') { continue; }
+                if(k == 'siteId') { continue; }
                 // @@NOTE: fields with '___' means they are linked record fields, we first update the site info, then the linked records
                 var fieldPath = k.split('___');
                 if (fieldPath.length == 1) {
@@ -231,42 +232,67 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     submitInfo[twcTrblTkts.Type].values.push(payload[k])
                 }
             }
+            var errors = [];
 
-            recu.submit(twcTrblTkts.Type, payload.id, submitInfo[twcTrblTkts.Type].fields, submitInfo[twcTrblTkts.Type].values);
+            if (payload.id) {
+                recu.submit(twcTrblTkts.Type, payload.id, submitInfo[twcTrblTkts.Type].fields, submitInfo[twcTrblTkts.Type].values);
 
-            // @@NOTE: now we load the linked record fields changes into submitInfo object as we could have more than one
-            var tktFields = twcTrblTkts.getFields();
-            var tkt = twcTrblTkts.get(payload.id);
-            for (var k in payload) {
-                if (k == 'id') { continue; }
-                var fieldPath = k.split('___');
-                if (fieldPath.length > 1) {
-                    var tktField = tktFields.find(tk => { return tk.field_id == fieldPath[0]; })
-                    if (!tktField || !tktField.field_foreign_table) {
-                        // @@TODO: this should not happen really ???
-                    } else {
-                        // @@NOTE: @@IMPORTANT: we use fieldPath[0] as object property and NOT siteField.field_foreign_table because we could have more than one field linking to the same record type
-                        if (!submitInfo[fieldPath[0]]) {
-                            submitInfo[fieldPath[0]] = { id: tkt.get(fieldPath[0]), type: tktField.field_foreign_table, fields: [], values: [] };
+                // @@NOTE: now we load the linked record fields changes into submitInfo object as we could have more than one
+                var tktFields = twcTrblTkts.getFields();
+                var tkt = twcTrblTkts.get(payload.id);
+                for (var k in payload) {
+                    if (k == 'id') { continue; }
+                     if(k == 'siteId') { continue; }
+                    var fieldPath = k.split('___');
+                    if (fieldPath.length > 1) {
+                        var tktField = tktFields.find(tk => { return tk.field_id == fieldPath[0]; })
+                        if (!tktField || !tktField.field_foreign_table) {
+                            // @@TODO: this should not happen really ???
+                        } else {
+                            // @@NOTE: @@IMPORTANT: we use fieldPath[0] as object property and NOT siteField.field_foreign_table because we could have more than one field linking to the same record type
+                            if (!submitInfo[fieldPath[0]]) {
+                                submitInfo[fieldPath[0]] = { id: tkt.get(fieldPath[0]), type: tktField.field_foreign_table, fields: [], values: [] };
+                            }
+                            submitInfo[fieldPath[0]].fields.push(fieldPath[1]);
+                            submitInfo[fieldPath[0]].values.push(payload[k])
                         }
-                        submitInfo[fieldPath[0]].fields.push(fieldPath[1]);
-                        submitInfo[fieldPath[0]].values.push(payload[k])
                     }
                 }
+
+
+                // var errors = [];
+                for (var recType in submitInfo) {
+                    if (recType == twcTrblTkts.Type) { continue; }
+                    try {
+                        recu.submit(submitInfo[recType].type, submitInfo[recType].id, submitInfo[recType].fields, submitInfo[recType].values);
+                    } catch (error) {
+                        core.logError('SAVE-TROURBLE TICKET-INFO', `${JSON.stringify(submitInfo[recType])}: ${error.message}`);
+                        submitInfo[recType].error = error.message;
+                        errors.push(submitInfo[recType])
+                    }
+
+                }
             }
+            else {
+                var newTkt = twcTrblTkts.get();
+                newTkt.tktStatus = twcTrblTkts.Status.New;
+                
+                submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.STATUS)
+                submitInfo[twcTrblTkts.Type].values.push(twcTrblTkts.Status.New)
 
+                if(payload.siteId){
+                    submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.SITE)
+                    submitInfo[twcTrblTkts.Type].values.push(payload.siteId)
 
-            var errors = [];
-            for (var recType in submitInfo) {
-                if (recType == twcTrblTkts.Type) { continue; }
-                try {
-                    recu.submit(submitInfo[recType].type, submitInfo[recType].id, submitInfo[recType].fields, submitInfo[recType].values);
-                } catch (error) {
-                    core.logError('SAVE-TROURBLE TICKET-INFO', `${JSON.stringify(submitInfo[recType])}: ${error.message}`);
-                    submitInfo[recType].error = error.message;
-                    errors.push(submitInfo[recType])
                 }
 
+                log.debug("SUbmit Info",submitInfo)
+                core.array.each(submitInfo[twcTrblTkts.Type].fields, (field, idx) => {
+                    if (!newTkt.hasField(field)) { return; }
+                    newTkt.set(field, submitInfo[twcTrblTkts.Type].values[idx]);
+                })
+
+                payload.id = newTkt.save();
             }
 
             // @@TODO: better error message

@@ -42,7 +42,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcTrblTkts.Fields.ASSIGNED_TO]: 'ASSIGNED_TO',
                     [twcTrblTkts.Fields.PRIORITY]: 'PRIORITY',
                     [twcTrblTkts.Fields.CUSTOMER]: 'CUSTOMER',
-                    [twcTrblTkts.Fields.STATUS]: 'STATUSt',
+                    [twcTrblTkts.Fields.STATUS]: 'STATUS',
                 },
                 where: { [twcTrblTkts.Fields.SITE]: dataSource.siteId },
                 FieldsInfo: twcTrblTkts.FieldsInfo,
@@ -79,7 +79,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         // }
 
         function getTKPanelInfo(dataSource, userInfo) {
-            var fieldGroup = { id: 'trbl-tkts-details', title: 'Create New Trouble Ticket or Provide Safety / Security Feedback', collapsed: false, controls: [] };
+          //  var fieldGroup = { id: 'trbl-tkts-details', title: 'Create New Trouble Ticket or Provide Safety / Security Feedback', collapsed: false, controls: [] };
+            var fieldGroup = { id: 'trbl-tkts-details', title: (dataSource.id) ? `Trouble Ticket [${dataSource.name}]` : 'Create New Trouble Ticket or Provide Safety / Security Feedback', collapsed: false, controls: [] };
 
             var newDetailsInfo = { id: 'trbl-tkts-add-new', fields: [] };
             fieldGroup.controls.push(newDetailsInfo);
@@ -157,10 +158,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcFile.Fields.DESCRIPTION]: { title: 'Description', nullText: '' },
                     ['preview_link']: { title: '', noFilter: true, styles: { width: '50px' } }
                 },
-                dataSource: twcUtils.getTktResolutionFiles(dataSource),
+                dataSource: twcUtils.getTktImages(dataSource),
                 FieldsInfo: twcFile.FieldsInfo,
                 showToolbar: false,
             });
+            log.debug("resolutionFilesInfo",resolutionFilesInfo)
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
         }
