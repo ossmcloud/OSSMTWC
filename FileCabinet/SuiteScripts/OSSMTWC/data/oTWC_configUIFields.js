@@ -125,8 +125,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     return;
                 }
 
-                var fieldId = field.id; var dataField = null; var dataFields = null;
+                if (!field.id) {
+                    // @@TODO: this would be a silent error, only happens if the constant is wrong, maybe throw error only if dev logged in?
+                    core.logError('CONFIG-UI-PANEL', 'no field id: ' + JSON.stringify(field));
+                    return;
+                }
 
+                var fieldId = field.id; var dataField = null; var dataFields = null;
                 if (field.id.indexOf('.') < 0) {
                     dataFields = getFieldDefinitions(dataSource.Type);
 

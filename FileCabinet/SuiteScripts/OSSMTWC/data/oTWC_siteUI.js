@@ -16,13 +16,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 { field: twcSite.Fields.SITE_NAME },
                 { field: twcSite.Fields.SITE_TYPE },
                 { field: twcSite.Fields.SITE_LEVEL },
-                { field: twcSite.Fields.SAF_AUTO_APPROVE },
+                { field: twcSite.Fields.SITE_SAF_AUTO_APPROVE },
                 { field: twcSite.Fields.HEIGHT_ASL_M },
                 { field: twcSite.Fields.ADDRESS },
                 { field: twcSite.Fields.ADDRESS_COUNTY },
-                { field: twcSite.Fields.PORTFOLIO },
-                { field: twcSite.Fields.LATITUDE },
-                { field: twcSite.Fields.LONGITUDE },
+                { field: twcSite.Fields.SITE_PORTFOLIO },
+                { field: twcSite.Fields.SITE_LATITUDE },
+                { field: twcSite.Fields.SITE_LONGITUDE },
             ];
             return siteFields;
         }
@@ -56,10 +56,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             location.fields.push({ id: twcSite.Fields.ADDRESS_COUNTY, label: 'County' })
             location.fields.push({ id: twcSite.Fields.ADDRESS_REGION, label: 'Region' })
 
-            location.fields.push({ id: twcSite.Fields.EASTING, label: 'Easting' })
-            location.fields.push({ id: twcSite.Fields.NORTHING, label: 'Northing' })
-            location.fields.push({ id: twcSite.Fields.LATITUDE, label: 'Latitude' })
-            location.fields.push({ id: twcSite.Fields.LONGITUDE, label: 'Longitude' })
+            location.fields.push({ id: twcSite.Fields.SITE_EASTING, label: 'Easting' })
+            location.fields.push({ id: twcSite.Fields.SITE_NORTHING, label: 'Northing' })
+            location.fields.push({ id: twcSite.Fields.SITE_LATITUDE, label: 'Latitude' })
+            location.fields.push({ id: twcSite.Fields.SITE_LONGITUDE, label: 'Longitude' })
             mainInfoFieldGroups.push(location);
 
             var access = { id: 'site-access', title: 'Access', fields: [] };
@@ -85,11 +85,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcSite.Fields.ALIAS, label: 'Alias', lineBreak: true })
             basicInfo.fields.push({ id: twcSite.Fields.SITE_LEVEL, label: 'Site Level' })
             basicInfo.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type' })          
-            basicInfo.fields.push({ id: twcSite.Fields.PORTFOLIO, label: 'Portfolio', lineBreak: true }) 
-            basicInfo.fields.push({ id: twcSite.Fields.SAF_AUTO_APPROVE, label: 'SAF Auto Approve' }) 
-            basicInfo.fields.push({ id: twcSite.Fields.SAF_STATUS, label: 'SAF Status' }) 
+            basicInfo.fields.push({ id: twcSite.Fields.SITE_PORTFOLIO, label: 'Portfolio', lineBreak: true }) 
+            basicInfo.fields.push({ id: twcSite.Fields.SITE_SAF_AUTO_APPROVE, label: 'SAF Auto Approve' }) 
+            basicInfo.fields.push({ id: twcSite.Fields.SITE_SAF_STATUS, label: 'SAF Status' }) 
             basicInfo.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL' }) 
-            basicInfo.fields.push({ id: twcSite.Fields.PUBLIC, label: 'Public' })
+            basicInfo.fields.push({ id: twcSite.Fields.SITE_PUBLIC, label: 'Public' })
             //@NOTE Missing fields - TC Building/Cabin , Indoor Accommodation
 
             var structures = { id: 'site-summary-structure', title: 'Site Structures', fields: [] };
@@ -119,10 +119,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             locations.fields.push({ id: twcSite.Fields.ADDRESS, label: 'Address', width: '75%', lineBreak: true })
             locations.fields.push({ id: twcSite.Fields.ADDRESS_COUNTY, label: 'County' })
             locations.fields.push({ id: twcSite.Fields.ADDRESS_REGION, label: 'Region', lineBreak: true })
-            locations.fields.push({ id: twcSite.Fields.LATITUDE, label: 'Latitude' })
-            locations.fields.push({ id: twcSite.Fields.LONGITUDE, label: 'Longitude' })
-            locations.fields.push({ id: twcSite.Fields.EASTING, label: 'Easting' })
-            locations.fields.push({ id: twcSite.Fields.NORTHING, label: 'Northing' })
+            locations.fields.push({ id: twcSite.Fields.SITE_LATITUDE, label: 'Latitude' })
+            locations.fields.push({ id: twcSite.Fields.SITE_LONGITUDE, label: 'Longitude' })
+            locations.fields.push({ id: twcSite.Fields.SITE_EASTING, label: 'Easting' })
+            locations.fields.push({ id: twcSite.Fields.SITE_NORTHING, label: 'Northing' })
 
             // @@TODO: this is just a sample, remove later
             locations.fields.push({ id: 'site-directions', type: twcUI.CTRL_TYPE.BUTTON, label: '', value: 'Directions', lineBreak: true })

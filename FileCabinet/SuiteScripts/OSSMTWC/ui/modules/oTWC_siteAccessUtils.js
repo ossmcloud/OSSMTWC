@@ -247,7 +247,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var crewIds = [];
             core.array.each(payload.crews, c => { crewIds.push(c['saf-crew-member']); })
             var crew = twcUtils.getProfiles({ id: crewIds });
-            // throw new Error(JSON.stringify(crew))
+            //throw new Error(JSON.stringify(crew))
 
             core.array.each(options.accessRequirements.conditions, cond => {
                 var condQuantity = cond.quantity == 'all' ? payload.crews.length : cond.quantity;
@@ -255,7 +255,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 var certCount = crew.filter(c => {
                     return c.attendAs.find(cc => {
                         // @@TODO: there are still few inconsistencies with casing here
-                        return cc.value.toLowerCase() == cond.cert?.code.toLowerCase() && cc.exp > latestDate;
+                        return cc.value.toLowerCase() == cond.cert?.code.toLowerCase() && cc.exp >= latestDate;
                     });
                 }).length || 0;
                 if (certCount < condQuantity) {

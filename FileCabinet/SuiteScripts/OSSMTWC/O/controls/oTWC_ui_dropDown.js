@@ -109,8 +109,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 var disabled = this.#options.disabled ? 'disabled' : '';
                 var readOnly = this.#options.readOnly ? 'readonly' : '';
 
+                var autoSelected = false;
                 if (this.#dataSource.length == 1 && !this.#options.value && !this.#options.noAutoSelect) {
-                    
+                    autoSelected = true;
                     this.#options.value = this.#dataSource[0].value;
                 }
 
@@ -169,7 +170,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     html = jQuery(html);
                     this.#ui = html;
                     this.initEvents();
-
+                    if (autoSelected) {
+                        this.on('change');
+                    }
                 }
 
                 return html;

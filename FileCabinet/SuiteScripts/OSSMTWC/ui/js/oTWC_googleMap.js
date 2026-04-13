@@ -45,8 +45,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         <i>${dataObject.custrecord_twc_site_address_county_text || ''}</i>
                     `
                 }
-                dataObject.latitude = dataObject[twcSite.Fields.LATITUDE];
-                dataObject.longitude = dataObject[twcSite.Fields.LONGITUDE];
+                dataObject.latitude = dataObject[twcSite.Fields.SITE_LATITUDE];
+                dataObject.longitude = dataObject[twcSite.Fields.SITE_LONGITUDE];
                 if (!dataObject.latitude || !dataObject.longitude) { return false; }
                 if (isNaN(dataObject.latitude) || isNaN(dataObject.longitude)) { return false; }
                 dataObject.coord = { lat: parseFloat(dataObject.latitude), lng: parseFloat(dataObject.longitude) }

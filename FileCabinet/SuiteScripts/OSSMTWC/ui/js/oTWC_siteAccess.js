@@ -81,7 +81,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 }
 
-                if (col.id == twcSite.Fields.LATITUDE || col.id == twcSite.Fields.LONGITUDE) { col.styles = { 'text-align': 'right' }; }
+                if (col.id == twcSite.Fields.SITE_LATITUDE || col.id == twcSite.Fields.SITE_LONGITUDE) { col.styles = { 'text-align': 'right' }; }
 
                 if (col.id == twcSaf.Fields.MAST_ACCESS || col.id == twcSaf.Fields.TL_BUILDING_ACCESS || col.id == twcSaf.Fields.CRANE__CHERRYPICKER || col.id == twcSaf.Fields.ROOFTOP_ACCESS || col.id == twcSaf.Fields.ELECTRICAL_WORKS) {
                     col.title = col.title.replace(' Access', '');
@@ -192,7 +192,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             } else if (e.action == 'edit') {
                                 this.manageVisitor(e.rowData, e.table);
                             } else if (e.action == 'delete') {
-                                dialog.confirm('Are you sure you wish to delete this record', () => {
+                                dialog.confirm('Are you sure you wish to remove this crew member', () => {
                                     e.rowData.delete = true;
                                     this.manageVisitor(e.rowData, e.table);
                                 })
@@ -205,7 +205,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             } else if (e.action == 'edit') {
                                 this.manageEqAction(e.rowData, e.table);
                             } else if (e.action == 'delete') {
-                                dialog.confirm('Are you sure you wish to delete this record', () => {
+                                dialog.confirm('Are you sure you wish to remove this action', () => {
                                     e.rowData.delete = true;
                                     this.manageEqAction(e.rowData, e.table);
                                 })

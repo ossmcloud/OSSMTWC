@@ -40,7 +40,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getAttendAs(p) {
             var attendAs = [];
-            if (p.valid_safe_pass == 'T') { attendAs.push({ value: 'SAFE_PASS', text: 'Visitor', exp: p.safe_pass_exp }); }
+            if (p.valid_safe_pass == 'T') {
+                attendAs.push({ value: 'SAFE_PASS', text: 'Visitor', exp: p.safe_pass_exp });
+            } else {
+                // @@NOTE: SAFE PASS must be valid or no site can be accessed
+                return attendAs;
+            }
             if (p.valid_climb_cert == 'T') { attendAs.push({ value: 'CLIMBER', text: 'Climber Certified', exp: p.climber_exp }); }
             if (p.valid_rescue_cert == 'T') { attendAs.push({ value: 'RESCUE', text: 'Rescue Certified', exp: p.rescue_exp }); }
             if (p.valid_rooftop_cert == 'T') { attendAs.push({ value: 'ROOFTOP', text: 'Rooftop Certified', exp: p.rooftop_exp }); }
@@ -485,10 +490,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             coreSQL.each(`
                 select      cf.fieldvaluetype as field_type, LOWER(cf.scriptid) as field_id, cf.name as field_label, 
-                            NVL(lower(l.scriptid), cf.fieldvaluetyperecord) as field_foreign_table, c.includename as include_name, LOWER(c.scriptid) as table_name
+                            NVL(NVL(lower(l.scriptid), lower(cl.scriptid)), cf.fieldvaluetyperecord) as field_foreign_table, c.includename as include_name, LOWER(c.scriptid) as table_name
                 from        customfield cf
                 join        customrecordtype c on c.internalid = cf.recordtype
                 left join   customrecordtype l on l.internalid = cf.fieldvaluetyperecord
+                left join   customlist cl on cl.internalid = cf.fieldvaluetyperecord
                 where       ${whereClause}
                 order by id
             `, cf => {
@@ -791,13 +797,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 } else {
                     // @@NOTE: here we want to select only vendors this customer can use
                     sql = `
-                        select  distinct c.id as value, c.name as text
-                        from    customrecord_twc_acl acl
-                        join    customrecord_twc_company c on c.id = acl.custrecord_twc_acl_cont and c.custrecord_twc_co_fin_vend = 'T'
-                        where   c.isinactive = 'F'
-                        and     acl.custrecord_twc_acl_cust = ${options.customer}
-                        ${additionalFilters}
-                        order by LOWER(c.name)
+                        select *
+                        from  (
+                            select  distinct c.id as value, c.name as text
+                            from    customrecord_twc_acl acl
+                            join    customrecord_twc_company c on c.id = acl.custrecord_twc_acl_cont and c.custrecord_twc_co_fin_vend = 'T'
+                            where   c.isinactive = 'F'
+                            and     acl.custrecord_twc_acl_cust = ${options.customer}
+                            ${additionalFilters}
+
+                            UNION
+
+                            select  c.id as value, c.name as text
+                            from    customrecord_twc_company c
+                            where   c.id = ${options.customer}
+                            ${additionalFilters}
+                        )
+
+                        order by LOWER(text)
                     `
                 }
             } else {
@@ -863,13 +880,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         (case when ${PROFILE_CERT_FIELD.ELECTRICAL.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_elec_cert,
                         (case when ${PROFILE_CERT_FIELD.RF.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rf_cert,
                         (case when ${PROFILE_CERT_FIELD.DRONE.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_drone_cert,
-                        ${PROFILE_CERT_FIELD.SAFE_PASS.fieldEx} as safe_pass_exp,
-                        ${PROFILE_CERT_FIELD.CLIMBER.fieldEx} as climber_exp,
-                        ${PROFILE_CERT_FIELD.RESCUE.fieldEx} as rescue_exp,
-                        ${PROFILE_CERT_FIELD.ROOFTOP.fieldEx} as rooftop_exp,
-                        ${PROFILE_CERT_FIELD.ELECTRICAL.fieldEx} as elec_exp,
-                        ${PROFILE_CERT_FIELD.RF.fieldEx} as rf_exp,
-                        ${PROFILE_CERT_FIELD.DRONE.fieldEx} as drone_exp,
+                        TO_CHAR(${PROFILE_CERT_FIELD.SAFE_PASS.fieldEx}, 'yyyy-MM-dd') as safe_pass_exp,
+                        TO_CHAR(${PROFILE_CERT_FIELD.CLIMBER.fieldEx}, 'yyyy-MM-dd') as climber_exp,
+                        TO_CHAR(${PROFILE_CERT_FIELD.RESCUE.fieldEx}, 'yyyy-MM-dd') as rescue_exp,
+                        TO_CHAR(${PROFILE_CERT_FIELD.ROOFTOP.fieldEx}, 'yyyy-MM-dd') as rooftop_exp,
+                        TO_CHAR(${PROFILE_CERT_FIELD.ELECTRICAL.fieldEx}, 'yyyy-MM-dd') as elec_exp,
+                        TO_CHAR(${PROFILE_CERT_FIELD.RF.fieldEx}, 'yyyy-MM-dd') as rf_exp,
+                        TO_CHAR(${PROFILE_CERT_FIELD.DRONE.fieldEx}, 'yyyy-MM-dd') as drone_exp,
                 from    customrecord_twc_prof
                 ${filters}
                 and     isinactive = 'F'

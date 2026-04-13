@@ -150,8 +150,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 var siteIds = [];
                 this.#dataFiltered = this.#data.filter(s => {
-                    var lat = s[twcSite.Fields.LATITUDE];
-                    var lng = s[twcSite.Fields.LONGITUDE];
+                    var lat = s[twcSite.Fields.SITE_LATITUDE];
+                    var lng = s[twcSite.Fields.SITE_LONGITUDE];
                     if (!(lat >= (srcLat - radius) && lat <= (srcLat + radius))) { return false; }
                     if (!(lng >= (srcLng - radius) && lng <= (srcLng + radius))) { return false; }
                     siteIds.push(s.id);

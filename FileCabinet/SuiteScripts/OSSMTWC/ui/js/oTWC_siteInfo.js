@@ -32,7 +32,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     console.log(e)
                     if (e.id == 'site-directions') {
                         // @@TODO: this is just a sample, remove later
-                        window.open(`https://www.google.com/maps?q=${this.ui.getControl(twcSite.Fields.LATITUDE).value},${this.ui.getControl(twcSite.Fields.LONGITUDE).value}`);
+                        window.open(`https://www.google.com/maps?q=${this.ui.getControl(twcSite.Fields.SITE_LATITUDE).value},${this.ui.getControl(twcSite.Fields.SITE_LONGITUDE).value}`);
 
                     }
                     if (e.id == 'twc-action-new-saf') {

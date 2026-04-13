@@ -104,7 +104,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 }
 
-                if (col.id == twcTkt.Fields.LATITUDE || col.id == twcTkt.Fields.LONGITUDE) { col.styles = { 'text-align': 'right' }; }
+                if (col.id == twcTkt.Fields.SITE_LATITUDE || col.id == twcTkt.Fields.SITE_LONGITUDE) { col.styles = { 'text-align': 'right' }; }
 
                 // if (col.id == twcTkt.Fields.MAST_ACCESS || col.id == twcTkt.Fields.TL_BUILDING_ACCESS || col.id == twcTkt.Fields.CRANE__CHERRYPICKER || col.id == twcSaf.Fields.ROOFTOP_ACCESS || col.id == twcSaf.Fields.ELECTRICAL_WORKS) {
                 //     col.title = col.title.replace(' Access', '');
