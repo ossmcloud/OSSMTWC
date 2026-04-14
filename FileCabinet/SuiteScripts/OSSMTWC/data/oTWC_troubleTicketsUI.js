@@ -10,7 +10,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getTicketsTableFields() {
             var ticketFields = [
-                { field: twcTrblTkts.Fields.TROUBLE_TICKET_ID },
+                { field: 'name' },
                 { field: twcTrblTkts.Fields.SUBMITTED },
                 { field: twcTrblTkts.Fields.SITE },
                 // { field: twcSite.Fields.ADDRESS_COUNTY },
@@ -35,7 +35,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             tktDetails.fields.push({
                 id: `${twcTrblTkts.Type}`, label: 'Trouble Ticket Details',
                 fields: {
-                    [twcTrblTkts.Fields.TROUBLE_TICKET_ID]: { title: 'Ticket ID', link: { url: tktLink + '&recId=${id}', valueField: 'id' } },
+                    ['name']: { title: 'Ticket ID', link: { url: tktLink + '&recId=${id}', valueField: 'id' } },
                     [twcTrblTkts.Fields.SUBMITTED]: 'SUBMITTED',
                     [twcTrblTkts.Fields.AUTHOR]: 'AUTHOR',
                     [twcTrblTkts.Fields.CATEGORY]: 'CATEGORY',
@@ -54,30 +54,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return tktDetails;
         }
 
-        // function getTKTInfoPanels_Info(dataSource, userInfo) {
-        //     var fieldGroup = { id: 'trbl-tkts-details', title: 'Trouble Tickets info', collapsed: false, controls: [] };
-
-        //     var detailsInfo = { id: 'trbl-tkts-details', fields: [] };
-        //     fieldGroup.controls.push(detailsInfo);
-
-        //     detailsInfo.fields.push({ id: twcTrblTkts.Fields.TROUBLE_TICKET_ID, label: 'TROUBLE TICKET ID' })
-        //     detailsInfo.fields.push({ id: twcTrblTkts.Fields.SUBMITTED, label: 'SUBMITTED', lineBreak: true })
-        //     detailsInfo.fields.push({ id: twcTrblTkts.Fields.AUTHOR, label: 'AUTHOR', lineBreak: true, width: '250px' })
-        //     detailsInfo.fields.push({ id: twcTrblTkts.Fields.ASSESSED_BY, label: 'Assessed By', lineBreak: true })
-
-        //     detailsInfo.fields.push({ id: twcTrblTkts.Fields.CUSTOMER, label: 'Customer', lineBreak: true })
-        //     detailsInfo.fields.push({ id: twcTrblTkts.Fields.ASSIGNED_TO, label: 'Assigned To', lineBreak: true })
-        //     detailsInfo.fields.push({ id: twcTrblTkts.Fields.REPORT_ISSUE__WORKS_REQUIRED, width: '100%', label: 'Issue / Works Required', lineBreak: true })
-
-        //     detailsInfo.fields.push({ id: twcTrblTkts.Fields.WORKS_REQUIRED, width: '100%', label: 'Work Required', lineBreak: true })
-        //     // detailsInfo.fields.push({ id: twcTrblTkts.Fields.REPORT_ISSUE__WORKS_REQUIRED, label: 'Resolved By' })
-        //     detailsInfo.fields.push({ id: twcTrblTkts.Fields.SCHEDULED_COMPLETION_DATE, label: 'Scheduled Completion Date', lineBreak: true })
-
-        //     configUIFields.formatPanelFields(dataSource, fieldGroup);
-
-        //     return fieldGroup;
-        // }
-
         function getTKPanelInfo(dataSource, userInfo) {
           //  var fieldGroup = { id: 'trbl-tkts-details', title: 'Create New Trouble Ticket or Provide Safety / Security Feedback', collapsed: false, controls: [] };
             var fieldGroup = { id: 'trbl-tkts-details', title: (dataSource.id) ? `Trouble Ticket [${dataSource.name}]` : 'Create New Trouble Ticket or Provide Safety / Security Feedback', collapsed: false, controls: [] };
@@ -88,9 +64,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var customers = twcUtils.getCustomers(userInfo);
 
             var statuses = twcUtils.getTicketStatus();
-            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.STATUS, label: 'Status', disabled: !userInfo.isEmployee, lineBreak: true, dataSource: statuses, value: dataSource[twcTrblTkts.Fields.STATUS] || statuses[0].value, allowAll: false })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.STATUS, label: 'Status', disabled: !userInfo.isEmployee, dataSource: statuses, value: dataSource[twcTrblTkts.Fields.STATUS] || statuses[0].value, allowAll: false })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.SUBMITTED, label: 'Submitted', lineBreak: true, readOnly: true })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.CUSTOMER, label: 'Customer', dataSource: customers })
-            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.AUTHOR_PHONE_NUMBER, lineBreak: true, label: 'Your Phone Number' })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.AUTHOR_PHONE_NUMBER, lineBreak: true, label: 'Your Phone Number', value: userInfo.profileInfo.phone })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.REPORT_ISSUE__WORKS_REQUIRED, lineBreak: true, width: '100%', rows: 5, label: 'Report Issue / Works Required' })
 
             // @@TODO: JESNA: show list of attached files, see as example: PHOTOS TAKEN
@@ -110,7 +87,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.ASSESSED, label: 'Assessed' })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.CATEGORY, label: 'Category' })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.PRIORITY, lineBreak: true, label: 'Priority' })
-            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.ASSIGNED_TO, lineBreak: true, label: 'Assigned To' })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.ASSIGNED_TO_COMPANY, label: 'Assigned To Company' })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.ASSIGNED_TO, dataSource: [], lineBreak: true, label: 'Assigned To' })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.WORKS_REQUIRED, lineBreak: true, width: '100%', rows: 5, label: 'Work Required' })
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);

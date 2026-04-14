@@ -23,7 +23,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (recordType == twcProfile.Type) { return twcProfile; }
             if (recordType == twcTroubleTkts.Type) { return twcTroubleTkts; }
             if (recordType == twcEquipment.Type) { return twcEquipment; }
-            
+
             throw new Error(`Unrecognised record type: ${recordType}`);
         }
 
@@ -64,7 +64,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var siteFields = getFieldDefinitions(dataSource.Type);
             if (!panelFields.controls) { panelFields.controls = []; }
-            
+
             core.array.each(panelFields.fields, field => {
                 //if (field.type == twcUI.CTRL_TYPE.BUTTON) {
                 if (field.type !== undefined) {
@@ -80,7 +80,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     var columns = [];
                     for (var k in field.fields) {
                         var f = getDataFieldInfo(field, k);
-                       
+
                         var columnOptions = { id: (f) ? f.name.toLowerCase() : k.toLowerCase() }
                         if (f?.type == 'select') {
                             columnOptions.id += '_name'
@@ -161,13 +161,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 // @@NOTE: if we have the name of a foreign table we would have retrieved it using BUILTIN.DF and just appended _name to the field id
                 //         so the data-source would have the value as dataSource.[fkFieldName]_name
                 if (fieldId == 'name' && field.id.indexOf('.') > 0) { fieldId = `${field.id.split('.')[0]}_name`; }
-                
+
                 var control = {
                     type: field.type || twcUI.nsTypeToCtrlType(dataField.field_type),
                     value: dataSource[fieldId],
                     id: field.id.replaceAll('.', '___') // @@IMPORTANT: the 3 underscore are needed to be compatible with jQuery and we use split('___') to get to the field path again, so do not change or if we do change the split('___') too
                 };
 
+                
                 // @@TODO: @@REVIEW: if the dataSource is a loaded object it would have property names determined by the alias
                 //                   but the field id could the the netsuite field id in which case we would not have got the vale with dataSource[fieldId]
                 //                   so we get the value using the .get method (NOTE: if the .get method is not there this may be a different object)

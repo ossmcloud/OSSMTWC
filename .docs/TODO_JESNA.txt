@@ -3,35 +3,30 @@ TODO:
 -----
 
 
-Field:
-    custrecord_twc_trbl_tkt_res_files => this is not required, the resolution files are in a related table
+button Upload resolution photos should only appear when status is:  Assessed, Resolved
+add assigned to based on company selected
+on save record function: if assigned to is selected and status = New then change status to 'Assessed'
+when clicking cancel => ask for comment (mandatory) then set comment into field: CA Taken incl Root Cause
+when clicking resolve => ask:
+    corrective action Date
+    scheduled date
+    comment
 
 
+edit / delete photos:
+    just edit name/description
+    for delete just set 'inactive' = true on TWC File record (soft delete)
 
-SAVE:   
-    check FileCabinet\SuiteScripts\OSSMTWC\ui\modules\oTWC_siteInfoUtils.js =>saveSiteInfo
+    FileCabinet\SuiteScripts\OSSMTWC\ui\js\oTWC_spaceRequest.js
+        manageSRFFile
 
-UI:
-    upload photos:
-        FileCabinet\SuiteScripts\OSSMTWC\ui\js\oTWC_siteAccess.js   => uploadPhotos
-
-    resolution photos
-        // @@TODO: JESNA: show list of attached files, see as example:
-
-ACTIONS:
-    Cancel Ticket
-    
 
 
 TEST WORKFLOW:
     create new ticket as contractor
     create new ticket as customer
-
     cancel ticket as customer
-
     asses ticket as employee
-
     resolve ticket with images as employee
-
     make sure customers can only see their tickets
     make sure contractors can only see their tickets and their customer tickets

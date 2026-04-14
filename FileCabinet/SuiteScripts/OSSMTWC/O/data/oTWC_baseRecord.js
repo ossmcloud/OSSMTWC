@@ -28,7 +28,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             DOCUMENT: 'document',
         }
 
-     
+
         const sanitizeString = (value) => {
             var invalidChars = [
                 { c: ' ', r: '' },
@@ -314,7 +314,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         var hasStdFields = false;
                         for (var f in this.fields) {
                             if (this.fields[f].name == 'created') { hasStdFields = true; }
-                            if (options.noAlias) {
+                            if (options.noAlias || options.useNames) {
                                 sql += selectFormat(this.fields[f], this.fields[f].name);
                             } else {
                                 sql += selectFormat(this.fields[f], f.toLowerCase());
@@ -347,7 +347,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 }
 
                                 sql += `\nand     ${field.name} ${filter.op || filter.operator || '='} ${placeholders}`
-                                
+
                             })
                         } else {
                             for (var f in options.where) {
@@ -357,12 +357,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     if (Array.isArray(options.where[f].values)) {
                                         placeholders = options.where[f].values.map(() => '?').join(', ');
                                         placeholders = `(${placeholders})`;
-                                        params.push(...options.where[f].values);   
+                                        params.push(...options.where[f].values);
                                     } else {
-                                        params.push(options.where[f].values);   
+                                        params.push(options.where[f].values);
                                     }
                                     sql += `\nand     ${field.name} ${options.where[f].op || options.where[f].operator || '='} ${placeholders}`
-                                    
+
                                 } else {
                                     sql += `\nand     ${field.name} = ?`
                                     params.push(options.where[f]);
@@ -399,7 +399,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var sql = { query: sql, params: params }
                 if (options?.getSql) { return sql; }
 
-               //throw new Error(JSON.stringify( sql.query))
+                //throw new Error(JSON.stringify( sql.query))
 
                 if (options?.returnFirst) { return coreSql.first(sql); }
                 return coreSql.run(sql);

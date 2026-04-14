@@ -1059,11 +1059,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function fromJsToNs(nsDate) {
             if (!nsDate) { return nsDate; }
             var dateParts = nsDate.split('-');
-            if (dateParts.length != 3) { return 'Invalid Date'; }
+            if (dateParts.length != 3) { return nsDate; }
             var d = parseInt(dateParts[2], 10);
             var m = parseInt(dateParts[1], 10);
             return `${d}/${m}/${dateParts[0]}`;
         }
+
+        function fromNsToJs(nsDate) {
+            if (!nsDate) { return nsDate; }
+            var dateParts = nsDate.split('/');
+            if (dateParts.length != 3) { return nsDate; }
+            var d = parseInt(dateParts[0], 10).pad(2);
+            var m = parseInt(dateParts[1], 10).pad(2);
+            return `${dateParts[2]}-${m}-${d}`;
+        }
+
 
         function getTicketStatus() {
             return coreSQL.run(`select id as value, name as text from customrecord_twc_trbl_tkt_status where isinactive = 'F' order by custrecord_twc_trbl_tkt_status_sort`)
@@ -1173,6 +1183,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getFilePreviewLink: getFilePreviewLink,
             formatLongDate: formatLongDate,
             fromJsToNs: fromJsToNs,
+            fromNsToJs: fromNsToJs,
 
             today: function () {
                 return coreSQL.first(`select TO_CHAR(CURRENT_DATE, 'YYYY-MM-dd') as today`).today;

@@ -33,9 +33,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     `
                 }
 
-
-
-
                 var actions = '';
 
                 // @@NOTE: an existing ticket that has not been resolved can be cancelled by anybody
@@ -78,8 +75,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             } else {
-                pageData.data.ticketInfo = twcTroubleTicketUtils.getTroubleTickets(null, pageData.userInfo);
-                log.debug("ticketInfo", pageData.data.ticketInfo)
+                pageData.ticketsInfo = twcTroubleTicketUtils.getTroubleTickets(null, pageData.userInfo);
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
                 html = html.replace('{SITE_LOCATOR_PANEL}', twcTroubleTicketUtils.renderTroubleTicketsPanel(pageData.userInfo, pageData.permission.featureId));
             }
@@ -96,8 +92,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var payload = JSON.parse(context.request.body);
                 // @@TODO: TROUBLE_TICKET: implement save
                 log.debug("payload", payload)
-                twcTroubleTicketUtils.saveTktInfo(payload);
-                return { status: 'success' };
+                return { id: twcTroubleTicketUtils.saveTktInfo(payload, userInfo) };
+
             }
             else if (context.request.parameters.action == 'resolve-tkt-status') {
                 var recId = JSON.parse(context.request.body);

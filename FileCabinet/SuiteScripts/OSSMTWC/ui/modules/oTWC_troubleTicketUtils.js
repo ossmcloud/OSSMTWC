@@ -2,37 +2,19 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_troubleTickets.js', '../../data/oTWC_troubleTicketsUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js','../../O/oTWC_nsFileUtils.js','../../data/oTWC_file.js'],
-    (core, coreSQL, twcUtils, twcTrblTkts, twcTrblTktsUI, twcUI, twcConfig, twcSite, twcSiteUI, recu, nsFileUtils,twcFile) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_troubleTickets.js', '../../data/oTWC_troubleTicketsUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/oTWC_nsFileUtils.js', '../../data/oTWC_file.js'],
+    (core, coreSQL, twcUtils, twcTrblTkts, twcTrblTktsUI, twcUI, twcConfig, twcSite, twcSiteUI, recu, nsFileUtils, twcFile) => {
 
         function getTroubleTickets(options, userInfo) {
-
             var ticketFields = twcUtils.getFields(twcTrblTkts.Type);
-            // throw new Error(JSON.stringify(ticketFields))
             var userFields = twcTrblTktsUI.getTicketsTableFields();
 
-            var sqlFields = 's.id, s.id as record_id, s.custrecord_twc_trbl_tkt_site as site_id, BUILTIN.DF(s.custrecord_twc_trbl_tkt_site) as site_id_text';
+            var sqlFields = 's.id, s.id as record_id, s.name, s.custrecord_twc_trbl_tkt_site as site_id, BUILTIN.DF(s.custrecord_twc_trbl_tkt_site) as site_id_text';
             sqlFields += formatUserFields(ticketFields, userFields);
-
-            // core.array.each(userFields, uf => {
-            //     var nsField = siteFields.find(nsf => { return nsf.field_id == uf.field });
-            //     var sqlField = uf.field;
-            //     uf.type = nsField.field_type;
-            //     if (nsField.field_type == 'List/Record') {
-            //         uf.listRecord = true;
-            //         sqlField = `${sqlField} as ${sqlField}, BUILTIN.DF(${sqlField}) as ${sqlField}_text`;
-            //     }
-            //     sqlFields += `, s.${sqlField}`;
-
-            //     if (!uf.label) { uf.label = nsField.field_label; }
-
-            // })
-
 
             // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
             var whereClause = 'where 1 = 1 ';
-            var orderBy = `order by s.${twcTrblTkts.Fields.TROUBLE_TICKET_ID}`;
-            // throw new Error(orderBy)  join    ${twcSite.Type} site on site.id = ${twcTrblTkts.Fields.SITE}
+            var orderBy = `order by s.created desc`;
             var tickets = coreSQL.run(`
                 select  ${sqlFields}
                 from    ${twcTrblTkts.Type} s
@@ -40,9 +22,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 ${orderBy}
             `)
 
-            //throw new Error(tickets)
             return {
-                // getTroubleTickets: getTroubleTickets,
                 userFields: userFields,
                 ticketFields: ticketFields,
                 tickets: tickets,
@@ -58,21 +38,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sqlFields = 's.id, s.id as record_id, s.name, s.custrecord_twc_site_longitude_access, s.custrecord_twc_site_latitude_access';
             sqlFields += formatUserFields(siteFields, userFields);
 
-            // core.array.each(userFields, uf => {
-            //     var nsField = siteFields.find(nsf => { return nsf.field_id == uf.field });
-            //     var sqlField = uf.field;
-            //     uf.type = nsField.field_type;
-            //     if (nsField.field_type == 'List/Record') {
-            //         uf.listRecord = true;
-            //         sqlField = `${sqlField} as ${sqlField}, BUILTIN.DF(${sqlField}) as ${sqlField}_text`;
-            //     }
-            //     sqlFields += `, s.${sqlField}`;
-
-            //     if (!uf.label) { uf.label = nsField.field_label; }
-
-            // })
-
-
             // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSite.Fields.NAME}`;
@@ -85,7 +50,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 ${whereClause} 
                 ${orderBy}
             `)
-
 
             return {
                 siteFields: siteFields,
@@ -100,6 +64,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             core.array.each(userFields, uf => {
                 if (uf.field == 'name' || uf.field == 'custrecord_twc_srf_site') { return; }
                 var nsField = fields.find(nsf => { return nsf.field_id == uf.field });
+
                 var sqlField = uf.field;
                 uf.type = twcUI.nsTypeToTableColumnType(nsField.field_type);
                 if (nsField.field_type == 'Date') {
@@ -205,7 +170,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 throw error;
             }
         }
-         function cancelTicket(tkt_id) {
+        function cancelTicket(tkt_id) {
             try {
                 if (!tkt_id) { return; }
                 log.debug('tkt_id', tkt_id)
@@ -216,7 +181,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
         }
 
-        function saveTktInfo(payload) {
+        function saveTktInfo(payload, userInfo) {
             // @@NOTE: @@REVIEW: this routine could be generalised to be used with different record types, not only twcSite
 
             var submitInfo = {};
@@ -224,25 +189,42 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             for (var k in payload) {
                 if (k == 'id') { continue; }
-                if(k == 'siteId') { continue; }
+                if (k == 'siteId') { continue; }
                 // @@NOTE: fields with '___' means they are linked record fields, we first update the site info, then the linked records
                 var fieldPath = k.split('___');
                 if (fieldPath.length == 1) {
+
+                    var value = payload[k];
+
+
+                    var fieldInfo = null;
+                    for (var f in twcTrblTkts.FieldsInfo) {
+                        if (twcTrblTkts.FieldsInfo[f].name == k) {
+                            fieldInfo = twcTrblTkts.FieldsInfo[f];
+                            break;
+                        }
+                    }
+                    if (fieldInfo.type == 'date') {
+                        value = new Date(value);
+                    }
+
                     submitInfo[twcTrblTkts.Type].fields.push(k);
-                    submitInfo[twcTrblTkts.Type].values.push(payload[k])
+                    submitInfo[twcTrblTkts.Type].values.push(value)
                 }
             }
+
             var errors = [];
 
             if (payload.id) {
                 recu.submit(twcTrblTkts.Type, payload.id, submitInfo[twcTrblTkts.Type].fields, submitInfo[twcTrblTkts.Type].values);
 
+                /*
                 // @@NOTE: now we load the linked record fields changes into submitInfo object as we could have more than one
                 var tktFields = twcTrblTkts.getFields();
                 var tkt = twcTrblTkts.get(payload.id);
                 for (var k in payload) {
                     if (k == 'id') { continue; }
-                     if(k == 'siteId') { continue; }
+                    if (k == 'siteId') { continue; }
                     var fieldPath = k.split('___');
                     if (fieldPath.length > 1) {
                         var tktField = tktFields.find(tk => { return tk.field_id == fieldPath[0]; })
@@ -272,46 +254,65 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
 
                 }
+                */
             }
             else {
+                if (!payload.siteId) { throw new Error('Site ID cannot be empty'); }
+
                 var newTkt = twcTrblTkts.get();
                 newTkt.tktStatus = twcTrblTkts.Status.New;
-                
+                newTkt.r.set('name', 'XYZ');
+
+
+
                 submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.STATUS)
                 submitInfo[twcTrblTkts.Type].values.push(twcTrblTkts.Status.New)
 
-                if(payload.siteId){
-                    submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.SITE)
-                    submitInfo[twcTrblTkts.Type].values.push(payload.siteId)
+                submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.SITE)
+                submitInfo[twcTrblTkts.Type].values.push(payload.siteId)
 
+                submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.SUBMITTED)
+                submitInfo[twcTrblTkts.Type].values.push(new Date())
+
+
+                submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.AUTHOR)
+                submitInfo[twcTrblTkts.Type].values.push(userInfo.profile)
+
+                if (!payload[twcTrblTkts.Fields.AUTHOR_PHONE_NUMBER]) {
+                    submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.AUTHOR_PHONE_NUMBER)
+                    submitInfo[twcTrblTkts.Type].values.push(userInfo.profileInfo.phone)
                 }
 
-                log.debug("SUbmit Info",submitInfo)
+
                 core.array.each(submitInfo[twcTrblTkts.Type].fields, (field, idx) => {
                     if (!newTkt.hasField(field)) { return; }
                     newTkt.set(field, submitInfo[twcTrblTkts.Type].values[idx]);
                 })
+
+                //throw new Error(newTkt.r.r.getValue('name'))
 
                 payload.id = newTkt.save();
             }
 
             // @@TODO: better error message
             if (errors.length > 0) { throw new Error(JSON.stringify(errors)); }
+
+            return payload.id;
         }
 
-            function saveTktImage(options) {
+        function saveTktImage(options) {
 
             var fileType = coreSQL.first(`select id from customrecord_twc_file_type where custrecord_twc_file_type_image = 'T' order by created`)?.id;
- 
+
             var tktInfo = coreSQL.first(`
                 select  tk.id, site.${twcSite.Fields.SITE_ID} as site_id
                 from    ${twcTrblTkts.Type} tk
                 join    ${twcSite.Type} site on site.id = tk.${twcTrblTkts.Fields.SITE}
                 where   tk.id = ${options.tkt}
             `)
-            log.debug('tktInfo',tktInfo)
+            log.debug('tktInfo', tktInfo)
             var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/${tktInfo.id}`);
-            log.debug('tktFolder',tktFolder)
+            log.debug('tktFolder', tktFolder)
 
             var nsFile = nsFileUtils.writeFile({
                 name: `${options.tkt}_${options.photo.name}`,
@@ -319,7 +320,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 content: options.photo.content,
                 folder: tktFolder,
             });
-            log.debug('nsFile',nsFile)
+            log.debug('nsFile', nsFile)
 
             var tktImage = twcFile.get();
             tktImage.name = options.photo.name;
@@ -329,7 +330,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             tktImage.file = nsFile.fileId;
             tktImage.r_type = fileType;
             tktImage.save();
-            log.debug('tktImage',tktImage)
+            log.debug('tktImage', tktImage)
             //recu.submit(twcSaf.Type, options.saf, [twcSaf.Fields.STATUS, twcSaf.Fields.COMPLETION_PHOTOS_RECEIVED], [twcSaf.Status.PhotosReceived, new Date()])
 
         }
@@ -338,17 +339,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             getTroubleTickets: getTroubleTickets,
             resolveTicket: resolveTicket,
-            cancelTicket:cancelTicket,
-            saveTktInfo:saveTktInfo,
-            saveTktImage:saveTktImage,
+            cancelTicket: cancelTicket,
+            saveTktInfo: saveTktInfo,
+            saveTktImage: saveTktImage,
             getTKTInfoPanels: twcTrblTktsUI.getTKTInfoPanels,
             renderTroubleTicketsPanel: renderTroubleTicketsPanel,
             getTrblTktInfo: (pageData) => {
                 var tkt = {};
                 if (pageData.recId) {
-                    tkt = coreSQL.first(`select * from ${twcTrblTkts.Type} where id = ${pageData.recId}`);
+                    //tkt = coreSQL.first(`select * from ${twcTrblTkts.Type} where id = ${pageData.recId}`);
+                    tkt = twcTrblTkts.select({ useNames: true, returnFirst: true, where: `and id = ${pageData.recId}` });
                     // @@NOTE: we need field siteId to be populated for the UI to work
                     tkt.siteId = tkt[twcTrblTkts.Fields.SITE];
+
                     if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, tkt[twcTrblTkts.Fields.CUSTOMER])) {
                         throw new Error('You do not have access to see this Trouble Ticket record');
                     }
@@ -361,7 +364,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     tkt.siteId = pageData.siteId;
                 }
 
-                
+
 
                 return tkt;
             },

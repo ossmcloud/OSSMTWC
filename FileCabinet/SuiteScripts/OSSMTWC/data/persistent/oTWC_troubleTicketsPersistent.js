@@ -7,7 +7,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordType = 'customrecord_twc_trbl_tkt';
         var _recordFields = {
             NAME: 'name',
-            TROUBLE_TICKET_ID: 'custrecord_twc_trbl_tkt_id',
             SITE: 'custrecord_twc_trbl_tkt_site',
             STATUS: 'custrecord_twc_trbl_tkt_status',
             SUBMITTED: 'custrecord_twc_trbl_tkt_submitted',
@@ -25,21 +24,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CORRECTIVE_ACTION: 'custrecord_twc_trbl_tkt_corrective_act',
             SCHEDULED_COMPLETION_DATE: 'custrecord_twc_trbl_tkt_sch_compltn_date',
             CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE: 'custrecord_twc_trbl_tkt_cor_act_tkn_root',
-            RESOLUTION_PHOTOS_TAKEN: 'custrecord_twc_trbl_tkt_resltn_photo_tkn',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
             MODIFIED_BY: 'lastmodifiedby',
-            RESOLUTION_FILES: 'custrecord_twc_trbl_tkt_res_files',
-
         }
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
-            TROUBLE_TICKET_ID: { name: 'custrecord_twc_trbl_tkt_id', type: 'integer', alias: 'troubleTicketID', display: 'normal', mandatory: false },
             SITE: { name: 'custrecord_twc_trbl_tkt_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
             STATUS: { name: 'custrecord_twc_trbl_tkt_status', type: 'select', alias: 'status', display: 'normal', mandatory: false, recordType: 'customrecord_twc_trbl_tkt_status' },
             SUBMITTED: { name: 'custrecord_twc_trbl_tkt_submitted', type: 'datetimetz', alias: 'submitted', display: 'normal', mandatory: false },
-            AUTHOR: { name: 'custrecord_twc_trbl_tkt_author', type: 'text', alias: 'author', display: 'normal', mandatory: false },
+            AUTHOR: { name: 'custrecord_twc_trbl_tkt_author', type: 'select', alias: 'author', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             AUTHOR_PHONE_NUMBER: { name: 'custrecord_twc_trbl_tkt_author_ph_no', type: 'text', alias: 'authorPhoneNumber', display: 'normal', mandatory: false },
             REPORT_ISSUE__WORKS_REQUIRED: { name: 'custrecord_twc_trbl_tkt_issue_works', type: 'clobtext', alias: 'reportIssueWorksRequired', display: 'normal', mandatory: false },
             ASSESSED_BY: { name: 'custrecord_twc_trbl_tkt_assessed_by', type: 'select', alias: 'assessedby', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
@@ -53,7 +48,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CORRECTIVE_ACTION: { name: 'custrecord_twc_trbl_tkt_corrective_act', type: 'date', alias: 'correctiveAction', display: 'normal', mandatory: false },
             SCHEDULED_COMPLETION_DATE: { name: 'custrecord_twc_trbl_tkt_sch_compltn_date', type: 'date', alias: 'scheduledCompletionDate', display: 'normal', mandatory: false },
             CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE: { name: 'custrecord_twc_trbl_tkt_cor_act_tkn_root', type: 'clobtext', alias: 'correctiveActionTakeninclRootCause', display: 'normal', mandatory: false },
-            RESOLUTION_FILES: { name: 'custrecord_twc_trbl_tkt_res_files', type: 'multiselect', alias: 'resolutionFiles', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file,' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -68,12 +62,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get('name');
             } set name(value) {
                 this.set('name', value)
-            }
-            
-            get troubleTicketID() {
-                return this.get(_recordFields.TROUBLE_TICKET_ID);
-            } set troubleTicketID(value) {
-                this.set(_recordFields.TROUBLE_TICKET_ID, value)
             }
             
             get site() {
@@ -101,6 +89,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set author(value) {
                 this.set(_recordFields.AUTHOR, value)
             }
+            get authorName() { return this.getText(_recordFields.AUTHOR); }
             
             get authorPhoneNumber() {
                 return this.get(_recordFields.AUTHOR_PHONE_NUMBER);
@@ -113,13 +102,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set reportIssueWorksRequired(value) {
                 this.set(_recordFields.REPORT_ISSUE__WORKS_REQUIRED, value)
             }
-            
-            get photosTaken() {
-                return this.get(_recordFields.PHOTOS_TAKEN);
-            } set photosTaken(value) {
-                this.set(_recordFields.PHOTOS_TAKEN, value)
-            }
-            get photosTakenName() { return this.getText(_recordFields.PHOTOS_TAKEN); }
             
             get assessedby() {
                 return this.get(_recordFields.ASSESSED_BY);
@@ -193,13 +175,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE, value)
             }
             
-            get resolutionPhotosTaken() {
-                return this.get(_recordFields.RESOLUTION_PHOTOS_TAKEN);
-            } set resolutionPhotosTaken(value) {
-                this.set(_recordFields.RESOLUTION_PHOTOS_TAKEN, value)
-            }
-            get resolutionPhotosTakenName() { return this.getText(_recordFields.RESOLUTION_PHOTOS_TAKEN); }
-            
             get created() {
                 return this.get(_recordFields.CREATED);
             } set created(value) {
@@ -223,13 +198,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set last_modified_by(value) {
                 this.set(_recordFields.MODIFIED_BY, value)
             }
-
-            get resolutionFiles() {
-                return this.get(_recordFields.RESOLUTION_FILES);
-            } set resolutionFiles(value) {
-                this.set(_recordFields.RESOLUTION_FILES, value)
-            }
-            get resolutionFilesName() { return this.getText(_recordFields.RESOLUTION_FILES); }
             
         }
 

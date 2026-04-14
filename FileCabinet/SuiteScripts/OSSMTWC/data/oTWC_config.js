@@ -16,7 +16,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var userInfo = coreSQL.first({
                 query: `
-                    select  id, type, email, entitytitle as name
+                    select  id, type, email, entitytitle as name, NVL(mobilephone, phone) as phone
                     from    entity
                     where   id = ?
                 `,
@@ -68,7 +68,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                     userInfo.contact = coreSQL.first({
                         query: `
-                            select  id, email, entitytitle as name
+                            select  id, email, entitytitle as name, NVL(mobilephone, phone) as phone
                             from    entity e
                             join    customercompanycontact ce on ce.contactscompany = ?
                             where email = ?
@@ -87,7 +87,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             }
 
-            userInfo.profile = coreSQL.first(`select id from customrecord_twc_prof where custrecord_twc_prof_username = ${userInfo.recordId}`)?.id || null;
+            var profileInfo = coreSQL.first(`select id, custrecord_twc_prof_phone as phone from customrecord_twc_prof where custrecord_twc_prof_username = ${userInfo.recordId}`);
+
+            userInfo.profile = profileInfo?.id || null;
+            userInfo.profileInfo = profileInfo;
 
             if (!userInfo.profile) { throw new Error('Your user is not associated to any profile, please contact TWC administrator to set you up.') }
 
