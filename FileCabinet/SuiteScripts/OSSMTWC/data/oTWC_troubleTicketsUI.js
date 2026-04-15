@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safAction.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_file.js', './oTWC_troubleTickets.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile, twcTrblTkts) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safAction.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_file.js', './oTWC_troubleTickets.js','./oTWC_fileUI.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile, twcTrblTkts,twcFileUI) => {
         var _safUrl = null;
         var _allowedSafTypes = null;
 
@@ -81,6 +81,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getTKPanelAssessment(dataSource, userInfo) {
             var fieldGroup = { id: 'trbl-tkts-assessment', title: 'Assessment', collapsed: false, controls: [] };
 
+            var assignedToComp= dataSource.custrecord_twc_trbl_tkt_assigned_to_comp
+            var assignedTo= dataSource.custrecord_twc_trbl_tkt_assigned_to
+
+            var compProfiles = [];
+             if (assignedToComp) {
+                compProfiles = twcUtils.getProfiles({ company: assignedToComp, canAttend: false })
+            }
+
             var newDetailsInfo = { id: 'trbl-tkts-assessment-info', fields: [] };
             fieldGroup.controls.push(newDetailsInfo);
 
@@ -88,7 +96,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.CATEGORY, label: 'Category' })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.PRIORITY, lineBreak: true, label: 'Priority' })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.ASSIGNED_TO_COMPANY, label: 'Assigned To Company' })
-            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.ASSIGNED_TO, dataSource: [], lineBreak: true, label: 'Assigned To' })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.ASSIGNED_TO, value:assignedTo, dataSource:compProfiles, lineBreak: true, label: 'Assigned To' })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.WORKS_REQUIRED, lineBreak: true, width: '100%', rows: 5, label: 'Work Required' })
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
@@ -173,11 +181,22 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroups;
         }
 
+        function getTktChildRecord(tkt, childRecord, userInfo) {
+            var fieldGroup = [];
+            if (childRecord.type == twcFileUI.RecordType) {
+                fieldGroup = twcFileUI.getUIFields(childRecord, userInfo);
+            } else {
+                throw new Error(`No Child Record Found in payload (type: ${childRecord.type})`)
+            }
+            configUIFields.formatPanelFields(childRecord, fieldGroup);
+            return fieldGroup;
+        }
 
         return {
 
             getTicketsTableFields: getTicketsTableFields,
             getTKTInfoPanels: getTKTUIPanels,
+            getTktChildRecord:getTktChildRecord
 
         }
     });

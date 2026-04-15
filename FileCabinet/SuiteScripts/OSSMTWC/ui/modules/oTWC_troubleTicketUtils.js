@@ -159,22 +159,58 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             html = html.replace('{ACTION_NEW_SITE}', twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'New Site', id: 'twc-action-new-site' }));
             return html;
         }
-
-        function resolveTicket(tkt_id) {
+         function fromJsToNs(nsDate) {
+            if (!nsDate) { return nsDate; }
+            var dateParts = nsDate.split('-');
+            if (dateParts.length != 3) { return 'Invalid Date'; }
+            var d = parseInt(dateParts[2], 10);
+            var m = parseInt(dateParts[1], 10);
+            return `${d}/${m}/${dateParts[0]}`;
+        }
+        function resolveTicket(tktInfo) {
             try {
-                if (!tkt_id) { return; }
-                log.debug('tkt_id', tkt_id)
-                recu.submit(twcTrblTkts.Type, tkt_id, [twcTrblTkts.Fields.STATUS], [twcUtils.tktStatus.Resolved, true]);
-                //  tkt.save();
+                if (!tktInfo) { return; }
+                log.debug('tktInfo', tktInfo)
+                 log.debug('twcTrblTkts', twcTrblTkts)
+                var submitInfo ={}
+                submitInfo[twcTrblTkts.Type] = { id: tktInfo.tkt, fields: [], values: [] };
+                for (let k in tktInfo) {
+                    if (k === 'tkt') continue;
+                    if (k == twcTrblTkts.Fields.SCHEDULED_COMPLETION_DATE || k == twcTrblTkts.Fields.CORRECTIVE_ACTION) {
+                        submitInfo[twcTrblTkts.Type].fields.push(k);
+                        submitInfo[twcTrblTkts.Type].values.push(fromJsToNs(tktInfo[k]));
+                    }else{
+                        submitInfo[twcTrblTkts.Type].fields.push(k);
+                        submitInfo[twcTrblTkts.Type].values.push(tktInfo[k]);
+                    }
+                        
+                }
+                submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.STATUS);
+                submitInfo[twcTrblTkts.Type].values.push(twcUtils.tktStatus.Resolved);
+                                 log.debug('submitInfo', submitInfo)
+
+                recu.submit(twcTrblTkts.Type, tktInfo.tkt, submitInfo[twcTrblTkts.Type].fields, submitInfo[twcTrblTkts.Type].values);
+
             } catch (error) {
                 throw error;
             }
         }
-        function cancelTicket(tkt_id) {
+        function cancelTicket(tktInfo) {
             try {
-                if (!tkt_id) { return; }
-                log.debug('tkt_id', tkt_id)
-                recu.submit(twcTrblTkts.Type, tkt_id, [twcTrblTkts.Fields.STATUS], [twcUtils.tktStatus.Cancelled, true]);
+                if (!tktInfo) { return; }
+                log.debug('tktInfo', tktInfo)
+                 var submitInfo ={}
+                submitInfo[twcTrblTkts.Type] = { id: tktInfo.tkt, fields: [], values: [] };
+                 for (let k in tktInfo) {
+                    if (k === 'tkt') continue;
+                        submitInfo[twcTrblTkts.Type].fields.push(k);
+                        submitInfo[twcTrblTkts.Type].values.push(tktInfo[k]);   
+                }
+                submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.STATUS);
+                submitInfo[twcTrblTkts.Type].values.push(twcUtils.tktStatus.Cancelled);
+                recu.submit(twcTrblTkts.Type, tktInfo.tkt, submitInfo[twcTrblTkts.Type].fields, submitInfo[twcTrblTkts.Type].values);
+
+                //recu.submit(twcTrblTkts.Type, tkt_id, [twcTrblTkts.Fields.STATUS], [twcUtils.tktStatus.Cancelled, true]);
                 //  tkt.save();
             } catch (error) {
                 throw error;
@@ -184,6 +220,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function saveTktInfo(payload, userInfo) {
             // @@NOTE: @@REVIEW: this routine could be generalised to be used with different record types, not only twcSite
 
+            log.debug("payload >>>",payload)
             var submitInfo = {};
             submitInfo[twcTrblTkts.Type] = { id: payload.id, fields: [], values: [] };
 
@@ -204,7 +241,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             break;
                         }
                     }
-                    if (fieldInfo.type == 'date') {
+                    if (fieldInfo?.type == 'date') {
                         value = new Date(value);
                     }
 
@@ -216,6 +253,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var errors = [];
 
             if (payload.id) {
+
+                let rec = twcTrblTkts.get(payload.id); 
+                let tktStatus = rec.status;
+    
+                //@@NOTE Checks if Status in page is changed and value is NEW, If status field not changed, check for value from Trbl Tkt Record is New or Not.
+                let assignedToIndex = submitInfo[twcTrblTkts.Type].fields.indexOf(twcTrblTkts.Fields.ASSIGNED_TO);
+                let statusIndex = submitInfo[twcTrblTkts.Type].fields.indexOf(twcTrblTkts.Fields.STATUS);
+
+                if (assignedToIndex !== -1 && ((statusIndex !== -1 && submitInfo[twcTrblTkts.Type].values[statusIndex] == twcTrblTkts.Status.New) || tktStatus == 1)) {
+                    statusIndex !== -1
+                        ? submitInfo[twcTrblTkts.Type].values[statusIndex] = twcTrblTkts.Status.Assessed
+                        : (submitInfo[twcTrblTkts.Type].fields.push('custrecord_twc_trbl_tkt_status'),
+                            submitInfo[twcTrblTkts.Type].values.push(twcTrblTkts.Status.Assessed));
+                }
                 recu.submit(twcTrblTkts.Type, payload.id, submitInfo[twcTrblTkts.Type].fields, submitInfo[twcTrblTkts.Type].values);
 
                 /*
@@ -264,9 +315,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 newTkt.r.set('name', 'XYZ');
 
 
+                let assignedToIndex = submitInfo[twcTrblTkts.Type].fields.indexOf(twcTrblTkts.Fields.ASSIGNED_TO);
+                if (assignedToIndex !== -1) {
+                    submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.STATUS)
+                    submitInfo[twcTrblTkts.Type].values.push(twcTrblTkts.Status.Assessed)
+                } else {
+                    submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.STATUS)
+                    submitInfo[twcTrblTkts.Type].values.push(twcTrblTkts.Status.New)
 
-                submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.STATUS)
-                submitInfo[twcTrblTkts.Type].values.push(twcTrblTkts.Status.New)
+                }
 
                 submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.SITE)
                 submitInfo[twcTrblTkts.Type].values.push(payload.siteId)
@@ -297,7 +354,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             // @@TODO: better error message
             if (errors.length > 0) { throw new Error(JSON.stringify(errors)); }
 
+            deleteTrblTktsFile(payload);
+
             return payload.id;
+        }
+
+
+         function deleteTrblTktsFile(payload) {
+            log.debug('payload...',payload)
+            if (!payload.files_deleted) { return; }
+            core.array.each(payload.files_deleted, file => {
+                // @@TODO: delete actual file
+                recu.submit(twcFile.Type, file.id, 'isinactive', true);
+            })
         }
 
         function saveTktImage(options) {
@@ -367,6 +436,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
                 return tkt;
+            },
+            getEditFileRecord: (options, userInfo) => {
+                log.debug("TKt", options)
+                // throw new Error(JSON.stringify("tkt..",options))
+                var tkt = twcTrblTkts.get(options.tkt.id);
+                log.debug("TKt 22", tkt)
+                tkt.copyFromObject(options.tkt);
+                var fileRec = null;
+                if (options.file) {
+                    // fileRec = twcFile.get(options.file.id);  //@@NOTE this code not working, tried to load the record using belwo line of code, Not working
+                    fileRec = recu.load(twcFile.Type, parseInt(options.file.id), false)  
+                    log.debug("fileRec", fileRec)
+                    fileRec.copyFromObject(options.file);
+                } else {
+                    throw new Error(`No Child Record Found in payload`)
+                }
+
+                throw new Error(JSON.stringify(fileRec))
+                return twcTrblTktsUI.getTktChildRecord(tkt, fileRec, userInfo);
             },
         }
     });

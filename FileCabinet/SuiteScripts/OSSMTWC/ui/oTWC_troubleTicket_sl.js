@@ -3,8 +3,8 @@
  * @NScriptType Suitelet
 
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_troubleTicketUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../ui/modules/oTWC_siteInfoUtils.js', '../data/oTWC_troubleTickets.js', '../O/controls/oTWC_ui_ctrl.js'],
-    function (core, cored, coreSql, uis, twcBaseView, twcConfig, twcTroubleTicketUtils, twcUIPanel, twcSiteInfoUtils, twcTkt, twcUI) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_troubleTicketUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../ui/modules/oTWC_siteInfoUtils.js', '../data/oTWC_troubleTickets.js', '../O/controls/oTWC_ui_ctrl.js','../data/oTWC_utils.js'],
+    function (core, cored, coreSql, uis, twcBaseView, twcConfig, twcTroubleTicketUtils, twcUIPanel, twcSiteInfoUtils, twcTkt, twcUI,twcUtils) {
         var PAGE_VERSION = 'v0.01';
 
         var suiteLet = uis.new({ title: 'TWC Trouble Ticket', script: 'SuiteScripts/OSSMTWC/ui/oTWC_troubleTicket_cs.js' });
@@ -43,8 +43,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (pageData.trblTktInfo.id) {
                     if (pageData.userInfo.isEmployee) {
                         if (tktStatus != twcTkt.Status.Resolved) {
-                            actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Upload Resolution Photos', id: 'upload-resolution-photo' });
                             actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Resolve', id: 'resolve-button' });
+                        }
+                        if(tktStatus == twcTkt.Status.Resolved ||tktStatus == twcTkt.Status.Assessed){
+                            actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Upload Resolution Photos', id: 'upload-resolution-photo' });
                         }
                     } else {
                         if (tktStatus != twcTkt.Status.New) { pageData.forceViewOnly = true; }
@@ -67,8 +69,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // if (pageData.editMode) { actions = ''; }
                 if (pageData.editMode) {
                     actions = '';
-                    actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Upload Resolution Photos', id: 'upload-resolution-photo' });
-
+                        if(tktStatus == twcTkt.Status.Resolved ||tktStatus == twcTkt.Status.Assessed){
+                            actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Upload Resolution Photos', id: 'upload-resolution-photo' });
+                        }
                 }
 
                 if (actions) { html = html.replaceAll('<div id="custom-actions"></div>', `<div id="custom-actions">${actions}</div>`); }
@@ -113,13 +116,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return { status: 'success' };
 
             }
-            //  else if (context.request.parameters.action == 'save-new-tkt') {
-            //     var userInfo = twcConfig.userInfo(context);
-            //     var payload = JSON.parse(context.request.body);
-            //     log.debug("PAYLOAD",payload)
-            //     return twcTroubleTicketUtils.saveNewTkt(payload, userInfo);
+             else if (context.request.parameters.action == 'edit-file') {
 
-            // }
+                var payload = JSON.parse(context.request.body);
+
+                log.debug("edit file",payload)
+                var fields = twcTroubleTicketUtils.getEditFileRecord(payload, userInfo);
+                return fields;
+            }
+             else if (context.request.parameters.action == 'get-company-profile') {
+                var payload = JSON.parse(context.request.body);
+                return { data: twcUtils.getProfiles({ company: payload.company, canAttend: false }) };
+            }
             else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);
             }

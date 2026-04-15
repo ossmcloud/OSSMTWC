@@ -3,17 +3,17 @@ TODO:
 -----
 
 
-button Upload resolution photos should only appear when status is:  Assessed, Resolved
-add assigned to based on company selected
-on save record function: if assigned to is selected and status = New then change status to 'Assessed'
-when clicking cancel => ask for comment (mandatory) then set comment into field: CA Taken incl Root Cause
-when clicking resolve => ask:
+button Upload resolution photos should only appear when status is:  Assessed, Resolved                   =>DONE
+add assigned to based on company selected                                                                =>DONE
+on save record function: if assigned to is selected and status = New then change status to 'Assessed'    =>DONE  (Please check if the conditions are correct) TroubleTicketUtils.js line 260 and 318
+when clicking cancel => ask for comment (mandatory) then set comment into field: CA Taken incl Root Cause =>DONE
+when clicking resolve => ask:                                                                             =>DONE
     corrective action Date
     scheduled date
     comment
 
 
-edit / delete photos:
+edit / delete photos:                                                                                     => DELETE operation DONE, EDIT some errors and not complete TroubleTicketUtils.js line 448 code not working
     just edit name/description
     for delete just set 'inactive' = true on TWC File record (soft delete)
 

@@ -154,9 +154,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.#changes[e.id] = e.value;
                         this.dirty = true
 
-                        if (e.id == e.id == twcTkt.Fields.ASSIGNED_TO_COMPANY) {
-                            // @@TODO: JESNA: load profile associated to the company
-                            //  see FileCabinet\SuiteScripts\OSSMTWC\ui\js\oTWC_siteAccess.js @ line 510
+                        if (e.id == twcTkt.Fields.ASSIGNED_TO_COMPANY) {
+                             this.post({ action: 'get-company-profile' }, { company: e.value })
+                            .then(res => {
+                                this.ui.getControl(twcTkt.Fields.ASSIGNED_TO).setDataSource(res.data);
+                                this.ui.controls.find(c => { return c.id == twcTkt.Fields.ASSIGNED_TO }).dataSource = res.data;
+                            })
+                            .catch(err => { dialog.error(err); });
                         }
 
                         if (e.id == twcTkt.Fields.CATEGORY || e.id == twcTkt.Fields.PRIORITY || e.id == twcTkt.Fields.ASSIGNED_TO || e.id == twcTkt.Fields.ASSIGNED_TO_COMPANY) {
@@ -197,31 +201,201 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             }
 
-            async resolveTicket() {
-                try {
-                    await dialog.confirmAsync('Are you sure you want to resolve this ticket?')
-                    await this.post({ action: 'resolve-tkt-status' }, this.data.trblTktInfo.id);
-                    location.reload();
-
-                } catch (error) {
-                    dialog.error(error);
-                }
-            }
 
             async cancelTicket() {
+                var formConfig = {
+                    controls: [
+                        { 
+                            type: twcUI.CTRL_TYPE.TEXTAREA, 
+                            id: twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE, 
+                            value: '', 
+                            width: '100%', 
+                            rows: 7 
+                        },
+                    ]
+                };
+
+                var form = twcUI.init(formConfig);
+
+                dialog.open({
+                    title: 'Cancel Ticket',
+                    content: form.ui,
+                    size: { width: '500px', height: '300px' },
+                    ok: () => {
+                        try {
+                            this.wait();
+
+                            var payload = form.getValues();
+                            payload.tkt = this.data.trblTktInfo.id
+
+                            if (!payload[twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE] || !payload[twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE].trim()) {
+                                throw new Error('Please specify a comment');
+                            }
+
+                            this.post({ action: 'cancel-tkt-status' }, payload).then(resp => {
+                                if (resp.error) {
+                                    this.waitClose();
+                                    dialog.error(resp.error);
+                                    return;
+                                }
+                                location.reload();
+                            }).catch(err => {
+                                dialog.error(err);
+                                this.waitClose();
+                            });
+
+                            return true;
+
+                        } catch (error) {
+                            this.waitClose();
+                            dialog.error(error);
+                            return false;
+                        }
+                    }
+                });
+            }
+
+            async resolveTicket() {
+                var formConfig = {
+                    controls: [
+                        { 
+                            type: twcUI.CTRL_TYPE.TEXTAREA, 
+                            id: twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE, 
+                            label: 'Comment',
+                            value: '', 
+                            width: '100%', 
+                            rows: 7 
+                        },
+                        {
+                            type: twcUI.CTRL_TYPE.DATE,
+                            id: twcTkt.Fields.SCHEDULED_COMPLETION_DATE,
+                            label: 'Scheduled Date',
+                            value: '',
+                            lineBreak: true
+                        },
+                        {
+                            type: twcUI.CTRL_TYPE.DATE,
+                            label: 'Corrective Action Date',
+                            id: twcTkt.Fields.CORRECTIVE_ACTION,
+                            value: '',
+                            lineBreak: true
+                        }
+                    ]
+                };
+
+                var form = twcUI.init(formConfig);
+
+                dialog.open({
+                    title: 'Resolve Ticket',
+                    content: form.ui,
+                    size: { width: '500px', height: '350px' },
+                    ok: () => {
+                        try {
+                            this.wait();
+
+                            var payload = form.getValues();
+                            payload.tkt = this.data.trblTktInfo.id;
+
+                            if (!payload[twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE] || !payload[twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE].trim()) {
+                                throw new Error('Please specify a comment');
+                            }
+
+                            if (!payload[twcTkt.Fields.SCHEDULED_COMPLETION_DATE]) {
+                                throw new Error('Please select scheduled Date');
+                            }
+
+                            if (!payload[twcTkt.Fields.CORRECTIVE_ACTION]) {
+                                throw new Error('Please select Corrective Action Date');
+                            }
+
+
+                            this.post({ action: 'resolve-tkt-status' }, payload).then(resp => {
+                                if (resp.error) {
+                                    this.waitClose();
+                                    dialog.error(resp.error);
+                                    return;
+                                }
+                                location.reload();
+                            }).catch(err => {
+                                dialog.error(err);
+                                this.waitClose();
+                            });
+
+                            return true;
+
+                        } catch (error) {
+                            this.waitClose();
+                            dialog.error(error);
+                            return false;
+                        }
+                    }
+                });
+            }
+
+            manageFile(tktfFile, table) {
                 try {
-                    await dialog.confirmAsync('Are you sure you want to cancel this ticket?')
-                    await this.post({ action: 'cancel-tkt-status' }, this.data.trblTktInfo.id);
-                    location.reload();
+                    if (!tktfFile) { tktfFile = {}; }
+                    if (this.deleteRecord(tktfFile, table)) { return; }
+
+                    var res = this.postSync({ action: 'edit-file' }, { tkt: this.data.trblTktInfo, file: tktfFile })
+                    var form = twcUIPanel.ui(res);
+                    form.on('change', e => {
+                        if (e.id == 'name') {
+                            e.target.readFile(file => {
+                                tktfFile.fileObject = file;
+                                tktfFile.name = file.name;
+                            })
+                        }
+                    });
+
+                    dialog.confirm({ title: 'manage file', message: form.ui, width: '600px', height: '400px' }, () => {
+                        try {
+                            var obj = form.getValues(true);
+                            for (var k in obj) {
+                                if (k == 'name') { continue; }
+                                if (obj[k]?.value !== undefined) {
+                                    tktfFile[k] = obj[k].value;
+                                    tktfFile[k + '_name'] = obj[k].text;
+                                } else {
+                                    tktfFile[k] = obj[k];
+                                }
+                            }
+                            tktfFile.dirty = true;
+
+                            if (!this.data.trblTktInfo.files) { this.data.trblTktInfo.files = table.data; }
+                            if (this.data.trblTktInfo.files.indexOf(tktfFile) < 0) { this.data.trblTktInfo.files.push(tktfFile); }
+                            table.render(this.data.trblTktInfo.files, true)
+
+                            this.dirty = true
+                        } catch (error) {
+                            dialog.error(error);
+                            return false;
+                        }
+                    })
 
                 } catch (error) {
                     dialog.error(error);
                 }
+            
+
             }
 
+            deleteRecord(tktRecord, table) {
+                if (tktRecord.delete) {
+                    console.log("tktRecord",tktRecord)
+                    if (tktRecord.id) {
+                        console.log("his.data.trblTktInfo",this.data.trblTktInfo)
 
-            manageFile(rowData, table) {
-
+                        if (!this.data.trblTktInfo['files_deleted']) { this.data.trblTktInfo['files_deleted'] = []; }
+                        this.data.trblTktInfo['files_deleted'].push(tktRecord);
+                    }
+                     console.log("his.data.trblTktInfo del",this.data.trblTktInfo['files_deleted'])
+                   //throw new Error(JSON.stringify(this.data.trblTktInfo))
+                    table.data.splice(table.data.indexOf(tktRecord), 1);
+                    table.render(table.data, true);
+                    this.dirty = true
+                    return true;
+                }
             }
 
             uploadPhotos() {
@@ -343,10 +517,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     if (!this.dirty) { throw new Error('The record has not changed'); }
 
+                    //throw new Error(JSON.stringify(this.data))
                     var payload = this.#changes;
+                  // throw new Error(JSON.stringify(payload))
                     payload.id = window.twc.page.data.recId
                     payload.siteId = window.twc.page.data.siteInfo.site.id
-
+                    payload.files_deleted=this.data.trblTktInfo['files_deleted']
                     var resp = await this.post({ action: 'save' }, payload);
                     this.dirty = false;
 
