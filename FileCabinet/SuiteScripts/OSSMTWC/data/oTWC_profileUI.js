@@ -82,7 +82,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             certGroup.fields.push({ id: 'upload-file-' + certCode.toLowerCase(), value: 'Upload New', styles: { width: 'calc(50% - 5px)', display: 'inline-block', 'margin-top': '3px' }, type: 'button' })
 
             if (certCode == 'SAFE_PASS') {
-                certGroup.fields.push({ id: twcProfile.Fields.SAFE_PASS_ID, label: 'Safe Pass ID', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
+                certGroup.fields.push({ id: twcProfile.Fields.SAFE_PASS_ID, label: 'Safe Pass ID', width: '100%', lineBreak: true })
             }
 
             

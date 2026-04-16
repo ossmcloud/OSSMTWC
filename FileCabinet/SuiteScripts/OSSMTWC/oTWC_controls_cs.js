@@ -47,7 +47,7 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             testFunction() {
                 try {
 
-                    twcCertStatusEngine.validateCompanyAccreditation();
+                    console.log(twcSite.getFields())
                     //twcUtils.getSafImages()
 
                     // var saf = twcSaf.get(11);

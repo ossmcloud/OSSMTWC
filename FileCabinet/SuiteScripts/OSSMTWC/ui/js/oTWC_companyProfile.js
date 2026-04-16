@@ -153,6 +153,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         } else if (e.target.id.endsWith('_cert_exp')) {
                             var certType = e.target.id.replace('custrecord_twc_prof_', '').replace('_cert_exp', '')
                             form.getControl(`custrecord_twc_prof_${certType}_cert_sts`).value = twcUtils.NoActiveExpired.Pending;
+                        } else if ( e.target.id == twcProfile.Fields.SAFE_PASS_ID) {
+                            form.getControl(twcProfile.Fields.SAFE_PASS_STATUS).value = twcUtils.NoActiveExpired.Pending;
                         }
 
                     });

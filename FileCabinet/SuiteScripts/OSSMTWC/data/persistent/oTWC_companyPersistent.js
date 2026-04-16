@@ -63,6 +63,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FINANCE_CUSTOMER_REF: 'custrecord_twc_co_fin_cust_ref',
             PORTAL_USER: 'custrecord_twc_co_portal_user',
             ACCREDITATION_APPROVED: 'custrecord_twc_co_accred_appr',
+            CUSTOMER_FLAG: 'custrecord_twc_cus_flag',
+            CONTRACTOR_FLAG: 'custrecord_twc_con_flag',
+            LANDLORD_FLAG: 'custrecord_twc_landlord_flag',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -75,6 +78,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ACCREDITATION_STATUS: { name: 'custrecord_twc_co_accred_status', type: 'select', alias: 'accreditationStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_co_accred_status' },
             ACCREDITATION_STATUS_COMMENT: { name: 'custrecord_twc_co_accred_sts_cmt', type: 'text', alias: 'accreditationStatusComment', display: 'normal', mandatory: false },
             ACCREDITATION_SUBMITTED: { name: 'custrecord_twc_co_accred_submitted', type: 'text', alias: 'accreditationSubmitted', display: 'normal', mandatory: false },
+            ACCREDITATION_STATUS_CHANGE_DATE: { name: 'custrecord_twc_co_accred_sts_date', type: 'date', alias: 'accreditationStatusChangeDate', display: 'normal', mandatory: false },
             COMPANY_ADDRESS: { name: 'custrecord_twc_co_address', type: 'clobtext', alias: 'companyAddress', display: 'normal', mandatory: false },
             COMPANY_TYPE: { name: 'custrecord_twc_co_type', type: 'select', alias: 'companyType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_co_type' },
             COMPANY_CLASSIFICATION: { name: 'custrecord_twc_co_classification', type: 'select', alias: 'companyClassification', display: 'normal', mandatory: false, recordType: 'customrecord_twc_co_classification' },
@@ -125,6 +129,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FINANCE_CUSTOMER_REF: { name: 'custrecord_twc_co_fin_cust_ref', type: 'text', alias: 'financeCustomerRef', display: 'normal', mandatory: false },
             PORTAL_USER: { name: 'custrecord_twc_co_portal_user', type: 'checkbox', alias: 'portalUser', display: 'normal', mandatory: false },
             ACCREDITATION_APPROVED: { name: 'custrecord_twc_co_accred_appr', type: 'date', alias: 'accreditationApproved', display: 'normal', mandatory: false },
+            CUSTOMER_FLAG: { name: 'custrecord_twc_cus_flag', type: 'select', alias: 'customerFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_cus_flag' },
+            CONTRACTOR_FLAG: { name: 'custrecord_twc_con_flag', type: 'select', alias: 'contractorFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_con_flag' },
+            LANDLORD_FLAG: { name: 'custrecord_twc_landlord_flag', type: 'select', alias: 'landlordFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_landlord_flag' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -171,6 +178,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.ACCREDITATION_SUBMITTED);
             } set accreditationSubmitted(value) {
                 this.set(_recordFields.ACCREDITATION_SUBMITTED, value)
+            }
+            
+            get accreditationStatusChangeDate() {
+                return this.get(_recordFields.ACCREDITATION_STATUS_CHANGE_DATE);
+            } set accreditationStatusChangeDate(value) {
+                this.set(_recordFields.ACCREDITATION_STATUS_CHANGE_DATE, value)
             }
             
             get companyAddress() {
@@ -482,6 +495,27 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set accreditationApproved(value) {
                 this.set(_recordFields.ACCREDITATION_APPROVED, value)
             }
+            
+            get customerFlag() {
+                return this.get(_recordFields.CUSTOMER_FLAG);
+            } set customerFlag(value) {
+                this.set(_recordFields.CUSTOMER_FLAG, value)
+            }
+            get customerFlagName() { return this.getText(_recordFields.CUSTOMER_FLAG); }
+            
+            get contractorFlag() {
+                return this.get(_recordFields.CONTRACTOR_FLAG);
+            } set contractorFlag(value) {
+                this.set(_recordFields.CONTRACTOR_FLAG, value)
+            }
+            get contractorFlagName() { return this.getText(_recordFields.CONTRACTOR_FLAG); }
+            
+            get landlordFlag() {
+                return this.get(_recordFields.LANDLORD_FLAG);
+            } set landlordFlag(value) {
+                this.set(_recordFields.LANDLORD_FLAG, value)
+            }
+            get landlordFlagName() { return this.getText(_recordFields.LANDLORD_FLAG); }
             
             get created() {
                 return this.get(_recordFields.CREATED);

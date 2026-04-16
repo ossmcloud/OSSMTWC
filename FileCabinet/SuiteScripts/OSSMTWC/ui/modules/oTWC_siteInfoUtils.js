@@ -20,14 +20,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             })
 
             var foreignFields = twcUtils.getFields(joinTables);
-            
+
 
             var joins = ''; var selectList = 's.id, '; var joinCache = [];
             core.array.each(siteFields, f => {
                 selectList += `s.${f.field_id}, `
+
                 if (f.field_type != 'List/Record') { return; }
-                
-                if (joinCache.indexOf(f.field_foreign_table)) { return; }
+
+                if (joinCache.indexOf(f.field_foreign_table) >= 0) { return; }
                 joinCache.push(f.field_foreign_table);
 
                 var tblAlias = f.field_foreign_table.replace('customrecord_', '');
@@ -43,6 +44,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     left join ${f.field_foreign_table} as ${tblAlias} on ${tblAlias}.id = s.${f.field_id}
                 `
             })
+
 
             var siteInfo = coreSQL.first({
                 query: `

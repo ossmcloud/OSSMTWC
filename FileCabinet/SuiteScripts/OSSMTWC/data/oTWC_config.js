@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './oTWC_permissions.js'],
-    (runtime, core, coreSQL, recu, permissions) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './oTWC_permissions.js', './oTWC_utils.js'],
+    (runtime, core, coreSQL, recu, permissions, twcUtils) => {
 
         // @@HARDCODED: 
         const TOWERCOM_ENTITY = 822;
@@ -29,7 +29,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             userInfo.recordId = userInfo.id;
 
             userInfo.companyProfile = coreSQL.first(`
-                select  id, name, custrecord_twc_co_fin_vend as is_vendor, custrecord_twc_co_fin_cust as is_customer
+                select  id, name,
+                        case when custrecord_twc_con_flag in (${twcUtils.ContractorFlag.Contractor}, ${twcUtils.ContractorFlag.SubContractor}) then 'T' else 'F' end  as is_vendor, 
+                        case custrecord_twc_cus_flag when ${twcUtils.CustomerFlag.Customer} then 'T' else 'F' end  as is_customer
                 from    customrecord_twc_company
                 where   custrecordtwc_entity = ${(userInfo.type == 'Employee') ? TOWERCOM_ENTITY : userInfo.id}
             `)

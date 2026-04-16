@@ -6,6 +6,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, cored, coreSQL, twcProfile, twcSafCrew, twcFile, twcIcons) => {
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const CUSTOMER_FLAG = {
+            Customer: 1,
+            No: 2
+        }
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const CONTRACTOR_FLAG = {
+            Contractor: 1,
+            SubContractor: 2,
+            No: 3
+        }
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const COMPANY_ACCREDITATION_STATUS = {
             Inactive: 1,
             Accredited: 2,
@@ -750,7 +763,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     sql = `
                         select  distinct c.id as value, c.name as text
                         from    customrecord_twc_company c 
-                        left join customrecord_twc_acl acl on c.id = acl.custrecord_twc_acl_cust and c.custrecord_twc_co_fin_cust = 'T'
+                        left join customrecord_twc_acl acl on c.id = acl.custrecord_twc_acl_cust and c.custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer}
                         where   c.isinactive = 'F'
                         and     (
                                 acl.custrecord_twc_acl_cont = ${options.vendor}
@@ -773,7 +786,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                             select  distinct c.id as value, c.name as text
                             from    customrecord_twc_ascl acl
-                            join    customrecord_twc_company c on c.id = acl.custrecord_twc_acl_sub_contractor and c.custrecord_twc_co_fin_vend = 'T'
+                            join    customrecord_twc_company c on c.id = acl.custrecord_twc_acl_sub_contractor and c.custrecord_twc_con_flag = ${CONTRACTOR_FLAG.SubContractor}
                             where   c.isinactive = 'F'
                             and     acl.custrecord_twc_acl_contractor = ${options.vendor}
                             ${additionalFilters}
@@ -801,7 +814,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         from  (
                             select  distinct c.id as value, c.name as text
                             from    customrecord_twc_acl acl
-                            join    customrecord_twc_company c on c.id = acl.custrecord_twc_acl_cont and c.custrecord_twc_co_fin_vend = 'T'
+                            join    customrecord_twc_company c on c.id = acl.custrecord_twc_acl_cont and c.custrecord_twc_con_flag = ${CONTRACTOR_FLAG.Contractor}
                             where   c.isinactive = 'F'
                             and     acl.custrecord_twc_acl_cust = ${options.customer}
                             ${additionalFilters}
@@ -819,9 +832,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             } else {
                 if (options.type == 'C') {
-                    additionalFilters += `and	custrecord_twc_co_fin_cust = 'T'`;
+                    additionalFilters += `and	custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer}`;
                 } else {
-                    additionalFilters += `and	custrecord_twc_co_fin_vend = 'T'`;
+                    additionalFilters += `and	custrecord_twc_con_flag = ${CONTRACTOR_FLAG.Contractor}`;
                 }
                 sql = `
                     select  c.id as value, c.name as text
@@ -1096,6 +1109,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             ROOT_FILE_FOLDER: 'TWC Files',
             HEIGH_LIMIT_FOR_1_CLIMBER: 60,
+
+            CustomerFlag: CUSTOMER_FLAG,
+            ContractorFlag: CONTRACTOR_FLAG,
 
             FileStatus: FILE_STATUS,
 
