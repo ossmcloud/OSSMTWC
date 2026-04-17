@@ -1,6 +1,40 @@
 TODO:
 -----
 
+
+infrastructure:
+    create 3 custom forms and set value on table OSSMTWC - Infra :
+        IMPORTANT: 
+            Store Form with Record  = TRUE
+            Form is Preferred       = FALSE
+
+    Accommodation
+    Structure
+    Generator
+
+    create user event script:
+        beforeLoad:
+            create
+                if custom form is not set (I.E.: standard form)
+                    hide all fields a part from custom form
+                else 
+                    automatically populate the Infrastructure Type field and make read-only
+
+            edit/view
+                read custom form from: OSSMTWC - Infra Type
+                if &cf parameter missing or different the redirect to same url with the correct cf
+                
+        
+
+
+
+
+
+
+
+
+
+
 Inventory:
     add equipment should only be visible to TWC employees
 

@@ -786,7 +786,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                             select  distinct c.id as value, c.name as text
                             from    customrecord_twc_ascl acl
-                            join    customrecord_twc_company c on c.id = acl.custrecord_twc_acl_sub_contractor and c.custrecord_twc_con_flag = ${CONTRACTOR_FLAG.SubContractor}
+                            join    customrecord_twc_company c on c.id = acl.custrecord_twc_acl_sub_contractor and c.custrecord_twc_con_flag in (${CONTRACTOR_FLAG.Contractor}, ${CONTRACTOR_FLAG.SubContractor})
                             where   c.isinactive = 'F'
                             and     acl.custrecord_twc_acl_contractor = ${options.vendor}
                             ${additionalFilters}
