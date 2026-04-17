@@ -519,7 +519,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcSafCrew.Fields.MEMBER]: { title: 'Name', link: { url: profileLink + '&id=${' + twcSafCrew.Fields.MEMBER + '}', valueField: twcSafCrew.Fields.MEMBER } },
                     [twcSafCrew.Fields.ATTEND_AS]: 'Role',
                 },
-                dataSource: twcUtils.getSafCrew(dataSource),
+                dataSource: twcSafCrew.getSafCrew(dataSource),
                 FieldsInfo: twcSafCrew.FieldsInfo,
                 styles: { width: '100%', 'padding-left': '0px' },
                 onColumnInit: (tbl, col) => {

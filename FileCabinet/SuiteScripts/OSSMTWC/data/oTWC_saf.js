@@ -59,6 +59,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return twcUtils.getFields(twcSaf.Type);
             },
 
+            
 
 
         }

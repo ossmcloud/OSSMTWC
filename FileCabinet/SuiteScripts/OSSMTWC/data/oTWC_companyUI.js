@@ -64,21 +64,18 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcCompany.Fields.INSURER, label: 'Insurer', width: '100%', lineBreak: true })
 
             basicInfo.fields.push({ id: twcCompany.Fields.EL_STATUS, label: 'Status', width: '150px', readOnly: true })
-            basicInfo.fields.push({ id: twcCompany.Fields.EL_INSURANCE_MANDATORY, label: 'Mandatory' })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_AVAILABLETYPE, width: '100px', label: 'EL Available/Type' })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_LIMIT, width: '100px', label: 'EL Limit' })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_LIMIT_CURRENCY, width: '100px', label: 'EL Currency', type: twcUI.CTRL_TYPE.SELECT, dataSource: currencies, value: dataSource[twcCompany.Fields.EL_LIMIT_CURRENCY] })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_EXPIRY, label: 'EL Expiry', lineBreak: true })
 
             basicInfo.fields.push({ id: twcCompany.Fields.PL_STATUS, label: 'Status', width: '150px', readOnly: true })
-            basicInfo.fields.push({ id: twcCompany.Fields.PL_INSURANCE_MANDATORY, label: 'Mandatory' })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_AVAILABLETYPE, width: '100px', label: 'PL Available/Type' })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_LIMIT, width: '100px', label: 'PL Limit' })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_LIMIT_CURRENCY, width: '100px', label: 'PL Currency', type: twcUI.CTRL_TYPE.SELECT, dataSource: currencies, value: dataSource[twcCompany.Fields.PL_LIMIT_CURRENCY] })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_EXPIRY, label: 'PL Expiry', lineBreak: true })
 
             basicInfo.fields.push({ id: twcCompany.Fields.PI_STATUS, label: 'Status', width: '150px', readOnly: true })
-            basicInfo.fields.push({ id: twcCompany.Fields.PI_INSURANCE_MANDATORY, label: 'Mandatory' })
             basicInfo.fields.push({ id: twcCompany.Fields.PI_AVAILABLETYPE, width: '100px', label: 'PI Available/Type' })
             basicInfo.fields.push({ id: twcCompany.Fields.PI_LIMIT, width: '100px', label: 'PI Limit' })
             basicInfo.fields.push({ id: twcCompany.Fields.PI_LIMIT_CURRENCY, width: '100px', label: 'PI Currency', type: twcUI.CTRL_TYPE.SELECT, dataSource: currencies, value: dataSource[twcCompany.Fields.PI_LIMIT_CURRENCY] })
@@ -206,6 +203,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         col.styles = { width: '130px' };
                         col.formatValue = (v, fv, d) => {
                             return twcProfile.getCertStatusHtml(v, d[col.id.replace('_sts_name', '_exp')])
+                        }
+                    } else if (col.id == (twcProfile.Fields.ACCREDITATION_STATUS + '_name')) {
+                        col.formatValue = (v, fv, d) => {
+                            col.styles = { width: '200px', 'text-align': 'center' };
+                            return twcProfile.getAccreditationStatusHtml(v)
                         }
                     }
 

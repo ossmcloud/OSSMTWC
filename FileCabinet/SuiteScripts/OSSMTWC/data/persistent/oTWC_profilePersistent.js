@@ -26,9 +26,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SAFE_PASS_FILENAME: 'custrecord_twc_prof_safe_pass_filename',
             SAFE_PASS_EXPIRY: 'custrecord_twc_prof_safe_pass_cert_exp',
             PICW_ACCEPTABLE: 'custrecord_twc_prof_picw_acceptable',
-            SAF_AVAILABLE: 'custrecord_twc_prof_saf_available',
-            ATHLONE_APPROVED: 'custrecord_twc_prof_athlone_approved',
-            WORKING_ON_BEHALF: 'custrecord_twc_prof_wkg_on_behalf',
             CLIMBER_CERTIFIED_STATUS: 'custrecord_twc_prof_climber_cert_sts',
             CLIMBER_FILENAME: 'custrecord_twc_prof_climber_filename',
             CLIMBER_CERTIFIED_EXPIRY: 'custrecord_twc_prof_climber_cert_exp',
@@ -49,7 +46,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             DRONE_CERTIFIED_EXPIRY: 'custrecord_twc_prof_drone_cert_exp',
             AGENT_PASSES: 'custrecord_twc_prof_agent_passes',
             TL_PROFILE_ID: 'custrecord_twc_prof_tl_profile_id',
-            OVERRIDE_PERMISSIONS: 'custrecord_twc_prof_override_perm',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -76,9 +72,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SAFE_PASS_FILENAME: { name: 'custrecord_twc_prof_safe_pass_filename', type: 'document', alias: 'safePassFilename', display: 'normal', mandatory: false },
             SAFE_PASS_EXPIRY: { name: 'custrecord_twc_prof_safe_pass_cert_exp', type: 'date', alias: 'safePassExpiry', display: 'normal', mandatory: false },
             PICW_ACCEPTABLE: { name: 'custrecord_twc_prof_picw_acceptable', type: 'checkbox', alias: 'pICWAcceptable', display: 'normal', mandatory: false },
-            SAF_AVAILABLE: { name: 'custrecord_twc_prof_saf_available', type: 'checkbox', alias: 'sAFAvailable', display: 'normal', mandatory: false },
-            ATHLONE_APPROVED: { name: 'custrecord_twc_prof_athlone_approved', type: 'checkbox', alias: 'athloneApproved', display: 'normal', mandatory: false },
-            WORKING_ON_BEHALF: { name: 'custrecord_twc_prof_wkg_on_behalf', type: 'text', alias: 'workingonBehalf', display: 'normal', mandatory: false },
             CLIMBER_CERTIFIED_STATUS: { name: 'custrecord_twc_prof_climber_cert_sts', type: 'select', alias: 'climberCertifiedStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_no_active_options' },
             CLIMBER_FILENAME: { name: 'custrecord_twc_prof_climber_filename', type: 'document', alias: 'climberFilename', display: 'normal', mandatory: false },
             CLIMBER_CERTIFIED_EXPIRY: { name: 'custrecord_twc_prof_climber_cert_exp', type: 'date', alias: 'climberCertifiedExpiry', display: 'normal', mandatory: false },
@@ -99,7 +92,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             DRONE_CERTIFIED_EXPIRY: { name: 'custrecord_twc_prof_drone_cert_exp', type: 'date', alias: 'droneCertifiedExpiry', display: 'normal', mandatory: false },
             AGENT_PASSES: { name: 'custrecord_twc_prof_agent_passes', type: 'select', alias: 'agentPasses', display: 'normal', mandatory: false, recordType: 'customrecord_twc_profile_agent_passes_o' },
             TL_PROFILE_ID: { name: 'custrecord_twc_prof_tl_profile_id', type: 'text', alias: 'tLProfileID', display: 'normal', mandatory: false },
-            OVERRIDE_PERMISSIONS: { name: 'custrecord_twc_prof_override_perm', type: 'checkbox', alias: 'overridePermissions', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -218,9 +210,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             get safePassStatusName() { return this.getText(_recordFields.SAFE_PASS_STATUS); }
             
             get safePassFilename() {
-                return this.get(_recordFields.SAFE_PASS_FILE);
+                return this.get(_recordFields.SAFE_PASS_FILENAME);
             } set safePassFilename(value) {
-                this.set(_recordFields.SAFE_PASS_FILE, value)
+                this.set(_recordFields.SAFE_PASS_FILENAME, value)
             }
             
             get safePassExpiry() {
@@ -233,24 +225,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.PICW_ACCEPTABLE);
             } set pICWAcceptable(value) {
                 this.set(_recordFields.PICW_ACCEPTABLE, value)
-            }
-            
-            get sAFAvailable() {
-                return this.get(_recordFields.SAF_AVAILABLE);
-            } set sAFAvailable(value) {
-                this.set(_recordFields.SAF_AVAILABLE, value)
-            }
-            
-            get athloneApproved() {
-                return this.get(_recordFields.ATHLONE_APPROVED);
-            } set athloneApproved(value) {
-                this.set(_recordFields.ATHLONE_APPROVED, value)
-            }
-            
-            get workingonBehalf() {
-                return this.get(_recordFields.WORKING_ON_BEHALF);
-            } set workingonBehalf(value) {
-                this.set(_recordFields.WORKING_ON_BEHALF, value)
             }
             
             get climberCertifiedStatus() {
@@ -378,12 +352,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.TL_PROFILE_ID);
             } set tLProfileID(value) {
                 this.set(_recordFields.TL_PROFILE_ID, value)
-            }
-            
-            get overridePermissions() {
-                return this.get(_recordFields.OVERRIDE_PERMISSIONS);
-            } set overridePermissions(value) {
-                this.set(_recordFields.OVERRIDE_PERMISSIONS, value)
             }
             
             get created() {

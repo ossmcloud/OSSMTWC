@@ -2,13 +2,26 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './oTWC_permissions.js', './oTWC_utils.js'],
-    (runtime, core, coreSQL, recu, permissions, twcUtils) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './oTWC_permissions.js'],
+    (runtime, core, coreSQL, recu, permissions) => {
 
         // @@HARDCODED: 
         const TOWERCOM_ENTITY = 822;
 
         const FIELD_ENTITY_USER_PREF = 'custentity_twc_userpref';
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const CUSTOMER_FLAG = {
+            Customer: 1,
+            No: 2
+        }
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const CONTRACTOR_FLAG = {
+            Contractor: 1,
+            SubContractor: 2,
+            No: 3
+        }
 
 
 
@@ -30,8 +43,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             userInfo.companyProfile = coreSQL.first(`
                 select  id, name,
-                        case when custrecord_twc_con_flag in (${twcUtils.ContractorFlag.Contractor}, ${twcUtils.ContractorFlag.SubContractor}) then 'T' else 'F' end  as is_vendor, 
-                        case custrecord_twc_cus_flag when ${twcUtils.CustomerFlag.Customer} then 'T' else 'F' end  as is_customer
+                        case when custrecord_twc_con_flag in (${CONTRACTOR_FLAG.Contractor}, ${CONTRACTOR_FLAG.SubContractor}) then 'T' else 'F' end  as is_vendor, 
+                        case custrecord_twc_cus_flag when ${CUSTOMER_FLAG.Customer} then 'T' else 'F' end  as is_customer
                 from    customrecord_twc_company
                 where   custrecordtwc_entity = ${(userInfo.type == 'Employee') ? TOWERCOM_ENTITY : userInfo.id}
             `)

@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './persistent/oTWC_safCrewPersistent.js', './oTWC_utils.js'],
-    (core, coreSQL, twcSafCrew, twcUtils) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './persistent/oTWC_safCrewPersistent.js', './oTWC_utils.js', './oTWC_profile.js'],
+    (core, coreSQL, twcSafCrew, twcUtils, twcProfile) => {
 
 
 
@@ -33,10 +33,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             getFields: () => {
                 return twcUtils.getFields(twcSafCrew.Type);
+            },
+
+            getSafCrew: (options) => {
+                return coreSQL.run(`
+                    select  ${twcSafCrew.Fields.MEMBER}, BUILTIN.DF(${twcSafCrew.Fields.MEMBER}) as ${twcSafCrew.Fields.MEMBER}_name, ${twcSafCrew.Fields.ATTEND_AS}, 
+                            BUILTIN.DF(p.${twcProfile.Fields.COMPANY}) as contractor_name, p.${twcProfile.Fields.COMPANY} as contractor
+                    from    ${twcSafCrew.Type} c
+                    join    ${twcProfile.Type} p on p.id = c.${twcSafCrew.Fields.MEMBER}
+                    where   ${twcSafCrew.Fields.SAF} = ${options.id}
+                `)
             }
-
-            
-
 
         }
     });

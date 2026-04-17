@@ -41,16 +41,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.initProfileFormatValueColumn(table, twcProfile.Fields.DRONE_CERTIFIED_STATUS, formatValue);
                 this.initProfileFormatValueColumn(table, twcProfile.Fields.SAFE_PASS_STATUS, formatValue);
 
+                this.initProfileFormatValueColumn(table, twcProfile.Fields.ACCREDITATION_STATUS, (v, fv, d) => {
+                    return twcProfile.getAccreditationStatusHtml(v)
+                });
+
             }
             initProfileFormatValueColumn(table, fieldId, formatValue) {
                 table.getColumn(fieldId + '_name').formatValue = formatValue;
                 table.getColumnOption(fieldId + '_name').formatValue = formatValue;
             }
 
+           
+
             initPage() {
                 this.initFileFormatValueColumns(this.ui.getControl(twcFile.Type));
                 this.initProfileFormatValueColumns(this.ui.getControl(twcProfile.Type));
-
+           
                 this.initPreviewFileEvents();
                 this.ui.getControl(twcFile.Type).onInitEvents = (tbl) => {
                     this.initPreviewFileEvents();
@@ -153,7 +159,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         } else if (e.target.id.endsWith('_cert_exp')) {
                             var certType = e.target.id.replace('custrecord_twc_prof_', '').replace('_cert_exp', '')
                             form.getControl(`custrecord_twc_prof_${certType}_cert_sts`).value = twcUtils.NoActiveExpired.Pending;
-                        } else if ( e.target.id == twcProfile.Fields.SAFE_PASS_ID) {
+                        } else if (e.target.id == twcProfile.Fields.SAFE_PASS_ID) {
                             form.getControl(twcProfile.Fields.SAFE_PASS_STATUS).value = twcUtils.NoActiveExpired.Pending;
                         }
 

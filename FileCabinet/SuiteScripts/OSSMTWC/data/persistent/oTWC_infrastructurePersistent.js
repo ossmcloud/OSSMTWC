@@ -2,29 +2,30 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js'],
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js' ],
     (core, coreSQL, recu, customRec) => {
         var _recordType = 'customrecord_twc_infra';
         var _recordFields = {
+            NAME: 'name',
             SITE: 'custrecord_twc_infra_site',
             INFRASTRUCTURE_TYPE: 'custrecord_twc_infra_type',
             INFRASTRUCTURE_ID: 'custrecord_twc_infra_id',
             LEGACY_ID: 'custrecord_twc_infra_legacy_id',
-            STATUS: 'custrecord_twc_infra_status',
-            SRF_STATUS: 'custrecord_twc_infra_srf_status',
-            SAF_STATUS: 'custrecord_twc_infra_saf_status',
-            SAF_AUTO_APPROVE: 'custrecord_twc_infra_saf_auto_apprv',
-            SCHEDULE: 'custrecord_twc_infra_sch',
+            INFRASTRUCTURE_STATUS: 'custrecord_twc_infra_status',
+            INFRASTRUCTURE_SRF_STATUS: 'custrecord_twc_infra_srf_status',
+            INFRASTRUCTURE_SAF_STATUS: 'custrecord_twc_infra_saf_status',
+            INFRASTRUCTURE_SAF_AUTO_APPROVE: 'custrecord_twc_infra_saf_auto_apprv',
+            INFRASTRUCTURE_SCHEDULE: 'custrecord_twc_infra_sch',
             INFRASTRUCTURE_OWNERSHIP: 'custrecord_twc_infra_ownshp',
             O_AND_M_OWNERSHIP: 'custrecord_twc_infra_om_ownshp',
             INSURANCE_OWNERSHIP: 'custrecord_twc_infra_insur_ownshp',
             MARKETING_STATUS: 'custrecord_twc_infra_mktg_sts',
-            PUBLIC: 'custrecord_twc_infra_public',
-            COMMENTS: 'custrecord_twc_infra_com',
-            EASTING: 'custrecord_twc_infra_easting',
-            NORTHING: 'custrecord_twc_infra_northing',
-            LONGITUDE: 'custrecord_twc_infra_lng',
-            LATITUDE: 'custrecord_twc_infra_lat',
+            INFRASTRUCTURE_PUBLIC: 'custrecord_twc_infra_public',
+            INFRASTRUCTURE_COMMENTS: 'custrecord_twc_infra_com',
+            INFRASTRUCTURE_EASTING: 'custrecord_twc_infra_easting',
+            INFRASTRUCTURE_NORTHING: 'custrecord_twc_infra_northing',
+            INFRASTRUCTURE_LONGITUDE: 'custrecord_twc_infra_lng',
+            INFRASTRUCTURE_LATITUDE: 'custrecord_twc_infra_lat',
             STRUCTURE_TYPE: 'custrecord_twc_infra_str_type',
             TOWER_FAMILY: 'custrecord_twc_infra_tw_fam',
             STRUCTURE_HEIGHT_M: 'custrecord_twc_infra_str_ht_m',
@@ -60,9 +61,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             TLM: 'custrecord_twc_infra_tlm',
             ACCOMMODATION_DIMENSIONS: 'custrecord_twc_infra_accom_dim',
             RACK_SPACES_AVAILABLE: 'custrecord_twc_infra_rack_space_avail',
-            UNITS: 'custrecord_twc_infra_units',
-            MODEL: 'custrecord_twc_infra_model',
-            INSTALLED: 'custrecord_twc_infra_installed',
+            INFRASTRUCTURE_UNITS: 'custrecord_twc_infra_units',
+            INFRASTRUCTURE_MODEL: 'custrecord_twc_infra_model',
+            INFRASTRUCTURE_INSTALLED: 'custrecord_twc_infra_installed',
             AC_FEED_PHASE: 'custrecord_twc_infra_ac_feed_phase',
             LOADINGS: 'custrecord_twc_infra_ldg',
             NOISE_LEVEL: 'custrecord_twc_infra_noise_lvl',
@@ -92,27 +93,32 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FIBRE_PHASE: 'custrecord_twc_infra_fibre_phase',
             FIBRE_PARTNER_PRIORITY: 'custrecord_twc_infra_fibre_partner_prior',
             FIBRE_COMMENTS: 'custrecord_twc_infra_fibre_comm',
+            CREATED: 'created',
+            MODIFIED: 'lastmodified',
+            OWNER: 'owner',
+            MODIFIED_BY: 'lastmodifiedby',
         }
         var _recordFieldInfo = {
+            NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             SITE: { name: 'custrecord_twc_infra_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
             INFRASTRUCTURE_TYPE: { name: 'custrecord_twc_infra_type', type: 'select', alias: 'infrastructureType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_type' },
             INFRASTRUCTURE_ID: { name: 'custrecord_twc_infra_id', type: 'text', alias: 'infrastructureID', display: 'normal', mandatory: false },
             LEGACY_ID: { name: 'custrecord_twc_infra_legacy_id', type: 'text', alias: 'legacyID', display: 'normal', mandatory: false },
-            STATUS: { name: 'custrecord_twc_infra_status', type: 'select', alias: 'status', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_sts' },
-            SRF_STATUS: { name: 'custrecord_twc_infra_srf_status', type: 'select', alias: 'sRFStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_srf_sts' },
-            SAF_STATUS: { name: 'custrecord_twc_infra_saf_status', type: 'select', alias: 'sAFStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_saf_sts' },
-            SAF_AUTO_APPROVE: { name: 'custrecord_twc_infra_saf_auto_apprv', type: 'checkbox', alias: 'sAFAutoApprove', display: 'normal', mandatory: false },
-            SCHEDULE: { name: 'custrecord_twc_infra_sch', type: 'select', alias: 'schedule', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_sch' },
-            INFRASTRUCTURE_OWNERSHIP: { name: 'custrecord_twc_infra_ownshp', type: 'select', alias: 'infrastructureOwnership', display: 'normal', mandatory: false, recordType: '-2' },
-            O_AND_M_OWNERSHIP: { name: 'custrecord_twc_infra_om_ownshp', type: 'select', alias: 'o_and_MOwnership', display: 'normal', mandatory: false, recordType: '-2' },
-            INSURANCE_OWNERSHIP: { name: 'custrecord_twc_infra_insur_ownshp', type: 'select', alias: 'insuranceOwnership', display: 'normal', mandatory: false, recordType: '-2' },
+            INFRASTRUCTURE_STATUS: { name: 'custrecord_twc_infra_status', type: 'select', alias: 'infrastructureStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_sts' },
+            INFRASTRUCTURE_SRF_STATUS: { name: 'custrecord_twc_infra_srf_status', type: 'select', alias: 'infrastructureSRFStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_srf_sts' },
+            INFRASTRUCTURE_SAF_STATUS: { name: 'custrecord_twc_infra_saf_status', type: 'select', alias: 'infrastructureSAFStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_saf_sts' },
+            INFRASTRUCTURE_SAF_AUTO_APPROVE: { name: 'custrecord_twc_infra_saf_auto_apprv', type: 'checkbox', alias: 'infrastructureSAFAutoApprove', display: 'normal', mandatory: false },
+            INFRASTRUCTURE_SCHEDULE: { name: 'custrecord_twc_infra_sch', type: 'select', alias: 'infrastructureSchedule', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_sch' },
+            INFRASTRUCTURE_OWNERSHIP: { name: 'custrecord_twc_infra_ownshp', type: 'select', alias: 'infrastructureOwnership', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
+            O_AND_M_OWNERSHIP: { name: 'custrecord_twc_infra_om_ownshp', type: 'select', alias: 'o_and_MOwnership', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
+            INSURANCE_OWNERSHIP: { name: 'custrecord_twc_infra_insur_ownshp', type: 'select', alias: 'insuranceOwnership', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             MARKETING_STATUS: { name: 'custrecord_twc_infra_mktg_sts', type: 'checkbox', alias: 'marketingStatus', display: 'normal', mandatory: false },
-            PUBLIC: { name: 'custrecord_twc_infra_public', type: 'select', alias: 'public', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_publ' },
-            COMMENTS: { name: 'custrecord_twc_infra_com', type: 'text', alias: 'comments', display: 'normal', mandatory: false },
-            EASTING: { name: 'custrecord_twc_infra_easting', type: 'float', alias: 'easting', display: 'normal', mandatory: false },
-            NORTHING: { name: 'custrecord_twc_infra_northing', type: 'float', alias: 'northing', display: 'normal', mandatory: false },
-            LONGITUDE: { name: 'custrecord_twc_infra_lng', type: 'float', alias: 'longitude', display: 'normal', mandatory: false },
-            LATITUDE: { name: 'custrecord_twc_infra_lat', type: 'float', alias: 'latitude', display: 'normal', mandatory: false },
+            INFRASTRUCTURE_PUBLIC: { name: 'custrecord_twc_infra_public', type: 'select', alias: 'infrastructurePublic', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_publ' },
+            INFRASTRUCTURE_COMMENTS: { name: 'custrecord_twc_infra_com', type: 'textarea', alias: 'infrastructureComments', display: 'normal', mandatory: false },
+            INFRASTRUCTURE_EASTING: { name: 'custrecord_twc_infra_easting', type: 'float', alias: 'infrastructureEasting', display: 'normal', mandatory: false },
+            INFRASTRUCTURE_NORTHING: { name: 'custrecord_twc_infra_northing', type: 'float', alias: 'infrastructureNorthing', display: 'normal', mandatory: false },
+            INFRASTRUCTURE_LONGITUDE: { name: 'custrecord_twc_infra_lng', type: 'float', alias: 'infrastructureLongitude', display: 'normal', mandatory: false },
+            INFRASTRUCTURE_LATITUDE: { name: 'custrecord_twc_infra_lat', type: 'float', alias: 'infrastructureLatitude', display: 'normal', mandatory: false },
             STRUCTURE_TYPE: { name: 'custrecord_twc_infra_str_type', type: 'select', alias: 'structureType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_str_type' },
             TOWER_FAMILY: { name: 'custrecord_twc_infra_tw_fam', type: 'select', alias: 'towerFamily', display: 'normal', mandatory: false, recordType: 'customrecord_twc_tower_family' },
             STRUCTURE_HEIGHT_M: { name: 'custrecord_twc_infra_str_ht_m', type: 'float', alias: 'structureHeightm', display: 'normal', mandatory: false },
@@ -135,7 +141,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FOUNDATION_TYPE: { name: 'custrecord_twc_infra_fnd_type', type: 'select', alias: 'foundationType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fnd_type' },
             FOUNDATION_DESIGN: { name: 'custrecord_twc_infra_fnd_design', type: 'textarea', alias: 'foundationDesign', display: 'normal', mandatory: false },
             FOUNDATION_DIMENSIONS: { name: 'custrecord_twc_infra_fnd_dims', type: 'text', alias: 'foundationDimensions', display: 'normal', mandatory: false },
-            FOUNDATION_CONTRACTOR: { name: 'custrecord_twc_infra_fnd_contr', type: 'select', alias: 'foundationContractor', display: 'normal', mandatory: false, recordType: '-2' },
+            FOUNDATION_CONTRACTOR: { name: 'custrecord_twc_infra_fnd_contr', type: 'select', alias: 'foundationContractor', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             SOIL_BEARING_DCPSI_KNM: { name: 'custrecord_twc_infra_soil_brg_dcp_si', type: 'float', alias: 'soilBearingDCPSIkNm', display: 'normal', mandatory: false },
             GROUND_WATER_BGL: { name: 'custrecord_twc_infra_grnd_wtr', type: 'float', alias: 'groundWaterBGL', display: 'normal', mandatory: false },
             FOUNDATION_FOS: { name: 'custrecord_twc_infra_fnd_fos', type: 'float', alias: 'foundationFOS', display: 'normal', mandatory: false },
@@ -148,9 +154,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             TLM: { name: 'custrecord_twc_infra_tlm', type: 'select', alias: 'tLM', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_tlm' },
             ACCOMMODATION_DIMENSIONS: { name: 'custrecord_twc_infra_accom_dim', type: 'text', alias: 'accommodationDimensions', display: 'normal', mandatory: false },
             RACK_SPACES_AVAILABLE: { name: 'custrecord_twc_infra_rack_space_avail', type: 'integer', alias: 'rackSpacesAvailable', display: 'normal', mandatory: false },
-            UNITS: { name: 'custrecord_twc_infra_units', type: 'integer', alias: 'units', display: 'normal', mandatory: false },
-            MODEL: { name: 'custrecord_twc_infra_model', type: 'text', alias: 'model', display: 'normal', mandatory: false },
-            INSTALLED: { name: 'custrecord_twc_infra_installed', type: 'date', alias: 'installed', display: 'normal', mandatory: false },
+            INFRASTRUCTURE_UNITS: { name: 'custrecord_twc_infra_units', type: 'integer', alias: 'infrastructureUnits', display: 'normal', mandatory: false },
+            INFRASTRUCTURE_MODEL: { name: 'custrecord_twc_infra_model', type: 'text', alias: 'infrastructureModel', display: 'normal', mandatory: false },
+            INFRASTRUCTURE_INSTALLED: { name: 'custrecord_twc_infra_installed', type: 'date', alias: 'infrastructureInstalled', display: 'normal', mandatory: false },
             AC_FEED_PHASE: { name: 'custrecord_twc_infra_ac_feed_phase', type: 'select', alias: 'aCFeedPhase', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_ac_feed_phase' },
             LOADINGS: { name: 'custrecord_twc_infra_ldg', type: 'integer', alias: 'loadings', display: 'normal', mandatory: false },
             NOISE_LEVEL: { name: 'custrecord_twc_infra_noise_lvl', type: 'integer', alias: 'noiseLevel', display: 'normal', mandatory: false },
@@ -180,13 +186,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FIBRE_PHASE: { name: 'custrecord_twc_infra_fibre_phase', type: 'text', alias: 'fibrePhase', display: 'normal', mandatory: false },
             FIBRE_PARTNER_PRIORITY: { name: 'custrecord_twc_infra_fibre_partner_prior', type: 'text', alias: 'fibrePartnerPriority', display: 'normal', mandatory: false },
             FIBRE_COMMENTS: { name: 'custrecord_twc_infra_fibre_comm', type: 'text', alias: 'fibreComments', display: 'normal', mandatory: false },
-        
+            CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
+            MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
+            OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
+            MODIFIED_BY: { name: 'lastmodifiedby', type: 'select', alias: 'last_modified_by', display: 'inline', recordType: 'employee'}, 
         }
 
         class OSSMTWC_Infrastructure extends customRec.RecordBase {
             constructor(id, staticLoad) {
                 super(_recordType, _recordFieldInfo, id, staticLoad);
             }
+            get name() {
+                return this.get('name');
+            } set name(value) {
+                this.set('name', value)
+            }
+            
             get site() {
                 return this.get(_recordFields.SITE);
             } set site(value) {
@@ -213,39 +228,39 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.LEGACY_ID, value)
             }
             
-            get status() {
-                return this.get(_recordFields.STATUS);
-            } set status(value) {
-                this.set(_recordFields.STATUS, value)
+            get infrastructureStatus() {
+                return this.get(_recordFields.INFRASTRUCTURE_STATUS);
+            } set infrastructureStatus(value) {
+                this.set(_recordFields.INFRASTRUCTURE_STATUS, value)
             }
-            get statusName() { return this.getText(_recordFields.STATUS); }
+            get infrastructureStatusName() { return this.getText(_recordFields.INFRASTRUCTURE_STATUS); }
             
-            get sRFStatus() {
-                return this.get(_recordFields.SRF_STATUS);
-            } set sRFStatus(value) {
-                this.set(_recordFields.SRF_STATUS, value)
+            get infrastructureSRFStatus() {
+                return this.get(_recordFields.INFRASTRUCTURE_SRF_STATUS);
+            } set infrastructureSRFStatus(value) {
+                this.set(_recordFields.INFRASTRUCTURE_SRF_STATUS, value)
             }
-            get sRFStatusName() { return this.getText(_recordFields.SRF_STATUS); }
+            get infrastructureSRFStatusName() { return this.getText(_recordFields.INFRASTRUCTURE_SRF_STATUS); }
             
-            get sAFStatus() {
-                return this.get(_recordFields.SAF_STATUS);
-            } set sAFStatus(value) {
-                this.set(_recordFields.SAF_STATUS, value)
+            get infrastructureSAFStatus() {
+                return this.get(_recordFields.INFRASTRUCTURE_SAF_STATUS);
+            } set infrastructureSAFStatus(value) {
+                this.set(_recordFields.INFRASTRUCTURE_SAF_STATUS, value)
             }
-            get sAFStatusName() { return this.getText(_recordFields.SAF_STATUS); }
+            get infrastructureSAFStatusName() { return this.getText(_recordFields.INFRASTRUCTURE_SAF_STATUS); }
             
-            get sAFAutoApprove() {
-                return this.get(_recordFields.SAF_AUTO_APPROVE);
-            } set sAFAutoApprove(value) {
-                this.set(_recordFields.SAF_AUTO_APPROVE, value)
+            get infrastructureSAFAutoApprove() {
+                return this.get(_recordFields.INFRASTRUCTURE_SAF_AUTO_APPROVE);
+            } set infrastructureSAFAutoApprove(value) {
+                this.set(_recordFields.INFRASTRUCTURE_SAF_AUTO_APPROVE, value)
             }
             
-            get schedule() {
-                return this.get(_recordFields.SCHEDULE);
-            } set schedule(value) {
-                this.set(_recordFields.SCHEDULE, value)
+            get infrastructureSchedule() {
+                return this.get(_recordFields.INFRASTRUCTURE_SCHEDULE);
+            } set infrastructureSchedule(value) {
+                this.set(_recordFields.INFRASTRUCTURE_SCHEDULE, value)
             }
-            get scheduleName() { return this.getText(_recordFields.SCHEDULE); }
+            get infrastructureScheduleName() { return this.getText(_recordFields.INFRASTRUCTURE_SCHEDULE); }
             
             get infrastructureOwnership() {
                 return this.get(_recordFields.INFRASTRUCTURE_OWNERSHIP);
@@ -274,41 +289,41 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.MARKETING_STATUS, value)
             }
             
-            get public() {
-                return this.get(_recordFields.PUBLIC);
-            } set public(value) {
-                this.set(_recordFields.PUBLIC, value)
+            get infrastructurePublic() {
+                return this.get(_recordFields.INFRASTRUCTURE_PUBLIC);
+            } set infrastructurePublic(value) {
+                this.set(_recordFields.INFRASTRUCTURE_PUBLIC, value)
             }
-            get publicName() { return this.getText(_recordFields.PUBLIC); }
+            get infrastructurePublicName() { return this.getText(_recordFields.INFRASTRUCTURE_PUBLIC); }
             
-            get comments() {
-                return this.get(_recordFields.COMMENTS);
-            } set comments(value) {
-                this.set(_recordFields.COMMENTS, value)
-            }
-            
-            get easting() {
-                return this.get(_recordFields.EASTING);
-            } set easting(value) {
-                this.set(_recordFields.EASTING, value)
+            get infrastructureComments() {
+                return this.get(_recordFields.INFRASTRUCTURE_COMMENTS);
+            } set infrastructureComments(value) {
+                this.set(_recordFields.INFRASTRUCTURE_COMMENTS, value)
             }
             
-            get northing() {
-                return this.get(_recordFields.NORTHING);
-            } set northing(value) {
-                this.set(_recordFields.NORTHING, value)
+            get infrastructureEasting() {
+                return this.get(_recordFields.INFRASTRUCTURE_EASTING);
+            } set infrastructureEasting(value) {
+                this.set(_recordFields.INFRASTRUCTURE_EASTING, value)
             }
             
-            get longitude() {
-                return this.get(_recordFields.LONGITUDE);
-            } set longitude(value) {
-                this.set(_recordFields.LONGITUDE, value)
+            get infrastructureNorthing() {
+                return this.get(_recordFields.INFRASTRUCTURE_NORTHING);
+            } set infrastructureNorthing(value) {
+                this.set(_recordFields.INFRASTRUCTURE_NORTHING, value)
             }
             
-            get latitude() {
-                return this.get(_recordFields.LATITUDE);
-            } set latitude(value) {
-                this.set(_recordFields.LATITUDE, value)
+            get infrastructureLongitude() {
+                return this.get(_recordFields.INFRASTRUCTURE_LONGITUDE);
+            } set infrastructureLongitude(value) {
+                this.set(_recordFields.INFRASTRUCTURE_LONGITUDE, value)
+            }
+            
+            get infrastructureLatitude() {
+                return this.get(_recordFields.INFRASTRUCTURE_LATITUDE);
+            } set infrastructureLatitude(value) {
+                this.set(_recordFields.INFRASTRUCTURE_LATITUDE, value)
             }
             
             get structureType() {
@@ -530,22 +545,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.RACK_SPACES_AVAILABLE, value)
             }
             
-            get units() {
-                return this.get(_recordFields.UNITS);
-            } set units(value) {
-                this.set(_recordFields.UNITS, value)
+            get infrastructureUnits() {
+                return this.get(_recordFields.INFRASTRUCTURE_UNITS);
+            } set infrastructureUnits(value) {
+                this.set(_recordFields.INFRASTRUCTURE_UNITS, value)
             }
             
-            get model() {
-                return this.get(_recordFields.MODEL);
-            } set model(value) {
-                this.set(_recordFields.MODEL, value)
+            get infrastructureModel() {
+                return this.get(_recordFields.INFRASTRUCTURE_MODEL);
+            } set infrastructureModel(value) {
+                this.set(_recordFields.INFRASTRUCTURE_MODEL, value)
             }
             
-            get installed() {
-                return this.get(_recordFields.INSTALLED);
-            } set installed(value) {
-                this.set(_recordFields.INSTALLED, value)
+            get infrastructureInstalled() {
+                return this.get(_recordFields.INFRASTRUCTURE_INSTALLED);
+            } set infrastructureInstalled(value) {
+                this.set(_recordFields.INFRASTRUCTURE_INSTALLED, value)
             }
             
             get aCFeedPhase() {
@@ -633,6 +648,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.NEXT_GENERATOR_SERVICE_TYPE, value)
             }
             get nextGeneratorServiceTypeName() { return this.getText(_recordFields.NEXT_GENERATOR_SERVICE_TYPE); }
+            
             get locksList() {
                 return this.get(_recordFields.LOCKS_LIST);
             } set locksList(value) {
@@ -732,7 +748,32 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.FIBRE_COMMENTS);
             } set fibreComments(value) {
                 this.set(_recordFields.FIBRE_COMMENTS, value)
-            }  
+            }
+            
+            get created() {
+                return this.get(_recordFields.CREATED);
+            } set created(value) {
+                this.set(_recordFields.CREATED, value)
+            }
+            
+            get last_modified() {
+                return this.get(_recordFields.MODIFIED);
+            } set last_modified(value) {
+                this.set(_recordFields.MODIFIED, value)
+            }
+            
+            get created_by() {
+                return this.get(_recordFields.OWNER);
+            } set created_by(value) {
+                this.set(_recordFields.OWNER, value)
+            }
+            
+            get last_modified_by() {
+                return this.get(_recordFields.MODIFIED_BY);
+            } set last_modified_by(value) {
+                this.set(_recordFields.MODIFIED_BY, value)
+            }
+            
         }
 
         return {
