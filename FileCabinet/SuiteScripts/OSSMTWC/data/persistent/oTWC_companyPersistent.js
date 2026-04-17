@@ -26,7 +26,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EL_LIMIT: 'custrecord_twc_co_el_limit',
             EL_LIMIT_CURRENCY: 'custrecord_twc_co_el_limit_cur',
             EL_EXPIRY: 'custrecord_twc_co_el_expiry',
-            EL_INSURANCE_MANDATORY: 'custrecord_twc_co_el_insur_mand',
             EL_EXISTING_FILES: 'custrecord_twc_co_el_existing_file',
             EL_UPLOAD_NEW_FILE: 'custrecord_twc_co_el_upld_new_file',
             PL_STATUS: 'custrecord_twc_co_pl_status',
@@ -34,7 +33,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             PL_LIMIT: 'custrecord_twc_co_pl_limit',
             PL_LIMIT_CURRENCY: 'custrecord_twc_co_pl_limit_cur',
             PL_EXPIRY: 'custrecord_twc_co_pl_expiry',
-            PL_INSURANCE_MANDATORY: 'custrecord_twc_co_pl_insur_mand',
             PL_EXISTING_FILES: 'custrecord_twc_co_pl_existing_file',
             PL_UPLOAD_NEW_FILE: 'custrecord_twc_co_pl_upld_new_file',
             PI_STATUS: 'custrecord_twc_co_pi_status',
@@ -42,7 +40,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             PI_LIMIT: 'custrecord_twc_co_pi_limit',
             PI_LIMIT_CURRENCY: 'custrecord_twc_co_pi_limit_cur',
             PI_EXPIRY: 'custrecord_twc_co_pi_expiry',
-            PI_INSURANCE_MANDATORY: 'custrecord_twc_co_pi_insur_mand',
             PI_EXISTING_FILES: 'custrecord_twc_co_pi_existing_file',
             PI_UPLOAD_NEW_FILE: 'custrecord_twc_co_pi_upld_new_file',
             KEYS: 'custrecord_twc_co_keys',
@@ -92,7 +89,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EL_LIMIT: { name: 'custrecord_twc_co_el_limit', type: 'currency', alias: 'eLLimit', display: 'normal', mandatory: false },
             EL_LIMIT_CURRENCY: { name: 'custrecord_twc_co_el_limit_cur', type: 'text', alias: 'eLLimitCurrency', display: 'normal', mandatory: false },
             EL_EXPIRY: { name: 'custrecord_twc_co_el_expiry', type: 'date', alias: 'eLExpiry', display: 'normal', mandatory: false },
-            EL_INSURANCE_MANDATORY: { name: 'custrecord_twc_co_el_insur_mand', type: 'checkbox', alias: 'eLInsuranceMandatory', display: 'normal', mandatory: false },
             EL_EXISTING_FILES: { name: 'custrecord_twc_co_el_existing_file', type: 'document', alias: 'eLExistingFiles', display: 'normal', mandatory: false },
             EL_UPLOAD_NEW_FILE: { name: 'custrecord_twc_co_el_upld_new_file', type: 'document', alias: 'eLUploadNewFile', display: 'normal', mandatory: false },
             PL_STATUS: { name: 'custrecord_twc_co_pl_status', type: 'select', alias: 'pLStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_no_active_options' },
@@ -100,7 +96,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             PL_LIMIT: { name: 'custrecord_twc_co_pl_limit', type: 'currency', alias: 'pLLimit', display: 'normal', mandatory: false },
             PL_LIMIT_CURRENCY: { name: 'custrecord_twc_co_pl_limit_cur', type: 'text', alias: 'pLLimitCurrency', display: 'normal', mandatory: false },
             PL_EXPIRY: { name: 'custrecord_twc_co_pl_expiry', type: 'date', alias: 'pLExpiry', display: 'normal', mandatory: false },
-            PL_INSURANCE_MANDATORY: { name: 'custrecord_twc_co_pl_insur_mand', type: 'checkbox', alias: 'pLInsuranceMandatory', display: 'normal', mandatory: false },
             PL_EXISTING_FILES: { name: 'custrecord_twc_co_pl_existing_file', type: 'document', alias: 'pLExistingFiles', display: 'normal', mandatory: false },
             PL_UPLOAD_NEW_FILE: { name: 'custrecord_twc_co_pl_upld_new_file', type: 'document', alias: 'pLUploadNewFile', display: 'normal', mandatory: false },
             PI_STATUS: { name: 'custrecord_twc_co_pi_status', type: 'select', alias: 'pIStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_no_active_options' },
@@ -108,7 +103,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             PI_LIMIT: { name: 'custrecord_twc_co_pi_limit', type: 'currency', alias: 'pILimit', display: 'normal', mandatory: false },
             PI_LIMIT_CURRENCY: { name: 'custrecord_twc_co_pi_limit_cur', type: 'text', alias: 'pILimitCurrency', display: 'normal', mandatory: false },
             PI_EXPIRY: { name: 'custrecord_twc_co_pi_expiry', type: 'date', alias: 'pIExpiry', display: 'normal', mandatory: false },
-            PI_INSURANCE_MANDATORY: { name: 'custrecord_twc_co_pi_insur_mand', type: 'checkbox', alias: 'pIInsuranceMandatory', display: 'normal', mandatory: false },
             PI_EXISTING_FILES: { name: 'custrecord_twc_co_pi_existing_file', type: 'document', alias: 'pIExistingFiles', display: 'normal', mandatory: false },
             PI_UPLOAD_NEW_FILE: { name: 'custrecord_twc_co_pi_upld_new_file', type: 'document', alias: 'pIUploadNewFile', display: 'normal', mandatory: false },
             KEYS: { name: 'custrecord_twc_co_keys', type: 'select', alias: 'keys', display: 'normal', mandatory: false, recordType: 'customrecord_twc_track_key' },
@@ -268,13 +262,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set eLExpiry(value) {
                 this.set(_recordFields.EL_EXPIRY, value)
             }
-            
-            get eLInsuranceMandatory() {
-                return this.get(_recordFields.EL_INSURANCE_MANDATORY);
-            } set eLInsuranceMandatory(value) {
-                this.set(_recordFields.EL_INSURANCE_MANDATORY, value)
-            }
-            
+           
             get eLExistingFiles() {
                 return this.get(_recordFields.EL_EXISTING_FILES);
             } set eLExistingFiles(value) {
@@ -319,12 +307,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.PL_EXPIRY, value)
             }
             
-            get pLInsuranceMandatory() {
-                return this.get(_recordFields.PL_INSURANCE_MANDATORY);
-            } set pLInsuranceMandatory(value) {
-                this.set(_recordFields.PL_INSURANCE_MANDATORY, value)
-            }
-            
             get pLExistingFiles() {
                 return this.get(_recordFields.PL_EXISTING_FILES);
             } set pLExistingFiles(value) {
@@ -367,12 +349,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.PI_EXPIRY);
             } set pIExpiry(value) {
                 this.set(_recordFields.PI_EXPIRY, value)
-            }
-            
-            get pIInsuranceMandatory() {
-                return this.get(_recordFields.PI_INSURANCE_MANDATORY);
-            } set pIInsuranceMandatory(value) {
-                this.set(_recordFields.PI_INSURANCE_MANDATORY, value)
             }
             
             get pIExistingFiles() {

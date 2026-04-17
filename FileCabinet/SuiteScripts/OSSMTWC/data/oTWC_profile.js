@@ -5,7 +5,7 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './persistent/oTWC_profilePersistent.js', './oTWC_utils.js'],
     (core, coreSQL, twcProfile, twcUtils) => {
 
-        // @@TODO: @@REVIEW: I cannot use the function frokm twcUtils as there is recursive refernce and the variabler twcUtils is actually null
+        // @@TODO: @@REVIEW: I cannot use the function from twcUtils as there is recursive reference and the variable twcUtils is actually null
         function fromJsToNs(nsDate) {
             if (!nsDate) { return nsDate; }
             var dateParts = nsDate.split('-');
@@ -30,6 +30,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             get: function (id) {
                 var rec = new OSSMTWC_Profile(id);
                 rec.load();
+
+                if (rec.state == 'new') {
+                    rec.accreditationStatus = twcUtils.ProfileAccreditationStatus.Pending;
+                    rec.accreditationSubmitted = new Date();
+                }
+
                 return rec;
             },
 
@@ -40,6 +46,32 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             getFields: () => {
                 return twcUtils.getFields(twcProfile.Type);
+            },
+
+            // @@TODO: @@REVIEW: this should not use hardcoded names
+            getAccreditationStatusHtml(status) {
+                if (!status) { return ''; }
+                var backgroundColor = 'silver'; var color = 'white';
+
+                if (status == 'Inactive') {
+                    color = 'var(--main-color)';
+                    backgroundColor = 'transparent';
+                } else if (status == 'Accredited') {
+                    color = 'white';
+                    backgroundColor = 'green';
+                } else if (status == 'SPExpired') {
+                    color = 'white';
+                    backgroundColor = 'red';
+                } else if (status == 'Pending') {
+                    color = 'white';
+                    backgroundColor = 'orange';
+                }
+
+                return `
+                    <span class="twc-record-status-row" style="color: ${color}; background-color: ${backgroundColor};" >
+                        ${status}
+                    </span>
+                `;
             },
 
             // @@TODO: @@REVIEW: this should not use hardcoded names

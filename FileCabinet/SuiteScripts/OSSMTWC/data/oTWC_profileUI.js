@@ -19,27 +19,28 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getProfileInfoPanels_mainInfo(dataSource, userInfo) {
+            var nonTwcReadOnly = userInfo.isEmployee ? undefined : true;
+            var newRecordReadOnly = userInfo.isEmployee ? false : (dataSource.id ? true : false);
+
             var fieldGroup = { id: 'profile-info', collapsed: false, renderAsTable: { width: '100%', 'table-layout': 'fixed' }, controls: [] };
 
             var basicInfo = { id: 'profile-info-basic', title: 'Basic Information', fields: [] };
             fieldGroup.controls.push(basicInfo);
-            basicInfo.fields.push({ id: twcProfile.Fields.NAME, label: 'Name', width: '250px' })
-            basicInfo.fields.push({ id: twcProfile.Fields.POSITION, label: 'Position', width: '250px' })
-            basicInfo.fields.push({ id: twcProfile.Fields.POSITION, label: 'Experience', width: '250px', lineBreak: true })
-            basicInfo.fields.push({ id: twcProfile.Fields.ENSUP_CARD, label: 'ENSUP Card', width: '250px' })
-            basicInfo.fields.push({ id: twcProfile.Fields.E_MAIL, label: 'Email', width: '250px' })
-            basicInfo.fields.push({ id: twcProfile.Fields.PHONE, label: 'Phone', lineBreak: true })
+            basicInfo.fields.push({ id: twcProfile.Fields.NAME, label: 'Name', readOnly: newRecordReadOnly, mandatory: true, width: '250px' })
+            basicInfo.fields.push({ id: twcProfile.Fields.POSITION, label: 'Position',  mandatory: true, width: '250px' })
+            basicInfo.fields.push({ id: twcProfile.Fields.POSITION, label: 'Experience', readOnly: newRecordReadOnly, mandatory: true, width: '250px', lineBreak: true })
+            basicInfo.fields.push({ id: twcProfile.Fields.ENSUP_CARD, label: 'ENSUP Card', readOnly: newRecordReadOnly, mandatory: true, width: '250px' })
+            basicInfo.fields.push({ id: twcProfile.Fields.E_MAIL, label: 'Email', readOnly: newRecordReadOnly, mandatory: true, width: '250px' })
+            basicInfo.fields.push({ id: twcProfile.Fields.PHONE, label: 'Phone', mandatory: true, lineBreak: true })
             basicInfo.fields.push({ id: twcProfile.Fields.COMMENTS, label: 'Comments', width: '100%' })
 
             var basicInfo2 = { id: 'profile-info-basic-2', title: 'Accreditation', fields: [] };
             fieldGroup.controls.push(basicInfo2);
-            basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS, label: 'Accreditation Status', width: '175px' })
-            basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_SUBMITTED, label: 'Submitted', width: '150px' })
-            basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS_CHANGE_DATE, label: 'Status Change Date', width: '150px' })
-            basicInfo2.fields.push({ id: twcProfile.Fields.PICW_ACCEPTABLE, label: 'PICW' })
-            basicInfo2.fields.push({ id: twcProfile.Fields.SAF_AVAILABLE, label: 'SAF' })
-            basicInfo2.fields.push({ id: twcProfile.Fields.ATHLONE_APPROVED, label: 'Athlone', lineBreak: true })
-            basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS_COMMENT, label: 'Accreditation Comment', width: '100%', rows: 5 })
+            basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS, label: 'Accreditation Status', readOnly: nonTwcReadOnly, width: '175px' })
+            basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_SUBMITTED, label: 'Submitted', readOnly: nonTwcReadOnly, width: '150px' })
+            basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS_CHANGE_DATE, label: 'Status Change Date', readOnly: nonTwcReadOnly, width: '150px' })
+            basicInfo2.fields.push({ id: twcProfile.Fields.PICW_ACCEPTABLE, label: 'PICW', readOnly: nonTwcReadOnly })
+            basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS_COMMENT, label: 'Accreditation Comment', readOnly: nonTwcReadOnly, width: '100%', rows: 5 })
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
@@ -48,7 +49,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getProfileInfoPanels_certs(dataSource, userInfo) {
 
             var fieldGroup = { id: 'profile-cert-1', collapsed: false, renderAsTable: { width: '100%', 'table-layout': 'fixed' }, controls: [] };
-            //fieldGroup.controls.push(getProfileInfoPanels_safePass(userInfo));
             fieldGroup.controls.push(getProfileInfoPanels_cert(userInfo, dataSource, 'SAFE_PASS', 'SAFE_PASS', twcProfile.Fields.SAFE_PASS_STATUS, twcProfile.Fields.SAFE_PASS_EXPIRY, twcProfile.Fields.SAFE_PASS_FILENAME));
             fieldGroup.controls.push(getProfileInfoPanels_cert(userInfo, dataSource, 'CLIMBER', 'CLIMBER', twcProfile.Fields.CLIMBER_CERTIFIED_STATUS, twcProfile.Fields.CLIMBER_CERTIFIED_EXPIRY, twcProfile.Fields.CLIMBER_FILENAME));
             fieldGroup.controls.push(getProfileInfoPanels_cert(userInfo, dataSource, 'RESCUE', 'RESCUE', twcProfile.Fields.RESCUE_CERTIFIED_STATUS, twcProfile.Fields.RESCUE_CERTIFIED_EXPIRY, twcProfile.Fields.RESCUE_FILENAME));
@@ -59,22 +59,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
         }
-
-        // function getProfileInfoPanels_safePass(userInfo) {
-        //     var nonTwcReadOnly = userInfo.isEmployee ? undefined : true;
-        //     var certGroup = { id: 'profile-cart-safe-pass', title: 'SAFE-PASS', fields: [] };
-        //     certGroup.fields.push({ id: twcProfile.Fields.SAFE_PASS_STATUS, label: 'Status', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
-        //     certGroup.fields.push({ id: twcProfile.Fields.SAFE_PASS_EXPIRY, label: 'Expiry', width: '100%', lineBreak: true })
-        //     certGroup.fields.push({ id: twcProfile.Fields.SAFE_PASS_ID, label: 'Safe Pass ID', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
-        //     return certGroup;
-        // }
+       
 
         function getProfileInfoPanels_cert(userInfo, dataSource, title, certCode, fieldStatus, fieldExpiry, fieldFileName) {
             var fileId = dataSource.get(fieldFileName)
             var nonTwcReadOnly = userInfo.isEmployee ? undefined : true;
             var certGroup = { id: 'profile-cart-' + title.toLowerCase(), title: title, fields: [] };
             certGroup.fields.push({ id: fieldStatus, label: 'Status', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
-            certGroup.fields.push({ id: fieldExpiry, label: 'Expiry', width: '100%', lineBreak: true })
+            certGroup.fields.push({ id: fieldExpiry, label: 'Expiry', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
             certGroup.fields.push({ id: certCode.toLowerCase() + '_file_name', type: 'text', value: dataSource.getText(fieldFileName), label: 'File', width: '100%', readOnly: true, lineBreak: true })
 
             

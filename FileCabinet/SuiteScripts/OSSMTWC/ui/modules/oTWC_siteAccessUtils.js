@@ -156,6 +156,8 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var autoApprove = false;
             if (customer && vendor) {
                 autoApprove = true;
+                // - if MEWP (Mobile Elevating Work Platform => Crane/Cherrypicker) then no auto approval
+                if (options['saf-crane-access'] == 'T') { autoApprove = false; }
                 // - the SAF Type allows Auto-Approve (see SAF Visit Types tab)
                 if (!recu.lookUp('customrecord_twc_saf_type', options.safType, 'custrecord_twc_saf_type_autoapprove')) { autoApprove = false; }
                 // - the Customer (the SAF Auto-Approve field for the Customer is YES)

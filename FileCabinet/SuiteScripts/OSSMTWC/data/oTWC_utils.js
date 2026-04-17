@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_profile.js', './oTWC_safCrew.js', './oTWC_file.js', './oTWC_icons.js'],
-    (core, cored, coreSQL, twcProfile, twcSafCrew, twcFile, twcIcons) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_file.js', './oTWC_icons.js'],
+    (core, cored, coreSQL, twcFile, twcIcons) => {
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const CUSTOMER_FLAG = {
@@ -33,9 +33,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             PL: { field: 'custrecord_twc_co_pl_status', fieldEx: 'custrecord_twc_co_pl_expiry', code: 'pl' },
             PI: { field: 'custrecord_twc_co_pi_status', fieldEx: 'custrecord_twc_co_pi_expiry', code: 'pi' },
         }
+        
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const PROFILE_ACCREDITATION_STATUS = {
+            Pending: 1,
+            Accredited: 2,
+            SPExpired: 3,
+            // CertsExpired: 4,        // @@TODO: this status makes no sense, the overall profile accreditation is driven by the Safe Pass state only.
+            // SPCertsExpired: 5,      // @@TODO: this status makes no sense, the overall profile accreditation is driven by the Safe Pass state only.
+            Inactive: 6
+        }
 
         const PROFILE_CERT_FIELD = {
-            SAFE_PASS: { field: 'custrecord_twc_prof_safe_pass_cert_sts', fieldEx: 'custrecord_twc_prof_safe_pass_cert_exp', code: 'safe_pass', attendAs: 'SAFE_PASS', attendAsText: 'Visitor' },
+            SAFE_PASS: { field: 'custrecord_twc_prof_safe_pass_cert_sts', fieldEx: 'custrecord_twc_prof_safe_pass_cert_exp', code: 'safe_pass', attendAs: 'SAFE_PASS', attendAsText: 'Visitor', safePass: true },
             CLIMBER: { field: 'custrecord_twc_prof_climber_cert_sts', fieldEx: 'custrecord_twc_prof_climber_cert_exp', code: 'climber', attendAs: 'CLIMBER', attendAsText: 'Climber Certified' },
             RESCUE: { field: 'custrecord_twc_prof_rescue_cert_sts', fieldEx: 'custrecord_twc_prof_rescue_cert_exp', code: 'rescue', attendAs: 'RESCUE', attendAsText: 'Rescue Certified' },
             ROOFTOP: { field: 'custrecord_twc_prof_rooftop_cert_sts', fieldEx: 'custrecord_twc_prof_rooftop_cert_exp', code: 'rooftop', attendAs: 'ROOFTOP', attendAsText: 'Rooftop Certified' },
@@ -627,16 +637,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
-        function getSafCrew(options) {
-            return coreSQL.run(`
-                select  ${twcSafCrew.Fields.MEMBER}, BUILTIN.DF(${twcSafCrew.Fields.MEMBER}) as ${twcSafCrew.Fields.MEMBER}_name, ${twcSafCrew.Fields.ATTEND_AS}, 
-                        BUILTIN.DF(p.${twcProfile.Fields.COMPANY}) as contractor_name, p.${twcProfile.Fields.COMPANY} as contractor
-                from    ${twcSafCrew.Type} c
-                join    ${twcProfile.Type} p on p.id = c.${twcSafCrew.Fields.MEMBER}
-                where   ${twcSafCrew.Fields.SAF} = ${options.id}
-            `)
-        }
-
+        
         function getSafImages(options) {
             return getSafFiles(options, 'image')
         }
@@ -1121,6 +1122,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Insurances: COMPANY_INSURANCE_FIELDS,
 
             CompanyAccreditationStatus: COMPANY_ACCREDITATION_STATUS,
+            ProfileAccreditationStatus: PROFILE_ACCREDITATION_STATUS,
 
             InfraType: INFRA_TYPE,
 
@@ -1176,7 +1178,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafStatus: getSafStatus,
             getSafType: getSafType,
             getSafTypes: getSafTypes,
-            getSafCrew: getSafCrew,
             getSafImages: getSafImages,
             getSafContractorFiles: getSafContractorFiles,
             getTktResolutionFiles: getTktResolutionFiles,

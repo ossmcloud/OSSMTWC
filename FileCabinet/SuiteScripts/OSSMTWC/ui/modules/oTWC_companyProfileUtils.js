@@ -83,9 +83,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getCompanyChildRecord(options, userInfo) {
             var childRecord = null;
             if (options.profile) {
+                
                 childRecord = twcProfile.get(options.profile.id);
                 childRecord.copyFromObject(options.profile);
                 childRecord.delete = options.profile.delete;
+                
             } else if (options.document) {
                 childRecord = twcFile.get(options.document.id);
                 childRecord.copyFromObject(options.document);

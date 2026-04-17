@@ -40,18 +40,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             core.array.each(profiles, p => {
                 try {
 
-                    var fields = []; var values = [];
+                    var fields = []; var values = []; 
                     for (var cert in twcUtils.Certs) {
                         var res = setCertStatus(p, twcUtils.Certs[cert].code);
                         if (res) {
                             fields.push(res.field);
                             values.push(res.value);
+
+                            if (twcUtils.Certs[cert].safePass) {
+                                // @@NOTE: Accreditation Status should auto-change to SP Expired when Safe Pass certification date elapses.
+                                //         Note that the overall profile accreditation is driven by the Safe Pass state only.
+                                fields.push(twcProfile.ACCREDITATION_STATUS);
+                                values.push(twcUtils.ProfileAccreditationStatus.SPExpired);
+
+                            }
                         }
                     }
 
                     if (values.length > 0) {
                         core.logDebug('validateCertStatuses', `${p.id}: ${JSON.stringify(fields)} - ${JSON.stringify(values)}`);
-
                         recu.submit(twcProfile.Type, p.id, fields, values);
                     }
 
@@ -107,17 +114,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     for (var ins in twcUtils.Insurances) {
                         var res = setCompanyStatus(c, twcUtils.Insurances[ins].code);
                         if (res) {
-                            if (res.value == twcUtils.NoActiveExpired.Expired && c[`custrecord_twc_co_${twcUtils.Insurances[ins].code}_insur_mand`] == 'T') {
-                                // @@NOTE: If the status of any insurance is Expired AND the Insurance Mandatory field for that insurance is Yes, then the overall Company Accreditation Status should be set to Certs Expired
-                                accrStatus = twcUtils.CompanyAccreditationStatus.CertsExpired;
+                            // @@NOTE: PI insurance expiry should be ignored here.
+                            if (twcUtils.Insurances[ins].code != 'pi') {
+                                if (res.value == twcUtils.NoActiveExpired.Expired) {
+                                    // @@NOTE: If the status of any insurance is Expired AND the Insurance Mandatory field for that insurance is Yes, then the overall Company Accreditation Status should be set to Certs Expired
+                                    accrStatus = twcUtils.CompanyAccreditationStatus.CertsExpired;
+                                }
+                                fields.push(res.field);
+                                values.push(res.value);
                             }
-                            fields.push(res.field);
-                            values.push(res.value);
                         }
                     }
 
                     // @@NOTE: If the Accredited Contractor Expiry date contains data and elapses, the Company Accreditation Status should switch to ACA to be Renewed
-                    if (c[twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY] && c[twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY] <= today()) {
+                    //         UNLESS the Accreditation Status is "Certs Expired" which takes precedence
+                    if (c[twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY] && c[twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY] <= today() && accrStatus != twcUtils.CompanyAccreditationStatus.CertsExpired) {
                         accrStatus = twcUtils.CompanyAccreditationStatus.ToBeRenewed;
                     }
 
