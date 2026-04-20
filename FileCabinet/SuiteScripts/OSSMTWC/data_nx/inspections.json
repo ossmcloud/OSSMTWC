@@ -1,0 +1,37 @@
+{
+    "fields": [
+        {
+            "name": "custrecord_twc_insp_site",
+            "alias": "site",
+            "lookUp": true,
+            "addCount": true
+        },
+        {
+            "name": "custrecord_twc_insp_infra",
+            "alias": "infrastructure",
+            "lookUp": true
+        },
+        {
+            "name": "custrecord_twc_insp_type",
+            "alias": "type",
+            "lookUp": true
+        },
+        {
+            "name": "custrecord_twc_insp_date",
+            "alias": "date"
+        },
+        {
+            "name": "custrecord_twc_insp_comments",
+            "alias": "comments"
+        },
+        {
+            "name": "custrecord_twc_insp_detail_entered_by",
+            "alias": "entered_by",
+            "lookUp": true
+        }
+    ],
+    "orderBy": "custrecord_twc_insp_date desc",
+    "companyFields": [
+        "custrecord_twc_insp_by_co"
+    ]
+}

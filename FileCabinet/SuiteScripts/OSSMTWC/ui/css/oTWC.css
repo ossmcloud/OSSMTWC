@@ -2624,3 +2624,32 @@ div.twc-div-span-table>span {
 .twc-preview-file {
     padding: 0px !important;
 }
+
+
+
+div.twc-list {
+    padding: 13px;
+}
+
+div.twc-list>div {
+    border: 1px solid var(--grid-color);
+    padding: 13px;
+    border-radius: 7px;
+    cursor: pointer;
+    margin-bottom: 13px;
+}
+
+div.twc-list>div:hover {
+    border: 1px solid var(--accent-fore-color);
+    background-color: var(--accent-bkgd-color);
+    color: var(--accent-fore-color);
+}
+
+div.twc-list>div>div:first-child {
+    font-weight: bold;
+    font-size: 1.5em;
+    color: var(--accent-fore-color);
+}
+div.twc-list>div>div:last-child {
+    font-style: italic;
+}
