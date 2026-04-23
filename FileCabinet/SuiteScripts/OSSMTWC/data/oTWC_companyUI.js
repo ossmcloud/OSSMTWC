@@ -55,7 +55,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fieldGroup = { id: 'company-insurance', title: 'Insurance Info', renderAsTable: { width: '100%', 'table-layout': 'fixed' }, collapsed: !editMode, controls: [] };
 
             var currencies = [
-                { value: 'EURO', text: 'Euro' },
+                { value: 'EUR', text: 'Euro' },
                 { value: 'GBP', text: 'Sterling' },
             ]
 

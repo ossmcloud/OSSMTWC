@@ -6,9 +6,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     function (core, coreSql, recu, twcProfile, twcCompany, twcUtils) {
         var _today = null;
         function today() {
-            if (!_today) { _today = twcUtils.today(); }
+            if (!_today) {
+                _today = twcUtils.today();
+            }
             return _today;
         }
+        // function dateToNumber(d) {
+        //     if (!d) { return null; }
+        //     return parseInt(d.replaceAll('-', ''));
+        // }
 
         function getCertStatus(profile, certCode) {
             var exDate = profile[`custrecord_twc_prof_${certCode}_cert_exp`];
@@ -95,11 +101,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function setCompanyStatus(company, insuranceCode) {
             var s = getCompanyStatus(company, insuranceCode);
-            if (s != company[`custrecord_twc_co_${insuranceCode}_status`]) {
-                return {
-                    field: `custrecord_twc_co_${insuranceCode}_status`,
-                    value: s
-                }
+            // if (s != company[`custrecord_twc_co_${insuranceCode}_status`]) {
+            //     return {
+            //         field: `custrecord_twc_co_${insuranceCode}_status`,
+            //         value: s
+            //     }
+            // }
+
+            return {
+                changed: s != company[`custrecord_twc_co_${insuranceCode}_status`],
+                field: `custrecord_twc_co_${insuranceCode}_status`,
+                value: s
             }
         }
         function validateCompanyAccreditation(options) {
@@ -120,8 +132,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     // @@NOTE: If the status of any insurance is Expired AND the Insurance Mandatory field for that insurance is Yes, then the overall Company Accreditation Status should be set to Certs Expired
                                     accrStatus = twcUtils.CompanyAccreditationStatus.CertsExpired;
                                 }
-                                fields.push(res.field);
-                                values.push(res.value);
+                                if (res.changed) {
+                                    fields.push(res.field);
+                                    values.push(res.value);
+                                }
                             }
                         }
                     }
@@ -132,7 +146,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         accrStatus = twcUtils.CompanyAccreditationStatus.ToBeRenewed;
                     }
 
-                    if (accrStatus) {
+                    if (accrStatus && accrStatus != c[twcCompany.Fields.ACCREDITATION_STATUS]) {
                         fields.push(twcCompany.Fields.ACCREDITATION_STATUS);
                         values.push(accrStatus);
                     }

@@ -47,7 +47,7 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             testFunction() {
                 try {
 
-                    console.log(twcSite.getFields())
+                    console.log(twcUtils.getInfraStructures({ siteId : 55}))
                     //twcUtils.getSafImages()
 
                     // var saf = twcSaf.get(11);

@@ -114,6 +114,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 var disabled = this.#options.disabled ? 'disabled' : '';
                 var readOnly = this.#options.readOnly ? 'readonly' : '';
 
+                if (this.#options.type == ctrlBase.CTRL_TYPE.SELECT && readOnly) {
+                    disabled = 'disabled';
+                }
 
                 var label = '';
                 if (this.#options.label) {
