@@ -440,13 +440,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getEditFileRecord: (options, userInfo) => {
                 log.debug("TKt", options)
                 // throw new Error(JSON.stringify("tkt..",options))
-                var tkt = twcTrblTkts.get(options.tkt.id);
-                log.debug("TKt 22", tkt)
+                var tkt = twcTrblTkts.get(options.tkt.id); //@@NOTE this is not working
+                var tkt_testing = twcTrblTkts.select(options);
+                log.debug("TKt Get", tkt)
+                log.debug("tkt1 select", tkt_testing)
+
                 tkt.copyFromObject(options.tkt);
                 var fileRec = null;
                 if (options.file) {
-                    // fileRec = twcFile.get(options.file.id);  //@@NOTE this code not working, tried to load the record using belwo line of code, Not working
-                    fileRec = recu.load(twcFile.Type, parseInt(options.file.id), false)  
+                    fileRec = twcFile.get(options.file.id);  //@@NOTE this code not working, tried to load the record using belwo line of code, Not working
+
+                    //fileRec = recu.load(twcFile.Type, parseInt(options.file.id), false)  
                     log.debug("fileRec", fileRec)
                     fileRec.copyFromObject(options.file);
                 } else {
