@@ -29,6 +29,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 table.getColumnOption(twcFile.Fields.STATUS + '_name').formatValue = formatValue;
             }
 
+            initACLFormatValueColumns(table) {
+                if (!table) { return; }
+                const formatValue = (v, fv, d) => {
+                    return twcUtils.getCompAccredStatusHtml(d.accreditation_status_id, 'twc-record-status-row')
+                }
+                table.getColumn('accreditation_status').formatValue = formatValue;
+                table.getColumnOption('accreditation_status').formatValue = formatValue;
+            }
+
             initProfileFormatValueColumns(table) {
                 const formatValue = (v, fv, d, col) => {
                     return twcProfile.getCertStatusHtml(v, d[col.id.replace('_sts_name', '_exp')])
@@ -56,6 +65,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             initPage() {
                 this.initFileFormatValueColumns(this.ui.getControl(twcFile.Type));
                 this.initProfileFormatValueColumns(this.ui.getControl(twcProfile.Type));
+                this.initACLFormatValueColumns(this.ui.getControl('no-rec-acl-customer'));
+                this.initACLFormatValueColumns(this.ui.getControl('no-rec-acl-vendor'));
 
                 this.initPreviewFileEvents();
                 this.ui.getControl(twcFile.Type).onInitEvents = (tbl) => {

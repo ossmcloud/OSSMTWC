@@ -163,7 +163,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 var htmlInput = '';
                 if (this.#options.type == ctrlBase.CTRL_TYPE.TEXTAREA) {
-                    htmlInput = `<textarea id="${this.#options.id}" type="${this.#options.type}" class="twc" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" ${accept} ${disabled} ${readOnly} ${checked} ${rows}>${this.#options.value || ''}</textarea>`;
+                    htmlInput = `<textarea id="${this.#options.id}" type="${this.#options.type}" class="twc" style="width: ${inputWidth}; margin-bottom: -5px;" autocomplete="off" placeholder="${this.#options.hint || ''}" ${accept} ${disabled} ${readOnly} ${checked} ${rows}>${this.#options.value || ''}</textarea>`;
                 } else if (this.#options.type == ctrlBase.CTRL_TYPE.SELECT) {
                     htmlInput = `<select id="${this.#options.id}" class="twc" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${this.#options.value || ''}" ${accept} ${disabled} ${readOnly} ${checked}/>`;
                     if (!this.#options.noEmpty) {
@@ -198,6 +198,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     client: this.ui != null,
                     type: this.#options.type,
                     hide: this.#options.hide,
+                    styles: this.#options.styles
                 });
 
                 if (container) {
