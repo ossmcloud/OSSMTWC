@@ -30,13 +30,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             get: function (id) {
-                log.debug('id',id)
                 var rec = new OSSMTWC_TroubleTickets(id);
-                 log.debug('rec',rec)
-                rec.load(id);
-
-                log.debug('rec loaded',JSON.stringify(rec))
-
+                rec.load();
                 return rec;
             },
 

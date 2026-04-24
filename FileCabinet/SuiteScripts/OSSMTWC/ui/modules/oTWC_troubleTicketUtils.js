@@ -439,16 +439,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             },
             getEditFileRecord: (options, userInfo) => {
                 log.debug("TKt", options)
-               // var tkt = twcTrblTkts.get(options.tkt.id); //@@NOTE this is not working
+               // var tkt = twcTrblTkts.get(options.tkt.id); //@@NOTE 
                 var tkt =core.utils.classToObject(twcTrblTkts.get(options.tkt.id))
                 log.debug("test core",tkt)
 
-                //tkt.copyFromObject(options.tkt);
+                tkt.copyFromObject(options.tkt);
+                log.debug("test tkt",tkt)
+
                 var fileRec = null;
                 if (options.file) {
-                    fileRec = core.utils.classToObject(twcFile.get(options.file.id))  //@@NOTE this code not working, tried to load the record using belwo line of code, Not working
+                    //fileRec = twcFile.get(options.file.id)  //@@NOTE 
+                    fileRec = core.utils.classToObject(twcFile.get(options.file.id))  
                     log.debug("fileRec", fileRec)
-                    //fileRec.copyFromObject(options.file);
+                    fileRec.copyFromObject(options.file);
                 } else {
                     throw new Error(`No Child Record Found in payload`)
                 }
