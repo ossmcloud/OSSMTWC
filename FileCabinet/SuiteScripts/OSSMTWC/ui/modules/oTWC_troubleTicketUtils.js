@@ -440,18 +440,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getEditFileRecord: (options, userInfo) => {
                 log.debug("TKt", options)
                // var tkt = twcTrblTkts.get(options.tkt.id); //@@NOTE 
-                var tkt =core.utils.classToObject(twcTrblTkts.get(options.tkt.id))
+                var tkt =twcTrblTkts.get(options.tkt.id)
                 log.debug("test core",tkt)
 
                 tkt.copyFromObject(options.tkt);
-                log.debug("test tkt",tkt)
+                log.debug("test tkt",core.utils.classToObject(tkt))
 
                 var fileRec = null;
                 if (options.file) {
                     //fileRec = twcFile.get(options.file.id)  //@@NOTE 
-                    fileRec = core.utils.classToObject(twcFile.get(options.file.id))  
+                    fileRec = twcFile.get(options.file.id) 
                     log.debug("fileRec", fileRec)
                     fileRec.copyFromObject(options.file);
+                                        log.debug("fileRec",core.utils.classToObject(fileRec))
+
                 } else {
                     throw new Error(`No Child Record Found in payload`)
                 }
