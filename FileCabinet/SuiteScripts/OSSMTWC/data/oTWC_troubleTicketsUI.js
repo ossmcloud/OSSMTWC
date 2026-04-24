@@ -183,6 +183,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getTktChildRecord(tkt, childRecord, userInfo) {
             var fieldGroup = [];
+            log.debug("tkt in tktchild rec",tkt)
+            log.debug("childRecord in tktchild rec",childRecord)
+
             if (childRecord.type == twcFileUI.RecordType) {
                 fieldGroup = twcFileUI.getUIFields(childRecord, userInfo);
             } else {
