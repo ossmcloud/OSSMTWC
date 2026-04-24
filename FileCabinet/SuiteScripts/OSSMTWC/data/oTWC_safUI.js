@@ -255,7 +255,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fieldGroup = { id: 'site-access-step-3', title: 'Step 3 of 5 : Access Details', hide: !isExistingSaf, controls: [] };
 
             var customers = twcUtils.getCustomers(userInfo);
-            var primaryContractors = twcUtils.getVendors(userInfo);
+            var primaryContractors = [];
+
+            if (userInfo.isEmployee) {
+                primaryContractors = twcUtils.getVendors(userInfo);
+            } else {
+                if (userInfo.companyProfile.accreditation_status != twcUtils.CompanyAccreditationStatus.Accredited) {
+                    throw new Error(`Your accreditation status [<b>${userInfo.companyProfile.accreditation_status_name}</b>] does not allow for this action`);
+                }
+                primaryContractors.push({
+                    value: userInfo.companyProfile.id,
+                    text: userInfo.companyProfile.name
+                })
+            }
+
 
             var customer = dataSource[twcSaf.Fields.CUSTOMER] || (customers.length == 1 ? customers[0].value : null);
             var primaryContractor = dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR] || (primaryContractors.length == 1 ? primaryContractors[0].value : null);
@@ -437,6 +450,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getSafCrewRecord(saf, childRecord, userInfo) {
             var vendors = twcUtils.getVendors(userInfo);
+
+            // @@NOTE: on a SAF crew members can also be from the customer, however, some customers can also be already in the vendor list (if they are also contractors)
+            var safCustomer = saf['saf-customer'];
+            if (safCustomer && !vendors.find(v => { return v.value == safCustomer })) {
+                vendors.push(...twcUtils.getCompanies({ id: safCustomer }));
+            }
+
             var vendorProfiles = [];
             if (vendors.length == 1) {
                 vendorProfiles = twcUtils.getProfiles({ company: vendors[0].value, canAttend: true })

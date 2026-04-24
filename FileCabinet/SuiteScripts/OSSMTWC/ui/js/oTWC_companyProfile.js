@@ -51,12 +51,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 table.getColumnOption(fieldId + '_name').formatValue = formatValue;
             }
 
-           
+
 
             initPage() {
                 this.initFileFormatValueColumns(this.ui.getControl(twcFile.Type));
                 this.initProfileFormatValueColumns(this.ui.getControl(twcProfile.Type));
-           
+
                 this.initPreviewFileEvents();
                 this.ui.getControl(twcFile.Type).onInitEvents = (tbl) => {
                     this.initPreviewFileEvents();
@@ -106,7 +106,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.dirty = true
                     if (e.id.startsWith('custrecord_twc_co_el_') || e.id.startsWith('custrecord_twc_co_pl_') || e.id.startsWith('custrecord_twc_co_pi_')) {
                         var statusId = `${e.id.substring(0, 'custrecord_twc_co_el_'.length)}status`;
-                        this.ui.getControl(statusId).value = twcUtils.NoActiveExpired.Pending;
+                        if (e.id == statusId) { return; }
+                        this.ui.getControl(statusId).value=twcUtils.NoActiveExpired.Pending;
+                        
                     }
                     console.log(e)
                 })

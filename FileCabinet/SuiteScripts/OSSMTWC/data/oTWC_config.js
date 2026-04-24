@@ -44,7 +44,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             userInfo.companyProfile = coreSQL.first(`
                 select  id, name,
                         case when custrecord_twc_con_flag in (${CONTRACTOR_FLAG.Contractor}, ${CONTRACTOR_FLAG.SubContractor}) then 'T' else 'F' end  as is_vendor, 
-                        case custrecord_twc_cus_flag when ${CUSTOMER_FLAG.Customer} then 'T' else 'F' end  as is_customer
+                        case custrecord_twc_cus_flag when ${CUSTOMER_FLAG.Customer} then 'T' else 'F' end  as is_customer,
+                        custrecord_twc_co_accred_status as accreditation_status, BUILTIN.DF(custrecord_twc_co_accred_status) as accreditation_status_name,
                 from    customrecord_twc_company
                 where   custrecordtwc_entity = ${(userInfo.type == 'Employee') ? TOWERCOM_ENTITY : userInfo.id}
             `)

@@ -186,6 +186,10 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
         function getSafCrewRecord(options, userInfo) {
             var saf = twcSaf.get(options.saf.id);
             saf.copyFromObject(options.saf);
+
+            // @@NOTE: new SAFs have different field names, we need saf-customer to include the customer in the list of companies were crew members can be selected from
+            saf['saf-customer'] = options.saf['saf-customer']
+
             var childRecord = twcSafCrew.get(options.crew.id);
             childRecord.copyFromObject(options.crew);
             return twcSafUI.getSafCrewRecord(saf, childRecord, userInfo);

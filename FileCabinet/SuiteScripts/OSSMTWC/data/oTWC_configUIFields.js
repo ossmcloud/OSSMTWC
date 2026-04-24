@@ -213,6 +213,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             }
                         }
                         control.multiSelect = (dataField.field_type == 'Multiple Select');
+
+                        control.allowAll = false;
+                        control.allowNone = true;
                     } catch (error) {
                         core.logError('GET-DATA-SOURCE', error);
                         throw error;

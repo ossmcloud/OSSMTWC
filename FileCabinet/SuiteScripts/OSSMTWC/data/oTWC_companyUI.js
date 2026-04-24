@@ -66,19 +66,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcCompany.Fields.EL_STATUS, label: 'Status', width: '150px', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_AVAILABLETYPE, width: '100px', label: 'EL Available/Type' })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_LIMIT, width: '100px', label: 'EL Limit' })
-            basicInfo.fields.push({ id: twcCompany.Fields.EL_LIMIT_CURRENCY, width: '100px', label: 'EL Currency', type: twcUI.CTRL_TYPE.SELECT, dataSource: currencies, value: dataSource[twcCompany.Fields.EL_LIMIT_CURRENCY] })
+            basicInfo.fields.push({ id: twcCompany.Fields.EL_LIMIT_CURRENCY, width: '100px', label: 'EL Currency', value: dataSource[twcCompany.Fields.EL_LIMIT_CURRENCY] })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_EXPIRY, label: 'EL Expiry', lineBreak: true })
 
             basicInfo.fields.push({ id: twcCompany.Fields.PL_STATUS, label: 'Status', width: '150px', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_AVAILABLETYPE, width: '100px', label: 'PL Available/Type' })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_LIMIT, width: '100px', label: 'PL Limit' })
-            basicInfo.fields.push({ id: twcCompany.Fields.PL_LIMIT_CURRENCY, width: '100px', label: 'PL Currency', type: twcUI.CTRL_TYPE.SELECT, dataSource: currencies, value: dataSource[twcCompany.Fields.PL_LIMIT_CURRENCY] })
+            basicInfo.fields.push({ id: twcCompany.Fields.PL_LIMIT_CURRENCY, width: '100px', label: 'PL Currency', value: dataSource[twcCompany.Fields.PL_LIMIT_CURRENCY] })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_EXPIRY, label: 'PL Expiry', lineBreak: true })
 
             basicInfo.fields.push({ id: twcCompany.Fields.PI_STATUS, label: 'Status', width: '150px', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.PI_AVAILABLETYPE, width: '100px', label: 'PI Available/Type' })
             basicInfo.fields.push({ id: twcCompany.Fields.PI_LIMIT, width: '100px', label: 'PI Limit' })
-            basicInfo.fields.push({ id: twcCompany.Fields.PI_LIMIT_CURRENCY, width: '100px', label: 'PI Currency', type: twcUI.CTRL_TYPE.SELECT, dataSource: currencies, value: dataSource[twcCompany.Fields.PI_LIMIT_CURRENCY] })
+            basicInfo.fields.push({ id: twcCompany.Fields.PI_LIMIT_CURRENCY, width: '100px', label: 'PI Currency', value: dataSource[twcCompany.Fields.PI_LIMIT_CURRENCY] })
             basicInfo.fields.push({ id: twcCompany.Fields.PI_EXPIRY, label: 'PI Expiry', lineBreak: true })
 
             var basicInfo2 = { id: 'company-insurance-info-2', fields: [] };

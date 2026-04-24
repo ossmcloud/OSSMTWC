@@ -499,6 +499,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (this.deleteRecord(safCrew, table)) { return; }
 
                     if (!safCrew.ui) {
+                        this.data.siteAccessInfo['saf-customer'] = this.ui.getControl('saf-customer').value;
                         safCrew.ui = this.#page.postSync({ action: 'saf-crew-record' }, { saf: this.data.siteAccessInfo, crew: safCrew })
                     }
 

@@ -2,6 +2,15 @@
 TODO:
 -----
 
+when ticket is new do not show 'Resolution file' panel
+
+new ticket:
+    below Create New Trouble Ticket or Provide Safety / Security Feedback
+        add panel to upload photos when ticket created
+
+OSSMTWC - Trouble Ticket Category > Requires Resolution Photos => do not let status gop to complete if no resolution pics
+
+
 
 button Upload resolution photos should only appear when status is:  Assessed, Resolved                   =>DONE
 add assigned to based on company selected                                                                =>DONE
