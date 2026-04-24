@@ -20,7 +20,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     if (!this.#options.id) { this.#options.id = id; }
                     if (!this.#options.type) { this.#options.id = this.#ui.data('type'); }
 
-                    
+
                     this.initEvents();
 
                 } else {
@@ -44,7 +44,13 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get label() { { return this.#options?.label; } }
             get input() { return this.#input; }
             get inputDelay() { return this.#options.inputDelay; }
-            get mandatory() { return this.#options.mandatory; }
+            get mandatory() {
+                return this.#options.mandatory;
+            } set mandatory(val) {
+                this.#options.mandatory = val;
+                this.#ui.find('label').html(`${this.#options.label}${val ? ' *' : ''}`);
+            }
+
 
             get hide() {
                 return this.#ui.closest('ossm').css('display') == 'none';

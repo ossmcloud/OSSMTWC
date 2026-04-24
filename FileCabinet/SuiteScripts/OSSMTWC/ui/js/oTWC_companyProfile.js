@@ -168,6 +168,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 form.getControl(`${certType}_file_name`).value = file.name;
                                 form.getControl(`custrecord_twc_prof_${certType}_cert_exp`).value = '';
                                 form.getControl(`custrecord_twc_prof_${certType}_cert_sts`).value = twcUtils.NoActiveExpired.Pending;
+
+                                if (certType == twcUtils.Certs.SAFE_PASS.code) {
+                                    form.getControl(`custrecord_twc_prof_${certType}_id`).value = '';
+                                    form.getControl(`custrecord_twc_prof_${certType}_id`).mandatory = true;
+                                }
                             })
                         } else if (e.target.id.endsWith('_cert_exp')) {
                             var certType = e.target.id.replace('custrecord_twc_prof_', '').replace('_cert_exp', '')
