@@ -439,25 +439,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             },
             getEditFileRecord: (options, userInfo) => {
                 log.debug("TKt", options)
-                // throw new Error(JSON.stringify("tkt..",options))
-                var tkt = twcTrblTkts.get(options.tkt.id); //@@NOTE this is not working
-                var tkt_testing = twcTrblTkts.select(options);
-                log.debug("TKt Get", tkt)
-                log.debug("tkt1 select", tkt_testing)
+               // var tkt = twcTrblTkts.get(options.tkt.id); //@@NOTE this is not working
+                var tkt =core.utils.classToObject(twcTrblTkts.get(options.tkt.id))
+                log.debug("test core",tkt)
 
-                tkt.copyFromObject(options.tkt);
+                //tkt.copyFromObject(options.tkt);
                 var fileRec = null;
                 if (options.file) {
-                    fileRec = twcFile.get(options.file.id);  //@@NOTE this code not working, tried to load the record using belwo line of code, Not working
-
-                    //fileRec = recu.load(twcFile.Type, parseInt(options.file.id), false)  
+                    fileRec = core.utils.classToObject(twcFile.get(options.file.id))  //@@NOTE this code not working, tried to load the record using belwo line of code, Not working
                     log.debug("fileRec", fileRec)
-                    fileRec.copyFromObject(options.file);
+                    //fileRec.copyFromObject(options.file);
                 } else {
                     throw new Error(`No Child Record Found in payload`)
                 }
 
-                throw new Error(JSON.stringify(fileRec))
+              //  throw new Error(JSON.stringify(fileRec))
                 return twcTrblTktsUI.getTktChildRecord(tkt, fileRec, userInfo);
             },
         }
