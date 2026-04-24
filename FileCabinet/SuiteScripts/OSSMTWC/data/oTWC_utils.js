@@ -83,11 +83,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Rejected: 2,
             Approved: 3,
             Superseded: 4,
-            NA: 5
+            NA: 5,
+            Received: 6
         }
         const FILE_STATUS_STYLE = {
             Pending: { color: 'white', backgroundColor: 'orange' },
             Approved: { color: 'white', backgroundColor: 'green' },
+            Received: { color: 'white', backgroundColor: 'green' },
             Rejected: { color: 'white', backgroundColor: 'red' },
             Superseded: { color: 'white', backgroundColor: 'silver' },
             NA: { color: 'var(--main-color)', backgroundColor: 'transparent' },
@@ -97,6 +99,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             for (var k in FILE_STATUS) {
                 if (FILE_STATUS[k] == fileStatusNumber) { return k; }
             }
+            return k;
         }
         function getFileStatusStyle(fileStatusNumber) {
             if (!fileStatusNumber) { fileStatusNumber = 1; }
@@ -489,7 +492,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } else if (tableId == -105 || tableId == 'accountingperiod') {
                 return { pk: 'id', name: 'accountingperiod', nameField: 'periodname', isInactive: '', alias: '' }
             } else if (tableId == -122 || tableId == 'currency') {
-                return { pk: 'id', name: 'currency', nameField: 'symboows_viewl', isInactive: '', alias: '' }
+                return { pk: 'id', name: 'currency', nameField: 'symbol', isInactive: '', alias: '' }
             } else if (tableId == -30 || tableId == 'transaction') {
                 return { pk: 'id', name: 'transaction', nameField: 'tranid', isInactive: false, alias: '' }
             } else if (tableId == -195 || tableId == 'state') {
@@ -832,11 +835,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     `
                 }
             } else {
-                if (options.type == 'C') {
-                    additionalFilters += `and	custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer}`;
+                
+                
+                if (options.id) {
+                    additionalFilters += `and	id = ${options.id}`;
                 } else {
-                    additionalFilters += `and	custrecord_twc_con_flag = ${CONTRACTOR_FLAG.Contractor}`;
+                    if (options.type == 'C') {
+                        additionalFilters += `and	custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer}`;
+                    } else {
+                        additionalFilters += `and	custrecord_twc_con_flag = ${CONTRACTOR_FLAG.Contractor}`;
+                    }    
                 }
+
                 sql = `
                     select  c.id as value, c.name as text
                     from    customrecord_twc_company c
@@ -870,6 +880,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getCompanies(options);
         }
 
+      
         function getProfiles(options) {
             var filters = '';
             if (options.company) {

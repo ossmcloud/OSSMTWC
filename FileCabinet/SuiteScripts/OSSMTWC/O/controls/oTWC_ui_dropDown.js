@@ -77,14 +77,15 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 return this.#ui.attr('data-value');
             } set value(val) {
                 if (this.disabled) { return; }
-                var v = this.#dataSource.find(vv => { return vv.value == val; })
-                if (v) {
-                    this.#ui.attr('data-value', v.value);
-                    this.#input.val(v.text);
-                } else {
-                    this.#ui.attr('data-value', '');
-                    this.#input.val('');
-                }
+                // var v = this.#dataSource.find(vv => { return vv.value == val; })
+                // if (v) {
+                //     this.#ui.attr('data-value', v.value);
+                //     this.#input.val(v.text);
+                // } else {
+                //     this.#ui.attr('data-value', '');
+                //     this.#input.val('');
+                // }
+                this.setValue(val);
                 this.on('change');
             }
 
@@ -94,6 +95,18 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 return {
                     value: this.#ui.attr('data-value'),
                     text: this.#input.val()
+                }
+            }
+
+            setValue(val) {
+                if (this.disabled) { return; }
+                var v = this.#dataSource.find(vv => { return vv.value == val; })
+                if (v) {
+                    this.#ui.attr('data-value', v.value);
+                    this.#input.val(v.text);
+                } else {
+                    this.#ui.attr('data-value', '');
+                    this.#input.val('');
                 }
             }
 
@@ -220,8 +233,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         this.setMultiTextValue(items.join(','));
 
                     } else {
-
-                        this.#ui.attr('data-value', item.attr('data-value'));
+                        var selectedValue = item.attr('data-value');
+                        if (selectedValue == undefined) { selectedValue = ''; }
+                        
+                        this.#ui.attr('data-value', selectedValue);
                         if (item.attr('data-value')) {
                             this.#input.val(this.valueObj.text);
                         } else {
