@@ -13,7 +13,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fieldGroups = [];
             fieldGroups.push(getProfileInfoPanels_mainInfo(dataSource, userInfo));
             fieldGroups.push(getProfileInfoPanels_certs(dataSource, userInfo));
-            fieldGroups.push(getProfileInfoPanels_finalInfo(dataSource, userInfo));
+            if (dataSource.id) {
+                fieldGroups.push(getProfileInfoPanels_finalInfo(dataSource, userInfo));
+            }
             return fieldGroups;
 
         }
@@ -26,19 +28,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var basicInfo = { id: 'profile-info-basic', title: 'Basic Information', fields: [] };
             fieldGroup.controls.push(basicInfo);
-            basicInfo.fields.push({ id: twcProfile.Fields.NAME, label: 'Name', readOnly: newRecordReadOnly, mandatory: true, width: '250px' })
-            basicInfo.fields.push({ id: twcProfile.Fields.POSITION, label: 'Position', mandatory: true, width: '250px' })
-            basicInfo.fields.push({ id: twcProfile.Fields.EXPERIENCE, label: 'Experience', readOnly: newRecordReadOnly, width: '250px', lineBreak: true })
-            basicInfo.fields.push({ id: twcProfile.Fields.ENSUP_CARD, label: 'ENSUP Card', readOnly: newRecordReadOnly, width: '250px' })
-            basicInfo.fields.push({ id: twcProfile.Fields.E_MAIL, label: 'Email', readOnly: newRecordReadOnly, mandatory: true, width: '250px' })
-            basicInfo.fields.push({ id: twcProfile.Fields.PHONE, label: 'Phone', mandatory: true, lineBreak: true })
+            basicInfo.fields.push({ id: twcProfile.Fields.NAME, label: 'Name', readOnly: newRecordReadOnly, lineBreak: true, mandatory: true, width: '604px' })
+            basicInfo.fields.push({ id: twcProfile.Fields.POSITION, label: 'Position', mandatory: true, width: '300px' })
+            basicInfo.fields.push({ id: twcProfile.Fields.EXPERIENCE, label: 'Experience', readOnly: newRecordReadOnly, width: '300px', lineBreak: true })
+            basicInfo.fields.push({ id: twcProfile.Fields.ENSUP_CARD, label: 'ENSUP Card', readOnly: newRecordReadOnly, width: '300px' })
+            basicInfo.fields.push({ id: twcProfile.Fields.E_MAIL, label: 'Email', readOnly: newRecordReadOnly, mandatory: true, width: '300px' })
+            basicInfo.fields.push({ id: twcProfile.Fields.PHONE, label: 'Phone', mandatory: true, lineBreak: true, width: '170px' })
 
             var basicInfo2 = { id: 'profile-info-basic-2', title: 'Accreditation', fields: [] };
             fieldGroup.controls.push(basicInfo2);
             basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS, label: 'Accreditation Status', readOnly: nonTwcReadOnly, width: '175px' })
             basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_SUBMITTED, label: 'Submitted', readOnly: nonTwcReadOnly, width: '150px' })
             basicInfo2.fields.push({ id: twcProfile.Fields.PICW_ACCEPTABLE, label: 'PICW', readOnly: nonTwcReadOnly })
-            basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS_COMMENT, label: 'Accreditation Comment', readOnly: nonTwcReadOnly, width: '100%', rows: 5 })
+            basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS_COMMENT, label: 'Accreditation Comment', readOnly: nonTwcReadOnly, width: '100%', rows: "4", styles: { height: '111px', display: 'inline-block', width: '100%' } })
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
@@ -82,17 +84,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fieldGroup = { id: 'profile-final-info', controls: [] };
             var basicInfo = { id: 'profile-final-info-basic', fields: [] };
             fieldGroup.controls.push(basicInfo);
-            //basicInfo.fields.push({ id: twcProfile.Fields.TL_PROFILE_ID, label: 'TL Profile ID', readOnly: true, width: '100%' });
 
-            //throw new Error(JSON.stringify(core.utils.classToObject( dataSource)))
-
+            var profileIdSpan = dataSource.tLProfileID ? `<span class="twc_text_large">${dataSource.tLProfileID}</span>` : '<span style="color: silver;">[no profile id]</span>';
             var content = `
-                <div>
-                    <label class="inline">TL Profile ID</label>
-                    ${dataSource.tLProfileID || ''}
+                <div style="text-align: right;">
+                    <label class="inline">TL Profile ID:</label>
+                    ${profileIdSpan}
                 <div>
             `
-
             basicInfo.fields.push({
                 id: 'tl-profile-id', type: twcUI.CTRL_TYPE.PANEL, content: content,
                 styles: {
@@ -100,15 +99,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     // display: 'inline-block',
                     position: 'absolute',
                     bottom: '0px',
-                    
+
 
                 },
                 contentStyles: {
                     width: '100%',
-                    'border-top': '1px solid var(--grid-color)',
+                    'border': 'none',
                     'border-radius': '0px',
                     'min-height': 'auto',
-                    
+
                 }
             });
             configUIFields.formatPanelFields(dataSource, fieldGroup);

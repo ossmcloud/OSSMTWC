@@ -2026,7 +2026,7 @@ div.twc-chat-message-open-file:hover {
 
 .twc_text_large {
     font-size: 18px;
-    color: var(--accent-color);
+    color: var(--accent-fore-color);
     font-weight: bold;
 }
 

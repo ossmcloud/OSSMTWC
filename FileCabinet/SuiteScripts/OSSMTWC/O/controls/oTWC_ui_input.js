@@ -20,7 +20,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     if (!this.#options.id) { this.#options.id = id; }
                     if (!this.#options.type) { this.#options.id = this.#ui.data('type'); }
 
-                    
+
                     this.initEvents();
 
                 } else {
@@ -44,7 +44,13 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get label() { { return this.#options?.label; } }
             get input() { return this.#input; }
             get inputDelay() { return this.#options.inputDelay; }
-            get mandatory() { return this.#options.mandatory; }
+            get mandatory() {
+                return this.#options.mandatory;
+            } set mandatory(val) {
+                this.#options.mandatory = val;
+                this.#ui.find('label').html(`${this.#options.label}${val ? ' *' : ''}`);
+            }
+
 
             get hide() {
                 return this.#ui.closest('ossm').css('display') == 'none';
@@ -163,7 +169,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 var htmlInput = '';
                 if (this.#options.type == ctrlBase.CTRL_TYPE.TEXTAREA) {
-                    htmlInput = `<textarea id="${this.#options.id}" type="${this.#options.type}" class="twc" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" ${accept} ${disabled} ${readOnly} ${checked} ${rows}>${this.#options.value || ''}</textarea>`;
+                    htmlInput = `<textarea id="${this.#options.id}" type="${this.#options.type}" class="twc" style="width: ${inputWidth}; margin-bottom: -5px;" autocomplete="off" placeholder="${this.#options.hint || ''}" ${accept} ${disabled} ${readOnly} ${checked} ${rows}>${this.#options.value || ''}</textarea>`;
                 } else if (this.#options.type == ctrlBase.CTRL_TYPE.SELECT) {
                     htmlInput = `<select id="${this.#options.id}" class="twc" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${this.#options.value || ''}" ${accept} ${disabled} ${readOnly} ${checked}/>`;
                     if (!this.#options.noEmpty) {
@@ -198,6 +204,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     client: this.ui != null,
                     type: this.#options.type,
                     hide: this.#options.hide,
+                    styles: this.#options.styles
                 });
 
                 if (container) {

@@ -27,6 +27,40 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Approved: 5,
             ToBeRenewed: 6
         }
+        const COMPANY_ACCREDITATION_STATUS_STYLE = {
+            Inactive: { color: 'white', backgroundColor: 'silver' },
+            Accredited: { color: 'white', backgroundColor: 'green' },
+            CertsExpired: { color: 'white', backgroundColor: 'red' }, 
+            Pending: { color: 'white', backgroundColor: 'orange' },
+            Approved: { color: 'white', backgroundColor: 'lime' },
+            ToBeRenewed: { color: 'white', backgroundColor: 'indianred' },
+        }
+        function getCompAccredStatusName(fileStatusNumber) {
+            if (!fileStatusNumber) { fileStatusNumber = 1; }
+            for (var k in COMPANY_ACCREDITATION_STATUS) {
+                if (COMPANY_ACCREDITATION_STATUS[k] == fileStatusNumber) { return k; }
+            }
+            return k;
+        }
+        function getCompAccredStatusStyle(fileStatusNumber) {
+            if (!fileStatusNumber) { fileStatusNumber = 1; }
+            if (isNaN(parseInt(fileStatusNumber))) {
+                return COMPANY_ACCREDITATION_STATUS_STYLE[fileStatusNumber.replaceAll('/', '')];
+            } else {
+                return COMPANY_ACCREDITATION_STATUS_STYLE[getCompAccredStatusName(fileStatusNumber)];
+            }
+        }
+        function getCompAccredStatusHtml(fileStatusNumber, spanClass) {
+            if (!fileStatusNumber) { fileStatusNumber = 11; }
+            var statusName = getCompAccredStatusName(fileStatusNumber);
+            if (isNaN(parseInt(fileStatusNumber))) { statusName = fileStatusNumber; }
+            var statusStyle = getCompAccredStatusStyle(statusName);
+            return `
+                <span class="${spanClass ? spanClass : 'twc-record-status'}" style="color: ${statusStyle.color}; background-color: ${statusStyle.backgroundColor};" >
+                    ${statusName}
+                </span>
+            `
+        }
 
         const COMPANY_INSURANCE_FIELDS = {
             EL: { field: 'custrecord_twc_co_el_status', fieldEx: 'custrecord_twc_co_el_expiry', code: 'el' },
@@ -1170,6 +1204,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getFileStatusName: getFileStatusName,
             getFileStatusHtml: getFileStatusHtml,
             getFileTypes: getFileTypes,
+
+            getCompAccredStatusHtml: getCompAccredStatusHtml,
 
             getTimeBlockTimeRange: getTimeBlockTimeRange,
 

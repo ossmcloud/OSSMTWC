@@ -29,6 +29,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 table.getColumnOption(twcFile.Fields.STATUS + '_name').formatValue = formatValue;
             }
 
+            initACLFormatValueColumns(table) {
+                if (!table) { return; }
+                const formatValue = (v, fv, d) => {
+                    return twcUtils.getCompAccredStatusHtml(d.accreditation_status_id, 'twc-record-status-row')
+                }
+                table.getColumn('accreditation_status').formatValue = formatValue;
+                table.getColumnOption('accreditation_status').formatValue = formatValue;
+            }
+
             initProfileFormatValueColumns(table) {
                 const formatValue = (v, fv, d, col) => {
                     return twcProfile.getCertStatusHtml(v, d[col.id.replace('_sts_name', '_exp')])
@@ -56,6 +65,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             initPage() {
                 this.initFileFormatValueColumns(this.ui.getControl(twcFile.Type));
                 this.initProfileFormatValueColumns(this.ui.getControl(twcProfile.Type));
+                this.initACLFormatValueColumns(this.ui.getControl('no-rec-acl-customer'));
+                this.initACLFormatValueColumns(this.ui.getControl('no-rec-acl-vendor'));
 
                 this.initPreviewFileEvents();
                 this.ui.getControl(twcFile.Type).onInitEvents = (tbl) => {
@@ -157,6 +168,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 form.getControl(`${certType}_file_name`).value = file.name;
                                 form.getControl(`custrecord_twc_prof_${certType}_cert_exp`).value = '';
                                 form.getControl(`custrecord_twc_prof_${certType}_cert_sts`).value = twcUtils.NoActiveExpired.Pending;
+
+                                if (certType == twcUtils.Certs.SAFE_PASS.code) {
+                                    form.getControl(`custrecord_twc_prof_${certType}_id`).value = '';
+                                    form.getControl(`custrecord_twc_prof_${certType}_id`).mandatory = true;
+                                }
                             })
                         } else if (e.target.id.endsWith('_cert_exp')) {
                             var certType = e.target.id.replace('custrecord_twc_prof_', '').replace('_cert_exp', '')
