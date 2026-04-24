@@ -1,21 +1,9 @@
-QUESTIONS:
-----------
-	Profile Table => SAF Available Field (if this is intended to control who can enter SAFs then we should use roles, otherwise what is this?)
-	Company Table => Promary Contact , it does not make sense to me, and in any case we have no actual primary contact field 
-					 (this could be a flag o the profile table nd we could allow more that one primary contact)
-	SAFE PASS	  => shouldn't we need the PDF for this as well?
-	EL/PL 		  => if not mandatory should we let them to process a SAF?
-
-
-________________________________________________________________________________________________________________________________________________________________
-
 
 TODO-NEXT:
 ----------
     00. SAF:
        	// @@TODO: SAF 
-    	// @@TODO: COMPANY PROFILE: 
-
+    	
     00. UserEvent - Inject Styles
         oTWC.css => style #body prevents the page to scroll
         // @@TODO: style #body prevents the page to scroll
@@ -26,49 +14,15 @@ TODO-NEXT:
             
     00. SRF Type => what is this??? we do not have oit in Radix
     
-    04. implement functionalities:
-            Space Request (SRF)
-            Space Access Request (SAF)
-            Inventory
-            Trouble Ticket
-            ...
-
-    04. OSSMTWC - Profile:
-        each employee or customer or customer contact must be associated with a profile
-        we should automate this as follow:
-            new employees => create the profile record on save and ask user to complete 
-            new customers => create the profile record on save and ask user to complete 
-            new contact => if possible do same as above
-            new vendors => create the profile record on save and ask user to complete 
-    
     05. twcUI:
 		dropdown: 	
 			allow to open record 
 			if readonly/disabled do not show arrow
 		table: 
-			does not store the 'options' if renderd on server
+			does not store the 'options' if rendered on server
 
 	06. OSSMTWC - ACL List, OSSMTWC - ASCL List
             make sure no duplicates are created
-
-
-
-
-
-
-
-TEST DATA WE NEED:
-------------------
-
-We should have a table that tells us what customers a vendor can work on behalf of
-
-OSSMTWC - SRF Item Step Type => should rename to something more meaningful:
-    TME     Tower Mounted Eq
-    ATME    Additional Tower Mounted Eq
-    GIE     Ground & Indoor Eq
-
-OSSMTWC - Profile
-Map to employees / customers|vendors / customer|vendorS contact
 
 
 
@@ -86,7 +40,6 @@ SRF
     preview file not work for csv
     if re-uploading same file increase version
 
-
 Radix Role is assigned to the NS Role
     This means that a user could assign an 'Admin' radix role to a customer or vendor which should not be done under any circumstances
     We need to figure out a way to avoid this (cannot use Sourcing on the custom field as 'Center Type' is not available as List/Record option)
@@ -97,29 +50,3 @@ BEFORE GO-LIVE:
 ---------------
 
 
-________________________________________________________________________________________________________________________________________________________________
-
-TEST-DATA-IMPORT:
------------------
-    Boolean Fields: use T/F not 1/0
-    Date Fields: make sure they are all in dd/MM/yyyy and not numeric excel format
-
-    Site :: 
-        Public :: use name not id
-        Portfolio :: What is 108 ???
-        Latitude and Longitude are inverted
-
-    Infra ::
-        Year of Build cannot be an integer, eventually we want to fields from/to if we ned the to be int
-        Public :: use name not id
-        Fall Arrest Status :: use name not id
-        TLM :: use name not id
-
-        Ground Water (BGL) :: something is wrong here, supposed to be a number
-
-        Customers:
-            Vodafone => 43 Vodafone Ireland
-            Eircom   => 6 Eir
-            Obelisk  => 33 Obelisk Communications	
-            KTL => 27 KTL
-            Towercom => 46 Towercom

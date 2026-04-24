@@ -80,8 +80,6 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
             } else if (childRecord.type == twcProfile.Type) {
 
-                // @@TODO: COMPANY PROFILE: validate data
-
                 childRecord.company = company.id;
                 response.id = childRecord.save();
                 response.record = {};
@@ -103,9 +101,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
             } else {
                 throw new Error(`Invalid Child Record Type: ${childRecord.type}`)
             }
-
-            // @@TODO: COMPANY PROFILE: handle deleted records (just set as inactive)
-
+            
             return response
         }
 

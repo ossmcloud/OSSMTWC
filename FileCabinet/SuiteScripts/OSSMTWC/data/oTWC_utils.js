@@ -103,12 +103,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@NOTE: SAFE PASS must be valid or no site can be accessed
                 return attendAs;
             }
-            if (p.valid_climb_cert == 'T') { attendAs.push({ value: 'CLIMBER', text: 'Climber Certified', exp: p.climber_exp }); }
-            if (p.valid_rescue_cert == 'T') { attendAs.push({ value: 'RESCUE', text: 'Rescue Certified', exp: p.rescue_exp }); }
-            if (p.valid_rooftop_cert == 'T') { attendAs.push({ value: 'ROOFTOP', text: 'Rooftop Certified', exp: p.rooftop_exp }); }
-            if (p.valid_elec_cert == 'T') { attendAs.push({ value: 'ELEC', text: 'Electrician Certified', exp: p.elec_exp }); }
-            if (p.valid_drone_cert == 'T') { attendAs.push({ value: 'DRONE', text: 'Drone Certified', exp: p.drone_exp }); }
-            if (p.valid_rf_cert == 'T') { attendAs.push({ value: 'RF', text: 'RF Certified', exp: p.rf_exp }); }
+            if (p.valid_climb_cert == 'T') { attendAs.push({ value: 'CLIMBER', text: 'Climber', exp: p.climber_exp }); }
+            if (p.valid_rescue_cert == 'T') { attendAs.push({ value: 'RESCUE', text: 'Rescue', exp: p.rescue_exp }); }
+            if (p.valid_rooftop_cert == 'T') { attendAs.push({ value: 'ROOFTOP', text: 'Rooftop', exp: p.rooftop_exp }); }
+            if (p.valid_elec_cert == 'T') { attendAs.push({ value: 'ELEC', text: 'Electrician', exp: p.elec_exp }); }
+            if (p.valid_drone_cert == 'T') { attendAs.push({ value: 'DRONE', text: 'Drone', exp: p.drone_exp }); }
+            if (p.valid_rf_cert == 'T') { attendAs.push({ value: 'RF', text: 'RF', exp: p.rf_exp }); }
             return attendAs;
         }
 
@@ -871,8 +871,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } else {
                 
                 
-                if (options.id) {
-                    additionalFilters += `and	id = ${options.id}`;
+                if (options.cid) {
+                    additionalFilters += `and	id = ${options.cid}`;
                 } else {
                     if (options.type == 'C') {
                         additionalFilters += `and	custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer}`;
@@ -1069,15 +1069,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getInfraStructures(options) {
-            // return coreSQL.run(`
-            //     select  is.id as value, custrecord_twc_infra_id as text, custrecord_twc_infra_id || ' [' || BUILTIN.DF(custrecord_twc_infra_str_type) || ']' as text_render, 
-            //             custrecord_twc_infra_type as type, BUILTIN.DF(custrecord_twc_infra_type) as type_name, st.custrecord_twc_infra_saf_sts_types as saf_types
-            //     from    customrecord_twc_infra is
-            //     left join    customrecord_twc_infra_saf_sts st on st.id = is.custrecord_twc_infra_saf_status
-            //     where   custrecord_twc_infra_site = ${options?.siteId || 0}
-            //     order by is.custrecord_twc_infra_id
-            // `)
-
             var siteStructures = [];
             coreSQL.each(`
                 select  is.id as value, custrecord_twc_infra_id as name, 
@@ -1109,7 +1100,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 join    customrecord_twc_infra_str_type t on t.id = i.custrecord_twc_infra_str_type
                 join    customrecord_twc_site s on s.id = i.custrecord_twc_infra_site
                 where  	i.custrecord_twc_infra_site = ${options.siteId}
+                and     i.id = ${options.id || 0}
             `, r => {
+
+                // @@TODO: this is no longer needed
                 if (r.is_rooftop == 'T') {
                     info.roofTop = true;
                 } else if (r.is_mast == 'T') {
@@ -1126,6 +1120,31 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 info.electrical = true;
                 info.building = true;
             })
+            return info;
+        }
+
+        function getSiteTypeInfo(options) {
+            var info = coreSQL.first(`
+                select  t.id, NVL(t.custrecord_twc_site_types_roof_access, 'N') rooftop, NVL(t.custrecord_twc_site_types_mast_access, 'N') as mast, 
+                        NVL(t.custrecord_twc_site_types_mewp_access, 'N') as mewp, NVL(t.custrecord_twc_site_types_electr_access, 'N') as electrical
+                from    customrecord_twc_site s
+                join    customrecord_twc_site_type t on t.id = s.custrecord_twc_site_type
+                where   s.id = ${options.siteId};
+            `)
+
+            const getYesNoOptions = (v) => {
+                if (v == 'N') { return null; }
+                if (v == 'Y') { return [{ value: 'T', text: 'Yes' }, { value: 'F', text: 'No' }] }
+                if (v == 'F') { return [{ value: 'T', text: 'Yes' }] }
+                return null;
+            }
+
+
+            info.rooftop = getYesNoOptions(info.rooftop);
+            info.mast = getYesNoOptions(info.mast);
+            info.mewp = getYesNoOptions(info.mewp);
+            info.electrical = getYesNoOptions(info.electrical);
+            
             return info;
         }
 
@@ -1209,6 +1228,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             getTimeBlockTimeRange: getTimeBlockTimeRange,
 
+            getSiteTypeInfo: getSiteTypeInfo,
             getInfraStructures: getInfraStructures,
             getStructureTypeInfo: getStructureTypeInfo,
 
