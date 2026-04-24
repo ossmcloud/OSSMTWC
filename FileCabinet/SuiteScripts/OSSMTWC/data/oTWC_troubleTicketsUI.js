@@ -170,7 +170,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (userInfo.isEmployee) {
                 fieldGroups.push(getTKPanelAssessment(dataSource, userInfo));
                 fieldGroups.push(getTKPanelResolution(dataSource, userInfo));
-                fieldGroups.push(getTKPanelFiles(dataSource, userInfo));
+                if (dataSource?.id) {
+                    fieldGroups.push(getTKPanelFiles(dataSource, userInfo));
+                }
 
             }
 

@@ -145,7 +145,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             initTrblTktMode() {
-                this.ui.find('.twc-preview-file').click(async e => {
+                this.ui.find('.twc-preview-file')?.click(async e => {
                     var file = jQuery(e.currentTarget).data('file')
                     await this.previewFile(file, e)
                 })
@@ -172,7 +172,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         dialog.error(error);
                     }
                 })
-                this.ui.getControl(twcFile.Type).onToolbarClick = e => {
+                //this.ui.getControl(twcFile.Type).onToolbarClick = e => {
+                var fileCtrl = this.ui.getControl(twcFile.Type);
+                if (fileCtrl) {
+                    fileCtrl.onToolbarClick = e => {
                     if (e.action == 'edit') {
                         this.manageFile(e.rowData, e.table);
 
@@ -183,6 +186,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         })
                     }
                 }
+            }
 
                 this.ui.find('#resolve-button').on('click', async (e) => {
                     await this.resolveTicket();
@@ -255,7 +259,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 });
             }
 
+
             async resolveTicket() {
+
+                let rec = twcTkt.get(this.data.trblTktInfo.id);
+                let tktCategory = rec.category;
+                console.log('cat',tktCategory)
+               // reqResPhotos(tktId)
+
                 var formConfig = {
                     controls: [
                         {
@@ -356,7 +367,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         try {
                             var obj = form.getValues(true);
                             for (var k in obj) {
-                                if (k == 'name') { continue; }
+                               // if (k == 'name') { continue; }
                                 if (obj[k]?.value !== undefined) {
                                     tktfFile[k] = obj[k].value;
                                     tktfFile[k + '_name'] = obj[k].text;
@@ -368,6 +379,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                             if (!this.data.trblTktInfo.files) { this.data.trblTktInfo.files = table.data; }
                             if (this.data.trblTktInfo.files.indexOf(tktfFile) < 0) { this.data.trblTktInfo.files.push(tktfFile); }
+                            console.log("this.data.trblTktInfo.files",this.data.trblTktInfo.files)
                             table.render(this.data.trblTktInfo.files, true)
 
                             this.dirty = true
@@ -523,10 +535,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     //throw new Error(JSON.stringify(this.data))
                     var payload = this.#changes;
-                    // throw new Error(JSON.stringify(payload))
+
                     payload.id = window.twc.page.data.recId
                     payload.siteId = window.twc.page.data.siteInfo.site.id
                     payload.files_deleted = this.data.trblTktInfo['files_deleted']
+                    payload.files_edited = this.data.trblTktInfo['files']
+                   // throw new Error(JSON.stringify(payload))
                     var resp = await this.post({ action: 'save' }, payload);
                     this.dirty = false;
 

@@ -355,6 +355,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (errors.length > 0) { throw new Error(JSON.stringify(errors)); }
 
             deleteTrblTktsFile(payload);
+            saveResolutionFile(payload)
 
             return payload.id;
         }
@@ -367,6 +368,43 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@TODO: delete actual file
                 recu.submit(twcFile.Type, file.id, 'isinactive', true);
             })
+        }
+          function saveResolutionFile(payload) {
+            log.debug("payload fiels 1",payload)
+            if (!payload.files_edited) { return; }
+            log.debug("payload fiels",payload.files_edited)
+
+            var tktInfo = coreSQL.first(`
+                select  s.name, site.${twcSite.Fields.SITE_ID} as site_id
+                from    ${twcTrblTkts.Type} s
+                join    ${twcSite.Type} site on site.id = s.${twcTrblTkts.Fields.SITE}
+                where   s.id = ${payload.id}
+            `)
+
+             var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/${tktInfo.name}`);
+
+            core.array.each(payload.files_edited, file => {
+                if (!file.dirty) { return; }
+
+                var tktFile = twcFile.get(file.id);
+                tktFile.recordType = twcTrblTkts.Type;
+                tktFile.recordID = payload.id;
+                for (var k in file) {
+                    if (k == 'fileObject') { continue; }
+                    if (!tktFile.hasField(k)) { continue; }
+                    tktFile.set(k, file[k])
+                }
+                tktFile.save();
+
+                // var nsFile = nsFileUtils.writeFile({
+                //     name: `${tktFile.id}_${file.name}`,
+                //     fileType: nsFileUtils.getFileType(file.type),
+                //     content: file.content,
+                //     folder: tktFolder,
+                // });
+                // recu.submit(twcFile.Type, tktFile.id, twcFile.Fields.FILE, nsFile.fileId);
+
+           })
         }
 
         function saveTktImage(options) {
@@ -404,12 +442,26 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+        function reqResPhotos(tktId){
+              var tktInfo = coreSQL.first(`
+                select  t.id
+                from    ${twcTrblTkts.Type} t
+                join customrecord_twc_trbl_tkt_category cat 
+                ON cat.id = t.custrecord_twc_trbl_tkt_category
+                where t.id = ${tktId}
+                AND
+                cat.custrecord_twc_trbl_tkt_requires_res_pic = 'T
+            `)
+            console.log('tktInfo',tktInfo)
+        }
+
 
         return {
             getTroubleTickets: getTroubleTickets,
             resolveTicket: resolveTicket,
             cancelTicket: cancelTicket,
             saveTktInfo: saveTktInfo,
+          //  reqResPhotos:reqResPhotos,
             saveTktImage: saveTktImage,
             getTKTInfoPanels: twcTrblTktsUI.getTKTInfoPanels,
             renderTroubleTicketsPanel: renderTroubleTicketsPanel,
