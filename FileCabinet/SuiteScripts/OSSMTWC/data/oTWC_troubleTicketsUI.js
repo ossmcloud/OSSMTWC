@@ -191,7 +191,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             } else {
                 throw new Error(`No Child Record Found in payload (type: ${childRecord.type})`)
             }
-            configUIFields.formatPanelFields(childRecord, fieldGroup);
+           // configUIFields.formatPanelFields(childRecord, fieldGroup);
             return fieldGroup;
         }
 

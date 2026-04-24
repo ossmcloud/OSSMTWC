@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../data/oTWC_troubleTickets.js', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', './oTWC_siteInfoPanel.js', '../../O/controls/oTWC_ui_ctrl.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', '../../data/oTWC_file.js'],
-    (core, coreSql, twcPageBase, dialog, twcIcons, twcConfig, twcTkt, uiTable, twcSiteLocatorPanel, twcSiteInfoPanel, twcUI, b64, twcFile) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../data/oTWC_troubleTickets.js', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', './oTWC_siteInfoPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_fieldPanel.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', '../../data/oTWC_file.js'],
+    (core, coreSql, twcPageBase, dialog, twcIcons, twcConfig, twcTkt, uiTable, twcSiteLocatorPanel, twcSiteInfoPanel, twcUI, twcUIPanel, b64, twcFile) => {
 
         var _tktLink = null;
         function ticketViewLink(id) {
@@ -155,12 +155,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.dirty = true
 
                         if (e.id == twcTkt.Fields.ASSIGNED_TO_COMPANY) {
-                             this.post({ action: 'get-company-profile' }, { company: e.value })
-                            .then(res => {
-                                this.ui.getControl(twcTkt.Fields.ASSIGNED_TO).setDataSource(res.data);
-                                this.ui.controls.find(c => { return c.id == twcTkt.Fields.ASSIGNED_TO }).dataSource = res.data;
-                            })
-                            .catch(err => { dialog.error(err); });
+                            this.post({ action: 'get-company-profile' }, { company: e.value })
+                                .then(res => {
+                                    this.ui.getControl(twcTkt.Fields.ASSIGNED_TO).setDataSource(res.data);
+                                    this.ui.controls.find(c => { return c.id == twcTkt.Fields.ASSIGNED_TO }).dataSource = res.data;
+                                })
+                                .catch(err => { dialog.error(err); });
                         }
 
                         if (e.id == twcTkt.Fields.CATEGORY || e.id == twcTkt.Fields.PRIORITY || e.id == twcTkt.Fields.ASSIGNED_TO || e.id == twcTkt.Fields.ASSIGNED_TO_COMPANY) {
@@ -205,12 +205,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             async cancelTicket() {
                 var formConfig = {
                     controls: [
-                        { 
-                            type: twcUI.CTRL_TYPE.TEXTAREA, 
-                            id: twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE, 
-                            value: '', 
-                            width: '100%', 
-                            rows: 7 
+                        {
+                            type: twcUI.CTRL_TYPE.TEXTAREA,
+                            id: twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE,
+                            value: '',
+                            width: '100%',
+                            rows: 7
                         },
                     ]
                 };
@@ -258,13 +258,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             async resolveTicket() {
                 var formConfig = {
                     controls: [
-                        { 
-                            type: twcUI.CTRL_TYPE.TEXTAREA, 
-                            id: twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE, 
+                        {
+                            type: twcUI.CTRL_TYPE.TEXTAREA,
+                            id: twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE,
                             label: 'Comment',
-                            value: '', 
-                            width: '100%', 
-                            rows: 7 
+                            value: '',
+                            width: '100%',
+                            rows: 7
                         },
                         {
                             type: twcUI.CTRL_TYPE.DATE,
@@ -338,6 +338,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (this.deleteRecord(tktfFile, table)) { return; }
 
                     var res = this.postSync({ action: 'edit-file' }, { tkt: this.data.trblTktInfo, file: tktfFile })
+                    res.controls.find(c => { return c.id == 'upload-file' }).hide = true;
+                    res.controls.find(c => { return c.id == twcFile.Fields.R_TYPE }).readOnly = true;
+                    res.controls.find(c => { return c.id == twcFile.Fields.STATUS }).readOnly = true;
+
                     var form = twcUIPanel.ui(res);
                     form.on('change', e => {
                         if (e.id == 'name') {
@@ -376,21 +380,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 } catch (error) {
                     dialog.error(error);
                 }
-            
+
 
             }
 
             deleteRecord(tktRecord, table) {
                 if (tktRecord.delete) {
-                    console.log("tktRecord",tktRecord)
+                    console.log("tktRecord", tktRecord)
                     if (tktRecord.id) {
-                        console.log("his.data.trblTktInfo",this.data.trblTktInfo)
+                        console.log("his.data.trblTktInfo", this.data.trblTktInfo)
 
                         if (!this.data.trblTktInfo['files_deleted']) { this.data.trblTktInfo['files_deleted'] = []; }
                         this.data.trblTktInfo['files_deleted'].push(tktRecord);
                     }
-                     console.log("his.data.trblTktInfo del",this.data.trblTktInfo['files_deleted'])
-                   //throw new Error(JSON.stringify(this.data.trblTktInfo))
+                    console.log("his.data.trblTktInfo del", this.data.trblTktInfo['files_deleted'])
+                    //throw new Error(JSON.stringify(this.data.trblTktInfo))
                     table.data.splice(table.data.indexOf(tktRecord), 1);
                     table.render(table.data, true);
                     this.dirty = true
@@ -519,10 +523,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     //throw new Error(JSON.stringify(this.data))
                     var payload = this.#changes;
-                  // throw new Error(JSON.stringify(payload))
+                    // throw new Error(JSON.stringify(payload))
                     payload.id = window.twc.page.data.recId
                     payload.siteId = window.twc.page.data.siteInfo.site.id
-                    payload.files_deleted=this.data.trblTktInfo['files_deleted']
+                    payload.files_deleted = this.data.trblTktInfo['files_deleted']
                     var resp = await this.post({ action: 'save' }, payload);
                     this.dirty = false;
 
