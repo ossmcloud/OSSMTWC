@@ -21,11 +21,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             StepType: twcUtils.SrfStepType,
             RequestType: twcUtils.SrfRequestType,
 
-            get: function (id) {
-                var rec = new OSSMTWC_SRFItem(id);
-                rec.load();
-                return rec;
-            },
+            get: twcSrfItem.get,
 
             select: function (options) {
                 var rec = new OSSMTWC_SRFItem();

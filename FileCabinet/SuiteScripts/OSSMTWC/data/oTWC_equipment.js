@@ -42,7 +42,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 o.where = {};
                 o.where[twcEquipment.Fields.CUSTOMER] = options.customer || 0;
-                o.where[twcEquipment.Fields.EQ_TYPE] = options.stepType || 0;
+                o.where[twcEquipment.Fields.EQUIPMENT_CLASS] = options.stepType || 0;
 
                 o.orderBy = [twcEquipment.Fields.EQUIPMENT_ID];
 

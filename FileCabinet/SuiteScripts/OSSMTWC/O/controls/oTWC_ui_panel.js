@@ -59,7 +59,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
               
                 var html = `
-                    <div class="twc_ctrl twc_ctrl_panel_outer" ${noContentStyle} data-type="panel" data-id="${this.#options.id}">
+                    <div class="twc_ctrl twc_ctrl_panel_outer" id="${this.#options.id}" ${noContentStyle} data-type="panel" data-id="${this.#options.id}">
                         ${title}
                         ${content}
                         <data id="${this.#options.id}_options">

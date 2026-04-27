@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_utils.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js','../../data/oTWC_config.js','../../O/controls/oTWC_ui_ctrl.js'],
-    (core, coreSQL, recu, twcUtils, twcSite, twcSrf, twcSrfItem, twcSrfUI, twcFile, nsFileUtils,twcConfig,twcUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_utils.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js', '../../data/oTWC_config.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_equipmentLib.js'],
+    (core, coreSQL, recu, twcUtils, twcSite, twcSrf, twcSrfItem, twcSrfUI, twcFile, nsFileUtils, twcConfig, twcUI, twcEqLib) => {
 
         function saveSiteSrf(userInfo, payload) {
             // @@NOTE: @@REVIEW: this routine could be generalised to be used with different record types, not only twcSite
@@ -210,6 +210,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (options.item) {
                     childRecord = twcSrfItem.get(options.item.id);
                     childRecord.copyFromObject(options.item);
+                    // @@NOTE: fields itemType has a dependency with field stepType, copyFromObject sets itemType before it sets stepType as a result itemType is "lost"
+                    childRecord.set(twcSrfItem.Fields.ITEM_TYPE, options.item[twcSrfItem.Fields.ITEM_TYPE]);
+
                 } else if (options.file) {
                     childRecord = twcFile.get(options.file.id);
                     childRecord.copyFromObject(options.file);
@@ -217,7 +220,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     throw new Error(`No Child Record Found in payload`)
                 }
 
-                
+
                 return twcSrfUI.getSrfChildRecord(srf, childRecord, userInfo);
             },
 
@@ -248,7 +251,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             },
 
             saveSiteSrf: saveSiteSrf,
-            renderSiteLocatorPanel:renderSiteLocatorPanel
+            renderSiteLocatorPanel: renderSiteLocatorPanel,
+
         }
 
     });

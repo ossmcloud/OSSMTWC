@@ -47,33 +47,37 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             testFunction() {
                 try {
 
-                    const getCurrency = (txt) => {
-                        if (!txt) { return null; }
-                        if (txt.toLowerCase() == 'eur' || txt.toLowerCase() == 'euro') { return 1; }
-                        if (txt.toLowerCase() == 'gbp') { return 4; }
-                        if (txt.toLowerCase() == 'usd') { return 2; }
-                        if (txt.toLowerCase() == 'cad') { return 3; }
-                        return null;
-                    }
+                    coreSQL.each('select id, 	custrecord_twc_equip_type, from customrecord_twc_equip where 	custrecord_twc_equip_class is null ', e => {
+                        recu.submit('customrecord_twc_equip', e.id, 'custrecord_twc_equip_class', e.custrecord_twc_equip_type)
+                    })
 
-                    coreSQL.each(`
-                        select  id, 	custrecord_twc_co_el_limit_cur as el_cur_txt, custrecord_twc_co_el_limit_currx as el_cur,    
-                                        custrecord_twc_co_pl_limit_cur as pl_cur_txt, custrecord_twc_co_pl_limit_currx as pl_cur,
-                                        custrecord_twc_co_pi_limit_cur as pi_cur_txt, custrecord_twc_co_pi_limit_currx as pi_cur,
-                        from    customrecord_twc_company
-                        order by id
-                    `, c => {
-                        console.log(c);
+                    // const getCurrency = (txt) => {
+                    //     if (!txt) { return null; }
+                    //     if (txt.toLowerCase() == 'eur' || txt.toLowerCase() == 'euro') { return 1; }
+                    //     if (txt.toLowerCase() == 'gbp') { return 4; }
+                    //     if (txt.toLowerCase() == 'usd') { return 2; }
+                    //     if (txt.toLowerCase() == 'cad') { return 3; }
+                    //     return null;
+                    // }
 
-                        var fields = ['custrecord_twc_co_el_limit_currx', 'custrecord_twc_co_pl_limit_currx', 'custrecord_twc_co_pi_limit_currx']
-                        var values = [];
-                        values.push(getCurrency(c.el_cur_txt));
-                        values.push(getCurrency(c.pl_cur_txt));
-                        values.push(getCurrency(c.pi_cur_txt));
+                    // coreSQL.each(`
+                    //     select  id, 	custrecord_twc_co_el_limit_cur as el_cur_txt, custrecord_twc_co_el_limit_currx as el_cur,    
+                    //                     custrecord_twc_co_pl_limit_cur as pl_cur_txt, custrecord_twc_co_pl_limit_currx as pl_cur,
+                    //                     custrecord_twc_co_pi_limit_cur as pi_cur_txt, custrecord_twc_co_pi_limit_currx as pi_cur,
+                    //     from    customrecord_twc_company
+                    //     order by id
+                    // `, c => {
+                    //     console.log(c);
 
-                        recu.submit('customrecord_twc_company', c.id, fields, values);
+                    //     var fields = ['custrecord_twc_co_el_limit_currx', 'custrecord_twc_co_pl_limit_currx', 'custrecord_twc_co_pi_limit_currx']
+                    //     var values = [];
+                    //     values.push(getCurrency(c.el_cur_txt));
+                    //     values.push(getCurrency(c.pl_cur_txt));
+                    //     values.push(getCurrency(c.pi_cur_txt));
 
-                    });
+                    //     recu.submit('customrecord_twc_company', c.id, fields, values);
+
+                    // });
 
 
                     //console.log(twcUtils.getInfraStructures({ siteId : 55}))

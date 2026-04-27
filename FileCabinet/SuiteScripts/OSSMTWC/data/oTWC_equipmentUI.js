@@ -5,16 +5,16 @@
 define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_config.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safAction.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_file.js', './oTWC_equipment.js'],
     (runtime, core, coreSQL, twcUtils, twcConfig, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile, twcInventory) => {
         // @@HARDCODED: @@TODO: move ot Utils and merge with SRF Step Type
-        const EQ_TYPE_ENUM = {
+        const EQ_CLASS_ENUM = {
             TME: 1,
             ATME: 2,
             GIE: 3
         }
 
-        const EQ_TYPE_TITLES = {
-            [EQ_TYPE_ENUM.TME]: "TME / Tower Mounted Equipment",
-            [EQ_TYPE_ENUM.ATME]: "ATME / Additional Tower Mounted Equipment",
-            [EQ_TYPE_ENUM.GIE]: "GIE / Ground & Indoor Equipment"
+        const EQ_CLASS_TITLES = {
+            [EQ_CLASS_ENUM.TME]: "TME / Tower Mounted Equipment",
+            [EQ_CLASS_ENUM.ATME]: "ATME / Additional Tower Mounted Equipment",
+            [EQ_CLASS_ENUM.GIE]: "GIE / Ground & Indoor Equipment"
         };
 
         function getInventoryTableFields() {
@@ -32,9 +32,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return inventoryFields;
         }
 
-        function getInvInfoPanels_Type(dataSource, userInfo, eqType) {
+        function getInvInfoPanels_Type(dataSource, userInfo, eqClass) {
             //throw new Error(JSON.stringify(dataSource.id   ))
-            const title = EQ_TYPE_TITLES[eqType] || "Unknown Equipment";
+            const title = EQ_CLASS_TITLES[eqClass] || "Unknown Equipment";
             var fieldGroup = { id: 'site-inventory', title: title, collapsed: false, controls: [] };
 
             var tmeInventories = { id: 'site-inventory-info', fields: [] };
@@ -79,7 +79,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
 
-            var whereClause = { [twcInventory.Fields.SITE]: dataSource.id, [twcInventory.Fields.EQ_TYPE]: eqType };
+            var whereClause = { [twcInventory.Fields.SITE]: dataSource.id, [twcInventory.Fields.EQUIPMENT_CLASS]: eqClass };
 
             var allowedCustomers = twcConfig.getUserAllowedCustomers(userInfo, true);
             if (allowedCustomers != 'all') {
@@ -104,9 +104,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getInvInfoPanels(dataSource, userInfo) {
             var fieldGroups = [];
-            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_TYPE_ENUM.TME))
-            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_TYPE_ENUM.ATME))
-            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_TYPE_ENUM.GIE))
+            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_ENUM.TME))
+            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_ENUM.ATME))
+            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_ENUM.GIE))
             return fieldGroups;
         }
 

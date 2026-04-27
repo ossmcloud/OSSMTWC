@@ -114,14 +114,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 try {
                     this.wait();
 
-                    var siteId = window.twc.page.data.inventoryInfo.custrecord_twc_equip_site;
-                    var eqType = window.twc.page.data.inventoryInfo.custrecord_twc_equip_type;
+                    var siteId = window.twc.page.data.inventoryInfo[twcInventory.Fields.SITE];
+                    var eqClass = window.twc.page.data.inventoryInfo[twcInventory.Fields.EQUIPMENT_CLASS];
 
                     siteId = siteId?.value || siteId;
-                    eqType = eqType?.value || eqType;
+                    eqClass = eqClass?.value || eqClass;
 
-                    var recordUrl = core.url.record('customrecord_twc_equip', null, true) +
-                        `&custrecord_twc_equip_site=${siteId}`;
+                    var recordUrl = core.url.record(twcInventory.Type, null, true) + `&${twcInventory.Fields.SITE}=${siteId}`;
 
                     // window.location.href = recordUrl;
                     window.open(recordUrl);

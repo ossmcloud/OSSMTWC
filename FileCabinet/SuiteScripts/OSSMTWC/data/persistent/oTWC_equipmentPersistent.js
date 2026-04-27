@@ -10,7 +10,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EQUIPMENT_ID: 'custrecord_twc_equip_id',
             RADIX_EQUIPMENT_TABLE_ROW: 'custrecord_twc_equip_radix_tbl_row',
             SITE: 'custrecord_twc_equip_site',
-            EQ_TYPE: 'custrecord_twc_equip_type',
+            EQUIPMENT_CLASS: 'custrecord_twc_equip_class',
+            EQUIPMENT_TYPE: 'custrecord_twc_equip_type',
             INFRASTRUCTURE: 'custrecord_twc_equip_str',
             ACCOMMODATION: 'custrecord_twc_equip_ac',
             LOCATION_NOTES: 'custrecord_twc_equip_location',
@@ -22,7 +23,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             PARENT_TME_ID: 'custrecord_twc_equip_parent_tme_id',
             USE_LIBRARY: 'custrecord_twc_equip_use_lib',
             EQUIPMENT_LIBRARY_ENTRY: 'custrecord_twc_equip_lib_entry',
-            EQUIPMENT_CLASS: 'custrecord_twc_equip_class',
             ACTIVEPASSIVE: 'custrecord_twc_equip_act_passive',
             MAKE: 'custrecord_twc_equip_make',
             MODEL: 'custrecord_twc_equip_model',
@@ -65,21 +65,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EQUIPMENT_ID: { name: 'custrecord_twc_equip_id', type: 'text', alias: 'equipmentID', display: 'normal', mandatory: false },
             RADIX_EQUIPMENT_TABLE_ROW: { name: 'custrecord_twc_equip_radix_tbl_row', type: 'integer', alias: 'rADIXEquipmentTableRow', display: 'normal', mandatory: false },
             SITE: { name: 'custrecord_twc_equip_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
-            EQ_TYPE: { name: 'custrecord_twc_equip_type', type: 'select', alias: 'eqType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_eqtype' },
+            EQUIPMENT_CLASS: { name: 'custrecord_twc_equip_class', type: 'select', alias: 'equipmentClass', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_class' },
+            EQUIPMENT_TYPE: { name: 'custrecord_twc_equip_type', type: 'select', alias: 'equipmentType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_type' },
             INFRASTRUCTURE: { name: 'custrecord_twc_equip_str', type: 'select', alias: 'infrastructure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
             ACCOMMODATION: { name: 'custrecord_twc_equip_ac', type: 'select', alias: 'accommodation', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
             LOCATION_NOTES: { name: 'custrecord_twc_equip_location', type: 'text', alias: 'locationNotes', display: 'normal', mandatory: false },
             EQUIPMENT_STATUS: { name: 'custrecord_twc_equip_status', type: 'text', alias: 'equipmentStatus', display: 'normal', mandatory: false },
-            EQUIPMENT_INSTALL_STATUS: { name: 'custrecordtwc_eq_install_status', type: 'select', alias: 'equipmentInstallStatus', display: 'normal', mandatory: false, recordType: 'customlisttwc_eq_install_status' },
-            EQUIPMENT_LICENCE_STATUS: { name: 'custrecord_twc_eq_licence_status', type: 'select', alias: 'equipmentLicenceStatus', display: 'normal', mandatory: false, recordType: 'customlist_twc_eq_licence_status' },
+            EQUIPMENT_INSTALL_STATUS: { name: 'custrecordtwc_eq_install_status', type: 'select', alias: 'equipmentInstallStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_install_status' },
+            EQUIPMENT_LICENCE_STATUS: { name: 'custrecord_twc_eq_licence_status', type: 'select', alias: 'equipmentLicenceStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_licence_status' },
             EQUIPMENT_PROPOSED_STATUS: { name: 'custrecord_twc_equip_prop_sts', type: 'text', alias: 'equipmentProposedStatus', display: 'normal', mandatory: false },
             CUSTOMER: { name: 'custrecord_twc_equip_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             PARENT_TME_ID: { name: 'custrecord_twc_equip_parent_tme_id', type: 'text', alias: 'parentTMEID', display: 'normal', mandatory: false },
             USE_LIBRARY: { name: 'custrecord_twc_equip_use_lib', type: 'select', alias: 'useLibrary', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_use_lib' },
             EQUIPMENT_LIBRARY_ENTRY: { name: 'custrecord_twc_equip_lib_entry', type: 'select', alias: 'equipmentLibraryEntry', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_lib' },
-            EQUIPMENT_CLASS: { name: 'custrecord_twc_equip_class', type: 'text', alias: 'equipmentClass', display: 'normal', mandatory: false },
-            ACTIVEPASSIVE: { name: 'custrecord_twc_equip_act_passive', type: 'text', alias: 'activePassive', display: 'normal', mandatory: false },
-            MAKE: { name: 'custrecord_twc_equip_make', type: 'text', alias: 'make', display: 'normal', mandatory: false },
+            ACTIVEPASSIVE: { name: 'custrecord_twc_equip_act_passive', type: 'select', alias: 'activePassive', display: 'normal', mandatory: false, recordType: 'customrecord_twc_active_passive' },
+            MAKE: { name: 'custrecord_twc_equip_make', type: 'select', alias: 'make', display: 'normal', mandatory: false, recordType: 'customrecord_twc_make' },
             MODEL: { name: 'custrecord_twc_equip_model', type: 'text', alias: 'model', display: 'normal', mandatory: false },
             DESCRIPTION: { name: 'custrecord_twc_equip_description', type: 'text', alias: 'description', display: 'normal', mandatory: false },
             LENGTH_MM: { name: 'custrecord_twc_equip_length_mm', type: 'integer', alias: 'lengthmm', display: 'normal', mandatory: false },
@@ -145,12 +145,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get siteName() { return this.getText(_recordFields.SITE); }
             
-            get eqType() {
-                return this.get(_recordFields.EQ_TYPE);
-            } set eqType(value) {
-                this.set(_recordFields.EQ_TYPE, value)
+            get equipmentClass() {
+                return this.get(_recordFields.EQUIPMENT_CLASS);
+            } set equipmentClass(value) {
+                this.set(_recordFields.EQUIPMENT_CLASS, value)
             }
-            get eqTypeName() { return this.getText(_recordFields.EQ_TYPE); }
+            get equipmentClassName() { return this.getText(_recordFields.EQUIPMENT_CLASS); }
+            
+            get equipmentType() {
+                return this.get(_recordFields.EQUIPMENT_TYPE);
+            } set equipmentType(value) {
+                this.set(_recordFields.EQUIPMENT_TYPE, value)
+            }
+            get equipmentTypeName() { return this.getText(_recordFields.EQUIPMENT_TYPE); }
             
             get infrastructure() {
                 return this.get(_recordFields.INFRASTRUCTURE);
@@ -225,23 +232,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get equipmentLibraryEntryName() { return this.getText(_recordFields.EQUIPMENT_LIBRARY_ENTRY); }
             
-            get equipmentClass() {
-                return this.get(_recordFields.EQUIPMENT_CLASS);
-            } set equipmentClass(value) {
-                this.set(_recordFields.EQUIPMENT_CLASS, value)
-            }
-            
             get activePassive() {
                 return this.get(_recordFields.ACTIVEPASSIVE);
             } set activePassive(value) {
                 this.set(_recordFields.ACTIVEPASSIVE, value)
             }
+            get activePassiveName() { return this.getText(_recordFields.ACTIVEPASSIVE); }
             
             get make() {
                 return this.get(_recordFields.MAKE);
             } set make(value) {
                 this.set(_recordFields.MAKE, value)
             }
+            get makeName() { return this.getText(_recordFields.MAKE); }
             
             get model() {
                 return this.get(_recordFields.MODEL);

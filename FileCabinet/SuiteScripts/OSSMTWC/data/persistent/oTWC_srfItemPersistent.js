@@ -40,8 +40,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFieldInfo = {
             SRF: { name: 'custrecord_twc_srf_itm_srf', type: 'select', alias: 'sRF', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf' },
             REQUEST_TYPE: { name: 'custrecord_twc_srf_itm_req_type', type: 'select', alias: 'requestType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_req_type' },
-            STEP_TYPE: { name: 'custrecord_twc_srf_itm_stype', type: 'select', alias: 'stepType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_eqtype' },
-            ITEM_TYPE: { name: 'custrecord_twc_srf_itm_type', type: 'select', alias: 'itemType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_type' },
+            STEP_TYPE: { name: 'custrecord_twc_srf_itm_stype', type: 'select', alias: 'stepType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_class' },
+            ITEM_TYPE: { name: 'custrecord_twc_srf_itm_type', type: 'select', alias: 'itemType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_type' },
             EQUIPMENT_ID: { name: 'custrecord_twc_srf_itm_equip_id', type: 'select', alias: 'equipmentID', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip' },
             DESCRIPTION: { name: 'custrecord_twc_srf_itm_desc', type: 'text', alias: 'description', display: 'normal', mandatory: false },
             LOCATION: { name: 'custrecord_twc_srf_itm_loc', type: 'select', alias: 'location', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
@@ -273,8 +273,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_SRFItem,
 
-            get: function (id) {
-                var rec = new OSSMTWC_SRFItem(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_SRFItem(id, staticLoad);
                 rec.load();
                 return rec;
             }, 
