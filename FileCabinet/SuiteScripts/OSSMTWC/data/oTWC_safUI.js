@@ -219,7 +219,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSAFInfoPanels_Builder_Step_2(dataSource, userInfo, options) {
             var isExistingSaf = dataSource.id !== undefined;
             var fieldGroup = { id: 'site-access-step-2', title: 'Step 2 of 5 : Access Requirements', hide: !isExistingSaf, collapsed: false, controls: [] };
-
+            
             var siteInfraStructures = twcUtils.getInfraStructures(dataSource);
             var siteStructures = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Structure })
             var accommodationStructure = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Accommodation })
@@ -227,26 +227,37 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var step2Info = { id: 'site-access-step-2a', fields: [] };
             fieldGroup.controls.push(step2Info);
 
-            var structInfo = twcUtils.getStructureTypeInfo({ siteId: dataSource.siteId });
-            if (structInfo.mast || structInfo.tower) {
-                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-mast-access', label: 'Mast Access', width: '150px', value: dataSource[twcSaf.Fields.MAST_ACCESS], allowAll: false, dataSource: twcUtils.getYesNoOptions() });
+            var siteTypeInfo = twcUtils.getSiteTypeInfo(dataSource);
+            // @@@NOTE: Mast Access
+            if (siteTypeInfo.mast) {
+                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-mast-access', label: 'Mast Access', width: '150px', value: dataSource[twcSaf.Fields.MAST_ACCESS], allowAll: false, dataSource: siteTypeInfo.mast });
             }
+            // @@@NOTE: TL Building Access
             if (accommodationStructure.length > 0) {
                 step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-building-access', label: 'TL Building Access', width: '150px', value: dataSource[twcSaf.Fields.TL_BUILDING_ACCESS], allowAll: false, dataSource: twcUtils.getYesNoOptions() });
             }
-            if (structInfo.roofTop) {
-                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-rooftop-access', label: 'Rooftop Access', width: '150px', value: dataSource[twcSaf.Fields.ROOFTOP_ACCESS], allowAll: false, dataSource: twcUtils.getYesNoOptions() });
+            // @@@NOTE: Rooftop Access
+            if (siteTypeInfo.rooftop) {
+                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-rooftop-access', label: 'Rooftop Access', width: '150px', value: dataSource[twcSaf.Fields.ROOFTOP_ACCESS], allowAll: false, dataSource: siteTypeInfo.rooftop });
+            }
+            // @@@NOTE: Electrical required
+            if (siteTypeInfo.electrical) {
+                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-electrical-access', label: 'Electrical Work', width: '150px', value: dataSource[twcSaf.Fields.ELECTRICAL_WORKS], allowAll: false, dataSource: siteTypeInfo.electrical });
+            }
+            // @@@NOTE: Crane/Cherrypick
+            if (siteTypeInfo.mewp) {
+                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-crane-access', label: 'Crane / Cherrypicker', width: '150px', value: dataSource[twcSaf.Fields.CRANE__CHERRYPICKER], allowAll: false, lineBreak: true, dataSource: siteTypeInfo.mewp });
             }
 
-            step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-electrical-access', label: 'Electrical Work', width: '150px', value: dataSource[twcSaf.Fields.ELECTRICAL_WORKS], allowAll: false, dataSource: twcUtils.getYesNoOptions() });
-            step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-crane-access', label: 'Crane / Cherrypicker', width: '150px', value: dataSource[twcSaf.Fields.CRANE__CHERRYPICKER], allowAll: false, lineBreak: true, dataSource: twcUtils.getYesNoOptions() });
-
-            if (structInfo.mast || structInfo.tower) {
-                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-structure', label: 'Structure', width: '150px', allowAll: false, value: dataSource[twcSaf.Fields.STRUCTURE], hide: !isExistingSaf, dataSource: siteStructures });
+            // @@@NOTE: if Mast Access then ask what structure 
+            if (siteTypeInfo.mast) {
+                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-structure', label: 'Structure', width: '250px', allowAll: false, value: dataSource[twcSaf.Fields.STRUCTURE], hide: !isExistingSaf, dataSource: siteStructures });
             }
+            // @@@NOTE: if TL Building access than ask what building
             if (accommodationStructure.length > 0) {
-                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-accommodation', label: 'Accommodation', width: '150px', allowAll: false, value: dataSource[twcSaf.Fields.ACCOMMODATION], hide: !isExistingSaf, dataSource: accommodationStructure });
+                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-accommodation', label: 'Accommodation', width: '250px', allowAll: false, value: dataSource[twcSaf.Fields.ACCOMMODATION], hide: !isExistingSaf, dataSource: accommodationStructure });
             }
+
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
         }
@@ -255,21 +266,35 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fieldGroup = { id: 'site-access-step-3', title: 'Step 3 of 5 : Access Details', hide: !isExistingSaf, controls: [] };
 
             var customers = twcUtils.getCustomers(userInfo);
-            var primaryContractors = twcUtils.getVendors(userInfo);
+            var primaryContractors = [];
+
+            if (userInfo.isEmployee) {
+                primaryContractors = twcUtils.getVendors(userInfo);
+            } else {
+                if (userInfo.companyProfile.accreditation_status != twcUtils.CompanyAccreditationStatus.Accredited) {
+                    throw new Error(`Your accreditation status [<b>${userInfo.companyProfile.accreditation_status_name}</b>] does not allow for this action`);
+                }
+                primaryContractors.push({
+                    value: userInfo.companyProfile.id,
+                    text: userInfo.companyProfile.name
+                })
+            }
+
 
             var customer = dataSource[twcSaf.Fields.CUSTOMER] || (customers.length == 1 ? customers[0].value : null);
             var primaryContractor = dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR] || (primaryContractors.length == 1 ? primaryContractors[0].value : null);
 
             var picwInfo = null; var picwContractorStaff = [];
             if (isExistingSaf) {
-                picwInfo = coreSQL.first('select id, custrecord_twc_prof_company as contractor, custrecord_twc_prof_phone as phone from customrecord_twc_prof where id = ' + dataSource[twcSaf.Fields.PICW]);
-                picwContractorStaff = twcUtils.getProfiles({
-                    company: picwInfo.contractor,
-                    filters: {
-                        'custrecord_twc_prof_picw_acceptable': 'T',
-                        'custrecord_twc_prof_safe_pass_cert_exp': { op: '>', value: 'CURRENT_DATE' }
-                    }
-                });
+                // @@NOTE: the PICW is cleared on a re-used SAF
+                // picwInfo = coreSQL.first('select id, custrecord_twc_prof_company as contractor, custrecord_twc_prof_phone as phone from customrecord_twc_prof where id = ' + dataSource[twcSaf.Fields.PICW]);
+                // picwContractorStaff = twcUtils.getProfiles({
+                //     company: picwInfo.contractor,
+                //     filters: {
+                //         'custrecord_twc_prof_picw_acceptable': 'T',
+                //         'custrecord_twc_prof_safe_pass_cert_exp': { op: '>', value: 'CURRENT_DATE' }
+                //     }
+                // });
             }
 
             var step3Info = { id: 'site-access-step-3a', fields: [] };
@@ -314,8 +339,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             // step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-psdp-design', label: 'PSDP (Design)', allowAll: false, dataSource: [] });
             // step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-psdp-construction', label: 'PSDP (Construction)', allowAll: false, dataSource: [], lineBreak: true });
             step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw', label: 'PICW', allowAll: false, value: picwInfo?.contractor, dataSource: primaryContractors, noAutoSelect: true });
-            step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw-staff', label: 'Staff', hide: !isExistingSaf, value: picwInfo?.id, dataSource: picwContractorStaff, allowAll: false });
-            step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'saf-picw-staff-phone', label: 'Phone', hide: !isExistingSaf, value: picwInfo?.phone });
+            step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw-staff', label: 'Staff', hide: true, value: picwInfo?.id, dataSource: picwContractorStaff, allowAll: false });
+            step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'saf-picw-staff-phone', label: 'Phone', hide: true, value: picwInfo?.phone });
 
 
 
@@ -437,6 +462,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getSafCrewRecord(saf, childRecord, userInfo) {
             var vendors = twcUtils.getVendors(userInfo);
+
+            // @@NOTE: on a SAF crew members can also be from the customer, however, some customers can also be already in the vendor list (if they are also contractors)
+            var safCustomer = saf['saf-customer'];
+            if (safCustomer && !vendors.find(v => { return v.value == safCustomer })) {
+                vendors.push(...twcUtils.getCompanies({ cid: safCustomer }));
+            }
+
             var vendorProfiles = [];
             if (vendors.length == 1) {
                 vendorProfiles = twcUtils.getProfiles({ company: vendors[0].value, canAttend: true })

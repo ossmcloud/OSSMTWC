@@ -27,11 +27,17 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get type() { { return this.#options?.type; } }
 
             render(container) {
-
+                
                 var styles = '';
+                if (this.#options.styles) {
+                    for (var s in this.#options.styles) {
+                        styles += `${s}: ${this.#options.styles[s]}; `;
+                    }
+                }
+                var contentStyles = '';
                 if (this.#options.contentStyles) {
                     for (var s in this.#options.contentStyles) {
-                        styles += `${s}: ${this.#options.contentStyles[s]}; `;
+                        contentStyles += `${s}: ${this.#options.contentStyles[s]}; `;
                     }
                 }
 
@@ -40,11 +46,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     title = `<div class="twc_ctrl_panel_title" >${this.#options.title || ''}</div>`;
                 }
 
-                var content = ''; var noContentStyle = `style="${styles}; padding: 3px 0px 0px 0px; border-bottom: 1px solid var(--grid-color);"`;
+                var content = ''; var noContentStyle = `style="${contentStyles}; padding: 3px 0px 0px 0px; border-bottom: 1px solid var(--grid-color);"`;
                 if (this.#options.content !== undefined) {
-                    noContentStyle = '';
+                    noContentStyle = `style="${styles}"`;
+                    
                     content = `
-                        <div class="twc_ctrl_panel" style="${styles}">
+                        <div class="twc_ctrl_panel" style="${contentStyles}">
                             ${this.#options.content || ''}
                         </div>
                     `;

@@ -16,6 +16,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroups.push(getCompanyInfoPanels_mainInfo(dataSource, userInfo, pageData.editMode));
             fieldGroups.push(getCompanyInfoPanels_insuranceInfo(dataSource, userInfo, pageData.editMode));
             fieldGroups.push(getCompanyInfoPanels_accreditationInfo(dataSource, userInfo, pageData.editMode));
+            fieldGroups.push(getCompanyInfoPanels_acl(dataSource, userInfo, pageData.editMode));
             fieldGroups.push(getCompanyInfoPanels_documents(dataSource, userInfo, pageData.editMode));
             fieldGroups.push(getCompanyInfoPanels_profiles(dataSource, userInfo, pageData.editMode));
             return fieldGroups;
@@ -23,28 +24,30 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getCompanyInfoPanels_mainInfo(dataSource, userInfo, editMode) {
-            var fieldGroup = { id: 'company-main-info', title: 'Main Information', renderAsTable: { width: '100%', 'table-layout': 'fixed' }, collapsed: false, controls: [] };
+            var fieldGroup = { id: 'company-main-info', title: 'Main Information', renderAsTable: { width: '100%', 'table-layout': 'auto' }, collapsed: false, controls: [] };
 
             var basicInfo = { id: 'company-main-info-basic', fields: [] };
             fieldGroup.controls.push(basicInfo);
 
-            basicInfo.fields.push({ id: twcCompany.Fields.RADIX_COMPANY_TABLE_ENTRY_NUMBER, width: '75px', label: 'Radix ID', readOnly: true })
-            basicInfo.fields.push({ id: twcCompany.Fields.NAME, width: 'calc(100% - 85px)', label: 'Name', readOnly: true, lineBreak: true })
+            basicInfo.fields.push({ id: 'id', width: '75px', label: 'TL ID', readOnly: true })
+            basicInfo.fields.push({ id: twcCompany.Fields.NAME, width: 'calc(100% - 80px)', label: 'Name', readOnly: true, lineBreak: true })
             basicInfo.fields.push({ id: twcCompany.Fields.COMPANY_TYPE, width: '150px', label: 'Company Type', readOnly: true })
-            basicInfo.fields.push({ id: twcCompany.Fields.COMPANY_CLASSIFICATION, width: '150px', label: 'Company Classification', readOnly: true })
-            basicInfo.fields.push({ id: twcCompany.Fields.COMPANY_NUMBER, width: '150px', label: 'Company Number', readOnly: true, lineBreak: true })
-            basicInfo.fields.push({ id: twcCompany.Fields.COMPANY_ADDRESS, width: '100%', rows: 3, label: 'Company Address', lineBreak: true })
+            basicInfo.fields.push({ id: twcCompany.Fields.COMPANY_NUMBER, width: '150px', label: 'Company Number', readOnly: true })
+            basicInfo.fields.push({ id: twcCompany.Fields.REGISTERED_OFFICE, width: 'calc(100% - 310px)', label: 'Registered Office', lineBreak: true })
 
+            // basicInfo.fields.push({ id: twcCompany.Fields.SAF_AUTO_APPROVE, label: 'SAF Auto Approve', readOnly: true })
+            // basicInfo.fields.push({ id: twcCompany.Fields.ON_LINE_LICENCING, label: 'On-Line Licensing', readOnly: true, lineBreak: true })
 
             var accountingInfo = { id: 'company-main-info-accounting', fields: [] };
+            accountingInfo.fields.push({ id: twcCompany.Fields.COMPANY_ADDRESS, width: '100%', rows: 5, label: 'Company Address', lineBreak: true })
             fieldGroup.controls.push(accountingInfo);
 
-            accountingInfo.fields.push({ id: twcCompany.Fields.REGISTERED_OFFICE, width: '200px', label: 'Registered Office' })
-            accountingInfo.fields.push({ id: twcCompany.Fields.PRIMARY_CONTACT, width: '200px', label: 'Primary Contact', readOnly: true, lineBreak: true })
-            accountingInfo.fields.push({ id: twcCompany.Fields.SAF_AUTO_APPROVE, label: 'SAF Auto Approve', readOnly: true })
-            accountingInfo.fields.push({ id: twcCompany.Fields.ON_LINE_LICENCING, label: 'On-Line Licensing', readOnly: true })
-            accountingInfo.fields.push({ id: twcCompany.Fields.FINANCE_VENDOR, label: 'Finance Vendor', readOnly: true })
-            accountingInfo.fields.push({ id: twcCompany.Fields.FINANCE_CUSTOMER, label: 'Finance Customer', readOnly: true })
+
+            var companyFlags = { id: 'company-main-info-flags', fields: [] };
+            companyFlags.fields.push({ id: twcCompany.Fields.SAF_AUTO_APPROVE, label: 'SAF Auto Approve', readOnly: true, lineBreak: true })
+            //companyFlags.fields.push({ id: twcCompany.Fields.ON_LINE_LICENCING, label: 'On-Line Licensing', readOnly: true, lineBreak: true })
+            fieldGroup.controls.push(companyFlags);
+
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
@@ -55,7 +58,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fieldGroup = { id: 'company-insurance', title: 'Insurance Info', renderAsTable: { width: '100%', 'table-layout': 'fixed' }, collapsed: !editMode, controls: [] };
 
             var currencies = [
-                { value: 'EURO', text: 'Euro' },
+                { value: 'EUR', text: 'Euro' },
                 { value: 'GBP', text: 'Sterling' },
             ]
 
@@ -66,19 +69,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcCompany.Fields.EL_STATUS, label: 'Status', width: '150px', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_AVAILABLETYPE, width: '100px', label: 'EL Available/Type' })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_LIMIT, width: '100px', label: 'EL Limit' })
-            basicInfo.fields.push({ id: twcCompany.Fields.EL_LIMIT_CURRENCY, width: '100px', label: 'EL Currency', type: twcUI.CTRL_TYPE.SELECT, dataSource: currencies, value: dataSource[twcCompany.Fields.EL_LIMIT_CURRENCY] })
+            basicInfo.fields.push({ id: twcCompany.Fields.EL_LIMIT_CURRENCY, width: '100px', label: 'EL Currency', value: dataSource[twcCompany.Fields.EL_LIMIT_CURRENCY] })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_EXPIRY, label: 'EL Expiry', lineBreak: true })
 
             basicInfo.fields.push({ id: twcCompany.Fields.PL_STATUS, label: 'Status', width: '150px', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_AVAILABLETYPE, width: '100px', label: 'PL Available/Type' })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_LIMIT, width: '100px', label: 'PL Limit' })
-            basicInfo.fields.push({ id: twcCompany.Fields.PL_LIMIT_CURRENCY, width: '100px', label: 'PL Currency', type: twcUI.CTRL_TYPE.SELECT, dataSource: currencies, value: dataSource[twcCompany.Fields.PL_LIMIT_CURRENCY] })
+            basicInfo.fields.push({ id: twcCompany.Fields.PL_LIMIT_CURRENCY, width: '100px', label: 'PL Currency', value: dataSource[twcCompany.Fields.PL_LIMIT_CURRENCY] })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_EXPIRY, label: 'PL Expiry', lineBreak: true })
 
             basicInfo.fields.push({ id: twcCompany.Fields.PI_STATUS, label: 'Status', width: '150px', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.PI_AVAILABLETYPE, width: '100px', label: 'PI Available/Type' })
             basicInfo.fields.push({ id: twcCompany.Fields.PI_LIMIT, width: '100px', label: 'PI Limit' })
-            basicInfo.fields.push({ id: twcCompany.Fields.PI_LIMIT_CURRENCY, width: '100px', label: 'PI Currency', type: twcUI.CTRL_TYPE.SELECT, dataSource: currencies, value: dataSource[twcCompany.Fields.PI_LIMIT_CURRENCY] })
+            basicInfo.fields.push({ id: twcCompany.Fields.PI_LIMIT_CURRENCY, width: '100px', label: 'PI Currency', value: dataSource[twcCompany.Fields.PI_LIMIT_CURRENCY] })
             basicInfo.fields.push({ id: twcCompany.Fields.PI_EXPIRY, label: 'PI Expiry', lineBreak: true })
 
             var basicInfo2 = { id: 'company-insurance-info-2', fields: [] };
@@ -101,7 +104,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             basicInfo.fields.push({ id: twcCompany.Fields.ACCREDITED_CONTRACTOR_COMMENCEMENT, label: 'Commencement', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY, label: 'Expiry', readOnly: true })
-            basicInfo.fields.push({ id: twcCompany.Fields.ACCREDITED_CONTRACTOR_FEE, label: 'Fee', readOnly: true, lineBreak: true })
+            //basicInfo.fields.push({ id: twcCompany.Fields.ACCREDITED_CONTRACTOR_FEE, label: 'Fee', readOnly: true, lineBreak: true })
 
             basicInfo.fields.push({ id: twcCompany.Fields.ACCREDITATION_STATUS_COMMENT, label: 'Comment', width: '100%', readOnly: true, lineBreak: true })
 
@@ -221,6 +224,76 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
+        }
+
+        function getCompanyInfoPanels_acl(dataSource, userInfo, editMode) {
+            var title = '';
+            if (userInfo.companyProfile.isBoth) {
+                title = 'Associated Customers and Accredited Contractors';
+            } else if (userInfo.companyProfile.isVendor) {
+                title = 'Associated Customers List';
+            } else {
+                title = 'Accredited Contractors List';
+            }
+            var fieldGroup = { id: 'company-acl', title: title, collapsed: true, controls: [] };
+
+            if (userInfo.companyProfile.isVendor || userInfo.companyProfile.isBoth) {
+                var basicInfo = { id: 'company-acl-list', title: userInfo.companyProfile.isBoth ? 'Associated Customers List' : undefined, fields: [] };
+                fieldGroup.controls.push(basicInfo);
+                basicInfo.fields.push(getCompanyInfoPanels_acl_list(userInfo, 'customer'));
+            }
+
+            if (userInfo.companyProfile.isCustomer) {
+                var basicInfo = { id: 'company-acl-list', title: userInfo.companyProfile.isBoth ? 'Accredited Contractors List' : undefined, fields: [] };
+                fieldGroup.controls.push(basicInfo);
+                basicInfo.fields.push(getCompanyInfoPanels_acl_list(userInfo, 'vendor'));
+            }
+            configUIFields.formatPanelFields(dataSource, fieldGroup);
+            return fieldGroup;
+        }
+
+        function getCompanyInfoPanels_acl_list(userInfo, listType) {
+            var aclList = [];
+            if (listType == 'customer') {
+                aclList = coreSQL.run(`
+                    select  acl.id, c.name, ${twcCompany.Fields.ACCREDITATION_STATUS} as accreditation_status_id, BUILTIN.DF(c.${twcCompany.Fields.ACCREDITATION_STATUS}) as accreditation_status, 
+                            ${twcCompany.Fields.ACCREDITATION_STATUS_COMMENT} as accreditation_status_note,
+                            ${twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY} as accredited_contractor_expiry
+                    from    customrecord_twc_acl acl
+                    join    ${twcCompany.Type} c on c.id = acl.custrecord_twc_acl_cust
+                    where   custrecord_twc_acl_cont = ${userInfo.companyProfile.id}
+                    order by c.name
+                `)
+            } else {
+                aclList = coreSQL.run(`
+                    select  acl.id, c.name, ${twcCompany.Fields.ACCREDITATION_STATUS} as accreditation_status_id, BUILTIN.DF(c.${twcCompany.Fields.ACCREDITATION_STATUS}) as accreditation_status, 
+                            ${twcCompany.Fields.ACCREDITATION_STATUS_COMMENT} as accreditation_status_note,
+                            ${twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY} as accredited_contractor_expiry
+                    from    customrecord_twc_acl acl
+                    join    ${twcCompany.Type} c on c.id = acl.custrecord_twc_acl_cont
+                    where   custrecord_twc_acl_cust = ${userInfo.companyProfile.id}
+                    order by c.name
+                `)
+            }
+
+            return {
+                id: 'no-rec-acl-' + listType,
+                fields: {
+                    name: { title: 'Name', styles: { width: '350px' } },
+                    accreditation_status: { title: 'Accreditation Status', styles: { width: '200px', 'padding': '3px', 'text-align': 'center' } },
+                    accreditation_status_note: { title: 'Accreditation Comments', nullText: '', styles: { 'padding': '3px' } },
+                    accredited_contractor_expiry: { title: 'Accredited Contractor Expiry', nullText: '', styles: { width: '250px', 'padding': '3px', 'text-align': 'center' } },
+                },
+                dataSource: aclList,
+                readOnly: true,
+                onColumnInit: (tbl, col) => {
+                    if (col.id == 'accreditation_status') {
+                        col.formatValue = (v, fv, d) => {
+                            return twcUtils.getCompAccredStatusHtml(d.accreditation_status_id, 'twc-record-status-row')
+                        }
+                    }
+                }
+            }
         }
 
 

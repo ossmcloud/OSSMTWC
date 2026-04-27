@@ -314,7 +314,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         var hasStdFields = false;
                         for (var f in this.fields) {
                             if (this.fields[f].name == 'created') { hasStdFields = true; }
-                            if (options.noAlias || options.useNames) {
+                            if (options?.noAlias || options?.useNames) {
                                 sql += selectFormat(this.fields[f], this.fields[f].name);
                             } else {
                                 sql += selectFormat(this.fields[f], f.toLowerCase());

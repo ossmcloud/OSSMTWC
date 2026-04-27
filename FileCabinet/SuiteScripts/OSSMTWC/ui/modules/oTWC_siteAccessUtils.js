@@ -65,7 +65,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             html = html.replace('{FILTER_SAF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SAF ID', width: 'calc(25% - 2px)', multiSelect: true, id: twcSaf.Fields.SAF_ID, noEmpty: true, dataSource: twcUtils.getSafIds() })); // @@Note Free form field, filter not working
             html = html.replace('{FILTER_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Status', width: 'calc(25% - 2px)', multiSelect: true, id: twcSaf.Fields.STATUS, noEmpty: true, dataSource: twcUtils.getSafStatus() }));
             html = html.replace('{FILTER_ACCESS_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Access Type', width: '50%', multiSelect: true, id: twcSaf.Fields.TYPE, noEmpty: true, dataSource: twcUtils.getSafTypes() }));
-            html = html.replace('{FILTER_CUSTOMER}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Customer', width: '50%', multiSelect: true, id: twcSaf.Fields.CUSTOMER, noEmpty: true, dataSource: twcUtils.getCustomers(userInfo), noAutoSelect:true }));
+            html = html.replace('{FILTER_CUSTOMER}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Customer', width: '50%', multiSelect: true, id: twcSaf.Fields.CUSTOMER, noEmpty: true, dataSource: twcUtils.getCustomers(userInfo), noAutoSelect: true }));
             html = html.replace('{FILTER_CONTRACTOR}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Contractor', width: '50%', multiSelect: true, id: twcSaf.Fields.PRIMARY_CONTRACTOR, noEmpty: true, dataSource: twcUtils.getVendors(userInfo), noAutoSelect: true }));
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: '50%', multiSelect: true, id: twcSaf.Fields.COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
             html = html.replace('{FILTER_REGION}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Region', width: '50%', multiSelect: true, id: twcSaf.Fields.REGION, noEmpty: true, dataSource: twcUtils.getRegions() }));
@@ -133,7 +133,8 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
         function getAccessRequirements(options) {
 
-            var infraInfo = twcUtils.getStructureTypeInfo({ siteId: options.siteId });
+            //var siteTypeInfo = twcUtils.getSiteTypeInfo(options);
+            var infraInfo = twcUtils.getStructureTypeInfo({ siteId: options.siteId, id: options['saf-structure'] });
             var blocksRequired = coreSQL.first(`select custrecord_twc_saf_type_timeblocks as time_blocks from customrecord_twc_saf_type where id = ${options['saf-type']}`).time_blocks;
 
             var conditions = [];
@@ -186,6 +187,10 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
         function getSafCrewRecord(options, userInfo) {
             var saf = twcSaf.get(options.saf.id);
             saf.copyFromObject(options.saf);
+
+            // @@NOTE: new SAFs have different field names, we need saf-customer to include the customer in the list of companies were crew members can be selected from
+            saf['saf-customer'] = options.saf['saf-customer']
+
             var childRecord = twcSafCrew.get(options.crew.id);
             childRecord.copyFromObject(options.crew);
             return twcSafUI.getSafCrewRecord(saf, childRecord, userInfo);
@@ -205,7 +210,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 filters: {
                     [twcFile.Fields.RECORD_TYPE]: 'customrecord_twc_company',
                     [twcFile.Fields.RECORD_ID]: options.vendor,
-                    [twcFile.Fields.STATUS]: twcUtils.FileStatus.Approved
+                    [twcFile.Fields.STATUS]: twcUtils.FileStatus.Received
 
                 }
             });
@@ -254,17 +259,20 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             core.array.each(options.accessRequirements.conditions, cond => {
                 var condQuantity = cond.quantity == 'all' ? payload.crews.length : cond.quantity;
                 // @@TODO
+
                 var certCount = crew.filter(c => {
                     return c.attendAs.find(cc => {
                         // @@TODO: there are still few inconsistencies with casing here
                         return cc.value.toLowerCase() == cond.cert?.code.toLowerCase() && cc.exp >= latestDate;
                     });
-                }).length || 0;
-                if (certCount < condQuantity) {
-                    if (certCount == 0) {
-                        validationErrors.push(`${cond.quantity} ${cond.name} are required, there are none in the crew`);
+                });
+
+                if (certCount.length < condQuantity) {
+                    if (certCount.length == 0) {
+                        validationErrors.push(`${cond.quantity} ${cond.name} ${cond.quantity == 1 ? 'is' : 'are'} required, there are none in the crew`);
                     } else {
-                        validationErrors.push(`${cond.quantity} ${cond.name} are required, there ${certCount == 1 ? 'is' : 'are'} only ${certCount} in the crew`);
+                        var crewNames = certCount.map(i => { return `<li>${i.text}</li>` }).join('');
+                        validationErrors.push(`${cond.quantity} ${cond.name} ${cond.quantity == 1 ? 'is' : 'are'} required, there ${certCount.length == 1 ? 'is' : 'are'} only ${certCount.length} in the crew: <ul class="twc">${crewNames}</ul>`);
                     }
 
                 }
@@ -350,7 +358,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 }
             }
 
-            
+
             if (payload.id) {
                 if (payload.reUse) {
                     saf.logInfo('SAF Reused from: ' + recu.lookUp(twcSaf.Type, payload.id, 'name'));
@@ -610,6 +618,8 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     if (reUse) {
                         saf.reUse = reUse;
                         saf[twcSaf.Fields.STATUS] = twcSaf.Status.Pending;
+                        saf[twcSaf.Fields.PICW] = null;
+
                     }
 
                 } else {

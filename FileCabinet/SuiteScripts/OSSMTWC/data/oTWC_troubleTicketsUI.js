@@ -170,7 +170,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (userInfo.isEmployee) {
                 fieldGroups.push(getTKPanelAssessment(dataSource, userInfo));
                 fieldGroups.push(getTKPanelResolution(dataSource, userInfo));
-                fieldGroups.push(getTKPanelFiles(dataSource, userInfo));
+                if (dataSource?.id) {
+                    fieldGroups.push(getTKPanelFiles(dataSource, userInfo));
+                }
 
             }
 
@@ -183,12 +185,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getTktChildRecord(tkt, childRecord, userInfo) {
             var fieldGroup = [];
+            log.debug("tkt in tktchild rec",tkt)
+            log.debug("childRecord in tktchild rec",childRecord)
+
             if (childRecord.type == twcFileUI.RecordType) {
                 fieldGroup = twcFileUI.getUIFields(childRecord, userInfo);
             } else {
                 throw new Error(`No Child Record Found in payload (type: ${childRecord.type})`)
             }
-            configUIFields.formatPanelFields(childRecord, fieldGroup);
+           // configUIFields.formatPanelFields(childRecord, fieldGroup);
             return fieldGroup;
         }
 

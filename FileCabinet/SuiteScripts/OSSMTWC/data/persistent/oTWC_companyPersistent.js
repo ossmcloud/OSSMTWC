@@ -87,21 +87,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EL_STATUS: { name: 'custrecord_twc_co_el_status', type: 'select', alias: 'eLStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_no_active_options' },
             EL_AVAILABLETYPE: { name: 'custrecord_twc_co_el_available_typ', type: 'select', alias: 'eLAvailableType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_co_available_type' },
             EL_LIMIT: { name: 'custrecord_twc_co_el_limit', type: 'currency', alias: 'eLLimit', display: 'normal', mandatory: false },
-            EL_LIMIT_CURRENCY: { name: 'custrecord_twc_co_el_limit_cur', type: 'text', alias: 'eLLimitCurrency', display: 'normal', mandatory: false },
+            EL_LIMIT_CURRENCY: { name: 'custrecord_twc_co_el_limit_cur', type: 'select', alias: 'eLLimitCurrency', display: 'normal', mandatory: false, recordType: '-122' },
             EL_EXPIRY: { name: 'custrecord_twc_co_el_expiry', type: 'date', alias: 'eLExpiry', display: 'normal', mandatory: false },
             EL_EXISTING_FILES: { name: 'custrecord_twc_co_el_existing_file', type: 'document', alias: 'eLExistingFiles', display: 'normal', mandatory: false },
             EL_UPLOAD_NEW_FILE: { name: 'custrecord_twc_co_el_upld_new_file', type: 'document', alias: 'eLUploadNewFile', display: 'normal', mandatory: false },
             PL_STATUS: { name: 'custrecord_twc_co_pl_status', type: 'select', alias: 'pLStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_no_active_options' },
             PL_AVAILABLETYPE: { name: 'custrecord_twc_co_pl_available_typ', type: 'select', alias: 'pLAvailableType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_co_available_type' },
             PL_LIMIT: { name: 'custrecord_twc_co_pl_limit', type: 'currency', alias: 'pLLimit', display: 'normal', mandatory: false },
-            PL_LIMIT_CURRENCY: { name: 'custrecord_twc_co_pl_limit_cur', type: 'text', alias: 'pLLimitCurrency', display: 'normal', mandatory: false },
+            PL_LIMIT_CURRENCY: { name: 'custrecord_twc_co_pl_limit_cur', type: 'select', alias: 'pLLimitCurrency', display: 'normal', mandatory: false, recordType: '-122' },
             PL_EXPIRY: { name: 'custrecord_twc_co_pl_expiry', type: 'date', alias: 'pLExpiry', display: 'normal', mandatory: false },
             PL_EXISTING_FILES: { name: 'custrecord_twc_co_pl_existing_file', type: 'document', alias: 'pLExistingFiles', display: 'normal', mandatory: false },
             PL_UPLOAD_NEW_FILE: { name: 'custrecord_twc_co_pl_upld_new_file', type: 'document', alias: 'pLUploadNewFile', display: 'normal', mandatory: false },
             PI_STATUS: { name: 'custrecord_twc_co_pi_status', type: 'select', alias: 'pIStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_no_active_options' },
             PI_AVAILABLETYPE: { name: 'custrecord_twc_co_pi_available_typ', type: 'select', alias: 'pIAvailableType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_co_available_type' },
             PI_LIMIT: { name: 'custrecord_twc_co_pi_limit', type: 'currency', alias: 'pILimit', display: 'normal', mandatory: false },
-            PI_LIMIT_CURRENCY: { name: 'custrecord_twc_co_pi_limit_cur', type: 'text', alias: 'pILimitCurrency', display: 'normal', mandatory: false },
+            PI_LIMIT_CURRENCY: { name: 'custrecord_twc_co_pi_limit_cur', type: 'select', alias: 'pILimitCurrency', display: 'normal', mandatory: false, recordType: '-122' },
             PI_EXPIRY: { name: 'custrecord_twc_co_pi_expiry', type: 'date', alias: 'pIExpiry', display: 'normal', mandatory: false },
             PI_EXISTING_FILES: { name: 'custrecord_twc_co_pi_existing_file', type: 'document', alias: 'pIExistingFiles', display: 'normal', mandatory: false },
             PI_UPLOAD_NEW_FILE: { name: 'custrecord_twc_co_pi_upld_new_file', type: 'document', alias: 'pIUploadNewFile', display: 'normal', mandatory: false },
@@ -256,13 +256,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set eLLimitCurrency(value) {
                 this.set(_recordFields.EL_LIMIT_CURRENCY, value)
             }
+            get eLLimitCurrencyName() { return this.getText(_recordFields.EL_LIMIT_CURRENCY); }
             
             get eLExpiry() {
                 return this.get(_recordFields.EL_EXPIRY);
             } set eLExpiry(value) {
                 this.set(_recordFields.EL_EXPIRY, value)
             }
-           
+            
             get eLExistingFiles() {
                 return this.get(_recordFields.EL_EXISTING_FILES);
             } set eLExistingFiles(value) {
@@ -300,6 +301,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set pLLimitCurrency(value) {
                 this.set(_recordFields.PL_LIMIT_CURRENCY, value)
             }
+            get pLLimitCurrencyName() { return this.getText(_recordFields.PL_LIMIT_CURRENCY); }
             
             get pLExpiry() {
                 return this.get(_recordFields.PL_EXPIRY);
@@ -344,6 +346,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set pILimitCurrency(value) {
                 this.set(_recordFields.PI_LIMIT_CURRENCY, value)
             }
+            get pILimitCurrencyName() { return this.getText(_recordFields.PI_LIMIT_CURRENCY); }
             
             get pIExpiry() {
                 return this.get(_recordFields.PI_EXPIRY);

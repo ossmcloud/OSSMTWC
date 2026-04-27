@@ -27,13 +27,47 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Approved: 5,
             ToBeRenewed: 6
         }
+        const COMPANY_ACCREDITATION_STATUS_STYLE = {
+            Inactive: { color: 'white', backgroundColor: 'silver' },
+            Accredited: { color: 'white', backgroundColor: 'green' },
+            CertsExpired: { color: 'white', backgroundColor: 'red' }, 
+            Pending: { color: 'white', backgroundColor: 'orange' },
+            Approved: { color: 'white', backgroundColor: 'lime' },
+            ToBeRenewed: { color: 'white', backgroundColor: 'indianred' },
+        }
+        function getCompAccredStatusName(fileStatusNumber) {
+            if (!fileStatusNumber) { fileStatusNumber = 1; }
+            for (var k in COMPANY_ACCREDITATION_STATUS) {
+                if (COMPANY_ACCREDITATION_STATUS[k] == fileStatusNumber) { return k; }
+            }
+            return k;
+        }
+        function getCompAccredStatusStyle(fileStatusNumber) {
+            if (!fileStatusNumber) { fileStatusNumber = 1; }
+            if (isNaN(parseInt(fileStatusNumber))) {
+                return COMPANY_ACCREDITATION_STATUS_STYLE[fileStatusNumber.replaceAll('/', '')];
+            } else {
+                return COMPANY_ACCREDITATION_STATUS_STYLE[getCompAccredStatusName(fileStatusNumber)];
+            }
+        }
+        function getCompAccredStatusHtml(fileStatusNumber, spanClass) {
+            if (!fileStatusNumber) { fileStatusNumber = 11; }
+            var statusName = getCompAccredStatusName(fileStatusNumber);
+            if (isNaN(parseInt(fileStatusNumber))) { statusName = fileStatusNumber; }
+            var statusStyle = getCompAccredStatusStyle(statusName);
+            return `
+                <span class="${spanClass ? spanClass : 'twc-record-status'}" style="color: ${statusStyle.color}; background-color: ${statusStyle.backgroundColor};" >
+                    ${statusName}
+                </span>
+            `
+        }
 
         const COMPANY_INSURANCE_FIELDS = {
             EL: { field: 'custrecord_twc_co_el_status', fieldEx: 'custrecord_twc_co_el_expiry', code: 'el' },
             PL: { field: 'custrecord_twc_co_pl_status', fieldEx: 'custrecord_twc_co_pl_expiry', code: 'pl' },
             PI: { field: 'custrecord_twc_co_pi_status', fieldEx: 'custrecord_twc_co_pi_expiry', code: 'pi' },
         }
-        
+
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const PROFILE_ACCREDITATION_STATUS = {
             Pending: 1,
@@ -69,12 +103,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@NOTE: SAFE PASS must be valid or no site can be accessed
                 return attendAs;
             }
-            if (p.valid_climb_cert == 'T') { attendAs.push({ value: 'CLIMBER', text: 'Climber Certified', exp: p.climber_exp }); }
-            if (p.valid_rescue_cert == 'T') { attendAs.push({ value: 'RESCUE', text: 'Rescue Certified', exp: p.rescue_exp }); }
-            if (p.valid_rooftop_cert == 'T') { attendAs.push({ value: 'ROOFTOP', text: 'Rooftop Certified', exp: p.rooftop_exp }); }
-            if (p.valid_elec_cert == 'T') { attendAs.push({ value: 'ELEC', text: 'Electrician Certified', exp: p.elec_exp }); }
-            if (p.valid_drone_cert == 'T') { attendAs.push({ value: 'DRONE', text: 'Drone Certified', exp: p.drone_exp }); }
-            if (p.valid_rf_cert == 'T') { attendAs.push({ value: 'RF', text: 'RF Certified', exp: p.rf_exp }); }
+            if (p.valid_climb_cert == 'T') { attendAs.push({ value: 'CLIMBER', text: 'Climber', exp: p.climber_exp }); }
+            if (p.valid_rescue_cert == 'T') { attendAs.push({ value: 'RESCUE', text: 'Rescue', exp: p.rescue_exp }); }
+            if (p.valid_rooftop_cert == 'T') { attendAs.push({ value: 'ROOFTOP', text: 'Rooftop', exp: p.rooftop_exp }); }
+            if (p.valid_elec_cert == 'T') { attendAs.push({ value: 'ELEC', text: 'Electrician', exp: p.elec_exp }); }
+            if (p.valid_drone_cert == 'T') { attendAs.push({ value: 'DRONE', text: 'Drone', exp: p.drone_exp }); }
+            if (p.valid_rf_cert == 'T') { attendAs.push({ value: 'RF', text: 'RF', exp: p.rf_exp }); }
             return attendAs;
         }
 
@@ -83,11 +117,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Rejected: 2,
             Approved: 3,
             Superseded: 4,
-            NA: 5
+            NA: 5,
+            Received: 6
         }
         const FILE_STATUS_STYLE = {
             Pending: { color: 'white', backgroundColor: 'orange' },
             Approved: { color: 'white', backgroundColor: 'green' },
+            Received: { color: 'white', backgroundColor: 'green' },
             Rejected: { color: 'white', backgroundColor: 'red' },
             Superseded: { color: 'white', backgroundColor: 'silver' },
             NA: { color: 'var(--main-color)', backgroundColor: 'transparent' },
@@ -97,6 +133,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             for (var k in FILE_STATUS) {
                 if (FILE_STATUS[k] == fileStatusNumber) { return k; }
             }
+            return k;
         }
         function getFileStatusStyle(fileStatusNumber) {
             if (!fileStatusNumber) { fileStatusNumber = 1; }
@@ -397,7 +434,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             UTS: 6,
             Corrective_Action: 7
         };
-        
+
         const TKT_PRIORITY_STYLE = {
             Urgent: { color: 'white', backgroundColor: 'red' },
             High: { color: 'white', backgroundColor: 'orange' },
@@ -489,7 +526,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } else if (tableId == -105 || tableId == 'accountingperiod') {
                 return { pk: 'id', name: 'accountingperiod', nameField: 'periodname', isInactive: '', alias: '' }
             } else if (tableId == -122 || tableId == 'currency') {
-                return { pk: 'id', name: 'currency', nameField: 'symboows_viewl', isInactive: '', alias: '' }
+                return { pk: 'id', name: 'currency', nameField: 'symbol', isInactive: '', alias: '' }
             } else if (tableId == -30 || tableId == 'transaction') {
                 return { pk: 'id', name: 'transaction', nameField: 'tranid', isInactive: false, alias: '' }
             } else if (tableId == -195 || tableId == 'state') {
@@ -637,7 +674,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
-        
+
         function getSafImages(options) {
             return getSafFiles(options, 'image')
         }
@@ -667,36 +704,36 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getTktImages(options) {
             return getTktFiles(options, 'image')
         }
-        
+
         function getTktFiles(options, type) {
-             if(options.id == 'undefined' || options.id == undefined ){
-                options.id=0
-             }
+            if (options.id == 'undefined' || options.id == undefined) {
+                options.id = 0
+            }
             var fileTypeFilter = `
                 and ${twcFile.Fields.RECORD_TYPE} = 'customrecord_twc_trbl_tkt'
                 and ${twcFile.Fields.RECORD_ID} = ${options.id}
             `;
             if (type == 'image') {
                 fileTypeFilter += `AND t.custrecord_twc_file_type_image = 'T'`;
-            } 
-            log.debug("Filter",fileTypeFilter)
-           
-                //log.debug("getFiles({ filters: fileTypeFilter })",getFiles({ filters: fileTypeFilter }))
-                return getFiles({ filters: fileTypeFilter });
+            }
+            log.debug("Filter", fileTypeFilter)
+
+            //log.debug("getFiles({ filters: fileTypeFilter })",getFiles({ filters: fileTypeFilter }))
+            return getFiles({ filters: fileTypeFilter });
             // }
             // else{
             //     log.debug("else case")
             //     return []
             // }
-            
+
         }
 
-          function getTktResolutionFiles(options) {
+        function getTktResolutionFiles(options) {
             var fileIds = options['custrecord_twc_trbl_tkt_res_files'] || '';
             // if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
             // fileIds += options['custrecord_twc_saf_health_safety'];
-             if (!fileIds || !fileIds.trim()) {
-                fileIds = '0'; 
+            if (!fileIds || !fileIds.trim()) {
+                fileIds = '0';
             }
             return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})`, 'customrecord_twc_file': FILE_STATUS.Approved } } })
         }
@@ -832,11 +869,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     `
                 }
             } else {
-                if (options.type == 'C') {
-                    additionalFilters += `and	custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer}`;
+                
+                
+                if (options.cid) {
+                    additionalFilters += `and	id = ${options.cid}`;
                 } else {
-                    additionalFilters += `and	custrecord_twc_con_flag = ${CONTRACTOR_FLAG.Contractor}`;
+                    if (options.type == 'C') {
+                        additionalFilters += `and	custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer}`;
+                    } else {
+                        additionalFilters += `and	custrecord_twc_con_flag = ${CONTRACTOR_FLAG.Contractor}`;
+                    }    
                 }
+
                 sql = `
                     select  c.id as value, c.name as text
                     from    customrecord_twc_company c
@@ -870,6 +914,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getCompanies(options);
         }
 
+      
         function getProfiles(options) {
             var filters = '';
             if (options.company) {
@@ -1009,6 +1054,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getSrfActions(options) {
+
             var safFilter = (options.saf) ? `and custrecord_twc_eq_action_saf = ${options.saf}` : 'and custrecord_twc_eq_action_saf is null';
             return coreSQL.run(`
                 select  a.id as value, a.name as text, custrecord_twc_equip_id as equipment, BUILTIN.DF(custrecord_twc_eq_action_srf) as srf, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
@@ -1023,14 +1069,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getInfraStructures(options) {
-            return coreSQL.run(`
-                select  is.id as value, custrecord_twc_infra_id as text, custrecord_twc_infra_id || ' [' || BUILTIN.DF(custrecord_twc_infra_str_type) || ']' as text_render, 
-                        custrecord_twc_infra_type as type, BUILTIN.DF(custrecord_twc_infra_type) as type_name, st.custrecord_twc_infra_saf_sts_types as saf_types
+            var siteStructures = [];
+            coreSQL.each(`
+                select  is.id as value, custrecord_twc_infra_id as name, 
+                        custrecord_twc_infra_type as type, BUILTIN.DF(custrecord_twc_infra_type) as type_name, st.custrecord_twc_infra_saf_sts_types as saf_types,
+                        custrecord_twc_infra_str_ht_m as struct_height, custrecord_twc_infra_status as struct_status, BUILTIN.DF(custrecord_twc_infra_status) as struct_status_name,
+                        BUILTIN.DF(custrecord_twc_infra_str_type) as struct_type_name,
                 from    customrecord_twc_infra is
                 left join    customrecord_twc_infra_saf_sts st on st.id = is.custrecord_twc_infra_saf_status
                 where   custrecord_twc_infra_site = ${options?.siteId || 0}
                 order by is.custrecord_twc_infra_id
-            `)
+            `, s => {
+                var h = s.struct_height ? `${s.struct_height}m` : '[no height]';
+                var hr = s.struct_height ? `<span style="color: indianred;">${s.struct_height}m</span>` : '<span style="color: silver;">[no height]</span>';
+
+                s.text = `${s.name} [${s.struct_type_name}] ${h} (${s.struct_status_name})`;
+                s.text_render = `<b>${s.name}</b> [${s.struct_type_name}] <i>${hr}</i> (<span style="color: var(--accent-fore-color)">${s.struct_status_name}</span>)`;
+                siteStructures.push(s)
+            })
+            return siteStructures;
         }
 
         function getStructureTypeInfo(options) {
@@ -1043,7 +1100,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 join    customrecord_twc_infra_str_type t on t.id = i.custrecord_twc_infra_str_type
                 join    customrecord_twc_site s on s.id = i.custrecord_twc_infra_site
                 where  	i.custrecord_twc_infra_site = ${options.siteId}
+                and     i.id = ${options.id || 0}
             `, r => {
+
+                // @@TODO: this is no longer needed
                 if (r.is_rooftop == 'T') {
                     info.roofTop = true;
                 } else if (r.is_mast == 'T') {
@@ -1060,6 +1120,31 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 info.electrical = true;
                 info.building = true;
             })
+            return info;
+        }
+
+        function getSiteTypeInfo(options) {
+            var info = coreSQL.first(`
+                select  t.id, NVL(t.custrecord_twc_site_types_roof_access, 'N') rooftop, NVL(t.custrecord_twc_site_types_mast_access, 'N') as mast, 
+                        NVL(t.custrecord_twc_site_types_mewp_access, 'N') as mewp, NVL(t.custrecord_twc_site_types_electr_access, 'N') as electrical
+                from    customrecord_twc_site s
+                join    customrecord_twc_site_type t on t.id = s.custrecord_twc_site_type
+                where   s.id = ${options.siteId};
+            `)
+
+            const getYesNoOptions = (v) => {
+                if (v == 'N') { return null; }
+                if (v == 'Y') { return [{ value: 'T', text: 'Yes' }, { value: 'F', text: 'No' }] }
+                if (v == 'F') { return [{ value: 'T', text: 'Yes' }] }
+                return null;
+            }
+
+
+            info.rooftop = getYesNoOptions(info.rooftop);
+            info.mast = getYesNoOptions(info.mast);
+            info.mewp = getYesNoOptions(info.mewp);
+            info.electrical = getYesNoOptions(info.electrical);
+            
             return info;
         }
 
@@ -1139,8 +1224,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getFileStatusHtml: getFileStatusHtml,
             getFileTypes: getFileTypes,
 
+            getCompAccredStatusHtml: getCompAccredStatusHtml,
+
             getTimeBlockTimeRange: getTimeBlockTimeRange,
 
+            getSiteTypeInfo: getSiteTypeInfo,
             getInfraStructures: getInfraStructures,
             getStructureTypeInfo: getStructureTypeInfo,
 
@@ -1181,7 +1269,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafImages: getSafImages,
             getSafContractorFiles: getSafContractorFiles,
             getTktResolutionFiles: getTktResolutionFiles,
-            getTktImages:getTktImages,
+            getTktImages: getTktImages,
             getProfiles: getProfiles,
             getCompanies: getCompanies,
             getCustomers: getCustomers,

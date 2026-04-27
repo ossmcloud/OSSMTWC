@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_company.js', '../../data/oTWC_companyUI.js', '../../data/oTWC_profile.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js', '../../data/oTWC_utils.js'],
-    (core, coreSQL, recu, twcCompany, twcCompanyUI, twcProfile, twcFile, nsFileUtils, twcUtils) => {
+define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_company.js', '../../data/oTWC_companyUI.js', '../../data/oTWC_profile.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js', '../../data/oTWC_utils.js'],
+    (file, core, coreSQL, recu, twcCompany, twcCompanyUI, twcProfile, twcFile, nsFileUtils, twcUtils) => {
 
         function saveFile(recordId, fileObject, folder) {
             var nsFile = nsFileUtils.writeFile({
@@ -13,6 +13,32 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 folder: folder,
             });
             return nsFile.fileId;
+        }
+
+        function archiveProfileCurrentFile(certCode, profileRecord, fileName, userInfo) {
+            var currentFile = profileRecord.get(`custrecord_twc_prof_${certCode}_filename`);
+            if (currentFile) {
+                try {
+
+                    var currentFileName = profileRecord.getText(`custrecord_twc_prof_${certCode}_filename`);
+                    const fileObj = file.load({ id: currentFile });
+                    fileObj.name = `${(new Date()).format()}_${currentFileName}`;
+                    fileObj.save();
+
+                    var f = twcFile.get();
+                    f.name = fileName;
+                    f.recordType = twcProfile.Type;
+                    f.recordID = profileRecord.id;
+                    f.description = 'kept for historical purposes';
+                    f.file = currentFile;
+                    //f.r_type = '';
+                    //f.status = twcUtils.FileStatus.NA;
+                    f.uploadedBy = userInfo?.profile;
+                    f.save();
+                } catch (error) {
+                    core.logDebug('PROFILE-ARCHIVE-CERT', `cert: ${c} - profile id: ${response.id} - file id: ${currentFile} - error: ${error.message}`);
+                }
+            }
         }
 
         function saveCompanyChildRecord(company, childRecord, options, userInfo) {
@@ -54,8 +80,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             } else if (childRecord.type == twcProfile.Type) {
 
-                // @@TODO: COMPANY PROFILE: validate data
-
                 childRecord.company = company.id;
                 response.id = childRecord.save();
                 response.record = {};
@@ -63,31 +87,32 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (options.profile.certs) {
                     for (var c in options.profile.certs) {
                         var fileObject = options.profile.certs[c];
+                        
+                        archiveProfileCurrentFile(c, childRecord, fileObject.name, userInfo);
+                        
                         var folder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/C${company.id.pad(7)}/P${response.id.pad(7)}`);
                         var fileId = saveFile(response.id, fileObject, folder);
                         recu.submit(twcProfile.Type, response.id, `custrecord_twc_prof_${c}_filename`, fileId);
                     }
                 }
 
-                
+
 
             } else {
                 throw new Error(`Invalid Child Record Type: ${childRecord.type}`)
             }
-
-            // @@TODO: COMPANY PROFILE: handle deleted records (just set as inactive)
-
+            
             return response
         }
 
         function getCompanyChildRecord(options, userInfo) {
             var childRecord = null;
             if (options.profile) {
-                
+
                 childRecord = twcProfile.get(options.profile.id);
                 childRecord.copyFromObject(options.profile);
                 childRecord.delete = options.profile.delete;
-                
+
             } else if (options.document) {
                 childRecord = twcFile.get(options.document.id);
                 childRecord.copyFromObject(options.document);
@@ -106,7 +131,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             getProfileInfo(pageData) {
                 if (pageData.userInfo.isEmployee) {
-                    return twcCompany.select({ noAlias: true, where: { id: pageData.recId || pageData.userInfo.companyProfile?.id || 0 } })[0];   
+                    return twcCompany.select({ noAlias: true, where: { id: pageData.recId || pageData.userInfo.companyProfile?.id || 0 } })[0];
                 } else {
                     if (!pageData.userInfo.companyProfile) { throw new Error('There is no company profile associated to your profile, contact TWC Administrator to get this resolved') }
                     return twcCompany.select({ noAlias: true, where: { id: pageData.userInfo.companyProfile?.id || 0 } })[0];
@@ -134,7 +159,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     submitInfo[twcCompany.Type].fields.push(k);
                     submitInfo[twcCompany.Type].values.push(payload[k])
                 }
-                
+
                 recu.submit(twcCompany.Type, payload.id, submitInfo[twcCompany.Type].fields, submitInfo[twcCompany.Type].values);
 
             }
