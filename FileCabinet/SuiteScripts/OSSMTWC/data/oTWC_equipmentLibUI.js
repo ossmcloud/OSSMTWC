@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_config.js', './oTWC_equipmentLib.js'],
-    ( core, coreSQL, twcUtils, twcConfig, twcEqLib) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_config.js', './oTWC_equipmentLib.js', './oTWC_equipment.js', './oTWC_srfItem.js'],
+    (core, coreSQL, twcUtils, twcConfig, twcEqLib, twcEq, twcSrfItem) => {
 
 
 
@@ -15,18 +15,41 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 { field: twcEqLib.Fields.MAKE, title: 'Make' },
                 { field: twcEqLib.Fields.MODEL, title: 'Model' },
                 { field: twcEqLib.Fields.DESCRIPTION, title: 'Description' },
+                { field: twcEqLib.Fields.LENGTH_MM, title: 'Length (mm)' },
+                { field: twcEqLib.Fields.WIDTH_MM, title: 'Width (mm)' },
+                { field: twcEqLib.Fields.HEIGHTDEPTH_MM, title: 'Depth (mm)' },
+                { field: twcEqLib.Fields.WEIGHT_KG, title: 'Weight (Kg)' },
+                { field: twcEqLib.Fields.VOLTAGE, title: 'Voltage Type' },
+                { field: twcEqLib.Fields.VOLTAGE_RANGE, title: 'Voltage Range' },
+                { field: twcEqLib.Fields.ALIAS, title: 'Alias' },
             ];
             return eqLibFields;
         }
 
 
+        function getLibToEquipmentFieldMap() {
+            var map = [
+                { libField: twcEqLib.Fields.LENGTH_MM, eqField: twcSrfItem.Fields.LENGTH_MM },
+                { libField: twcEqLib.Fields.WIDTH_MM, eqField: twcSrfItem.Fields.WIDTH_MM },
+                { libField: twcEqLib.Fields.HEIGHTDEPTH_MM, eqField: twcSrfItem.Fields.DEPTH_MM },
+                { libField: null, eqField: twcSrfItem.Fields.HEIGHT_ON_TOWER },
+                { libField: twcEqLib.Fields.WEIGHT_KG, eqField: twcSrfItem.Fields.WEIGHT_KG },
 
+                { libField: twcEqLib.Fields.VOLTAGE_TYPE, eqField: twcSrfItem.Fields.VOLTAGE_TYPE, tmeOnly: true },
+                { libField: twcEqLib.Fields.VOLTAGE_RANGE, eqField: twcSrfItem.Fields.VOLTAGE_RANGE, tmeOnly: true },
+                { libField: null, eqField: twcSrfItem.Fields.AZIMUTH, tmeOnly: true },
+                { libField: null, eqField: twcSrfItem.Fields.B_END, tmeOnly: true },
+                { libField: null, eqField: twcSrfItem.Fields.CUSTOMER_REF, tmeOnly: true },
+                { libField: null, eqField: twcSrfItem.Fields.INVENTORY_FLAG, tmeOnly: true },
+            ];
+            return map;
+        }
 
 
         return {
             Fields: twcEqLib.Fields,
             getLibTableFields: getLibTableFields,
-
+            getLibToEquipmentFieldMap: getLibToEquipmentFieldMap,
         }
     });
 

@@ -114,6 +114,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
         return {
+            EqClass: EQ_CLASS_ENUM,
+
             getInventoryTableFields: getInventoryTableFields,
             getInvInfoPanels: getInvInfoPanels
         }

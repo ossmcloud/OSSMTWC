@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_file.js', '../../data/oTWC_equipmentLibUI.js'],
-    (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, twcUI, uiTable, twcSite, twcSrf, twcSrfItem, twcUIPanel, twcFile, twcEqLibUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_file.js', '../../data/oTWC_equipmentLibUI.js', '../../data/oTWC_equipmentUI.js'],
+    (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, twcUI, uiTable, twcSite, twcSrf, twcSrfItem, twcUIPanel, twcFile, twcEqLibUI, twcEqUI) => {
 
 
         function builtTestObjects(srfItem) {
@@ -255,7 +255,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (e.id == twcSrfItem.Fields.REQUEST_TYPE || e.id == twcSrfItem.Fields.ITEM_TYPE) {
                             var reqType = form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
                             var itemType = form.getControl(twcSrfItem.Fields.ITEM_TYPE).value;
-
                             var pickFromLb = (reqType != twcSrfItem.RequestType.REMOVE && itemType);
 
                             var cfg = this.getLLibCfg(srfItem[twcSrfItem.Fields.STEP_TYPE], itemType);
@@ -263,8 +262,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             jQuery('#srf-pick-from-library-msg').parent().css('display', cfg?.user_notes ? 'block' : '');
 
                             form.getControl('srf-pick-from-library').disabled = cfg?.pick_from_library == 'F' || !pickFromLb;
-
                             form.ui.find('#srf-item-dimension').css('display', (cfg && cfg?.pick_from_library != 'T') ? 'block' : 'none');
+                            if (srfItem[twcSrfItem.Fields.STEP_TYPE] == twcEqUI.EqClass.TME) {
+                                form.ui.find('#srf-item-spec').css('display', (cfg && cfg?.pick_from_library != 'T') ? 'block' : 'none');
+                            }
 
                         }
 
@@ -274,7 +275,37 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.pickFromLibrary(srfItem[twcSrfItem.Fields.STEP_TYPE], itemType, (pickedEq) => {
                             console.log(pickedEq)
 
+                            form.getControl(twcSrfItem.Fields.DESCRIPTION).value = pickedEq.e.rowsData[0][twcEqLibUI.Fields.DESCRIPTION];
+
+                            var itemType = form.getControl(twcSrfItem.Fields.ITEM_TYPE).value;
+                            var cfg = this.getLLibCfg(srfItem[twcSrfItem.Fields.STEP_TYPE], itemType);
+                            if (!cfg) { return; }
+
                             form.ui.find('#srf-item-dimension').css('display', 'block');
+                            if (srfItem[twcSrfItem.Fields.STEP_TYPE] == twcEqUI.EqClass.TME) {
+                                form.ui.find('#srf-item-spec').css('display', 'block');
+                            }
+
+                            var fieldMaps = twcEqLibUI.getLibToEquipmentFieldMap();
+                            cfg = JSON.parse(cfg.configurations || '[]');
+
+
+                            core.array.each(fieldMaps, fieldMap => {
+                                if (fieldMap.tmeOnly && srfItem[twcSrfItem.Fields.STEP_TYPE] != twcEqUI.EqClass.TME) { return; }
+                                var fieldCfg = cfg.find(c => { return c.field == fieldMap.eqField; })
+
+                                form.getControl(fieldMap.eqField).visible = true;
+                                if (fieldCfg || fieldMap.libField == null) {
+                                    form.getControl(fieldMap.eqField).mandatory = true;
+                                } else {
+                                    form.getControl(fieldMap.eqField).mandatory = false;
+                                    form.getControl(fieldMap.eqField).readOnly = true;
+                                    form.getControl(fieldMap.eqField).value = pickedEq.e.rowsData[0][fieldMap.libField];
+                                }
+
+
+                            })
+                        
 
                         })
                     })
@@ -369,7 +400,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     })
 
 
-                    var dlg = dialog.open({ title: 'pick item from library', content: container, width: '60%', height: '70vh' });
+                    var dlg = dialog.open({ title: 'pick item from library', content: container, size: { width: '60%', height: '70vh' } });
                 } catch (error) {
                     dialog.error(error);
                 }
