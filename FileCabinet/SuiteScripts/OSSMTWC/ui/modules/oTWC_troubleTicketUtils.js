@@ -442,18 +442,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
-        function reqResPhotos(tktId){
-              var tktInfo = coreSQL.first(`
-                select  t.id
-                from    ${twcTrblTkts.Type} t
-                join customrecord_twc_trbl_tkt_category cat 
-                ON cat.id = t.custrecord_twc_trbl_tkt_category
-                where t.id = ${tktId}
-                AND
-                cat.custrecord_twc_trbl_tkt_requires_res_pic = 'T
-            `)
-            console.log('tktInfo',tktInfo)
-        }
+
 
 
         return {
@@ -461,7 +450,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             resolveTicket: resolveTicket,
             cancelTicket: cancelTicket,
             saveTktInfo: saveTktInfo,
-          //  reqResPhotos:reqResPhotos,
             saveTktImage: saveTktImage,
             getTKTInfoPanels: twcTrblTktsUI.getTKTInfoPanels,
             renderTroubleTicketsPanel: renderTroubleTicketsPanel,
