@@ -11,16 +11,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getLibTableFields() {
             var eqLibFields = [
-                { field: twcEqLib.Fields.SPEC_ID, title: 'Spec.ID' },
-                { field: twcEqLib.Fields.MAKE, title: 'Make' },
+                { field: twcEqLib.Fields.NAME, title: 'Spec. ID' },
+                { field: twcEqLib.Fields.MAKE, title: 'Make', addCount: true },
                 { field: twcEqLib.Fields.MODEL, title: 'Model' },
                 { field: twcEqLib.Fields.DESCRIPTION, title: 'Description' },
-                { field: twcEqLib.Fields.LENGTH_MM, title: 'Length (mm)' },
-                { field: twcEqLib.Fields.WIDTH_MM, title: 'Width (mm)' },
-                { field: twcEqLib.Fields.HEIGHTDEPTH_MM, title: 'Depth (mm)' },
-                { field: twcEqLib.Fields.WEIGHT_KG, title: 'Weight (Kg)' },
-                { field: twcEqLib.Fields.VOLTAGE, title: 'Voltage Type' },
-                { field: twcEqLib.Fields.VOLTAGE_RANGE, title: 'Voltage Range' },
+                { field: twcEqLib.Fields.LENGTH_MM, title: 'Length<br />(mm)', type: 'int', styles: { width: '100px' } },
+                { field: twcEqLib.Fields.WIDTH_MM, title: 'Width<br />(mm)', type: 'int' },
+                { field: twcEqLib.Fields.HEIGHTDEPTH_MM, title: 'Depth<br />(mm)', type: 'int' },
+                { field: twcEqLib.Fields.WEIGHT_KG, title: 'Weight<br />(Kg)', type: 'float' },
+                { field: twcEqLib.Fields.VOLTAGE_TYPE + '_name', title: 'Voltage<br />Type', styles: {'text-align': 'center'} },
+                { field: twcEqLib.Fields.VOLTAGE_RANGE + '_name', title: 'Voltage<br />Range', styles: { 'text-align': 'center' } },
                 { field: twcEqLib.Fields.ALIAS, title: 'Alias' },
             ];
             return eqLibFields;

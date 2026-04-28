@@ -18,7 +18,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteRequestInfo.siteId || context.request.parameters.siteId);
                 pageData.libCfg = twcEqLibCfg.select();
                 // @@TODO: select based on status (i.e.: active only I think)
-                pageData.eqLib = twcEqLib.select({ noAlias: true });
+                pageData.eqLib = twcEqLib.select({ where: { [twcEqLib.Fields.LIBRARY_ENTRY_STATUS]: twcEqLib.EqLibStatus.Active }, noAlias: true });
 
                 pageData.recordStatus = `<div class="twc-div-span-table">${twcSrf.getSrfStatusHtml(pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS])}</div>`;
                 if (context.request.parameters.recId) {

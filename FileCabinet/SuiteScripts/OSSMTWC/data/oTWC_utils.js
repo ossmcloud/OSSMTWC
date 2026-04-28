@@ -4,6 +4,12 @@
  */
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_file.js', './oTWC_icons.js'],
     (core, cored, coreSQL, twcFile, twcIcons) => {
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const EQ_LIB_STATUS = {
+            Inactive: 1,
+            Draft: 2,
+            Active: 3
+        }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const CUSTOMER_FLAG = {
@@ -1195,6 +1201,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             ROOT_FILE_FOLDER: 'TWC Files',
             HEIGH_LIMIT_FOR_1_CLIMBER: 60,
+
+            EqLibStatus: EQ_LIB_STATUS,
 
             CustomerFlag: CUSTOMER_FLAG,
             ContractorFlag: CONTRACTOR_FLAG,

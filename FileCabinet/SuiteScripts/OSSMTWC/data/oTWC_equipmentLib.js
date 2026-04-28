@@ -18,6 +18,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Type: twcEquipmentLib.Type,
             Fields: twcEquipmentLib.Fields,
             FieldsInfo: twcEquipmentLib.FieldsInfo,
+            EqLibStatus: twcUtils.EqLibStatus,
 
             get: function (id) {
                 var rec = new OSSMTWC_EquipmentLib(id);

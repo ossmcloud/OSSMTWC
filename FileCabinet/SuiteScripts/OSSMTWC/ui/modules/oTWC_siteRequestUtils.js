@@ -70,12 +70,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
                 srfItem.save();
             })
+
+            // @@TODO: JAVEED: Save Eq. Actions Records
         }
         function deleteSitesSrfItem(payload) {
             if (!payload.items_deleted) { return; }
             core.array.each(payload.items_deleted, item => {
                 recu.del(twcSrfItem.Type, item.id);
             })
+
+            // @@TODO: JAVEED: Delete Eq. Actions Records
         }
 
         function saveSiteSrfFile(payload) {

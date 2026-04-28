@@ -2,15 +2,18 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js'],
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js' ],
     (core, coreSQL, recu, customRec) => {
         var _recordType = 'customrecord_twc_srf_itm';
         var _recordFields = {
+            NAME: 'name',
             SRF: 'custrecord_twc_srf_itm_srf',
             REQUEST_TYPE: 'custrecord_twc_srf_itm_req_type',
             STEP_TYPE: 'custrecord_twc_srf_itm_stype',
             ITEM_TYPE: 'custrecord_twc_srf_itm_type',
+            EQUIPMENT_LIBRARY: 'custrecord_twc_srf_itm_eq_lib',
             EQUIPMENT_ID: 'custrecord_twc_srf_itm_equip_id',
+            TME_ID: 'custrecord_twc_srf_itm_tme_id',
             DESCRIPTION: 'custrecord_twc_srf_itm_desc',
             LOCATION: 'custrecord_twc_srf_itm_loc',
             LENGTH_MM: 'custrecord_twc_srf_itm_length_mm',
@@ -26,7 +29,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             INVENTORY_FLAG: 'custrecord_twc_srf_itm_invent_flag',
             FEEDER_COUNT: 'custrecord_twc_srf_itm_feeder_count',
             TYPE_OPT: 'custrecord_twc_srf_itm_type_opt',
-            TME_ID: 'custrecord_twc_srf_itm_tme_id',
             FILENAME: 'custrecord_twc_srf_itm_filename',
             POWER_REQUESTED_FROM_TC: 'custrecord_twc_srf_itm_pwr_req_from_tc',
             ALTERNATE_SUPPLIER: 'custrecord_twc_srf_itm_alt_sup',
@@ -36,13 +38,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             APPLICATION_REFERENCE: 'custrecord_twc_srf_itm_app_ref',
             FEEDERS_DESCRIPTION: 'custrecord_twc_srf_itm_feeder_desc',
             LOCATION_TEXT: 'custrecord_twc_srf_itm_loc_txt',
+            CREATED: 'created',
+            MODIFIED: 'lastmodified',
+            OWNER: 'owner',
+            MODIFIED_BY: 'lastmodifiedby',
         }
         var _recordFieldInfo = {
+            NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             SRF: { name: 'custrecord_twc_srf_itm_srf', type: 'select', alias: 'sRF', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf' },
             REQUEST_TYPE: { name: 'custrecord_twc_srf_itm_req_type', type: 'select', alias: 'requestType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_req_type' },
             STEP_TYPE: { name: 'custrecord_twc_srf_itm_stype', type: 'select', alias: 'stepType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_class' },
             ITEM_TYPE: { name: 'custrecord_twc_srf_itm_type', type: 'select', alias: 'itemType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_type' },
+            EQUIPMENT_LIBRARY: { name: 'custrecord_twc_srf_itm_eq_lib', type: 'select', alias: 'equipmentLibrary', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_lib' },
             EQUIPMENT_ID: { name: 'custrecord_twc_srf_itm_equip_id', type: 'select', alias: 'equipmentID', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip' },
+            TME_ID: { name: 'custrecord_twc_srf_itm_tme_id', type: 'select', alias: 'tMEID', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip' },
             DESCRIPTION: { name: 'custrecord_twc_srf_itm_desc', type: 'text', alias: 'description', display: 'normal', mandatory: false },
             LOCATION: { name: 'custrecord_twc_srf_itm_loc', type: 'select', alias: 'location', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
             LENGTH_MM: { name: 'custrecord_twc_srf_itm_length_mm', type: 'text', alias: 'lengthmm', display: 'normal', mandatory: false },
@@ -58,7 +67,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             INVENTORY_FLAG: { name: 'custrecord_twc_srf_itm_invent_flag', type: 'select', alias: 'inventoryFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_inv_flag' },
             FEEDER_COUNT: { name: 'custrecord_twc_srf_itm_feeder_count', type: 'text', alias: 'feederCount', display: 'normal', mandatory: false },
             TYPE_OPT: { name: 'custrecord_twc_srf_itm_type_opt', type: 'select', alias: 'typeopt', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_typ_opt' },
-            TME_ID: { name: 'custrecord_twc_srf_itm_tme_id', type: 'select', alias: 'tMEID', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip' },
             FILENAME: { name: 'custrecord_twc_srf_itm_filename', type: 'document', alias: 'filename', display: 'normal', mandatory: false },
             POWER_REQUESTED_FROM_TC: { name: 'custrecord_twc_srf_itm_pwr_req_from_tc', type: 'checkbox', alias: 'powerrequestedfromTC', display: 'normal', mandatory: false },
             ALTERNATE_SUPPLIER: { name: 'custrecord_twc_srf_itm_alt_sup', type: 'text', alias: 'alternateSupplier', display: 'normal', mandatory: false },
@@ -68,12 +76,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             APPLICATION_REFERENCE: { name: 'custrecord_twc_srf_itm_app_ref', type: 'text', alias: 'applicationreference', display: 'normal', mandatory: false },
             FEEDERS_DESCRIPTION: { name: 'custrecord_twc_srf_itm_feeder_desc', type: 'text', alias: 'feedersDescription', display: 'normal', mandatory: false },
             LOCATION_TEXT: { name: 'custrecord_twc_srf_itm_loc_txt', type: 'text', alias: 'locationText', display: 'normal', mandatory: false },
+            CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
+            MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
+            OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
+            MODIFIED_BY: { name: 'lastmodifiedby', type: 'select', alias: 'last_modified_by', display: 'inline', recordType: 'employee'}, 
         }
 
         class OSSMTWC_SRFItem extends customRec.RecordBase {
             constructor(id, staticLoad) {
                 super(_recordType, _recordFieldInfo, id, staticLoad);
             }
+            get name() {
+                return this.get('name');
+            } set name(value) {
+                this.set('name', value)
+            }
+            
             get sRF() {
                 return this.get(_recordFields.SRF);
             } set sRF(value) {
@@ -102,12 +120,26 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get itemTypeName() { return this.getText(_recordFields.ITEM_TYPE); }
             
+            get equipmentLibrary() {
+                return this.get(_recordFields.EQUIPMENT_LIBRARY);
+            } set equipmentLibrary(value) {
+                this.set(_recordFields.EQUIPMENT_LIBRARY, value)
+            }
+            get equipmentLibraryName() { return this.getText(_recordFields.EQUIPMENT_LIBRARY); }
+            
             get equipmentID() {
                 return this.get(_recordFields.EQUIPMENT_ID);
             } set equipmentID(value) {
                 this.set(_recordFields.EQUIPMENT_ID, value)
             }
             get equipmentIDName() { return this.getText(_recordFields.EQUIPMENT_ID); }
+            
+            get tMEID() {
+                return this.get(_recordFields.TME_ID);
+            } set tMEID(value) {
+                this.set(_recordFields.TME_ID, value)
+            }
+            get tMEIDName() { return this.getText(_recordFields.TME_ID); }
             
             get description() {
                 return this.get(_recordFields.DESCRIPTION);
@@ -204,13 +236,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get typeoptName() { return this.getText(_recordFields.TYPE_OPT); }
             
-            get tMEID() {
-                return this.get(_recordFields.TME_ID);
-            } set tMEID(value) {
-                this.set(_recordFields.TME_ID, value)
-            }
-            get tMEIDName() { return this.getText(_recordFields.TME_ID); }
-            
             get filename() {
                 return this.get(_recordFields.FILENAME);
             } set filename(value) {
@@ -265,6 +290,30 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.LOCATION_TEXT, value)
             }
             
+            get created() {
+                return this.get(_recordFields.CREATED);
+            } set created(value) {
+                this.set(_recordFields.CREATED, value)
+            }
+            
+            get last_modified() {
+                return this.get(_recordFields.MODIFIED);
+            } set last_modified(value) {
+                this.set(_recordFields.MODIFIED, value)
+            }
+            
+            get created_by() {
+                return this.get(_recordFields.OWNER);
+            } set created_by(value) {
+                this.set(_recordFields.OWNER, value)
+            }
+            
+            get last_modified_by() {
+                return this.get(_recordFields.MODIFIED_BY);
+            } set last_modified_by(value) {
+                this.set(_recordFields.MODIFIED_BY, value)
+            }
+            
         }
 
         return {
@@ -273,8 +322,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_SRFItem,
 
-            get: function (id, staticLoad) {
-                var rec = new OSSMTWC_SRFItem(id, staticLoad);
+            get: function (id) {
+                var rec = new OSSMTWC_SRFItem(id);
                 rec.load();
                 return rec;
             }, 

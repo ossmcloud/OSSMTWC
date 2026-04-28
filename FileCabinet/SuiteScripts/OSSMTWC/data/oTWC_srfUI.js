@@ -90,12 +90,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fieldGroup = [];
             if (childRecord.type == twcSrfItemUI.RecordType) {
                 fieldGroup = twcSrfItemUI.getUIFields(srf, childRecord);
+                configUIFields.formatPanelFields(childRecord, fieldGroup);
             } else if (childRecord.type == twcFileUI.RecordType) {
                 fieldGroup = twcFileUI.getUIFields(childRecord, userInfo);
             } else {
                 throw new Error(`No Child Record Found in payload (type: ${childRecord.type})`)
             }
-            configUIFields.formatPanelFields(childRecord, fieldGroup);
+            
             return fieldGroup;
         }
 

@@ -248,23 +248,36 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     var res = this.postSync({ action: 'child-record' }, { srf: this.data.siteRequestInfo, item: srfItem })
                     var form = twcUIPanel.ui(res);
-                    form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).disabled = true;
+                    //form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).hide = true;
                     form.on('change', e => {
-                        if (e.id == twcSrfItem.Fields.REQUEST_TYPE) { form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).disabled = (!e.value || e.value == twcSrfItem.RequestType.INSTALL); }
+                        if (e.id == twcSrfItem.Fields.REQUEST_TYPE) {
+                            form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).hide = (!e.value || e.value == twcSrfItem.RequestType.INSTALL);
+                            form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).mandatory = !(!e.value || e.value == twcSrfItem.RequestType.INSTALL);
+                            form.getControl(twcSrfItem.Fields.ITEM_TYPE).hide = (!e.value || e.value == twcSrfItem.RequestType.REMOVE);
+                        }
+
+                        
 
                         if (e.id == twcSrfItem.Fields.REQUEST_TYPE || e.id == twcSrfItem.Fields.ITEM_TYPE) {
                             var reqType = form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
                             var itemType = form.getControl(twcSrfItem.Fields.ITEM_TYPE).value;
-                            var pickFromLb = (reqType != twcSrfItem.RequestType.REMOVE && itemType);
 
-                            var cfg = this.getLLibCfg(srfItem[twcSrfItem.Fields.STEP_TYPE], itemType);
+                            var showPanels = (reqType != twcSrfItem.RequestType.REMOVE && itemType);
+
+                            var cfg = null; var pickFromLb = false;
+                            if (showPanels) {
+                                cfg = this.getLLibCfg(srfItem[twcSrfItem.Fields.STEP_TYPE], itemType);
+                                showPanels = cfg?.pick_from_library != 'T';
+                            }
+
+                            var pickFromLb = cfg?.pick_from_library == 'T';
                             jQuery('#srf-pick-from-library-msg').html(cfg?.user_notes || '')
                             jQuery('#srf-pick-from-library-msg').parent().css('display', cfg?.user_notes ? 'block' : '');
 
-                            form.getControl('srf-pick-from-library').disabled = cfg?.pick_from_library == 'F' || !pickFromLb;
-                            form.ui.find('#srf-item-dimension').css('display', (cfg && cfg?.pick_from_library != 'T') ? 'block' : 'none');
+                            form.getControl('srf-pick-from-library').disabled = !pickFromLb;
+                            form.ui.find('#srf-item-dimension').css('display', showPanels ? 'block': 'none');
                             if (srfItem[twcSrfItem.Fields.STEP_TYPE] == twcEqUI.EqClass.TME) {
-                                form.ui.find('#srf-item-spec').css('display', (cfg && cfg?.pick_from_library != 'T') ? 'block' : 'none');
+                                form.ui.find('#srf-item-spec').css('display', showPanels ? 'block' : 'none');
                             }
 
                         }
@@ -275,6 +288,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.pickFromLibrary(srfItem[twcSrfItem.Fields.STEP_TYPE], itemType, (pickedEq) => {
                             console.log(pickedEq)
 
+                            form.getControl(twcSrfItem.Fields.EQUIPMENT_LIBRARY).value = pickedEq.e.rowsData[0].id;
                             form.getControl(twcSrfItem.Fields.DESCRIPTION).value = pickedEq.e.rowsData[0][twcEqLibUI.Fields.DESCRIPTION];
 
                             var itemType = form.getControl(twcSrfItem.Fields.ITEM_TYPE).value;
@@ -288,8 +302,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                             var fieldMaps = twcEqLibUI.getLibToEquipmentFieldMap();
                             cfg = JSON.parse(cfg.configurations || '[]');
-
-
                             core.array.each(fieldMaps, fieldMap => {
                                 if (fieldMap.tmeOnly && srfItem[twcSrfItem.Fields.STEP_TYPE] != twcEqUI.EqClass.TME) { return; }
                                 var fieldCfg = cfg.find(c => { return c.field == fieldMap.eqField; })
@@ -302,10 +314,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     form.getControl(fieldMap.eqField).readOnly = true;
                                     form.getControl(fieldMap.eqField).value = pickedEq.e.rowsData[0][fieldMap.libField];
                                 }
-
-
                             })
-                        
+
 
                         })
                     })
@@ -367,17 +377,27 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     const onColumnInit = (tbl, col) => {
                         var cf = fields.find(cf => { return cf.field == col.id });
                         if (!cf) { return false; }
-                        col.title = cf.title;
+                        for (var k in cf) { col[k] = cf[k]; }
+                        col.nullText = '';
+
                     }
 
-                    var tblContainer = jQuery(`<div></div>`);
-                    var eqLibTable = new uiTable.TableControl(tblContainer, onColumnInit, {
-                        id: 'twc_eq_lib',
-                        fitScreen: true,
-                        fitContainer: true,
-                        showFooter: true,
 
+
+                    var container = jQuery(`
+                        <div>
+                            ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, id: 'twc_eq_lib_search', width: '100%', hint: 'type to search library' })}
+                        </div>
+                    `);
+                    container.find('#twc_eq_lib_search').on('input', e => {
+                        // @@TODO: filter table
                     })
+
+
+                    var dlg = dialog.open({ title: 'pick item from library', content: container, size: { width: '60%', height: '70vh' } });
+
+                    var tblContainer = jQuery(`<div style="height: calc(70vh - 150px); overflow: auto;"></div>`);
+                    var eqLibTable = new uiTable.TableControl(tblContainer, onColumnInit, { id: 'twc_eq_lib', fitContainer: false, fitScreen: false })
                     eqLibTable.init(this.data.eqLib.filter(el => { return el[twcEqLibUI.Fields.EQUIPMENT_CLASS] == eqClass && el[twcEqLibUI.Fields.EQUIPMENT_TYPE] == eqType }))
                     eqLibTable.table.on('dblclick', e => {
                         try {
@@ -387,20 +407,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             dialog.error(error);
                         }
                     })
-
-                    var container = jQuery(`
-                        <div>
-                            ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, id: 'twc_eq_lib_search', width: '100%', hint: 'type to search library' })}
-                        </div>
-                    `);
                     container.append(tblContainer);
+                    eqLibTable.table.ui.css('overflow', 'unset')
 
-                    container.find('#twc_eq_lib_search').on('input', e => {
-                        // @@TODO: filter table
-                    })
-
-
-                    var dlg = dialog.open({ title: 'pick item from library', content: container, size: { width: '60%', height: '70vh' } });
                 } catch (error) {
                     dialog.error(error);
                 }

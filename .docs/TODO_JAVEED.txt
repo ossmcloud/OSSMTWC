@@ -2,3 +2,29 @@ TODO:
 -----
 
 see issue list on NS
+
+on saving SRF:
+    Save OSSMTWC - SRF Item record (already there)
+
+    // @@TODO: JAVEED:
+
+OSSMTWC - Equip-Action
+    if SRF Item is Install/Remove
+        Create Eq-Action record
+            Status  => Pending
+            Type    => if SRF Item == Install then type = Install
+                       if SRF Item == Remove then type = Remove
+
+    if SRF Item is Swap:    
+        Create Eq-Action record
+            Status      => Pending
+            Type        => Remove
+            Equipment   => q. selected on SRF
+        
+        Create Eq-Action record
+            Status      => Pending
+            Type        => Install
+            
+        Then set Related EA to link to each other
+
+

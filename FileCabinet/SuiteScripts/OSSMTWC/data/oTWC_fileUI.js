@@ -22,6 +22,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.fields.push({ id: twcFile.Fields.DESCRIPTION, label: 'Description', width: '100%', rows: 5 })
 
             configUIFields.formatPanelFields(file, fieldGroup);
+            
             return fieldGroup;
         }
 
