@@ -23,22 +23,12 @@ define(['N/currentRecord', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.
                     // Store old value BEFORE overwriting
                     oldAccredStatus = rec.getValue({ fieldId: 'custrecord_twc_prof_accred_status' });
                     console.log('Stored old accred status:', oldAccredStatus);
-
-                    rec.setValue({
-                        fieldId: 'custrecord_twc_prof_accred_status',
-                        value: 3
-                    });
-
+                    rec.setValue({ fieldId: 'custrecord_twc_prof_accred_status', value: 3 });
                 } else {
                     // Revert when changed away from 3
                     if (oldAccredStatus !== null) {
                         console.log('Reverting to:', oldAccredStatus);
-
-                        rec.setValue({
-                            fieldId: 'custrecord_twc_prof_accred_status',
-                            value: oldAccredStatus
-                        });
-
+                        rec.setValue({ fieldId: 'custrecord_twc_prof_accred_status', value: oldAccredStatus });
                         oldAccredStatus = null; // reset after reverting
                     }
                 }
