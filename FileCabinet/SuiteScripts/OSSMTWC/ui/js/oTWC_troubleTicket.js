@@ -265,7 +265,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 let rec = twcTkt.get(this.data.trblTktInfo.id);
                 let tktCategory = rec.category;
                 console.log('cat',tktCategory)
-               // reqResPhotos(tktId)
+                var isResPicReq= this.reqResPhotos(this.data.trblTktInfo.id)
+                console.log("Is",isResPicReq)
+                if(isResPicReq == false){
+                    dialog.error("Please add Resoltuion Image to resolve the ticket!!")
+                    return
+                }
 
                 var formConfig = {
                     controls: [
@@ -341,6 +346,42 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         }
                     }
                 });
+            }
+
+            reqResPhotos(tktId) {
+            //    var tktInfo = coreSql.first(`
+            //         select distinct t.id
+            //         from ${twcTkt.Type} t
+            //         join customrecord_twc_trbl_tkt_category cat
+            //         on cat.id = t.custrecord_twc_trbl_tkt_category
+            //         left join customrecord_twc_file f
+            //         on f.custrecord_twc_file_recid = t.id
+            //         and f.isinactive = 'F'
+            //         and f.custrecord_twc_file_rectype = '${twcTkt.Type}'
+            //         where t.id = ${tktId}
+            //         and cat.custrecord_twc_trbl_tkt_requires_res_pic = 'T'
+            //         and f.id is null
+            //     `);
+            var tktInfo = coreSql.first(`
+                    select distinct t.id
+                    from ${twcTkt.Type} t
+                    join customrecord_twc_trbl_tkt_category cat
+                        on cat.id = t.custrecord_twc_trbl_tkt_category
+
+                    left join customrecord_twc_file f
+                        on f.custrecord_twc_file_recid = t.id
+                    and f.isinactive = 'F'
+                    and f.custrecord_twc_file_rectype = '${twcTkt.Type}'
+
+                    where t.id = ${tktId}
+                    and (
+                            cat.custrecord_twc_trbl_tkt_requires_res_pic = 'F'
+                            or f.id is not null
+                        )
+                `);
+                console.log('tktInfo', tktInfo)
+                
+                return !!tktInfo
             }
 
             manageFile(tktfFile, table) {

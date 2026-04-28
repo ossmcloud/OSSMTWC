@@ -22,7 +22,7 @@ when clicking resolve => ask:                                                   
     comment
 
 
-edit / delete photos:                                                                                     => DELETE operation DONE, EDIT some errors and not complete TroubleTicketUtils.js line 448 code not working
+edit / delete photos:                                                                                     => DONE
     just edit name/description
     for delete just set 'inactive' = true on TWC File record (soft delete)
 
