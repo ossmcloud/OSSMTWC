@@ -43,7 +43,13 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get allowAll() { return this.#options.allowAll !== false; }
             get allowNone() { return this.#options.allowNone; }
             get multiSelect() { return this.#options.multiSelect; }
-            get mandatory() { return this.#options.mandatory; }
+            get mandatory() {
+                return this.#options.mandatory;
+            } set mandatory(val) {
+                this.#options.mandatory = val;
+                this.#ui.find('label').html(`${this.#options.label}${val ? ' *' : ''}`);
+            }
+
 
             get hide() {
                 return this.#ui.closest('ossm').css('display') == 'none';
