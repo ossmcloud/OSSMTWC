@@ -170,8 +170,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function resolveTicket(tktInfo) {
             try {
                 if (!tktInfo) { return; }
-                log.debug('tktInfo', tktInfo)
-                log.debug('twcTrblTkts', twcTrblTkts)
                 var submitInfo = {}
                 submitInfo[twcTrblTkts.Type] = { id: tktInfo.tkt, fields: [], values: [] };
                 for (let k in tktInfo) {
@@ -356,6 +354,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             deleteTrblTktsFile(payload);
             saveResolutionFile(payload)
+            saveNewResolutionFiles(payload)
 
             return payload.id;
         }
@@ -370,9 +369,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             })
         }
           function saveResolutionFile(payload) {
-            log.debug("payload fiels 1",payload)
             if (!payload.files_edited) { return; }
-            log.debug("payload fiels",payload.files_edited)
+            log.debug("payload fiels edited",payload.files_edited)
 
             var tktInfo = coreSQL.first(`
                 select  s.name, site.${twcSite.Fields.SITE_ID} as site_id
@@ -407,9 +405,44 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
            })
         }
 
+        function saveNewResolutionFiles(payload){
+            if (!payload.newFiles) { return; }
+            log.debug("payload files new",payload.newFiles)
+
+            var fileType = coreSQL.first(`select id from customrecord_twc_file_type where custrecord_twc_file_type_image = 'T' and id = 7`)?.id;
+
+            var tktInfo = coreSQL.first(`
+                select  s.name, site.${twcSite.Fields.SITE_ID} as site_id
+                from    ${twcTrblTkts.Type} s
+                join    ${twcSite.Type} site on site.id = s.${twcTrblTkts.Fields.SITE}
+                where   s.id = ${payload.id}
+            `)
+
+             var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/${tktInfo.name}`);
+
+            core.array.each(payload.newFiles, file => {
+                var nsFile = nsFileUtils.writeFile({
+                    name: `${payload.id}_${file.name}`,
+                    fileType: nsFileUtils.getFileType(file.type),
+                    content: file.content,
+                    folder: tktFolder,
+                });
+
+                var tktImage = twcFile.get();
+                tktImage.name = file.name;
+                tktImage.recordType = twcTrblTkts.Type;
+                tktImage.recordID = payload.id;
+                tktImage.description = file.notes || '';
+                tktImage.file = nsFile.fileId;
+                tktImage.r_type = fileType
+                tktImage.save();
+            })
+
+        }
         function saveTktImage(options) {
 
-            var fileType = coreSQL.first(`select id from customrecord_twc_file_type where custrecord_twc_file_type_image = 'T' order by created`)?.id;
+          if(!options.tkt) return
+            var fileType = coreSQL.first(`select id from customrecord_twc_file_type where custrecord_twc_file_type_image = 'T' and id = 7`)?.id;
 
             var tktInfo = coreSQL.first(`
                 select  tk.id, site.${twcSite.Fields.SITE_ID} as site_id
@@ -417,7 +450,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 join    ${twcSite.Type} site on site.id = tk.${twcTrblTkts.Fields.SITE}
                 where   tk.id = ${options.tkt}
             `)
-            log.debug('tktInfo', tktInfo)
+            
             var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/${tktInfo.id}`);
             log.debug('tktFolder', tktFolder)
 
@@ -438,8 +471,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             tktImage.r_type = fileType;
             tktImage.save();
             log.debug('tktImage', tktImage)
-            //recu.submit(twcSaf.Type, options.saf, [twcSaf.Fields.STATUS, twcSaf.Fields.COMPLETION_PHOTOS_RECEIVED], [twcSaf.Status.PhotosReceived, new Date()])
-
+        
         }
 
 
@@ -478,27 +510,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return tkt;
             },
             getEditFileRecord: (options, userInfo) => {
-                log.debug("TKt", options)
-                // var tkt = twcTrblTkts.get(options.tkt.id); //@@NOTE 
                 var tkt = twcTrblTkts.get(options.tkt.id)
-                log.debug("test core", tkt)
-
                 tkt.copyFromObject(options.tkt);
-                log.debug("test tkt", core.utils.classToObject(tkt))
 
                 var fileRec = null;
                 if (options.file) {
-                    //fileRec = twcFile.get(options.file.id)  //@@NOTE 
                     fileRec = twcFile.get(options.file.id)
-                    log.debug("fileRec", fileRec)
                     fileRec.copyFromObject(options.file);
-                    log.debug("fileRec", core.utils.classToObject(fileRec))
 
                 } else {
                     throw new Error(`No Child Record Found in payload`)
                 }
 
-                //  throw new Error(JSON.stringify(fileRec))
                 return twcTrblTktsUI.getTktChildRecord(tkt, fileRec, userInfo);
             },
         }

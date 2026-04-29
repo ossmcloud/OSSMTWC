@@ -61,13 +61,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             get table() { return this.#table.table; }
 
             colInit(tbl, col) {
-                //console.log('col', col.id)
                 if (col.id == 'id') { return false; }
                 if (col.id == 'record_id') { return false; }
                 if (col.id == 'site_id') { return false; }
 
                 var uf = window.twc.page.data.ticketsInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
-                //console.log('uf', uf)
                 if (uf) {
                     col.title = uf.label;
                     if (uf.type) { col.type = uf.type; }
@@ -129,12 +127,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #map = null;
             #sitesTable = null;
             #sitePanel = null;
+            #resFiles = []
             constructor() {
                 super({ scriptId: 'otwc_troubleticket_sl' });
             }
 
             initPage() {
-                console.log('info', this.data)
                 if (this.data.ticketsInfo) {
                     this.#sitesTable = new TWCTicketTable(this);
                     this.#sitePanel = twcSiteLocatorPanel.get({ page: this, table: this.#sitesTable, data: window.twc.page.data.ticketsInfo.sites, tableData: window.twc.page.data.ticketsInfo.tickets });
@@ -180,7 +178,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.manageFile(e.rowData, e.table);
 
                     } else if (e.action == 'delete') {
-                        dialog.confirm('Are you sure you wish to delete this record', () => {
+                        dialog.confirm('Are you sure you wish to delete this resoltuion image', () => {
                             e.rowData.delete = true;
                             this.manageFile(e.rowData, e.table);
                         })
@@ -201,6 +199,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     dialog.confirm('Are you sure you wish to submit the Trouble Ticket?', () => {
                         this.onSave(e);
                     })
+                })
+                this.ui.getControl('tk-add-file')?.on('click', e => {
+                    this.uploadPhotos();
                 })
 
             }
@@ -264,12 +265,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 let rec = twcTkt.get(this.data.trblTktInfo.id);
                 let tktCategory = rec.category;
-                console.log('cat',tktCategory)
-                var isResPicReq= this.reqResPhotos(this.data.trblTktInfo.id)
-                console.log("Is",isResPicReq)
-                if(isResPicReq == false){
-                    dialog.error("Please add Resoltuion Image to resolve the ticket!!")
-                    return
+                
+                if (tktCategory) {
+                    var isResPicReq = this.reqResPhotos(this.data.trblTktInfo.id)
+                    
+                    if (isResPicReq == false) {
+                        dialog.error("Please add Resoltuion Image to resolve the ticket!!")
+                        return
+                    }
                 }
 
                 var formConfig = {
@@ -375,11 +378,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     where t.id = ${tktId}
                     and (
-                            cat.custrecord_twc_trbl_tkt_requires_res_pic = 'F'
+                            nvl(cat.custrecord_twc_trbl_tkt_requires_res_pic, 'F') = 'F'
                             or f.id is not null
                         )
                 `);
-                console.log('tktInfo', tktInfo)
                 
                 return !!tktInfo
             }
@@ -392,7 +394,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var res = this.postSync({ action: 'edit-file' }, { tkt: this.data.trblTktInfo, file: tktfFile })
                     res.controls.find(c => { return c.id == 'upload-file' }).hide = true;
                     res.controls.find(c => { return c.id == twcFile.Fields.R_TYPE }).readOnly = true;
-                    res.controls.find(c => { return c.id == twcFile.Fields.STATUS }).readOnly = true;
+                    res.controls.find(c => { return c.id == twcFile.Fields.STATUS }).hide = true;
 
                     var form = twcUIPanel.ui(res);
                     form.on('change', e => {
@@ -420,7 +422,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                             if (!this.data.trblTktInfo.files) { this.data.trblTktInfo.files = table.data; }
                             if (this.data.trblTktInfo.files.indexOf(tktfFile) < 0) { this.data.trblTktInfo.files.push(tktfFile); }
-                            console.log("this.data.trblTktInfo.files",this.data.trblTktInfo.files)
+                           
                             table.render(this.data.trblTktInfo.files, true)
 
                             this.dirty = true
@@ -439,15 +441,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             deleteRecord(tktRecord, table) {
                 if (tktRecord.delete) {
-                    console.log("tktRecord", tktRecord)
+                   
                     if (tktRecord.id) {
-                        console.log("his.data.trblTktInfo", this.data.trblTktInfo)
-
                         if (!this.data.trblTktInfo['files_deleted']) { this.data.trblTktInfo['files_deleted'] = []; }
                         this.data.trblTktInfo['files_deleted'].push(tktRecord);
                     }
-                    console.log("his.data.trblTktInfo del", this.data.trblTktInfo['files_deleted'])
-                    //throw new Error(JSON.stringify(this.data.trblTktInfo))
                     table.data.splice(table.data.indexOf(tktRecord), 1);
                     table.render(table.data, true);
                     this.dirty = true
@@ -476,7 +474,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 form.getControl('upload-photo').on('change', e => {
                     e.target.readFile(file => {
-                        console.log("file", file);
                         photos.push(file);
 
                         var photoListItem = jQuery(`
@@ -521,7 +518,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             // this.postSync({ action: 'edit-saf-status' }, { saf: this.data.siteAccessInfo.id, status: twcSaf.Status.PhotosReceived });
 
                             dlg.close();
-                            location.reload();
+                           // location.reload();
+                            
+                           console.log("ID",this.data.trblTktInfo.id)
+                             if(this.data?.trblTktInfo?.id){
+                                 location.reload();
+                             }else{
+                                var html = `<html><body><h2 id="msg">Image(s) Uploaded Successfully</h2><script>var count=0;var interval=setInterval(function(){count++;document.getElementById("msg").innerHTML="Image(s) Uploaded Successfully"+".".repeat(count);if(count===3){clearInterval(interval);}},500);</script></body></html>`;
+                                dialog.message({
+                                title: 'Resolution Image',
+                                message: html,
+                                size: { width: '450px', height: '20vh' }
+                            })
+                             }
                         });
 
 
@@ -532,9 +541,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             uploadPhoto(photoList, photos, idx, callback) {
-                console.log('Photolist in upload', photoList)
-                console.log('photos in upload', photos)
-
+                if( !this.data?.trblTktInfo?.id){
+                    if (photos[idx]?.deleted) {
+                        
+                         photos.splice(idx, 1);   
+                        this.#resFiles = photos;
+                        return;
+                    }
+                    this.#resFiles=photos
+                }
+                
                 if (photos[idx] === undefined) {
                     callback();
                     return;
@@ -547,7 +563,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.uploadPhoto(photoList, photos, idx + 1, callback);
                     return;
                 }
-                console.log('this.data.data.ticketInfo.id', this.data.trblTktInfo.id)
                 this.post({ action: 'upload-tkt-photo' }, { tkt: this.data.trblTktInfo.id, photo: photos[idx] }).then(resp => {
                     if (resp.error) {
                         photoListItem.html(twcIcons.get('exclamation', 16, 'red'));
@@ -575,12 +590,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (!this.dirty) { throw new Error('The record has not changed'); }
 
                     //throw new Error(JSON.stringify(this.data))
+                    var resFilesAdded= this.#resFiles
+
                     var payload = this.#changes;
 
                     payload.id = window.twc.page.data.recId
                     payload.siteId = window.twc.page.data.siteInfo.site.id
                     payload.files_deleted = this.data.trblTktInfo['files_deleted']
                     payload.files_edited = this.data.trblTktInfo['files']
+                    payload.newFiles = resFilesAdded
                    // throw new Error(JSON.stringify(payload))
                     var resp = await this.post({ action: 'save' }, payload);
                     this.dirty = false;

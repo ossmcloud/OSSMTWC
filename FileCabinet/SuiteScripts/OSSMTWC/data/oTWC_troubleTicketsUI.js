@@ -31,7 +31,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var tktLink = core.url.script('oTWC_troubleTicket_sl');
             var tktDetails = { id: 'trbl-ticket', title: `Existing Trouble Tickets`, collapsed: false, fields: [] };
 
-            // throw new Error(JSON.stringify(dataSource))
             tktDetails.fields.push({
                 id: `${twcTrblTkts.Type}`, label: 'Trouble Ticket Details',
                 fields: {
@@ -55,7 +54,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getTKPanelInfo(dataSource, userInfo) {
-          //  var fieldGroup = { id: 'trbl-tkts-details', title: 'Create New Trouble Ticket or Provide Safety / Security Feedback', collapsed: false, controls: [] };
             var fieldGroup = { id: 'trbl-tkts-details', title: (dataSource.id) ? `Trouble Ticket [${dataSource.name}]` : 'Create New Trouble Ticket or Provide Safety / Security Feedback', collapsed: false, controls: [] };
 
             var newDetailsInfo = { id: 'trbl-tkts-add-new', fields: [] };
@@ -69,9 +67,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.CUSTOMER, label: 'Customer', dataSource: customers })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.AUTHOR_PHONE_NUMBER, lineBreak: true, label: 'Your Phone Number', value: userInfo.profileInfo.phone })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.REPORT_ISSUE__WORKS_REQUIRED, lineBreak: true, width: '100%', rows: 5, label: 'Report Issue / Works Required' })
-
-            // @@TODO: JESNA: show list of attached files, see as example: PHOTOS TAKEN
-            //          FileCabinet\SuiteScripts\OSSMTWC\data\oTWC_safUI.js function getSAFInfoPanels_WorkFlowInfo_Images
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
 
@@ -114,9 +109,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.SCHEDULED_COMPLETION_DATE, lineBreak: true, label: 'Scheduled Completion Date', width: '175px' })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE, lineBreak: true, width: '100%', rows: 5, label: 'CA Taken incl Root Cause' })
 
-            // @@TODO: JESNA: show list of attached files, see as example: RESOLUTION PHOTOS TAKEN
-            //          FileCabinet\SuiteScripts\OSSMTWC\data\oTWC_safUI.js function getSAFInfoPanels_WorkFlowInfo_Images
-
             configUIFields.formatPanelFields(dataSource, fieldGroup);
 
             return fieldGroup;
@@ -153,21 +145,26 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroup;
         }
 
+         function getResFilePanel(dataSource, userInfo) {
+             var fieldGroup = { id: 'trbl-tkts-add-file', collapsed: false, controls: [] };
+            var addFileField = { id: 'trbl-tkts-add-file-info', fields: [] };
+            fieldGroup.controls.push(addFileField);
+            addFileField.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'tk-add-file', value: 'Add Resolution File' });
+            configUIFields.formatPanelFields(dataSource, fieldGroup);
+            return fieldGroup;
+        }
 
         function getTKTUIPanels(dataSource, userInfo) {
             if (!dataSource) { dataSource = {}; }
             dataSource.Type = twcTrblTkts.Type;
 
             var fieldGroups = [];
-            // if (dataSource.id) {
-            //     fieldGroups.push(getTKTInfoPanels_Info(dataSource, userInfo));
-            //     fieldGroups.push(getTKPanelInfo(dataSource, userInfo));
-
-
-
-            // } else {
+        
             fieldGroups.push(getTKPanelInfo(dataSource, userInfo));
             if (userInfo.isEmployee) {
+                 if (!dataSource.id) {
+                    fieldGroups.push(getResFilePanel(dataSource, userInfo));
+                }
                 fieldGroups.push(getTKPanelAssessment(dataSource, userInfo));
                 fieldGroups.push(getTKPanelResolution(dataSource, userInfo));
                 if (dataSource?.id) {
@@ -177,23 +174,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
             if (!dataSource.id) { fieldGroups.push(getTKPanelSubmit(dataSource)) }
-            // }
-
+          
             fieldGroups.push(getTKTExistingTktsPanels(dataSource, userInfo));
             return fieldGroups;
         }
 
         function getTktChildRecord(tkt, childRecord, userInfo) {
             var fieldGroup = [];
-            log.debug("tkt in tktchild rec",tkt)
-            log.debug("childRecord in tktchild rec",childRecord)
 
             if (childRecord.type == twcFileUI.RecordType) {
                 fieldGroup = twcFileUI.getUIFields(childRecord, userInfo);
             } else {
                 throw new Error(`No Child Record Found in payload (type: ${childRecord.type})`)
             }
-           // configUIFields.formatPanelFields(childRecord, fieldGroup);
             return fieldGroup;
         }
 

@@ -36,7 +36,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var actions = '';
 
                 // @@NOTE: an existing ticket that has not been resolved can be cancelled by anybody
-                if (pageData.trblTktInfo.id && tktStatus != twcTkt.Status.Resolved) {
+                if (pageData.trblTktInfo.id && tktStatus != twcTkt.Status.Resolved && tktStatus != twcTkt.Status.Cancelled) {
                     actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel Ticket', id: 'cancel-ticket-button' });
                 }
 
@@ -117,9 +117,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             }
              else if (context.request.parameters.action == 'edit-file') {
-
                 var payload = JSON.parse(context.request.body);
-
                 log.debug("edit file",payload)
                 var fields = twcTroubleTicketUtils.getEditFileRecord(payload, userInfo);
                 return fields;
