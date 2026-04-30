@@ -122,6 +122,28 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             init() {
                 if (!this.ui.getControl('saf-template')) { return; }
 
+                const manageVendorDropDown = (dropDownId, e) => {
+                    // @@NOTE: the customer selected may be the primary contractor/PICW too so we need to add it to the drop down
+                    //         however, if they change the customer it should be removed from the primary contractor/PICW drop down (and unselected if it si selected)
+                    var primaryContractors = this.ui.getControl(dropDownId).getDataSource();
+                    var thisCustomer = primaryContractors.find(ds => { return ds.safCustomer || ds.value == e.value });
+                    if (thisCustomer) {
+                        primaryContractors.splice(primaryContractors.indexOf(thisCustomer), 1);
+                        if (this.ui.getControl(dropDownId).value == thisCustomer.value) {
+                            this.ui.getControl(dropDownId).value = null;
+                        }
+                    }
+                    if (e.value) {
+                        thisCustomer = this.ui.getControl('saf-customer').getDataSource((e.value));
+                        thisCustomer = JSON.parse(JSON.stringify(thisCustomer));
+                        thisCustomer.safCustomer = true;
+                        thisCustomer.text_render = `<span style="color: var(--accent-fore-color)">${thisCustomer.text}</span>`;
+                        primaryContractors.unshift(thisCustomer);
+                        this.ui.getControl(dropDownId).setDataSource(primaryContractors);
+
+                    }
+                }
+
                 this.#calendar = this.ui.getControl('saf-calendar');
                 this.#calendarSelectionTitle = this.ui.ui.find('#saf-cal-selection-title');
                 this.#calendarSelection = this.ui.ui.find('#saf-cal-selection-body');
@@ -154,7 +176,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.getControl('saf-rooftop-access')?.on('change', e => { this.refreshAccessRequirements(); });
                 this.ui.getControl('saf-electrical-access')?.on('change', e => { this.refreshAccessRequirements(); });
                 this.ui.getControl('saf-crane-access')?.on('change', e => { this.refreshAccessRequirements(); });
-                this.ui.getControl('saf-customer')?.on('change', e => { this.refreshAccessRequirements(); });
+                this.ui.getControl('saf-customer')?.on('change', e => {
+                    manageVendorDropDown('saf-vendor', e);
+                    manageVendorDropDown('saf-picw', e);
+                    this.refreshAccessRequirements();
+                });
                 this.ui.getControl('saf-vendor')?.on('change', e => { this.refreshAccessRequirements(); });
                 this.ui.getControl('saf-structure')?.on('change', e => { this.refreshAccessRequirements(); });
                 this.ui.getControl('saf-accommodation')?.on('change', e => { this.refreshAccessRequirements(); });
@@ -433,8 +459,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
 
                     core.array.each(this.#accessRequirements.conditions, cond => {
+                        var number = cond.quantity;
+                        if (cond.quantity == 'all') {
+                            number =`<span style="color: var(--accent-fore-color); font-weight: bold;">All Crew</span>`
+                        } else if (cond.quantity == 'all-climber') {
+                            number = `<span style="color: var(--accent-fore-color); font-weight: bold;">All Climbers</span>`
+                        }
                         htmlCond.append(`
-                            <div style="padding: 3px;">${cond.quantity == 'all' ? '<span style="color: var(--accent-fore-color); font-weight: bold;">All Crew</span>' : cond.quantity} ${cond.name} Required</div>
+                            <div style="padding: 3px;">${cond.prefix || ''}${number} ${cond.name} Required</div>
                         `)
                     })
                 }
@@ -517,7 +549,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     })
                     form.getControl('saf-crew-member').on('change', e => {
                         form.getControl('saf-crew-attend-as').value = e.object?.attendAsText.replaceAll(', ', '\n');
-                        
+
                     });
 
                     dialog.confirm({ title: 'manage visitor', message: form.ui, width: '300px', height: '425px' }, () => {

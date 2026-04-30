@@ -118,23 +118,13 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
 
         suiteLet.post = (context, s) => {
-
             if (context.request.parameters.action == 'get-access-requirements') {
-                //throw new Error(context.request.body)
                 var payload = JSON.parse(context.request.body);
                 return twcSiteAccessUtils.getAccessRequirements(payload);
 
             } else if (context.request.parameters.action == 'get-vendor-picw') {
                 var payload = JSON.parse(context.request.body);
-                return {
-                    data: twcUtils.getProfiles({
-                        company: payload.vendor,
-                        filters: {
-                            'custrecord_twc_prof_picw_acceptable': 'T',
-                            'custrecord_twc_prof_safe_pass_cert_exp': { op: '>', value: 'CURRENT_DATE' }
-                        }
-                    })
-                };
+                return { data: twcUtils.getProfiles({ company: payload.vendor, filters: { 'custrecord_twc_prof_picw_acceptable': 'T', 'custrecord_twc_prof_safe_pass_cert_exp': { op: '>', value: 'CURRENT_DATE' } } }) };
 
             } else if (context.request.parameters.action == 'get-vendor-docs') {
                 var payload = JSON.parse(context.request.body);

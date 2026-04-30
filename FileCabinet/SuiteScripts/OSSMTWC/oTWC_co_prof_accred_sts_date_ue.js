@@ -4,8 +4,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', './data/oTWC_company.js', './data/oTWC_profile.js', './data/oTWC_utils.js'],
-    (record, core, twcCompany, twcProfile, twcUtils) => {
+define(['N/runtime', 'N/record', 'SuiteBundles/Bundle 548734/O/core.js', './data/oTWC_company.js', './data/oTWC_profile.js', './data/oTWC_utils.js', 'O/form'],
+    (runtime, record, core, twcCompany, twcProfile, twcUtils, oui) => {
 
         const FIELD_CONFIG = {
             customrecord_twc_company: {
@@ -19,6 +19,21 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', './data/oTWC_company
                 recordType: twcProfile.Type
             }
         };
+
+        function beforeLoad(context) {
+            try {
+                if (runtime.executionContext != runtime.ContextType.USER_INTERFACE) { return; }
+
+                var form = oui.get(context.form);
+                
+                if (context.type == 'edit' || context.type == 'create') {
+                    form.fieldReadOnly(FIELD_CONFIG[context.newRecord.type].dateField);
+                }
+            } catch (error) {
+                core.logDebug('BEFORE-LOAD', error.message);
+            }
+        }
+
 
         function afterSubmit(context) {
             try {
@@ -51,6 +66,6 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', './data/oTWC_company
         }
         return {
             afterSubmit: afterSubmit,
-
+            beforeLoad: beforeLoad
         }
     });

@@ -133,20 +133,38 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
         function getAccessRequirements(options) {
 
-            //var siteTypeInfo = twcUtils.getSiteTypeInfo(options);
+            var siteTypeInfo = twcUtils.getSiteTypeInfo({ siteId: options.siteId });
             var infraInfo = twcUtils.getStructureTypeInfo({ siteId: options.siteId, id: options['saf-structure'] });
             var blocksRequired = coreSQL.first(`select custrecord_twc_saf_type_timeblocks as time_blocks from customrecord_twc_saf_type where id = ${options['saf-type']}`).time_blocks;
 
             var conditions = [];
-            var climberCount = 0; var rescueCount = 0;
+            var climberCount = 0; var rescueCount = 0; var allRfCertified = false;
             if (options['saf-mast-access'] == 'T') {
-                climberCount = 1;
-                rescueCount = (infraInfo.height < twcUtils.HEIGH_LIMIT_FOR_1_CLIMBER) ? 2 : 3;
+                climberCount = (infraInfo.height < twcUtils.HEIGH_LIMIT_FOR_1_CLIMBER) ? 2 : 3;
+                rescueCount = (infraInfo.height < twcUtils.HEIGH_LIMIT_FOR_1_CLIMBER) ? 1 : 2;
             }
             if (climberCount > 0) { conditions.push({ quantity: climberCount, name: 'Climber', cert: twcUtils.Certs.CLIMBER }) }
-            if (rescueCount > 0) { conditions.push({ quantity: rescueCount, name: 'Rescue Climber', cert: twcUtils.Certs.RESCUE }) }
-            if (options['saf-rooftop-access'] == 'T') { conditions.push({ quantity: 'all', name: 'Rooftop Certified', cert: twcUtils.Certs.ROOFTOP }) }
-            if (options['saf-mast-access'] == 'T' || options['saf-rooftop-access'] == 'T') { conditions.push({ quantity: 'all', name: 'RF Certified', cert: twcUtils.Certs.RF }) }
+            if (rescueCount > 0) { conditions.push({ quantity: rescueCount, name: 'Rescue Climber', prefix: 'Of Which ', cert: twcUtils.Certs.RESCUE }) }
+            if (options['saf-rooftop-access'] == 'T') {
+                conditions.push({ quantity: 'all', name: 'Rooftop Certified', cert: twcUtils.Certs.ROOFTOP })
+            } else {
+                if (options['saf-crane-access'] == 'T') {
+                    if (!siteTypeInfo.noStructure) {
+                        allRfCertified = true;
+                        conditions.push({ quantity: 'all', name: 'RF Certified', cert: twcUtils.Certs.RF })
+                    }
+                }
+            }
+            if (!allRfCertified) {
+                if (options['saf-mast-access'] == 'T' || options['saf-rooftop-access'] == 'T') {
+                    if (options['saf-rooftop-access'] == 'T') {
+                        conditions.push({ quantity: 'all', name: 'RF Certified', cert: twcUtils.Certs.RF })
+                    } else {
+                        conditions.push({ quantity: 'all-climber', name: 'RF Certified', cert: twcUtils.Certs.RF })
+                    }
+
+                }
+            }
             if (options['saf-electrical-access'] == 'T') { conditions.push({ quantity: 1, name: 'Electrician', cert: twcUtils.Certs.ELECTRICAL }) }
             if (options.safType == twcUtils.SafType.SURVEY_DRONE) { conditions.push({ quantity: 1, name: 'Drone Certified', cert: twcUtils.Certs.DRONE }) }
 
@@ -258,7 +276,8 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             core.array.each(options.accessRequirements.conditions, cond => {
                 var condQuantity = cond.quantity == 'all' ? payload.crews.length : cond.quantity;
-                // @@TODO
+                // @@TODO: SAF: wherever e have Climber and Rescue Climber they need to be same person
+                //              i.e.: if I have 3 climber and 2 resuce the 2 rescue must be part fo the 3 climbers
 
                 var certCount = crew.filter(c => {
                     return c.attendAs.find(cc => {
@@ -267,12 +286,33 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     });
                 });
 
+                var certExCount = crew.filter(c => {
+                    return c.attendAs.find(cc => {
+                        // @@TODO: there are still few inconsistencies with casing here
+                        return cc.value.toLowerCase() == cond.cert?.code.toLowerCase() && cc.exp < latestDate;
+                    });
+                });
+
                 if (certCount.length < condQuantity) {
-                    if (certCount.length == 0) {
+                    if (certCount.length == 0 && certExCount.length == 0) {
                         validationErrors.push(`${cond.quantity} ${cond.name} ${cond.quantity == 1 ? 'is' : 'are'} required, there are none in the crew`);
+                    } else if (certCount.length == 0 && certExCount.length > 0) {
+                        // @@TODO: SAF: get expiry date
+                        var crewNames = certExCount.map(i => { return `<li>${i.text}</li>` }).join('');
+                        validationErrors.push(`${cond.quantity} ${cond.name} ${cond.quantity == 1 ? 'is' : 'are'} required, there ${certExCount.length == 1 ? 'is' : 'are'} only ${certExCount.length} in the crew but the cert is expired: <ul class="twc">${crewNames}</ul>`);
                     } else {
+                        var expiredCrews = '';
                         var crewNames = certCount.map(i => { return `<li>${i.text}</li>` }).join('');
-                        validationErrors.push(`${cond.quantity} ${cond.name} ${cond.quantity == 1 ? 'is' : 'are'} required, there ${certCount.length == 1 ? 'is' : 'are'} only ${certCount.length} in the crew: <ul class="twc">${crewNames}</ul>`);
+                        if (certExCount.length > 0) {
+                            expiredCrews = `
+                                The following crew members have the certificate but it is expired by the time of the SAF
+                                <ul class="twc">
+                                    ${certExCount.map(i => { return `<li> ${i.text}</li>` }).join('')}
+                                </ul>
+                            `;
+
+                        }
+                        validationErrors.push(`${cond.quantity} ${cond.name} ${cond.quantity == 1 ? 'is' : 'are'} required, there ${certCount.length == 1 ? 'is' : 'are'} only ${certCount.length} in the crew: <ul class="twc">${crewNames}</ul>${expiredCrews}`);
                     }
 
                 }

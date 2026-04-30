@@ -1150,6 +1150,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             info.mast = getYesNoOptions(info.mast);
             info.mewp = getYesNoOptions(info.mewp);
             info.electrical = getYesNoOptions(info.electrical);
+
+            // @@TODO: SAF:
+            info.noStructure = info.id == 4;
             
             return info;
         }

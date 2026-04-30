@@ -83,14 +83,6 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 return this.#ui.attr('data-value');
             } set value(val) {
                 if (this.disabled) { return; }
-                // var v = this.#dataSource.find(vv => { return vv.value == val; })
-                // if (v) {
-                //     this.#ui.attr('data-value', v.value);
-                //     this.#input.val(v.text);
-                // } else {
-                //     this.#ui.attr('data-value', '');
-                //     this.#input.val('');
-                // }
                 this.setValue(val);
                 this.on('change');
             }
@@ -98,10 +90,6 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get valueObj() {
                 var val = this.#ui.attr('data-value');
                 return core.array.find(this.#dataSource, 'value', val);
-                return {
-                    value: this.#ui.attr('data-value'),
-                    text: this.#input.val()
-                }
             }
 
             setValue(val) {
@@ -122,6 +110,14 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 if (!this.#dataSource) { this.#dataSource = []; }
 
                 this.#ui.find('data').html(JSON.stringify(dataSource));
+            }
+
+            getDataSource(val) {
+                if (val) {
+                    return core.array.find(this.#dataSource, 'value', val);
+                } else {
+                    return this.#dataSource;
+                }
             }
 
             render(container) {
