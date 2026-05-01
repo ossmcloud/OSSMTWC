@@ -140,8 +140,8 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var conditions = [];
             var climberCount = 0; var rescueCount = 0; var allRfCertified = false;
             if (options['saf-mast-access'] == 'T') {
-                climberCount = (infraInfo.height < twcUtils.HEIGH_LIMIT_FOR_1_CLIMBER) ? 2 : 3;
-                rescueCount = (infraInfo.height < twcUtils.HEIGH_LIMIT_FOR_1_CLIMBER) ? 1 : 2;
+                climberCount = options['saf-mast-access-height']=='T' ? 3 : 2;
+                rescueCount = options['saf-mast-access-height'] == 'T' ? 2 : 1;
             }
             if (climberCount > 0) { conditions.push({ quantity: climberCount, name: 'Climber', cert: twcUtils.Certs.CLIMBER }) }
             if (rescueCount > 0) { conditions.push({ quantity: rescueCount, name: 'Rescue Climber', prefix: 'Of Which ', cert: twcUtils.Certs.RESCUE }) }
@@ -157,12 +157,12 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             }
             if (!allRfCertified) {
                 if (options['saf-mast-access'] == 'T' || options['saf-rooftop-access'] == 'T') {
+                    // @@NOTE: if we have a rooftop access then ALL must be RF certified, otherwise only the climbers
                     if (options['saf-rooftop-access'] == 'T') {
                         conditions.push({ quantity: 'all', name: 'RF Certified', cert: twcUtils.Certs.RF })
                     } else {
                         conditions.push({ quantity: 'all-climber', name: 'RF Certified', cert: twcUtils.Certs.RF })
                     }
-
                 }
             }
             if (options['saf-electrical-access'] == 'T') { conditions.push({ quantity: 1, name: 'Electrician', cert: twcUtils.Certs.ELECTRICAL }) }
@@ -272,13 +272,18 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var crewIds = [];
             core.array.each(payload.crews, c => { crewIds.push(c['saf-crew-member']); })
             var crew = twcUtils.getProfiles({ id: crewIds });
-            //throw new Error(JSON.stringify(crew))
 
+            // @@TODO: SAF: wherever e have Climber and Rescue Climber they need to be same person
+            //              i.e.: if I have 3 climber and 2 rescue the 2 rescue must be part fo the 3 climbers
+            var climberCount = options.accessRequirements.conditions.find(cond => { return cond.cert?.code.toLowerCase() == twcUtils.Certs.CLIMBER.code })?.quantity;
             core.array.each(options.accessRequirements.conditions, cond => {
-                var condQuantity = cond.quantity == 'all' ? payload.crews.length : cond.quantity;
-                // @@TODO: SAF: wherever e have Climber and Rescue Climber they need to be same person
-                //              i.e.: if I have 3 climber and 2 resuce the 2 rescue must be part fo the 3 climbers
-
+                var condQuantity = cond.quantity;
+                if (cond.quantity == 'all') {
+                    condQuantity = payload.crews.length;
+                } else if (cond.quantity == 'all-climber') {
+                    condQuantity = climberCount;
+                }
+                
                 var certCount = crew.filter(c => {
                     return c.attendAs.find(cc => {
                         // @@TODO: there are still few inconsistencies with casing here
@@ -350,6 +355,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             saf.r_type = payload['saf-type'];
             saf.status = options.accessRequirements.autoApprove ? twcSaf.Status.Approved : twcSaf.Status.Pending;
             saf.mastAccess = payload['saf-mast-access'] == 'T';
+            saf.mastAccessAbove60m = payload['saf-mast-access-height'] == 'T';
             saf.tLBuildingAccess = payload['saf-building-access'] == 'T';
             saf.craneCherrypicker = payload['saf-crane-access'] == 'T';
             saf.rooftopAccess = payload['saf-rooftop-access'] == 'T';

@@ -5,6 +5,7 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './persistent/oTWC_sitePersistent.js', './oTWC_utils.js'],
     (core, coreSQL, twcSite, twcUtils) => {
 
+        
 
      
         class OSSMTWC_Site extends twcSite.PersistentRecord {
@@ -17,6 +18,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             Type: twcSite.Type,
             Fields: twcSite.Fields,
+            SiteType: twcUtils.SiteType,
 
             get: function (id) {
                 var rec = new OSSMTWC_Site(id);

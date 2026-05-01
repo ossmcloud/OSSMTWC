@@ -4,6 +4,14 @@
  */
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_file.js', './oTWC_icons.js'],
     (core, cored, coreSQL, twcFile, twcIcons) => {
+        const HEIGH_LIMIT_FOR_1_CLIMBER = 60;
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const SITE_TYPE = {
+            NO_STRUCTURE: 4,
+            STRUCTURE_ON_ROOFTOP: 5
+        }
+
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const EQ_LIB_STATUS = {
             Inactive: 1,
@@ -36,7 +44,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         const COMPANY_ACCREDITATION_STATUS_STYLE = {
             Inactive: { color: 'white', backgroundColor: 'silver' },
             Accredited: { color: 'white', backgroundColor: 'green' },
-            CertsExpired: { color: 'white', backgroundColor: 'red' }, 
+            CertsExpired: { color: 'white', backgroundColor: 'red' },
             Pending: { color: 'white', backgroundColor: 'orange' },
             Approved: { color: 'white', backgroundColor: 'lime' },
             ToBeRenewed: { color: 'white', backgroundColor: 'indianred' },
@@ -235,6 +243,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Structure: 2,
             Fibre: 3,
             Generator: 4
+        }
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const INFRA_STATUS = {
+            Active: 1,
+            UTS: 2,
+            Option: 3,
+            ToBeRetired: 4,
+            Retired: 5,
+            NotLive: 6,
+            Planned: 7
         }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
@@ -636,7 +655,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getLookUpTableValues('customrecord_twc_saf_status');
         }
 
-        function getSafTypes(options) {
+        function getSafTypes(options, includeTLOnly) {
 
             var allowedTypes = null;
             if (options?.siteId) {
@@ -645,6 +664,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     from    customrecord_twc_site s
                     join    customrecord_twc_infra_saf_sts st on st.id = s.custrecord_twc_site_saf_status
                     where   s.id = ${options.siteId}
+                    ${includeTLOnly ? '' : "and NVL(st.custrecord_twc_infra_saf_sts_tl_only, 'F') = 'F'"}
                 `);
                 if (allowedTypes) {
 
@@ -875,8 +895,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     `
                 }
             } else {
-                
-                
+
+
                 if (options.cid) {
                     additionalFilters += `and	id = ${options.cid}`;
                 } else {
@@ -884,7 +904,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         additionalFilters += `and	custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer}`;
                     } else {
                         additionalFilters += `and	custrecord_twc_con_flag = ${CONTRACTOR_FLAG.Contractor}`;
-                    }    
+                    }
                 }
 
                 sql = `
@@ -920,7 +940,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getCompanies(options);
         }
 
-      
+
         function getProfiles(options) {
             var filters = '';
             if (options.company) {
@@ -1074,23 +1094,35 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `)
         }
 
-        function getInfraStructures(options) {
+        function getInfraStructures(options, includeTLOnly) {
             var siteStructures = [];
             coreSQL.each(`
-                select  is.id as value, custrecord_twc_infra_id as name, 
-                        custrecord_twc_infra_type as type, BUILTIN.DF(custrecord_twc_infra_type) as type_name, st.custrecord_twc_infra_saf_sts_types as saf_types,
+                select  is.id as value, custrecord_twc_infra_id as name, is.custrecord_twc_infra_str_ht_m as height, 
+                        custrecord_twc_infra_type as type, BUILTIN.DF(custrecord_twc_infra_type) as type_name, st.custrecord_twc_infra_saf_sts_types as saf_types, st.custrecord_twc_infra_saf_sts_tl_only as tl_only,
                         custrecord_twc_infra_str_ht_m as struct_height, custrecord_twc_infra_status as struct_status, BUILTIN.DF(custrecord_twc_infra_status) as struct_status_name,
                         BUILTIN.DF(custrecord_twc_infra_str_type) as struct_type_name,
                 from    customrecord_twc_infra is
+                join    customrecord_twc_infra_sts ists on ists.id = is.custrecord_twc_infra_status
                 left join    customrecord_twc_infra_saf_sts st on st.id = is.custrecord_twc_infra_saf_status
                 where   custrecord_twc_infra_site = ${options?.siteId || 0}
+                ${includeTLOnly ? '' : "and NVL(st.custrecord_twc_infra_saf_sts_tl_only, 'F') = 'F'"}
+                and     ists.custrecord_twc_infra_sts_allow_saf = 'T'
                 order by is.custrecord_twc_infra_id
             `, s => {
-                var h = s.struct_height ? `${s.struct_height}m` : '[no height]';
-                var hr = s.struct_height ? `<span style="color: indianred;">${s.struct_height}m</span>` : '<span style="color: silver;">[no height]</span>';
+                
+                s.overHeightLimit = (s.height > HEIGH_LIMIT_FOR_1_CLIMBER);
 
-                s.text = `${s.name} [${s.struct_type_name}] ${h} (${s.struct_status_name})`;
-                s.text_render = `<b>${s.name}</b> [${s.struct_type_name}] <i>${hr}</i> (<span style="color: var(--accent-fore-color)">${s.struct_status_name}</span>)`;
+
+                var structTypeName = s.struct_type_name ?  ` [${s.struct_type_name}]` : '';
+                if (s.type == INFRA_TYPE.Accommodation) {
+                    s.text = `${s.name}${structTypeName} (${s.struct_status_name})`;
+                    s.text_render = `<b>${s.name}</b>${structTypeName} (<span style="color: var(--accent-fore-color)">${s.struct_status_name}</span>)`;   
+                } else {
+                    var h = s.struct_height ? `${s.struct_height}m` : '[no height]';
+                    var hr = s.struct_height ? `<span style="color: indianred;">${s.struct_height}m</span>` : '<span style="color: silver;">[no height]</span>';
+                    s.text = `${s.name}${structTypeName} ${h} (${s.struct_status_name})`;
+                    s.text_render = `<b>${s.name}</b>${structTypeName} <i>${hr}</i> (<span style="color: var(--accent-fore-color)">${s.struct_status_name}</span>)`;
+                }
                 siteStructures.push(s)
             })
             return siteStructures;
@@ -1150,10 +1182,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             info.mast = getYesNoOptions(info.mast);
             info.mewp = getYesNoOptions(info.mewp);
             info.electrical = getYesNoOptions(info.electrical);
+            info.noStructure = info.id == SITE_TYPE.NO_STRUCTURE;
 
-            // @@TODO: SAF:
-            info.noStructure = info.id == 4;
-            
             return info;
         }
 
@@ -1203,7 +1233,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         return {
             ROOT_FILE_FOLDER: 'TWC Files',
-            HEIGH_LIMIT_FOR_1_CLIMBER: 60,
+            HEIGH_LIMIT_FOR_1_CLIMBER: HEIGH_LIMIT_FOR_1_CLIMBER,
 
             EqLibStatus: EQ_LIB_STATUS,
 
@@ -1220,7 +1250,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CompanyAccreditationStatus: COMPANY_ACCREDITATION_STATUS,
             ProfileAccreditationStatus: PROFILE_ACCREDITATION_STATUS,
 
+            SiteType: SITE_TYPE, 
             InfraType: INFRA_TYPE,
+            InfrStatus: INFRA_STATUS,
 
             SafType: SAF_TYPE,
             SafStatus: SAF_STATUS,

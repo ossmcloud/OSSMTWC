@@ -148,7 +148,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
         function getSAFInfoPanels_Builder(dataSource, userInfo, options) {
-            _allowedSafTypes = twcUtils.getSafTypes(dataSource);
+            _allowedSafTypes = twcUtils.getSafTypes(dataSource, userInfo.isEmployee);
             if (_allowedSafTypes.length == 0) {
                 var fieldGroup = { id: 'site-access-step-1', title: 'Step 1 of 5 : SAF SETUP', collapsed: false, controls: [] };
                 var errorInfo = { id: 'site-access-error', collapsed: false, fields: [] };
@@ -219,8 +219,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSAFInfoPanels_Builder_Step_2(dataSource, userInfo, options) {
             var isExistingSaf = dataSource.id !== undefined;
             var fieldGroup = { id: 'site-access-step-2', title: 'Step 2 of 5 : Access Requirements', hide: !isExistingSaf, collapsed: false, controls: [] };
-            
-            var siteInfraStructures = twcUtils.getInfraStructures(dataSource);
+
+            var siteInfraStructures = twcUtils.getInfraStructures(dataSource, userInfo.isEmployee);
             var siteStructures = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Structure })
             var accommodationStructure = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Accommodation })
 
@@ -230,8 +230,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var siteTypeInfo = twcUtils.getSiteTypeInfo(dataSource);
             // @@@NOTE: Mast Access
             if (siteTypeInfo.mast) {
+                var infraHightShow = false;
+                if (isExistingSaf) {
+                    var infra = siteInfraStructures.find(i => { return i.id == dataSource[twcSaf.Fields.STRUCTURE]; })
+                    infraHightShow = (infra.height > twcUtils.HEIGH_LIMIT_FOR_1_CLIMBER);
+                }
                 step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-mast-access', label: 'Mast Access', width: '150px', value: dataSource[twcSaf.Fields.MAST_ACCESS], allowAll: false, dataSource: siteTypeInfo.mast });
+                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-mast-access-height', label: `Climb Over ${twcUtils.HEIGH_LIMIT_FOR_1_CLIMBER}m`, width: '150px', hide: !infraHightShow, value: dataSource[twcSaf.Fields.MAST_ACCESS_ABOVE_60M], allowAll: false, dataSource: twcUtils.getYesNoOptions() });
             }
+
             // @@@NOTE: TL Building Access
             if (accommodationStructure.length > 0) {
                 step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-building-access', label: 'TL Building Access', width: '150px', value: dataSource[twcSaf.Fields.TL_BUILDING_ACCESS], allowAll: false, dataSource: twcUtils.getYesNoOptions() });
@@ -302,10 +309,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-customer', label: 'Customer', allowAll: false, value: customer, dataSource: customers });
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-vendor', label: 'Primary Contractor', allowAll: false, value: primaryContractor, dataSource: primaryContractors, lineBreak: true });
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'saf-work-summary', label: 'Summary of Work', rows: 3, value: dataSource[twcSaf.Fields.SUMMARY_OF_WORKS], width: '100%', lineBreak: true });
-            // @@TODO: SAF: keys
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-key', label: 'Key', allowAll: false, dataSource: [] });
-            // step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-srf', label: 'S.R.F.', hide: true, allowAll: false, dataSource: twcUtils.getSrfDropDown(dataSource) });
-            // step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-srf-equip', label: 'Equipment', hide: true, allowAll: false, dataSource: [] });
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: 'saf-photo-delay', label: 'Photo Req. Delay', hide: true, allowAll: false, dataSource: [], lineBreak: true });
 
             var eqActionsVisible = false;
@@ -333,11 +337,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
             step3CInfo.fields.push(crewTableControl);
 
-            // @@TODO: SAF: PSDP Design
             var step3BInfo = { id: 'site-access-step-3b', title: 'Planned Equipment Work', fields: [] };
             fieldGroup.controls.push(step3BInfo);
-            // step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-psdp-design', label: 'PSDP (Design)', allowAll: false, dataSource: [] });
-            // step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-psdp-construction', label: 'PSDP (Construction)', allowAll: false, dataSource: [], lineBreak: true });
             step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw', label: 'PICW', allowAll: false, value: picwInfo?.contractor, dataSource: primaryContractors, noAutoSelect: true });
             step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw-staff', label: 'Staff', hide: true, value: picwInfo?.id, dataSource: picwContractorStaff, allowAll: false });
             step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'saf-picw-staff-phone', label: 'Phone', hide: true, value: picwInfo?.phone });
@@ -516,30 +517,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
             detailsInfo.fields.push({ id: twcSaf.Fields.MAST_ACCESS, label: 'Mast Access' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.MAST_ACCESS_ABOVE_60M, label: `Climb above ${twcUtils.HEIGH_LIMIT_FOR_1_CLIMBER}m` })
             detailsInfo.fields.push({ id: twcSaf.Fields.TL_BUILDING_ACCESS, label: 'TL Building Access' })
             detailsInfo.fields.push({ id: twcSaf.Fields.ROOFTOP_ACCESS, label: 'Rooftop Access' })
             detailsInfo.fields.push({ id: twcSaf.Fields.ELECTRICAL_WORKS, label: 'Electrical Works' })
             detailsInfo.fields.push({ id: twcSaf.Fields.CRANE__CHERRYPICKER, label: 'Crane / Cherrypicker', lineBreak: true })
 
-            var siteInfraStructures = twcUtils.getInfraStructures(dataSource);
+            var siteInfraStructures = twcUtils.getInfraStructures(dataSource, userInfo.isEmployee);
             if (dataSource[twcSaf.Fields.MAST_ACCESS] == 'T') { detailsInfo.fields.push({ id: twcSaf.Fields.STRUCTURE, label: 'Structure', dataSource: siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Structure }) }) }
             if (dataSource[twcSaf.Fields.TL_BUILDING_ACCESS] == 'T') { detailsInfo.fields.push({ id: twcSaf.Fields.ACCOMMODATION, label: 'Accommodation', dataSource: siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Accommodation }), lineBreak: true }); }
             detailsInfo.fields.push({ id: twcSaf.Fields.SUMMARY_OF_WORKS, label: 'Summary of Works', width: '100%', rows: 5, lineBreak: true });
 
             var infoLists = { id: 'site-access-lists', collapsed: false, renderAsTable: { width: '100%' }, fields: [] };
             fieldGroup.controls.push(infoLists);
-
-            // infoLists.fields.push({
-            //     id: `${twcSafTimeBlock.Type}`, label: 'Time Blocks',
-            //     fields: {
-            //         [twcSafTimeBlock.Fields.BLOCK_DATE]: 'Date',
-            //         [twcSafTimeBlock.Fields.BLOCK]: 'Block',
-
-            //     },
-            //     where: { [twcSafTimeBlock.Fields.SAF]: dataSource.id },
-            //     FieldsInfo: twcSafTimeBlock.FieldsInfo
-            // });
-
 
             // @@TODO: use constant
             var profileLink = core.url.record('customrecord_twc_prof');
@@ -571,18 +561,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 infoLists.fields.push({
                     id: `${twcSafAction.Type}`, label: 'Eq. Actions',
-                    // fields: {
-                    //     [twcSafAction.Fields.SAF_ACTION_EA]: 'Action',
-                    //     [twcSafAction.Fields.SAF_ACTION_STATUS]: 'Status',
-                    //     [twcSafAction.Fields.SAF_ACTION_COMPLETE]: 'Complete',
-                    // },
                     fields: {
                         ['saf-eq-action-id']: { title: 'Eq. Action ID', link: { url: eaActionLink + '&id=${eaId}', valueField: 'eaId' } },
                         ['saf-equipment_name']: { title: 'Equipment', link: { url: equipLink + '&id=${saf-equipment}', valueField: 'saf-equipment' } },
                         ['saf-eq-action-type_name']: 'Type',
                         ['saf-eq-action-status_name']: 'Status',
                     },
-                    //where: { [twcSafAction.Fields.SAF]: dataSource.id },
                     dataSource: getSafEqAction(dataSource),
                     FieldsInfo: twcSafAction.FieldsInfo,
                     styles: { width: '100%', 'padding-left': '7px' },

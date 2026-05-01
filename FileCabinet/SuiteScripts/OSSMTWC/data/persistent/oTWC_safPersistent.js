@@ -17,6 +17,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             R_TYPE: 'custrecord_twc_saf_type',
             PHOTO_ASSESSMENT_CATEGORY: 'custrecord_twc_saf_photo_assess_category',
             MAST_ACCESS: 'custrecord_twc_saf_mast_access',
+            MAST_ACCESS_ABOVE_60M: 'custrecord_twc_saf_mast_access_height',
             TL_BUILDING_ACCESS: 'custrecord_twc_saf_tl_building_access',
             CRANE__CHERRYPICKER: 'custrecord_twc_saf_crane_cherrypicker',
             ROOFTOP_ACCESS: 'custrecord_twc_saf_rooftop_access',
@@ -57,6 +58,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             R_TYPE: { name: 'custrecord_twc_saf_type', type: 'select', alias: 'r_type', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf_type' },
             PHOTO_ASSESSMENT_CATEGORY: { name: 'custrecord_twc_saf_photo_assess_category', type: 'select', alias: 'photoAssessmentCategory', display: 'normal', mandatory: false, recordType: 'customrecord_twc_photo_assessment_cat' },
             MAST_ACCESS: { name: 'custrecord_twc_saf_mast_access', type: 'checkbox', alias: 'mastAccess', display: 'normal', mandatory: false },
+            MAST_ACCESS_ABOVE_60M: { name: 'custrecord_twc_saf_mast_access_height', type: 'checkbox', alias: 'mastAccessAbove60m', display: 'normal', mandatory: false },
             TL_BUILDING_ACCESS: { name: 'custrecord_twc_saf_tl_building_access', type: 'checkbox', alias: 'tLBuildingAccess', display: 'normal', mandatory: false },
             CRANE__CHERRYPICKER: { name: 'custrecord_twc_saf_crane_cherrypicker', type: 'checkbox', alias: 'craneCherrypicker', display: 'normal', mandatory: false },
             ROOFTOP_ACCESS: { name: 'custrecord_twc_saf_rooftop_access', type: 'checkbox', alias: 'rooftopAccess', display: 'normal', mandatory: false },
@@ -158,6 +160,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.MAST_ACCESS);
             } set mastAccess(value) {
                 this.set(_recordFields.MAST_ACCESS, value)
+            }
+            
+            get mastAccessAbove60m() {
+                return this.get(_recordFields.MAST_ACCESS_ABOVE_60M);
+            } set mastAccessAbove60m(value) {
+                this.set(_recordFields.MAST_ACCESS_ABOVE_60M, value)
             }
             
             get tLBuildingAccess() {

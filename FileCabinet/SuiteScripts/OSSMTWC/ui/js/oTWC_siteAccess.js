@@ -172,6 +172,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
 
                 this.ui.getControl('saf-mast-access')?.on('change', e => { this.refreshAccessRequirements(); });
+                this.ui.getControl('saf-mast-access-height')?.on('change', e => { this.refreshAccessRequirements(); });
                 this.ui.getControl('saf-building-access')?.on('change', e => { this.refreshAccessRequirements(); });
                 this.ui.getControl('saf-rooftop-access')?.on('change', e => { this.refreshAccessRequirements(); });
                 this.ui.getControl('saf-electrical-access')?.on('change', e => { this.refreshAccessRequirements(); });
@@ -331,14 +332,28 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             refreshAccessRequirements() {
+                if (this.data.siteInfo.site[twcSite.Fields.SITE_TYPE] == twcSite.SiteType.STRUCTURE_ON_ROOFTOP) {
+                    if (this.ui.getControl('saf-mast-access') && this.ui.getControl('saf-mast-access').value == 'T') {
+                        this.ui.getControl('saf-rooftop-access').setValue('T');
+                    }
+                }
+
+                if (this.ui.getControl('saf-mast-access')) {
+                    var structure = this.ui.getControl('saf-structure').valueObj;
+                    var show = this.ui.getControl('saf-mast-access').value == 'T' && structure?.overHeightLimit;
+                    this.ui.getControl('saf-mast-access-height').hide = !show;
+                }
+
                 var showStep3 = true;
                 if (this.ui.getControl('saf-mast-access') && this.ui.getControl('saf-mast-access').value == '') { showStep3 = false; }
+                if (this.ui.getControl('saf-mast-access-height') && this.ui.getControl('saf-mast-access-height').value == '') { showStep3 = false; }
                 if (this.ui.getControl('saf-building-access') && this.ui.getControl('saf-building-access').value == '') { showStep3 = false; }
                 if (this.ui.getControl('saf-rooftop-access') && this.ui.getControl('saf-rooftop-access').value == '') { showStep3 = false; }
                 if (this.ui.getControl('saf-electrical-access') && this.ui.getControl('saf-electrical-access').value == '') { showStep3 = false; }
                 if (this.ui.getControl('saf-crane-access') && this.ui.getControl('saf-crane-access').value == '') { showStep3 = false; }
                 if (this.ui.getControl('saf-structure')) { this.ui.getControl('saf-structure').hide = this.ui.getControl('saf-mast-access')?.value != 'T' }
                 if (this.ui.getControl('saf-accommodation')) { this.ui.getControl('saf-accommodation').hide = this.ui.getControl('saf-building-access')?.value != 'T' }
+
 
                 var requiresSrf = this.ui.getControl('saf-type').valueObj?.requires_srf == 'T';
                 // this.ui.getControl('saf-srf').hide = !requiresSrf;
@@ -461,7 +476,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     core.array.each(this.#accessRequirements.conditions, cond => {
                         var number = cond.quantity;
                         if (cond.quantity == 'all') {
-                            number =`<span style="color: var(--accent-fore-color); font-weight: bold;">All Crew</span>`
+                            number = `<span style="color: var(--accent-fore-color); font-weight: bold;">All Crew</span>`
                         } else if (cond.quantity == 'all-climber') {
                             number = `<span style="color: var(--accent-fore-color); font-weight: bold;">All Climbers</span>`
                         }
