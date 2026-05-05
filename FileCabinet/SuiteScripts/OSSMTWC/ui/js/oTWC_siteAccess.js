@@ -346,7 +346,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 var showStep3 = true;
                 if (this.ui.getControl('saf-mast-access') && this.ui.getControl('saf-mast-access').value == '') { showStep3 = false; }
-                if (this.ui.getControl('saf-mast-access-height') && this.ui.getControl('saf-mast-access-height').value == '') { showStep3 = false; }
+                if (this.ui.getControl('saf-mast-access-height') && !this.ui.getControl('saf-mast-access-height').hide && this.ui.getControl('saf-mast-access-height').value == '') { showStep3 = false; }
                 if (this.ui.getControl('saf-building-access') && this.ui.getControl('saf-building-access').value == '') { showStep3 = false; }
                 if (this.ui.getControl('saf-rooftop-access') && this.ui.getControl('saf-rooftop-access').value == '') { showStep3 = false; }
                 if (this.ui.getControl('saf-electrical-access') && this.ui.getControl('saf-electrical-access').value == '') { showStep3 = false; }

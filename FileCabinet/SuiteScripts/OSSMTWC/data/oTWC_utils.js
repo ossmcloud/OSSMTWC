@@ -111,6 +111,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getAttendAs(p) {
             var attendAs = [];
+            // @@NOTE: regardless of certs the accreditation status must be 'Accredited'
+            if (p.accreditation_status != PROFILE_ACCREDITATION_STATUS.Accredited) {
+                return attendAs;
+            }
             if (p.valid_safe_pass == 'T') {
                 attendAs.push({ value: 'SAFE_PASS', text: 'Visitor', exp: p.safe_pass_exp });
             } else {
@@ -958,6 +962,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sql = `
                 select  id as value, name as text, name || ' <span style="color: silver; font-style: italic;">[' || custrecord_twc_prof_position || ']</span>' as text_render,
                         custrecord_twc_prof_phone as phone, custrecord_twc_prof_email as email,
+                        custrecord_twc_prof_accred_status as accreditation_status, BUILTIN.DF(custrecord_twc_prof_accred_status) as accreditation_status_name,
                         (case when ${PROFILE_CERT_FIELD.SAFE_PASS.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_safe_pass,
                         (case when ${PROFILE_CERT_FIELD.CLIMBER.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_climb_cert,
                         (case when ${PROFILE_CERT_FIELD.RESCUE.field} = ${NO_ACTIVE_EXPIRED.Active} then 'T' else 'F' end) as valid_rescue_cert,
