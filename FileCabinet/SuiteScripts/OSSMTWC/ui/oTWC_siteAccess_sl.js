@@ -71,6 +71,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteAccess');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
+                html= updateHtml(html)
 
                 var readOnly = context.request.parameters.edit != 'T';
                 var fieldGroups = twcSiteAccessUtils.getSAFInfoPanels(pageData.siteAccessInfo, pageData.userInfo, { siteTimeBlocks: pageData.siteTimeBlocks, editMode: pageData.editMode });
@@ -185,6 +186,51 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
         }
 
+        function updateHtml(html){
+           return html.replace(
+        /(<label>Structure<\/label>\s*<\/div>\s*<div>)([\s\S]*?)(<\/div>\s*<\/div>)/,
+        function(match, startTag, content, endTag) {
+
+            var structureLines = [];
+            var accommodationLines = [];
+
+            var structs = content.split(/<br\s*\/?>/i);
+
+            structs.forEach(function(struct) {
+                struct = struct.trim();
+                if (struct.indexOf('[Accommodation]') !== -1) {
+                    struct = struct.replace('[Accommodation]', '').trim();
+                    accommodationLines.push(struct);
+                } else if (struct.indexOf('[Structure]') !== -1) {
+                    struct = struct.replace('[Structure]', '').trim();
+                    structureLines.push(struct);
+                }
+
+            });
+            var result = startTag;
+
+            result += structureLines.join('<br>');
+
+            result += endTag;
+
+            if (accommodationLines.length > 0) {
+
+                result += `
+                    <div>
+                        <div style="width: 20%;">
+                            <label>Accommodation</label>
+                        </div>
+                        <div>
+                            ${accommodationLines.join('<br>')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            return result;
+        }
+    );
+        }
 
         return {
             onRequest: uis.onRequest
