@@ -441,18 +441,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
 
                     var payload = this.data.siteRequestInfo;
+                    alert('payload before submit', JSON.stringify(payload));
+                    console.log('payload before submit', payload);
                     if (targetId == 'submit-button') {
                         if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft) {
                             await dialog.confirmAsync('Are you sure you want to submit this request?');
 
                             payload[twcSrf.Fields.SRF_STATUS] = twcSrf.Status.Submitted;
+                            console.log('payload', payload);
+                            // return
                         } else if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued) {
                             await dialog.confirmAsync('Are you sure you want to resubmit this request?');
 
                             payload[twcSrf.Fields.SRF_STATUS] = twcSrf.Status.Resubmitted;
                         }
                     }
-
+                    // return;
                     this.wait();
 
                     var res = await this.post({ action: 'save' }, payload);

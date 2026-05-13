@@ -31,7 +31,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             basicInfo.fields.push({ id: 'id', width: '75px', label: 'TL ID', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.NAME, width: 'calc(100% - 80px)', label: 'Name', readOnly: true, lineBreak: true })
-            basicInfo.fields.push({ id: twcCompany.Fields.COMPANY_TYPE, width: '150px', label: 'Company Type', readOnly: true })
+            // basicInfo.fields.push({ id: twcCompany.Fields.COMPANY_TYPE, width: '150px', label: 'Company Type', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.COMPANY_NUMBER, width: '150px', label: 'Company Number', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.REGISTERED_OFFICE, width: 'calc(100% - 310px)', label: 'Registered Office', lineBreak: true })
 
@@ -70,19 +70,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcCompany.Fields.EL_AVAILABLETYPE, width: '100px', label: 'EL Available/Type' })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_LIMIT, width: '100px', label: 'EL Limit' })
             basicInfo.fields.push({ id: twcCompany.Fields.EL_LIMIT_CURRENCY, width: '100px', label: 'EL Currency', value: dataSource[twcCompany.Fields.EL_LIMIT_CURRENCY] })
-            basicInfo.fields.push({ id: twcCompany.Fields.EL_EXPIRY, label: 'EL Expiry', lineBreak: true })
+            basicInfo.fields.push({ id: twcCompany.Fields.EL_EXPIRY, label: 'EL Expiry', lineBreak: true, ...(dataSource[twcCompany.Fields.EL_STATUS] === 2 ? {mandatory: true} : {}) })
 
             basicInfo.fields.push({ id: twcCompany.Fields.PL_STATUS, label: 'Status', width: '150px', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_AVAILABLETYPE, width: '100px', label: 'PL Available/Type' })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_LIMIT, width: '100px', label: 'PL Limit' })
             basicInfo.fields.push({ id: twcCompany.Fields.PL_LIMIT_CURRENCY, width: '100px', label: 'PL Currency', value: dataSource[twcCompany.Fields.PL_LIMIT_CURRENCY] })
-            basicInfo.fields.push({ id: twcCompany.Fields.PL_EXPIRY, label: 'PL Expiry', lineBreak: true })
+            basicInfo.fields.push({ id: twcCompany.Fields.PL_EXPIRY, label: 'PL Expiry', lineBreak: true, ...(dataSource[twcCompany.Fields.PL_STATUS] === 2 ? {mandatory: true} : {}) })
 
             basicInfo.fields.push({ id: twcCompany.Fields.PI_STATUS, label: 'Status', width: '150px', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.PI_AVAILABLETYPE, width: '100px', label: 'PI Available/Type' })
             basicInfo.fields.push({ id: twcCompany.Fields.PI_LIMIT, width: '100px', label: 'PI Limit' })
             basicInfo.fields.push({ id: twcCompany.Fields.PI_LIMIT_CURRENCY, width: '100px', label: 'PI Currency', value: dataSource[twcCompany.Fields.PI_LIMIT_CURRENCY] })
-            basicInfo.fields.push({ id: twcCompany.Fields.PI_EXPIRY, label: 'PI Expiry', lineBreak: true })
+            basicInfo.fields.push({ id: twcCompany.Fields.PI_EXPIRY, label: 'PI Expiry', lineBreak: true, ...(dataSource[twcCompany.Fields.PI_STATUS] === 2 ? {mandatory: true} : {}) })
 
             var basicInfo2 = { id: 'company-insurance-info-2', fields: [] };
             fieldGroup.controls.push(basicInfo2);
@@ -167,25 +167,27 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({
                 id: `${twcProfile.Type}`, label: 'Company Profile List',
                 fields: {
-                    [twcProfile.Fields.NAME]: 'Profile Name',
-                    [twcProfile.Fields.E_MAIL]: 'Email',
-                    [twcProfile.Fields.PHONE]: 'Phone',
+                    [twcProfile.Fields.NAME]: 'Name',
+                    [twcProfile.Fields.E_MAIL]: { hide: true },
+                    [twcProfile.Fields.PHONE]: { hide: true },
+                    [twcProfile.Fields.POSITION]: 'Position',
                     [twcProfile.Fields.ACCREDITATION_STATUS]: 'Accreditation Status',
+                    [twcProfile.Fields.USER_ACTION_NEEDED]: { title: 'User Action needed', type: 'bool' },
                     [twcProfile.Fields.PICW_ACCEPTABLE]: { title: 'PICW', type: 'bool' },
-                    [twcProfile.Fields.CLIMBER_CERTIFIED_STATUS]: { title: 'Climber', nullText: '' },
-                    [twcProfile.Fields.CLIMBER_CERTIFIED_EXPIRY]: { hide: true },
-                    [twcProfile.Fields.RESCUE_CERTIFIED_STATUS]: { title: 'Rescue', nullText: '' },
-                    [twcProfile.Fields.RESCUE_CERTIFIED_EXPIRY]: { hide: true },
-                    [twcProfile.Fields.RF_CERTIFIED_STATUS]: { title: 'RF', nullText: '' },
-                    [twcProfile.Fields.RF_CERTIFIED_EXPIRY]: { hide: true },
-                    [twcProfile.Fields.ROOFTOP_CERTIFIED_STATUS]: { title: 'Rooftop', nullText: '' },
-                    [twcProfile.Fields.ROOFTOP_CERTIFIED_EXPIRY]: { hide: true },
-                    [twcProfile.Fields.ELECTRICIAN_CERTIFIED_STATUS]: { title: 'Electrician', nullText: '' },
-                    [twcProfile.Fields.ELECTRICIAN_CERTIFIED_EXPIRY]: { hide: true },
-                    [twcProfile.Fields.DRONE_CERTIFIED_STATUS]: { title: 'Drone', nullText: '' },
-                    [twcProfile.Fields.DRONE_CERTIFIED_EXPIRY]: { hide: true },
-                    [twcProfile.Fields.SAFE_PASS_STATUS]: { title: 'Safe Pass', nullText: '' },
-                    [twcProfile.Fields.SAFE_PASS_EXPIRY]: { hide: true },
+                    [twcProfile.Fields.SAFE_PASS_EXPIRY]: 'Safe Pass Expiry',
+                    [twcProfile.Fields.CLIMBER_CERTIFIED_EXPIRY]: 'Climber Expiry',
+                    [twcProfile.Fields.RESCUE_CERTIFIED_EXPIRY]: 'Rescue Expiry',
+                    [twcProfile.Fields.ROOFTOP_CERTIFIED_EXPIRY]: 'Rooftop Expiry',
+                    [twcProfile.Fields.RF_CERTIFIED_EXPIRY]: 'RF Expiry',
+                    [twcProfile.Fields.ELECTRICIAN_CERTIFIED_EXPIRY]: 'Electrician Expiry',
+                    [twcProfile.Fields.DRONE_CERTIFIED_EXPIRY]: 'Drone Expiry',
+                    [twcProfile.Fields.CLIMBER_CERTIFIED_STATUS]: { hide: true },
+                    [twcProfile.Fields.RESCUE_CERTIFIED_STATUS]: { hide: true },
+                    [twcProfile.Fields.RF_CERTIFIED_STATUS]: { hide: true },
+                    [twcProfile.Fields.ROOFTOP_CERTIFIED_STATUS]: { hide: true },
+                    [twcProfile.Fields.ELECTRICIAN_CERTIFIED_STATUS]: { hide: true },
+                    [twcProfile.Fields.DRONE_CERTIFIED_STATUS]: { hide: true },
+                    [twcProfile.Fields.SAFE_PASS_STATUS]: { hide: true },
                     //[twcProfile.Fields.SAFE_PASS_EXPIRY]: { title: 'Safe Pass', nullText: '', type: 'date' },
 
 
@@ -194,20 +196,21 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 FieldsInfo: twcProfile.FieldsInfo,
                 showToolbar: true,
                 readOnly: editMode || (userInfo.permission.lvl < 3),
-                onColumnInit: (tbl, col) => {
-                    if (col.id == (twcProfile.Fields.CLIMBER_CERTIFIED_STATUS + '_name') ||
-                        col.id == (twcProfile.Fields.RESCUE_CERTIFIED_STATUS + '_name') ||
-                        col.id == (twcProfile.Fields.RF_CERTIFIED_STATUS + '_name') ||
-                        col.id == (twcProfile.Fields.ROOFTOP_CERTIFIED_STATUS + '_name') ||
-                        col.id == (twcProfile.Fields.ELECTRICIAN_CERTIFIED_STATUS + '_name') ||
-                        col.id == (twcProfile.Fields.DRONE_CERTIFIED_STATUS + '_name') ||
-                        col.id == (twcProfile.Fields.SAFE_PASS_STATUS + '_name')) {
+                onColumnInit: (tbl, col) => { // @@NOTE: Commented this code as we don't have the Status columns on the Profile View. 
+                    // if (col.id == (twcProfile.Fields.CLIMBER_CERTIFIED_STATUS + '_name') ||
+                    //     col.id == (twcProfile.Fields.RESCUE_CERTIFIED_STATUS + '_name') ||
+                    //     col.id == (twcProfile.Fields.RF_CERTIFIED_STATUS + '_name') ||
+                    //     col.id == (twcProfile.Fields.ROOFTOP_CERTIFIED_STATUS + '_name') ||
+                    //     col.id == (twcProfile.Fields.ELECTRICIAN_CERTIFIED_STATUS + '_name') ||
+                    //     col.id == (twcProfile.Fields.DRONE_CERTIFIED_STATUS + '_name') ||
+                    //     col.id == (twcProfile.Fields.SAFE_PASS_STATUS + '_name')) {
 
-                        col.styles = { width: '130px' };
-                        col.formatValue = (v, fv, d) => {
-                            return twcProfile.getCertStatusHtml(v, d[col.id.replace('_sts_name', '_exp')])
-                        }
-                    } else if (col.id == (twcProfile.Fields.ACCREDITATION_STATUS + '_name')) {
+                    //     col.styles = { width: '130px' };
+                    //     col.formatValue = (v, fv, d) => {
+                    //         return twcProfile.getCertStatusHtml(v, d[col.id.replace('_sts_name', '_exp')])
+                    //     }
+                    // } else 
+                    if (col.id == (twcProfile.Fields.ACCREDITATION_STATUS + '_name')) {
                         col.formatValue = (v, fv, d) => {
                             col.styles = { width: '200px', 'text-align': 'center' };
                             return twcProfile.getAccreditationStatusHtml(v)

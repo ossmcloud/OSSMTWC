@@ -1046,6 +1046,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     var actionSpan = jQuery(e.currentTarget);
                     var tableRow = actionSpan.closest('.o-row');
                     var tableRowData = this.#data[jQuery(tableRow).data('idx')];
+                    console.log("tableRowDataaaaaaaaaa", tableRowData)
                     if (this.onToolbarClick) {
                         this.onToolbarClick({ action: actionSpan.data('action'), table: this, row: tableRow, rowData: tableRowData, id: actionSpan.data('id') })
                     }
