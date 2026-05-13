@@ -132,10 +132,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     // @@NOTE: If the status of any insurance is Expired AND the Insurance Mandatory field for that insurance is Yes, then the overall Company Accreditation Status should be set to Certs Expired
                                     accrStatus = twcUtils.CompanyAccreditationStatus.CertsExpired;
                                 }
-                                if (res.changed) {
-                                    fields.push(res.field);
-                                    values.push(res.value);
-                                }
+                                
+                            }
+                            if (res.changed) {
+                                fields.push(res.field);
+                                values.push(res.value);
                             }
                         }
                     }

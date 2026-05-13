@@ -2,15 +2,11 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_file.js', './oTWC_icons.js'],
-    (core, cored, coreSQL, twcFile, twcIcons) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_config.js', './oTWC_file.js', './oTWC_site.js', './oTWC_icons.js'],
+    (core, cored, coreSQL, twcConfig, twcFile, twcSite, twcIcons) => {
         const HEIGH_LIMIT_FOR_1_CLIMBER = 60;
 
-        // @@HARDCODED @@GO-LIVE :: these map to internal ids
-        const SITE_TYPE = {
-            NO_STRUCTURE: 4,
-            STRUCTURE_ON_ROOFTOP: 5
-        }
+
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const EQ_LIB_STATUS = {
@@ -179,11 +175,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sql = `
                 select  t.id as value, t.name as text, p.name as parent_name,
                         t.custrecord_twc_file_type_hs as is_hs, t.custrecord_twc_file_type_method as is_method, t.custrecord_twc_file_type_insurance as is_insurance,
-                        t.custrecord_twc_file_type_image as is_image
+                        t.custrecord_twc_file_type_image as is_image, t.custrecord_twc_file_type_completion_img as is_image_completion,
+                        t.custrecord_twc_file_type_cert as is_cert, t.custrecord_twc_file_type_statuses as allowed_statuses
                 from    customrecord_twc_file_type t
                 join    customrecord_twc_file_type p on p.id = t.parent
                 where   t.isinactive = 'F'
-
             `
 
             if (options?.filters) {
@@ -211,10 +207,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 t.isMethod = t.is_method == 'T';
                 t.isHS = t.is_hs == 'T';
                 t.isImage = t.is_image == 'T';
+                t.isImageCompletion = t.is_image_completion == 'T';
+                t.isCert = t.is_cert == 'T';
+                t.statuses = t.allowed_statuses?.split(',').map(i => { return parseInt(i.trim()) });
 
                 delete t.is_hs;
                 delete t.is_method;
                 delete t.is_image;
+                delete t.is_image_completion;
+                delete t.is_cert;
+                delete t.allowed_statuses;
 
                 fileTypes.push(t);
             });
@@ -520,104 +522,114 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         };
 
         function getNsTable(tableId) {
-            if (tableId == -242 || tableId == 'bin') {
-                return { pk: 'id', name: 'bin', nameField: 'binnumber', isInactive: '', alias: '' }
-            } else if (tableId == -23 || tableId == 'case') {
-                return { pk: 'id', name: 'case', nameField: 'casenumber', isInactive: '', alias: '' }
-            } else if (tableId == -2 || tableId == 'customer') {
-                return { pk: 'id', name: 'customer', nameField: 'companyname', isInactive: '', alias: 'cust' }
-            } else if (tableId == -3 || tableId == 'vendor') {
-                return { pk: 'id', name: 'vendor', nameField: 'companyname', isInactive: '', alias: 'vend' }
-            } else if (tableId == -4 || tableId == 'employee') {
-                return { pk: 'id', name: 'employee', nameField: 'entityid', isInactive: '', alias: 'emp' }
-            } else if (tableId == -7 || tableId == 'job' || tableId == 'project') {
-                return { pk: 'id', name: 'job', nameField: 'entityid', isInactive: '', alias: 'prj' }
-            } else if (tableId == -3 || tableId == 'vendor') {
-                return { pk: 'id', name: 'vendor', nameField: 'entityid', isInactive: '', alias: 'vend' }
-            } else if (tableId == -6 || tableId == 'contact') {
-                return { pk: 'id', name: 'contact', nameField: 'firstname', isInactive: '', alias: '' }
-            } else if (tableId == -112 || tableId == 'account') {
-                return { pk: 'id', name: 'account', nameField: 'fullname', isInactive: '', alias: '' }
-            } else if (tableId == -10 || tableId == 'item') {
-                return { pk: 'id', name: 'item', nameField: 'itemid', isInactive: '', alias: 'itm' }
-            } else if (tableId == -101 || tableId == 'classification') {
-                return { pk: 'id', name: 'classification', nameField: 'name', isInactive: '', alias: '' }
-            } else if (tableId == -102 || tableId == 'department') {
-                return { pk: 'id', name: 'department', nameField: 'name', isInactive: '', alias: '' }
-            } else if (tableId == -104 || tableId == 'entitystatus') {
-                return { pk: 'key', name: 'entitystatus', nameField: 'name', isInactive: 'inactive', alias: '' }
-            } else if (tableId == -103 || tableId == 'location') {
-                return { pk: 'id', name: 'location', nameField: 'name', isInactive: '', alias: '' }
-            } else if (tableId == -117 || tableId == 'subsidiary') {
-                return { pk: 'id', name: 'subsidiary', nameField: 'name', isInactive: '', alias: '' }
-            } else if (tableId == -110 || tableId == 'vendorcategory') {
-                return { pk: 'id', name: 'vendorcategory', nameField: 'name', isInactive: '', alias: '' }
-            } else if (tableId == -105 || tableId == 'accountingperiod') {
-                return { pk: 'id', name: 'accountingperiod', nameField: 'periodname', isInactive: '', alias: '' }
-            } else if (tableId == -122 || tableId == 'currency') {
-                return { pk: 'id', name: 'currency', nameField: 'symbol', isInactive: '', alias: '' }
-            } else if (tableId == -30 || tableId == 'transaction') {
-                return { pk: 'id', name: 'transaction', nameField: 'tranid', isInactive: false, alias: '' }
-            } else if (tableId == -195 || tableId == 'state') {
-                return { pk: 'id', name: 'state', nameField: 'fullname', isInactive: false, alias: '' }
-            } else {
-                return null;
-            }
+            return twcConfig.getNsTable(tableId);
+            // if (tableId == -242 || tableId == 'bin') {
+            //     return { pk: 'id', name: 'bin', nameField: 'binnumber', isInactive: '', alias: '' }
+            // } else if (tableId == -23 || tableId == 'case') {
+            //     return { pk: 'id', name: 'case', nameField: 'casenumber', isInactive: '', alias: '' }
+            // } else if (tableId == -2 || tableId == 'customer') {
+            //     return { pk: 'id', name: 'customer', nameField: 'companyname', isInactive: '', alias: 'cust' }
+            // } else if (tableId == -3 || tableId == 'vendor') {
+            //     return { pk: 'id', name: 'vendor', nameField: 'companyname', isInactive: '', alias: 'vend' }
+            // } else if (tableId == -4 || tableId == 'employee') {
+            //     return { pk: 'id', name: 'employee', nameField: 'entityid', isInactive: '', alias: 'emp' }
+            // } else if (tableId == -7 || tableId == 'job' || tableId == 'project') {
+            //     return { pk: 'id', name: 'job', nameField: 'entityid', isInactive: '', alias: 'prj' }
+            // } else if (tableId == -3 || tableId == 'vendor') {
+            //     return { pk: 'id', name: 'vendor', nameField: 'entityid', isInactive: '', alias: 'vend' }
+            // } else if (tableId == -6 || tableId == 'contact') {
+            //     return { pk: 'id', name: 'contact', nameField: 'firstname', isInactive: '', alias: '' }
+            // } else if (tableId == -112 || tableId == 'account') {
+            //     return { pk: 'id', name: 'account', nameField: 'fullname', isInactive: '', alias: '' }
+            // } else if (tableId == -10 || tableId == 'item') {
+            //     return { pk: 'id', name: 'item', nameField: 'itemid', isInactive: '', alias: 'itm' }
+            // } else if (tableId == -101 || tableId == 'classification') {
+            //     return { pk: 'id', name: 'classification', nameField: 'name', isInactive: '', alias: '' }
+            // } else if (tableId == -102 || tableId == 'department') {
+            //     return { pk: 'id', name: 'department', nameField: 'name', isInactive: '', alias: '' }
+            // } else if (tableId == -104 || tableId == 'entitystatus') {
+            //     return { pk: 'key', name: 'entitystatus', nameField: 'name', isInactive: 'inactive', alias: '' }
+            // } else if (tableId == -103 || tableId == 'location') {
+            //     return { pk: 'id', name: 'location', nameField: 'name', isInactive: '', alias: '' }
+            // } else if (tableId == -117 || tableId == 'subsidiary') {
+            //     return { pk: 'id', name: 'subsidiary', nameField: 'name', isInactive: '', alias: '' }
+            // } else if (tableId == -110 || tableId == 'vendorcategory') {
+            //     return { pk: 'id', name: 'vendorcategory', nameField: 'name', isInactive: '', alias: '' }
+            // } else if (tableId == -105 || tableId == 'accountingperiod') {
+            //     return { pk: 'id', name: 'accountingperiod', nameField: 'periodname', isInactive: '', alias: '' }
+            // } else if (tableId == -122 || tableId == 'currency') {
+            //     return { pk: 'id', name: 'currency', nameField: 'symbol', isInactive: '', alias: '' }
+            // } else if (tableId == -30 || tableId == 'transaction') {
+            //     return { pk: 'id', name: 'transaction', nameField: 'tranid', isInactive: false, alias: '' }
+            // } else if (tableId == -195 || tableId == 'state') {
+            //     return { pk: 'id', name: 'state', nameField: 'fullname', isInactive: false, alias: '' }
+            // } else {
+            //     return null;
+            // }
         }
 
 
 
         function getCustomTableFields(recordType) {
-            var customFields = [];
+            return twcConfig.getFields(recordType);
+            // var customFields = [];
 
-            var whereClause = '';
-            if (Array.isArray(recordType)) {
-                whereClause = `c.scriptid in (${recordType.map(rt => { return `UPPER('${rt}')`; }).join(',')})`;
-            } else {
-                whereClause = `c.scriptid = UPPER('${recordType}')`;
-            }
+            // var whereClause = '';
+            // if (Array.isArray(recordType)) {
+            //     whereClause = `c.scriptid in (${recordType.map(rt => { return `UPPER('${rt}')`; }).join(',')})`;
+            // } else {
+            //     whereClause = `c.scriptid = UPPER('${recordType}')`;
+            // }
 
-            coreSQL.each(`
-                select      cf.fieldvaluetype as field_type, LOWER(cf.scriptid) as field_id, cf.name as field_label, 
-                            NVL(NVL(lower(l.scriptid), lower(cl.scriptid)), cf.fieldvaluetyperecord) as field_foreign_table, c.includename as include_name, LOWER(c.scriptid) as table_name
-                from        customfield cf
-                join        customrecordtype c on c.internalid = cf.recordtype
-                left join   customrecordtype l on l.internalid = cf.fieldvaluetyperecord
-                left join   customlist cl on cl.internalid = cf.fieldvaluetyperecord
-                where       ${whereClause}
-                order by id
-            `, cf => {
-                var nsTableId = parseInt(cf.field_foreign_table);
-                if (!isNaN(nsTableId)) {
-                    // @@NOTE: this is a standard NS table
-                    var nsTable = getNsTable(nsTableId);
-                    if (nsTable) {
-                        cf.field_foreign_table = nsTable.name;
-                        cf.ns_table = nsTable;
-                    } else {
-                        cf.field_foreign_table = null;
-                    }
-                }
-                customFields.push(cf);
-            });
+            // coreSQL.each(`
+            //     select      cf.fieldvaluetype as field_type, LOWER(cf.scriptid) as field_id, cf.name as field_label, 
+            //                 NVL(NVL(lower(l.scriptid), lower(cl.scriptid)), cf.fieldvaluetyperecord) as field_foreign_table, c.includename as include_name, LOWER(c.scriptid) as table_name
+            //     from        customfield cf
+            //     join        customrecordtype c on c.internalid = cf.recordtype
+            //     left join   customrecordtype l on l.internalid = cf.fieldvaluetyperecord
+            //     left join   customlist cl on cl.internalid = cf.fieldvaluetyperecord
+            //     where       ${whereClause}
+            //     order by id
+            // `, cf => {
+            //     var nsTableId = parseInt(cf.field_foreign_table);
+            //     if (!isNaN(nsTableId)) {
+            //         // @@NOTE: this is a standard NS table
+            //         var nsTable = getNsTable(nsTableId);
+            //         if (nsTable) {
+            //             cf.field_foreign_table = nsTable.name;
+            //             cf.ns_table = nsTable;
+            //         } else {
+            //             cf.field_foreign_table = null;
+            //         }
+            //     }
+            //     customFields.push(cf);
+            // });
 
-            if (!Array.isArray(recordType)) {
-                // @@NOTE: if we have an array of recordType then it means we want to get fields for multiple tables
-                //         in which case we cannot add the 'name' field just once
-                // @@REVIEW: we could probably loop the recordType array and add a 'name' field for all the record types
-                if (customFields.length == 0 || customFields[0].include_name == 'T') {
-                    customFields.push({
-                        field_type: 'Free-Form Text',
-                        field_id: 'name',
-                        field_label: 'name',
-                        field_foreign_table: null,
-                        include_name: 'T',
-                        table_name: recordType
-                    })
-                }
-            }
+            // if (!Array.isArray(recordType)) {
+            //     // @@NOTE: if we have an array of recordType then it means we want to get fields for multiple tables
+            //     //         in which case we cannot add the 'name' field just once
+            //     // @@REVIEW: we could probably loop the recordType array and add a 'name' field for all the record types
+            //     if (customFields.length == 0 || customFields[0].include_name == 'T') {
+            //         customFields.push({
+            //             field_type: 'Free-Form Text',
+            //             field_id: 'name',
+            //             field_label: 'name',
+            //             field_foreign_table: null,
+            //             include_name: 'T',
+            //             table_name: recordType
+            //         })
+            //     }
 
-            return customFields;
+            //     customFields.push({
+            //         field_type: 'Date/Time',
+            //         field_id: 'created',
+            //         field_label: 'created',
+            //         field_foreign_table: null,
+            //         table_name: recordType
+            //     })
+            // }
+
+            // return customFields;
         }
 
         function getLookUpTableValues(recordType, additionalFilters) {
@@ -632,7 +644,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getSiteNames() {
-            return getLookUpTableValues('customrecord_twc_site');
+            var siteNames = [];
+            coreSQL.each(`select id as value, name as text, ${twcSite.Fields.SITE_NAME} as site_name, ${twcSite.Fields.SITE_ID} as site_id from ${twcSite.Type} where isinactive = 'F' order by ${twcSite.Fields.SITE_NAME}`, s => {
+                s.text_render = `${s.site_name} <span style="color: var(--accent-fore-color)">${s.site_id}</span>`
+                siteNames.push(s);
+            });
+            return siteNames
         }
 
         function getSiteTypes() {
@@ -726,7 +743,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var fileIds = options['custrecord_twc_saf_method_statement'] || '';
             if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
             fileIds += options['custrecord_twc_saf_health_safety'];
-            return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})`, 'customrecord_twc_file': FILE_STATUS.Approved } } })
+            return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})` } } })
         }
 
 
@@ -778,7 +795,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         ${twcFile.Fields.R_TYPE}, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name, 
                         ${twcFile.Fields.STATUS}, BUILTIN.DF(${twcFile.Fields.STATUS}) as ${twcFile.Fields.STATUS}_name, 
                         ${twcFile.Fields.REVISION}, ${twcFile.Fields.UPLOADED_BY}, BUILTIN.DF(${twcFile.Fields.UPLOADED_BY}) as ${twcFile.Fields.UPLOADED_BY}_name, 
-                        BUILTIN.DF(${twcFile.Fields.R_TYPE}) as type,
+                        BUILTIN.DF(${twcFile.Fields.R_TYPE}) as type, 
                         ${twcFile.Fields.DESCRIPTION}, 
                 from    ${twcFile.Type} f
                 join    customrecord_twc_file_type t on t.id = f.${twcFile.Fields.R_TYPE}
@@ -1114,14 +1131,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 and     ists.custrecord_twc_infra_sts_allow_saf = 'T'
                 order by is.custrecord_twc_infra_id
             `, s => {
-                
+
                 s.overHeightLimit = (s.height > HEIGH_LIMIT_FOR_1_CLIMBER);
 
 
-                var structTypeName = s.struct_type_name ?  ` [${s.struct_type_name}]` : '';
+                var structTypeName = s.struct_type_name ? ` [${s.struct_type_name}]` : '';
                 if (s.type == INFRA_TYPE.Accommodation) {
                     s.text = `${s.name}${structTypeName} (${s.struct_status_name})`;
-                    s.text_render = `<b>${s.name}</b>${structTypeName} (<span style="color: var(--accent-fore-color)">${s.struct_status_name}</span>)`;   
+                    s.text_render = `<b>${s.name}</b>${structTypeName} (<span style="color: var(--accent-fore-color)">${s.struct_status_name}</span>)`;
                 } else {
                     var h = s.struct_height ? `${s.struct_height}m` : '[no height]';
                     var hr = s.struct_height ? `<span style="color: indianred;">${s.struct_height}m</span>` : '<span style="color: silver;">[no height]</span>';
@@ -1187,7 +1204,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             info.mast = getYesNoOptions(info.mast);
             info.mewp = getYesNoOptions(info.mewp);
             info.electrical = getYesNoOptions(info.electrical);
-            info.noStructure = info.id == SITE_TYPE.NO_STRUCTURE;
+            info.noStructure = info.id == twcSite.SiteType.NO_STRUCTURE;
 
             return info;
         }
@@ -1255,7 +1272,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CompanyAccreditationStatus: COMPANY_ACCREDITATION_STATUS,
             ProfileAccreditationStatus: PROFILE_ACCREDITATION_STATUS,
 
-            SiteType: SITE_TYPE, 
+            SiteType: twcSite.SiteType,
             InfraType: INFRA_TYPE,
             InfrStatus: INFRA_STATUS,
 
@@ -1340,6 +1357,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             today: function () {
                 return coreSQL.first(`select TO_CHAR(CURRENT_DATE, 'YYYY-MM-dd') as today`).today;
+            },
+
+            parsesSAFDateTime: function (d) {
+                // @@TODO: this is because the stupid server is in UJS and would take the time in lcal irish time but save it in US time
+                //              i.e.: 13/05/20026 @ 12.00 is saved as 13/05/20026 @ 20.00
+                var date = new Date(d);
+                date = date.addHours(-8);
+                return date;
             }
         }
     });

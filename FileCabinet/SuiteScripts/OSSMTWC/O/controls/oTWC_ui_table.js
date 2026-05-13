@@ -1189,7 +1189,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 var toolBar = '';
                 if (this.#options.showToolbar) {
                     var label = this.#options.label ? `<div><label>${this.#options.label}</label></div>` : '';
-                    var toolBarNew = this.#options.readOnly ? '' : `<span title="add new" data-action="add-new">${twcIcons.get('addNew', 16)}</span>`;
+                    var toolBarNew = this.#options.readOnly ? '' : `<span title="add new" data-action="add-new">${this.#options.newToolBarButton || twcIcons.get('addNew', 16)}</span>`;
                     toolBar = `
                         <div id="${this.#options.id}_toolBar" class="o-table-toolbar">
                             ${toolBarNew}

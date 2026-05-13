@@ -132,7 +132,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 var arrowDown = ''; var defaultWidth = '150px'; var inputWidth = '100%';
                 if (this.#options.type == ctrlBase.CTRL_TYPE.DATETIME) {
-                    defaultWidth = (disabled || readOnly) ? '150px' : '185px';
+                    defaultWidth = (disabled || readOnly) ? '160px' : '185px';
                 }
                 //var inputWidth = parseInt((this.#options.style?.width || defaultWidth).replace('px', '')) - 2;
 

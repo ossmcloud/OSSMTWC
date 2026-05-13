@@ -61,9 +61,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             TLM: 'custrecord_twc_infra_tlm',
             ACCOMMODATION_DIMENSIONS: 'custrecord_twc_infra_accom_dim',
             RACK_SPACES_AVAILABLE: 'custrecord_twc_infra_rack_space_avail',
-            INFRASTRUCTURE_UNITS: 'custrecord_twc_infra_units',
-            INFRASTRUCTURE_MODEL: 'custrecord_twc_infra_model',
-            INFRASTRUCTURE_INSTALLED: 'custrecord_twc_infra_installed',
+            AC_UNITS: 'custrecord_twc_infra_units',
+            AC_MODEL: 'custrecord_twc_infra_model',
+            AC_INSTALLED: 'custrecord_twc_infra_installed',
             AC_FEED_PHASE: 'custrecord_twc_infra_ac_feed_phase',
             LOADINGS: 'custrecord_twc_infra_ldg',
             NOISE_LEVEL: 'custrecord_twc_infra_noise_lvl',
@@ -93,6 +93,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FIBRE_PHASE: 'custrecord_twc_infra_fibre_phase',
             FIBRE_PARTNER_PRIORITY: 'custrecord_twc_infra_fibre_partner_prior',
             FIBRE_COMMENTS: 'custrecord_twc_infra_fibre_comm',
+            ACCOMMODATION_TYPE: 'custrecord_twc_accom_type',
+            ACCESS_INSTRUCTIONS: 'custrecord_twc_acc_inst',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -154,9 +156,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             TLM: { name: 'custrecord_twc_infra_tlm', type: 'select', alias: 'tLM', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_tlm' },
             ACCOMMODATION_DIMENSIONS: { name: 'custrecord_twc_infra_accom_dim', type: 'text', alias: 'accommodationDimensions', display: 'normal', mandatory: false },
             RACK_SPACES_AVAILABLE: { name: 'custrecord_twc_infra_rack_space_avail', type: 'integer', alias: 'rackSpacesAvailable', display: 'normal', mandatory: false },
-            INFRASTRUCTURE_UNITS: { name: 'custrecord_twc_infra_units', type: 'integer', alias: 'infrastructureUnits', display: 'normal', mandatory: false },
-            INFRASTRUCTURE_MODEL: { name: 'custrecord_twc_infra_model', type: 'text', alias: 'infrastructureModel', display: 'normal', mandatory: false },
-            INFRASTRUCTURE_INSTALLED: { name: 'custrecord_twc_infra_installed', type: 'date', alias: 'infrastructureInstalled', display: 'normal', mandatory: false },
+            AC_UNITS: { name: 'custrecord_twc_infra_units', type: 'integer', alias: 'aCUnits', display: 'normal', mandatory: false },
+            AC_MODEL: { name: 'custrecord_twc_infra_model', type: 'text', alias: 'aCModel', display: 'normal', mandatory: false },
+            AC_INSTALLED: { name: 'custrecord_twc_infra_installed', type: 'date', alias: 'aCInstalled', display: 'normal', mandatory: false },
             AC_FEED_PHASE: { name: 'custrecord_twc_infra_ac_feed_phase', type: 'select', alias: 'aCFeedPhase', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_ac_feed_phase' },
             LOADINGS: { name: 'custrecord_twc_infra_ldg', type: 'integer', alias: 'loadings', display: 'normal', mandatory: false },
             NOISE_LEVEL: { name: 'custrecord_twc_infra_noise_lvl', type: 'integer', alias: 'noiseLevel', display: 'normal', mandatory: false },
@@ -186,6 +188,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FIBRE_PHASE: { name: 'custrecord_twc_infra_fibre_phase', type: 'text', alias: 'fibrePhase', display: 'normal', mandatory: false },
             FIBRE_PARTNER_PRIORITY: { name: 'custrecord_twc_infra_fibre_partner_prior', type: 'text', alias: 'fibrePartnerPriority', display: 'normal', mandatory: false },
             FIBRE_COMMENTS: { name: 'custrecord_twc_infra_fibre_comm', type: 'text', alias: 'fibreComments', display: 'normal', mandatory: false },
+            ACCOMMODATION_TYPE: { name: 'custrecord_twc_accom_type', type: 'select', alias: 'accommodationType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_accom_type' },
+            ACCESS_INSTRUCTIONS: { name: 'custrecord_twc_acc_inst', type: 'clobtext', alias: 'accessInstructions', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -545,22 +549,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.RACK_SPACES_AVAILABLE, value)
             }
             
-            get infrastructureUnits() {
-                return this.get(_recordFields.INFRASTRUCTURE_UNITS);
-            } set infrastructureUnits(value) {
-                this.set(_recordFields.INFRASTRUCTURE_UNITS, value)
+            get aCUnits() {
+                return this.get(_recordFields.AC_UNITS);
+            } set aCUnits(value) {
+                this.set(_recordFields.AC_UNITS, value)
             }
             
-            get infrastructureModel() {
-                return this.get(_recordFields.INFRASTRUCTURE_MODEL);
-            } set infrastructureModel(value) {
-                this.set(_recordFields.INFRASTRUCTURE_MODEL, value)
+            get aCModel() {
+                return this.get(_recordFields.AC_MODEL);
+            } set aCModel(value) {
+                this.set(_recordFields.AC_MODEL, value)
             }
             
-            get infrastructureInstalled() {
-                return this.get(_recordFields.INFRASTRUCTURE_INSTALLED);
-            } set infrastructureInstalled(value) {
-                this.set(_recordFields.INFRASTRUCTURE_INSTALLED, value)
+            get aCInstalled() {
+                return this.get(_recordFields.AC_INSTALLED);
+            } set aCInstalled(value) {
+                this.set(_recordFields.AC_INSTALLED, value)
             }
             
             get aCFeedPhase() {
@@ -748,6 +752,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.FIBRE_COMMENTS);
             } set fibreComments(value) {
                 this.set(_recordFields.FIBRE_COMMENTS, value)
+            }
+            
+            get accommodationType() {
+                return this.get(_recordFields.ACCOMMODATION_TYPE);
+            } set accommodationType(value) {
+                this.set(_recordFields.ACCOMMODATION_TYPE, value)
+            }
+            get accommodationTypeName() { return this.getText(_recordFields.ACCOMMODATION_TYPE); }
+            
+            get accessInstructions() {
+                return this.get(_recordFields.ACCESS_INSTRUCTIONS);
+            } set accessInstructions(value) {
+                this.set(_recordFields.ACCESS_INSTRUCTIONS, value)
             }
             
             get created() {

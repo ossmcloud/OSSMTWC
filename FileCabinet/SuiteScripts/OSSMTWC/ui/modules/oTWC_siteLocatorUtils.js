@@ -79,7 +79,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             sqlFields += formatUserFields(safFields, userFields);
 
             var whereClause = 'where 1 = 1 ';
-            var orderBy = `order by s.${twcSaf.Fields.SAF_ID}`;
+            var orderBy = `order by s.${twcSaf.Fields.CREATED} desc`;
 
             if (userInfo.companyProfile?.isBoth) {
                 whereClause += `and (
@@ -135,10 +135,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var orderBy = `order by s.${twcSite.Fields.NAME}`;
 
             var sites = coreSQL.run(`
-                select  ${sqlFields}, st.custrecord_twc_site_types_color as site_type_color, sl.custrecord_twc_site_level_color as site_level_color,
+                select  ${sqlFields}, st.custrecord_twc_site_types_color as site_type_color, sp.custrecord_twc_site_portfolio_color as site_color,
                 from    ${twcSite.Type} s
                 left join    customrecord_twc_site_type st on st.id = s.${twcSite.Fields.SITE_TYPE}
                 left join    customrecord_twc_site_level sl on sl.id = s.${twcSite.Fields.SITE_LEVEL}
+                left join    customrecord_twc_site_portfolio sp on sp.id = s.${twcSite.Fields.SITE_PORTFOLIO}
                 ${whereClause} 
                 ${orderBy}
             `)
@@ -175,7 +176,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 </div>
                                 <div>
                                     {FILTER_SITE_TYPE}
-                                    {FILTER_SITE_LEVEL}
                                 </div>
                                 <div>
                                     {FILTER_COUNTIES}
@@ -205,7 +205,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 </div>
             </div>`;
 
-            html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Name', width: '75%', id: 'record_id', noEmpty: true, dataSource: twcUtils.getSiteNames() }));
+            html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Name', width: '75%', id: 'record_id', noEmpty: true, dataSource: twcUtils.getSiteNames() }));
             html = html.replace('{FILTER_SITE_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Type', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));
             html = html.replace('{FILTER_SITE_LEVEL}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Level', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_LEVEL, noEmpty: true, dataSource: twcUtils.getSiteLevels() }));
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'County', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));

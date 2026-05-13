@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safAction.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_file.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_icons.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safAction.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_file.js'],
+    (runtime, core, coreSQL, twcIcons, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile) => {
         var _safUrl = null;
         var _allowedSafTypes = null;
         function getSafUrl() {
@@ -73,6 +73,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             //      site address
             var safFields = [
                 { field: twcSaf.Fields.R_TYPE },
+                { field: twcSaf.Fields.CREATED, label: 'Submitted' },
                 { field: twcSaf.Fields.SAF_AUTHOR },
                 { field: twcSaf.Fields.CUSTOMER },
                 { field: twcSaf.Fields.PRIMARY_CONTRACTOR },
@@ -93,7 +94,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getSafCrew(dataSource) {
             var safCrews = [];
-            if (dataSource.id) {
+            if (dataSource.id && !dataSource.reUse) {
                 coreSQL.each(`
                     select  crew.id, prof.custrecord_twc_prof_company as saf_crew_vendor, BUILTIN.DF(prof.custrecord_twc_prof_company) as saf_crew_vendor_name, 
                             crew.custrecord_twc_saf_crew_member as saf_crew_member, BUILTIN.DF(crew.custrecord_twc_saf_crew_member) as saf_crew_member_name,
@@ -233,7 +234,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 var infraHightShow = false;
                 if (isExistingSaf) {
                     var infra = siteInfraStructures.find(i => { return i.id == dataSource[twcSaf.Fields.STRUCTURE]; })
-                    infraHightShow = (infra.height > twcUtils.HEIGH_LIMIT_FOR_1_CLIMBER);
+                    infraHightShow = (infra?.height > twcUtils.HEIGH_LIMIT_FOR_1_CLIMBER);
                 }
                 step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-mast-access', label: 'Mast Access', width: '150px', value: dataSource[twcSaf.Fields.MAST_ACCESS], allowAll: false, dataSource: siteTypeInfo.mast });
                 step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-mast-access-height', label: `Climb Over ${twcUtils.HEIGH_LIMIT_FOR_1_CLIMBER}m`, width: '150px', hide: !infraHightShow, value: dataSource[twcSaf.Fields.MAST_ACCESS_ABOVE_60M], allowAll: false, dataSource: twcUtils.getYesNoOptions() });
@@ -309,7 +310,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-customer', label: 'Customer', allowAll: false, value: customer, dataSource: customers });
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-vendor', label: 'Primary Contractor', allowAll: false, value: primaryContractor, dataSource: primaryContractors, lineBreak: true });
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'saf-work-summary', label: 'Summary of Work', rows: 3, value: dataSource[twcSaf.Fields.SUMMARY_OF_WORKS], width: '100%', lineBreak: true });
-            step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-key', label: 'Key', allowAll: false, dataSource: [] });
+            //step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-key', label: 'Key', allowAll: false, dataSource: [] });
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: 'saf-photo-delay', label: 'Photo Req. Delay', hide: true, allowAll: false, dataSource: [], lineBreak: true });
 
             var eqActionsVisible = false;
@@ -337,11 +338,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
             step3CInfo.fields.push(crewTableControl);
 
-            var step3BInfo = { id: 'site-access-step-3b', title: 'Planned Equipment Work', fields: [] };
-            fieldGroup.controls.push(step3BInfo);
-            step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw', label: 'PICW', allowAll: false, value: picwInfo?.contractor, dataSource: primaryContractors, noAutoSelect: true });
-            step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw-staff', label: 'Staff', hide: true, value: picwInfo?.id, dataSource: picwContractorStaff, allowAll: false });
-            step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'saf-picw-staff-phone', label: 'Phone', hide: true, value: picwInfo?.phone });
+            // var step3BInfo = { id: 'site-access-step-3b', title: 'Planned Equipment Work', fields: [] };
+            // fieldGroup.controls.push(step3BInfo);
+            // step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw', label: 'PICW', allowAll: false, value: picwInfo?.contractor, dataSource: primaryContractors, noAutoSelect: true });
+            // step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw-staff', label: 'Staff', hide: true, value: picwInfo?.id, dataSource: picwContractorStaff, allowAll: false });
+            // step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'saf-picw-staff-phone', label: 'Phone', hide: true, value: picwInfo?.phone });
 
 
 
@@ -350,7 +351,36 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroup;
         }
         function getSAFInfoPanels_Builder_Step_4(dataSource, userInfo, options) {
+            var primaryContractors = [];
+
+            if (userInfo.isEmployee) {
+                primaryContractors = twcUtils.getVendors(userInfo);
+            } else {
+                if (userInfo.companyProfile.accreditation_status != twcUtils.CompanyAccreditationStatus.Accredited) {
+                    throw new Error(`Your accreditation status [<b>${userInfo.companyProfile.accreditation_status_name}</b>] does not allow for this action`);
+                }
+                primaryContractors.push({
+                    value: userInfo.companyProfile.id,
+                    text: userInfo.companyProfile.name
+                })
+            }
+          
             var isExistingSaf = dataSource.id !== undefined;
+
+            var picwInfo = null; var picwContractorStaff = [];
+            if (isExistingSaf && !dataSource.reUse) {
+                // @@NOTE: the PICW is cleared on a re-used SAF
+                picwInfo = coreSQL.first('select id, custrecord_twc_prof_company as contractor, custrecord_twc_prof_phone as phone from customrecord_twc_prof where id = ' + dataSource[twcSaf.Fields.PICW]);
+                picwContractorStaff = twcUtils.getProfiles({
+                    company: picwInfo.contractor,
+                    filters: {
+                        'custrecord_twc_prof_picw_acceptable': 'T',
+                        'custrecord_twc_prof_safe_pass_cert_exp': { op: '>', value: 'CURRENT_DATE' }
+                    }
+                });
+            }
+
+
             var fieldGroup = { id: 'site-access-step-4', title: 'Step 4 of 5 : Crews Visitors', hide: !isExistingSaf, collapsed: false, controls: [] };
 
             var crewTableControl = {
@@ -367,8 +397,24 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 dataSource: getSafCrew(dataSource),
                 showToolbar: true,
                 showEditDelete: true,
+                newToolBarButton: `
+                    <div class="twc-table-toolbar-button">
+                        <div style="vertical-align: bottom; padding-bottom: 1px;">
+                            ${twcIcons.get('addNew', 16)}
+                        </div>
+                        <div>
+                            ADD CREW MEMBER
+                        </div>
+                    </div>
+                `
             }
-            var step4Info = { id: 'site-access-step-4a', fields: [crewTableControl] };
+            var step4Info = { id: 'site-access-step-4a', fields: [] };
+
+            step4Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw', label: 'PICW', allowAll: false, value: picwInfo?.contractor, dataSource: primaryContractors, noAutoSelect: true });
+            step4Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw-staff', label: 'Staff', hide: picwInfo==null, value: picwInfo?.id, dataSource: picwContractorStaff, allowAll: false });
+            step4Info.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'saf-picw-staff-phone', label: 'Phone', hide: picwInfo == null, value: picwInfo?.phone });
+            step4Info.fields.push(crewTableControl);
+
             fieldGroup.controls.push(step4Info);
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
@@ -503,7 +549,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             detailsInfo.fields.push({ id: twcSaf.Fields.NAME, label: 'SAF ID' })
             detailsInfo.fields.push({ id: twcSaf.Fields.SAF_AUTHOR, label: 'Author' })
-            detailsInfo.fields.push({ id: twcSaf.Fields.CREATED, label: 'Submitted On' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.CREATED, label: 'Submitted On', width: '175px' })
             detailsInfo.fields.push({ id: twcSaf.Fields.START_TIME_BLOCK, label: 'Start' })
             detailsInfo.fields.push({ id: twcSaf.Fields.END_TIME_BLOCK, label: 'End', lineBreak: true })
 
@@ -594,7 +640,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var workFlowInfo = { id: 'site-access-workflow-info', collapsed: false, fields: [] };
             fieldGroup.controls.push(workFlowInfo);
 
-            workFlowInfo.fields.push({ id: twcSaf.Fields.STATUS_COMMENTS, width: '100%', rows: 3, label: 'Status Comments', lineBreak: true })
             workFlowInfo.fields.push({ id: twcSaf.Fields.WORKS_PHOTOS_REQ_DELAY, label: 'Works Photos Req. Delay' })
             workFlowInfo.fields.push({ id: twcSaf.Fields.COMPLETION_REVIEWER, label: 'Completion Reviewer' })
             workFlowInfo.fields.push({ id: twcSaf.Fields.COMPLETION_PHOTOS_REQUESTED, label: 'Photos Requested' })
@@ -657,9 +702,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 id: `${twcSafLog.Type}`,
                 fields: {
                     [twcSafLog.Fields.LOG_TYPE]: { title: 'Type', styles: { width: '100px' } },
-                    [twcSafLog.Fields.CREATED]: 'Date/Time',
-                    [twcSafLog.Fields.PROFILE]: 'Profile',
-                    [twcSafLog.Fields.MESSAGE]: 'Message',
+                    [twcSafLog.Fields.CREATED]: { title: 'Date/Time', styles: { width: '120px' } },
+                    [twcSafLog.Fields.PROFILE]: { title: 'Profile', styles: { width: '100px' } },
+                    [twcSafLog.Fields.MESSAGE]: { title: 'Message', styles: { width: '100px' } } ,
                     [twcSafLog.Fields.ADDITIONAL_INFO]: { title: 'Info', nullText: '' },
 
                 },

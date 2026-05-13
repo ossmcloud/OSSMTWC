@@ -224,7 +224,8 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 filters: {
                     [twcFile.Fields.RECORD_TYPE]: 'customrecord_twc_company',
                     [twcFile.Fields.RECORD_ID]: options.vendor,
-                    [twcFile.Fields.STATUS]: twcUtils.FileStatus.Received
+                    [twcFile.Fields.STATUS]: twcUtils.FileStatus.Received,
+                    ['custrecord_twc_file_type_use_in_saf']: 'T' 
 
                 }
             });
@@ -363,8 +364,8 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             saf.sAFAuthor = userInfo.profile;
             saf.accommodation = payload['saf-accommodation'];
             saf.structure = payload['saf-structure'];
-            saf.startTimeBlock = new Date(`${earliestDate} ${twcUtils.getTimeBlockTimeRange(earliestBlock).start}`);
-            saf.endTimeBlock = new Date(`${latestDate} ${twcUtils.getTimeBlockTimeRange(latestBlock).end}`);
+            saf.startTimeBlock = twcUtils.parsesSAFDateTime(`${earliestDate} ${twcUtils.getTimeBlockTimeRange(earliestBlock).start}`);
+            saf.endTimeBlock = twcUtils.parsesSAFDateTime(`${latestDate} ${twcUtils.getTimeBlockTimeRange(latestBlock).end}`);
             saf.conditionsofAccess = b64.decode(options.conditionsOfAccessHtml);
             saf.worksPhotosReqDelay = payload['saf-photo-delay'] || null;
 
@@ -372,10 +373,13 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             // attachments
             if (payload.documents) {
+                
                 saf = twcSaf.get(safId);
 
                 var docIds = [];
                 for (var d in payload.documents) { if (payload.documents[d]) { docIds.push(d.replace('file_toggle_', '')); } }
+
+                
 
                 try {
                     if (docIds.length > 0) {
@@ -395,6 +399,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                         saf.health_and_Safety = health_and_Safety;
                         saf.methodStatement = methodStatement;
                     }
+                    saf.save();
                 } catch (error) {
                     saf.logEx('Error while attaching files', error);
                 }
@@ -493,7 +498,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var saf = twcSaf.get(options.saf);
             try {
                 var statusChanged = options.status ? saf.status != options.status : false;
-                var commentCHanged = options.comment ? saf.statusComments != options.comment : false;
+                var commentCHanged = options.comment ? saf.reviewComment != options.comment : false;
                 if (!statusChanged && !commentCHanged) { return; }
 
                 var safRequiresSrf = twcUtils.getSafType(saf.r_type)?.requires_srf == 'T';
@@ -510,7 +515,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     if (logMsg) { logMsg += ', ' }
                     if (info) { info += ', ' }
                     logMsg += 'comment changed';
-                    info += 'old comment: ' + saf.statusComments
+                    info += 'old comment: ' + saf.reviewComment
                 }
 
                 if (options.status) {
@@ -520,7 +525,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                         saf.completionPhotosRequested = saf.worksEndDate.addDays(saf.worksPhotosReqDelay || 0);
                     }
                 }
-                if (options.comment) { saf.statusComments = options.comment; }
+                if (options.comment) { saf.reviewComment = options.comment; }
 
                 if (statusChanged && options.status == twcSaf.Status.PhotosReceived) {
                     saf.completionPhotosReceived = (new Date()).addHours(12);

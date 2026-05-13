@@ -2650,6 +2650,27 @@ div.twc-list>div>div:first-child {
     font-size: 1.5em;
     color: var(--accent-fore-color);
 }
+
 div.twc-list>div>div:last-child {
     font-style: italic;
+}
+
+
+
+div.twc-table-toolbar-button {
+    display: inline-table;
+    border: 1px solid var(--accent-fore-color);
+    border-radius: 7px;
+    margin-right: 10px;
+    padding: 0px 7px;
+}
+
+div.twc-table-toolbar-button>div {
+    display: table-cell;
+    padding: 3px;
+    vertical-align: middle;
+}
+
+div.twc-table-toolbar-button:hover {
+    background-color: var(--bkgd-color-1);
 }

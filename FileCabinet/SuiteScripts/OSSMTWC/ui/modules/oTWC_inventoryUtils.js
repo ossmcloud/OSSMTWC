@@ -106,10 +106,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var orderBy = `order by s.${twcSite.Fields.NAME}`;
 
             var sites = coreSQL.run(`
-                select  ${sqlFields}, st.custrecord_twc_site_types_color as site_type_color, sl.custrecord_twc_site_level_color as site_level_color,
+                select  ${sqlFields}, st.custrecord_twc_site_types_color as site_type_color, sp.custrecord_twc_site_portfolio_color as site_color,
                 from    ${twcSite.Type} s
                 left join    customrecord_twc_site_type st on st.id = s.${twcSite.Fields.SITE_TYPE}
                 left join    customrecord_twc_site_level sl on sl.id = s.${twcSite.Fields.SITE_LEVEL}
+                left join    customrecord_twc_site_portfolio sp on sp.id = s.${twcSite.Fields.SITE_PORTFOLIO}
                 ${whereClause} 
                 ${orderBy}
             `)

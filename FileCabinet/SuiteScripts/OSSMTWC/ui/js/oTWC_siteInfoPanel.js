@@ -24,7 +24,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var siteAccessInfo = JSON.parse(JSON.stringify(this.#data));
                 siteAccessInfo[twcSite.Fields.SITE_LATITUDE] = siteAccessInfo[twcSite.Fields.LATITUDE_ACCESS]
                 siteAccessInfo[twcSite.Fields.SITE_LONGITUDE] = siteAccessInfo[twcSite.Fields.LONGITUDE_ACCESS]
-                siteAccessInfo.site_level_color = 'magenta';
+                siteAccessInfo.site_color = 'magenta';
                 if (siteAccessInfo[twcSite.Fields.SITE_LATITUDE] && siteAccessInfo[twcSite.Fields.SITE_LONGITUDE]) {
                     siteInfos.push(siteAccessInfo);
                 }

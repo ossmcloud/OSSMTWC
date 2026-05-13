@@ -15,6 +15,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             R_TYPE: 'custrecord_twc_file_type',
             STATUS: 'custrecord_twc_file_status',
             UPLOADED_BY: 'custrecord_twc_file_uploaded_by',
+            META_DATA: 'custrecord_twc_file_metadata',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -30,6 +31,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             R_TYPE: { name: 'custrecord_twc_file_type', type: 'select', alias: 'r_type', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file_type' },
             STATUS: { name: 'custrecord_twc_file_status', type: 'select', alias: 'status', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file_status' },
             UPLOADED_BY: { name: 'custrecord_twc_file_uploaded_by', type: 'select', alias: 'uploadedBy', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
+            META_DATA: { name: 'custrecord_twc_file_metadata', type: 'clobtext', alias: 'metaData', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -96,6 +98,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.UPLOADED_BY, value)
             }
             get uploadedByName() { return this.getText(_recordFields.UPLOADED_BY); }
+            
+            get metaData() {
+                return this.get(_recordFields.META_DATA);
+            } set metaData(value) {
+                this.set(_recordFields.META_DATA, value)
+            }
             
             get created() {
                 return this.get(_recordFields.CREATED);

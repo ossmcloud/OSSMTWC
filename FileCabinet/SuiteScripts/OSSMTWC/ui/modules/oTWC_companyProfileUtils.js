@@ -20,6 +20,8 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
             if (currentFile) {
                 try {
 
+                    var fileType = twcUtils.getFileTypes().find(f => { return f.isCert; });
+
                     var currentFileName = profileRecord.getText(`custrecord_twc_prof_${certCode}_filename`);
                     const fileObj = file.load({ id: currentFile });
                     fileObj.name = `${(new Date()).format()}_${currentFileName}`;
@@ -31,8 +33,9 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                     f.recordID = profileRecord.id;
                     f.description = 'kept for historical purposes';
                     f.file = currentFile;
-                    //f.r_type = '';
-                    //f.status = twcUtils.FileStatus.NA;
+                    f.metaData = certCode;
+                    f.r_type = fileType;
+                    f.status = twcUtils.FileStatus.Superseded;
                     f.uploadedBy = userInfo?.profile;
                     f.save();
                 } catch (error) {

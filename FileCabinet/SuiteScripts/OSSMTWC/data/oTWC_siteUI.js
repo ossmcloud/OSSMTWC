@@ -15,14 +15,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 { field: twcSite.Fields.SITE_ID },
                 { field: twcSite.Fields.SITE_NAME },
                 { field: twcSite.Fields.SITE_TYPE },
-                { field: twcSite.Fields.SITE_LEVEL },
-                { field: twcSite.Fields.SITE_SAF_AUTO_APPROVE },
-                { field: twcSite.Fields.HEIGHT_ASL_M },
                 { field: twcSite.Fields.ADDRESS },
                 { field: twcSite.Fields.ADDRESS_COUNTY },
-                { field: twcSite.Fields.SITE_PORTFOLIO },
                 { field: twcSite.Fields.SITE_LATITUDE },
                 { field: twcSite.Fields.SITE_LONGITUDE },
+                { field: twcSite.Fields.SITE_PORTFOLIO },
+
             ];
             return siteFields;
         }
@@ -57,11 +55,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     table: twcInfra.Type, siteField: twcInfra.Fields.SITE,
                     fields: [
                         { id: twcInfra.Fields.INFRASTRUCTURE_TYPE, isForeignKey: true, nullText: 'no type' },
-                        { id: twcInfra.Fields.INFRASTRUCTURE_ID, isForeignKey: true, nullText: 'no infra id' },
-                        { id: twcInfra.Fields.ACCOMMODATION_DIMENSIONS, nullText: '', mask: `<span style="color: var(--accent-fore-color);">(${twcInfra.Fields.ACCOMMODATION_DIMENSIONS}m)</span>` },
+                        { id: twcInfra.Fields.INFRASTRUCTURE_ID, nullText: 'no infra id' },
+                        { id: twcInfra.Fields.ACCOMMODATION_TYPE, isForeignKey: true, nullText: 'no accommodation type', mask: `<span style="color: var(--accent-fore-color);">(${twcInfra.Fields.ACCOMMODATION_TYPE})</span>` },
                     ],
                     filters: [{ field: twcInfra.Fields.INFRASTRUCTURE_TYPE, value: twcUtils.InfraType.Accommodation }],
-                    mask: `[${twcInfra.Fields.INFRASTRUCTURE_ID}] ${twcInfra.Fields.ACCOMMODATION_DIMENSIONS}`
+                    mask: `[${twcInfra.Fields.INFRASTRUCTURE_ID}] ${twcInfra.Fields.ACCOMMODATION_TYPE}`
                 },
                 label: 'Accommodation',
                 hideIfEmpty: true,
@@ -398,9 +396,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 id: `${twcInfra.Type}`, label: 'Air Conditioning',
                 fields: {
                     [twcInfra.Fields.INFRASTRUCTURE_ID]: 'Infra Id',
-                    [twcInfra.Fields.INFRASTRUCTURE_UNITS]: 'Units',
-                    [twcInfra.Fields.INFRASTRUCTURE_MODEL]: 'Model',
-                    [twcInfra.Fields.INFRASTRUCTURE_INSTALLED]: 'Installed',
+                    [twcInfra.Fields.AC_UNITS]: 'Units',
+                    [twcInfra.Fields.AC_MODEL]: 'Model',
+                    [twcInfra.Fields.AC_INSTALLED]: 'Installed',
                     [twcInfra.Fields.AC_FEED_PHASE]: 'Ac Feed Phase',
                     [twcInfra.Fields.LOADINGS]: 'Loadings',
                     [twcInfra.Fields.NOISE_LEVEL]: 'Noise Level',
