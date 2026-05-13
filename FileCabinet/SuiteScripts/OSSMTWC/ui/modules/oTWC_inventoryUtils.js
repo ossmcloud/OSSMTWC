@@ -93,97 +93,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
         }
 
-        function getSiteInfo(siteId) {
-            if (!siteId) { throw new Error('No site id provided!'); }
-
-            // @@TODO: move to rec.custom.js
-            var siteFields = twcSite.getFields();
-
-            var joinTables = [];
-            core.array.each(siteFields, f => {
-                if (f.field_type != 'List/Record') { return; }
-                joinTables.push(f.field_foreign_table);
-            })
-
-            var foreignFields = twcUtils.getFields(joinTables);
-
-            var joins = ''; var selectList = 's.id, ';
-            core.array.each(siteFields, f => {
-                selectList += `s.${f.field_id}, `
-                if (f.field_type != 'List/Record') { return; }
-
-                var tblAlias = f.field_foreign_table.replace('customrecord_', '');
-                selectList += `BUILTIN.DF(s.${f.field_id}) as ${f.field_id}_name, `
-
-                var foreignTableFields = foreignFields.filter(ff => { return ff.table_name == f.field_foreign_table; })
-                core.array.each(foreignTableFields, ff => {
-                    if (!ff.field_id.startsWith('cust')) { return; }
-                    selectList += `${ff.field_id}, `
-                })
-
-                joins += `
-                    left join ${f.field_foreign_table} as ${tblAlias} on ${tblAlias}.id = s.${f.field_id}
-                `
-            })
-
-            var siteInfo = coreSQL.first({
-                query: `
-                    select  ${selectList}
-                    from    ${twcSite.Type} s
-                    ${joins}
-                    where   s.id = ?
-                `,
-                params: [siteId]
-            })
-
-            var mainFields = twcSiteUI.getSiteMainInfoFields();
-
-            core.array.each(mainFields, mfg => {
-                core.array.each(mfg.fields, mf => {
-                    if (mf.childTable) {
-                        siteInfo[mf.id] = '';
-
-                        var url = core.url.record(mf.childTable.table)
-                        var fields = '';
-                        if (mf.childTable.fields) {
-                            core.array.each(mf.childTable.fields, mff => {
-                                fields += mff.isForeignKey ? `BUILTIN.DF(${mff.id}) as ${mff.id}, ` : `${mff.id}, `;
-                            })
-                        } else {
-                            fields = mf.childTable.isForeignKey ? `BUILTIN.DF(${mf.id}) as ${mf.id}` : `${mf.id}`;
-                        }
-
-                        coreSQL.each(`select id, ${fields} from ${mf.childTable.table} where ${mf.childTable.siteField} = ${siteId}`, childRecord => {
-                            var fieldValue = childRecord[mf.id];
-                            if (mf.childTable.mask) {
-                                fieldValue = mf.childTable.mask;
-                                core.array.each(mf.childTable.fields, mff => {
-                                    var value = childRecord[mff.id];
-                                    if (value === null || value === undefined) {
-                                        value = mff.nullText;
-                                    } else {
-                                        if (mff.mask) {
-                                            value = mff.mask.replaceAll(mff.id, value)
-                                        }
-                                    }
-                                    fieldValue = fieldValue.replaceAll(mff.id, value);
-                                });
-                            }
-                            siteInfo[mf.id] += `<a href="${url}&id=${childRecord.id}" target="_blank">${fieldValue}</a><br />`;
-                        })
-                    }
-                })
-            })
-
-            siteInfo.Type = twcSite.Type;
-
-            return {
-                site: siteInfo,
-                mainFields: mainFields,
-            };
-        }
-
-
         function getSites(options, userInfo) {
 
             var siteFields = twcUtils.getFields(twcSite.Type);
@@ -247,7 +156,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             renderInventoryPanel: renderInventoryPanel,
             getInventoryData: getInventoryData,
             getSites: getSites,
-            getSiteInfo: getSiteInfo,
             getInvInfoPanels: twcInventoryUI.getInvInfoPanels,
             getInventoryInfo: (pageData) => {
                 var inv = {};

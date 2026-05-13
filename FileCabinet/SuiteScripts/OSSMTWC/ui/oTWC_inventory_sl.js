@@ -14,7 +14,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var html = ''
             if (context.request.parameters.siteId || context.request.parameters.recId) {
                 pageData.inventoryInfo = twcInventoryUtils.getInventoryInfo(pageData);
-                pageData.siteInfo = twcInventoryUtils.getSiteInfo(pageData.inventoryInfo.siteId || context.request.parameters.siteId);
+                pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.inventoryInfo.siteId || context.request.parameters.siteId);
 
                 var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteInfo');
                 // @TODO : Work on the Status field for Inventory Record

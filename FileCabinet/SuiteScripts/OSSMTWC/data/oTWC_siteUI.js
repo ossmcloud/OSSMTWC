@@ -34,27 +34,46 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var overview = { id: 'site-overview', title: 'Overview', fields: [] };
             overview.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Site Code' })
             overview.fields.push({ id: twcSite.Fields.SITE_NAME, label: 'Site Name' })
-            // overview.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type' })
             overview.fields.push({
-                id: twcInfra.Fields.STRUCTURE_TYPE,
+                id: `${twcInfra.Fields.STRUCTURE_TYPE}_${twcUtils.InfraType.Structure}`,
                 childTable: {
                     table: twcInfra.Type, siteField: twcInfra.Fields.SITE,
                     fields: [
                         { id: twcInfra.Fields.INFRASTRUCTURE_TYPE, isForeignKey: true, nullText: 'no type' },
+                        { id: twcInfra.Fields.INFRASTRUCTURE_ID, isForeignKey: true, nullText: 'no infra id' },
                         { id: twcInfra.Fields.STRUCTURE_TYPE, isForeignKey: true, nullText: 'no struct type' },
                         { id: twcInfra.Fields.STRUCTURE_HEIGHT_M, nullText: '', mask: `<span style="color: var(--accent-fore-color);">(${twcInfra.Fields.STRUCTURE_HEIGHT_M}m)</span>` },
                     ],
-                    mask: `[${twcInfra.Fields.INFRASTRUCTURE_TYPE}] <b>${twcInfra.Fields.STRUCTURE_TYPE}</b> ${twcInfra.Fields.STRUCTURE_HEIGHT_M}`
+                    filters: [{ field: twcInfra.Fields.INFRASTRUCTURE_TYPE, value: twcUtils.InfraType.Structure }],
+                    mask: `[${twcInfra.Fields.INFRASTRUCTURE_ID}] <b>${twcInfra.Fields.STRUCTURE_TYPE}</b> ${twcInfra.Fields.STRUCTURE_HEIGHT_M}`
                 },
                 label: 'Structure'
             })
-            // overview.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL' })
+
+
+            overview.fields.push({
+                id: `${twcInfra.Fields.STRUCTURE_TYPE}_${twcUtils.InfraType.Accommodation}`,
+                childTable: {
+                    table: twcInfra.Type, siteField: twcInfra.Fields.SITE,
+                    fields: [
+                        { id: twcInfra.Fields.INFRASTRUCTURE_TYPE, isForeignKey: true, nullText: 'no type' },
+                        { id: twcInfra.Fields.INFRASTRUCTURE_ID, isForeignKey: true, nullText: 'no infra id' },
+                        { id: twcInfra.Fields.ACCOMMODATION_DIMENSIONS, nullText: '', mask: `<span style="color: var(--accent-fore-color);">(${twcInfra.Fields.ACCOMMODATION_DIMENSIONS}m)</span>` },
+                    ],
+                    filters: [{ field: twcInfra.Fields.INFRASTRUCTURE_TYPE, value: twcUtils.InfraType.Accommodation }],
+                    mask: `[${twcInfra.Fields.INFRASTRUCTURE_ID}] ${twcInfra.Fields.ACCOMMODATION_DIMENSIONS}`
+                },
+                label: 'Accommodation',
+                hideIfEmpty: true,
+            })
+
+
             mainInfoFieldGroups.push(overview);
 
             var location = { id: 'site-location', title: 'Location', fields: [] };
             location.fields.push({ id: twcSite.Fields.ADDRESS, label: 'Address' })
             location.fields.push({ id: twcSite.Fields.ADDRESS_COUNTY, label: 'County' })
-            
+
             location.fields.push({ id: twcSite.Fields.SITE_EASTING, label: 'Easting' })
             location.fields.push({ id: twcSite.Fields.SITE_NORTHING, label: 'Northing' })
             location.fields.push({ id: twcSite.Fields.SITE_LATITUDE, label: 'Latitude' })

@@ -73,7 +73,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             fields = mf.childTable.isForeignKey ? `BUILTIN.DF(${mf.id}) as ${mf.id}` : `${mf.id}`;
                         }
 
-                        coreSQL.each(`select id, ${fields} from ${mf.childTable.table} where ${mf.childTable.siteField} = ${siteId}`, childRecord => {
+                        var additionalFilters = '';
+                        if (mf.childTable.filters) {
+                            core.array.each(mf.childTable.filters, filter => {
+                                additionalFilters += `and ${filter.field} ${filter.operator || '='} '${filter.value}'`;
+                            })
+                        }
+
+                        coreSQL.each(`select id, ${fields} from ${mf.childTable.table} where ${mf.childTable.siteField} = ${siteId} ${additionalFilters}`, childRecord => {
                             var fieldValue = childRecord[mf.id];
                             if (mf.childTable.mask) {
                                 fieldValue = mf.childTable.mask;
@@ -115,6 +122,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var value = siteInfo.site[field.id];
                     // @@NOTE: if we have same field name as _name then use it as the field.id would just get the internal id
                     if (siteInfo.site[field.id + '_name'] !== undefined) { value = siteInfo.site[field.id + '_name'] }
+
+                    if (!value && field.hideIfEmpty) { return; }
 
                     fieldGroupHtml += `
                         <div>
