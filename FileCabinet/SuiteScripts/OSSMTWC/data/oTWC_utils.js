@@ -731,11 +731,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
 
-        function getTktImages(options) {
-            return getTktFiles(options, 'image')
+        function getTktImages(options, isCompletionImg) {
+            return getTktFiles(options, 'image', isCompletionImg)
         }
 
-        function getTktFiles(options, type) {
+        function getTktFiles(options, type, isCompletionImg) {
             if (options.id == 'undefined' || options.id == undefined) {
                 options.id = 0
             }
@@ -745,16 +745,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `;
             if (type == 'image') {
                 fileTypeFilter += `AND t.custrecord_twc_file_type_image = 'T'`;
+                fileTypeFilter += ` AND NVL(t.custrecord_twc_file_type_completion_img, 'F') = '${isCompletionImg}'`;;
             }
             log.debug("Filter", fileTypeFilter)
 
-            //log.debug("getFiles({ filters: fileTypeFilter })",getFiles({ filters: fileTypeFilter }))
             return getFiles({ filters: fileTypeFilter });
-            // }
-            // else{
-            //     log.debug("else case")
-            //     return []
-            // }
 
         }
 

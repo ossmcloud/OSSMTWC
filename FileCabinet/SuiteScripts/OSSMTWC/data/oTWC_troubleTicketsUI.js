@@ -136,7 +136,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcFile.Fields.DESCRIPTION]: { title: 'Description', nullText: '' },
                     ['preview_link']: { title: '', noFilter: true, styles: { width: '50px' } }
                 },
-                dataSource: twcUtils.getTktImages(dataSource),
+                dataSource: twcUtils.getTktImages(dataSource,'T'),
                 FieldsInfo: twcFile.FieldsInfo,
                 showToolbar: false,
             });
@@ -145,11 +145,34 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroup;
         }
 
+          function getTKOpenPictures(dataSource, userInfo) {
+            var fieldGroup = { id: 'trbl-tkts-open-files', title: 'Open Ticket Files', collapsed: false, controls: [] };
+            var openFilesInfo = { id: 'trbl-tkts-files', collapsed: false, fields: [] };
+            fieldGroup.controls.push(openFilesInfo);
+            openFilesInfo.fields.push({
+                id: `${twcFile.Type}`, label: 'Open Ticket Files',
+                fields: {
+                    [twcFile.Fields.CREATED]: 'Uploaded Date',
+                    [twcFile.Fields.NAME]: 'File Name',
+                    [twcFile.Fields.R_TYPE + '_name']: 'Type',
+                    [twcFile.Fields.DESCRIPTION]: { title: 'Description', nullText: '' },
+                    ['preview_link']: { title: '', noFilter: true, styles: { width: '50px' } }
+                },
+               // dataSource: twcUtils.getTktImages(dataSource,'F'),
+                dataSource: dataSource.tempOpenFiles || twcUtils.getTktImages(dataSource,'F') ,
+                FieldsInfo: twcFile.FieldsInfo,
+                showToolbar: false,
+            });
+            log.debug("openFilesInfo",openFilesInfo)
+            configUIFields.formatPanelFields(dataSource, fieldGroup);
+            return fieldGroup;
+        }
+
          function getResFilePanel(dataSource, userInfo) {
              var fieldGroup = { id: 'trbl-tkts-add-file', collapsed: false, controls: [] };
             var addFileField = { id: 'trbl-tkts-add-file-info', fields: [] };
             fieldGroup.controls.push(addFileField);
-            addFileField.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'tk-add-file', value: 'Add Resolution File' });
+            addFileField.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'tk-add-file', value: 'Add Picture' });
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
         }
@@ -161,10 +184,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fieldGroups = [];
         
             fieldGroups.push(getTKPanelInfo(dataSource, userInfo));
+            
             if (userInfo.isEmployee) {
                  if (!dataSource.id) {
                     fieldGroups.push(getResFilePanel(dataSource, userInfo));
                 }
+                fieldGroups.push(getTKOpenPictures(dataSource, userInfo))
                 fieldGroups.push(getTKPanelAssessment(dataSource, userInfo));
                 fieldGroups.push(getTKPanelResolution(dataSource, userInfo));
                 if (dataSource?.id) {
@@ -194,7 +219,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             getTicketsTableFields: getTicketsTableFields,
             getTKTInfoPanels: getTKTUIPanels,
-            getTktChildRecord:getTktChildRecord
+            getTktChildRecord:getTktChildRecord,
+            getTKOpenPictures:getTKOpenPictures
 
         }
     });

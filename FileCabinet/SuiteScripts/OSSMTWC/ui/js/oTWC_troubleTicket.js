@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../data/oTWC_troubleTickets.js', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', './oTWC_siteInfoPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_fieldPanel.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', '../../data/oTWC_file.js'],
-    (core, coreSql, twcPageBase, dialog, twcIcons, twcConfig, twcTkt, uiTable, twcSiteLocatorPanel, twcSiteInfoPanel, twcUI, twcUIPanel, b64, twcFile) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../data/oTWC_troubleTickets.js', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', './oTWC_siteInfoPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_fieldPanel.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', '../../data/oTWC_file.js','../../data/oTWC_troubleTicketsUI.js'],
+    (core, coreSql, twcPageBase, dialog, twcIcons, twcConfig, twcTkt, uiTable, twcSiteLocatorPanel, twcSiteInfoPanel, twcUI, twcUIPanel, b64, twcFile,twcTroubleTicketsUI) => {
 
         var _tktLink = null;
         function ticketViewLink(id) {
@@ -509,6 +509,27 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (!this.data?.trblTktInfo?.id) {
                             this.#resFiles = photos;
                             dlg.close();
+
+                                refreshOpenPicturesTable.call(this, photos);
+
+                        //     this.data.trblTktInfo.tempOpenFiles = photos.map(file => ({
+                        //         created: new Date().toLocaleString(),
+                        //         name: file.name,
+                        //         custrecord_twc_file_type_name: file.type,
+                        //         custrecord_twc_file_description: '',
+                        //         preview_link: ''
+                        //     }));
+
+                        //     // RE-RENDER EXISTING PANEL
+                        //     this.data.trblTktInfo.type = 'customrecord_twc_trbl_tkt'
+                           
+                        //    const newPanel =
+                        //         twcTroubleTicketsUI.getTKOpenPictures(
+                        //             this.data.trblTktInfo,
+                        //             this.userInfo
+                        //         );
+                        //         console.log('newPanel',newPanel)
+
                             return;
                         }
 
@@ -623,7 +644,41 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+     
+        function refreshOpenPicturesTable(photos) {
 
+            // map photos to table datasource format
+            this.data.trblTktInfo.tempOpenFiles = photos.map(p => ({
+                created: new Date().toLocaleString(),
+                name: p.name,
+                custrecord_twc_file_type_name: p.type,
+                custrecord_twc_file_description: '',
+                preview_link: ''
+            }));
+            this.data.trblTktInfo.type = 'customrecord_twc_trbl_tkt'
+
+            // regenerate panel using existing UI code
+            const newPanel = twcTroubleTicketsUI.getTKOpenPictures(
+                this.data.trblTktInfo,
+                this.userInfo
+            );
+
+            console.log('newPanel', newPanel);
+
+            // MUST be jquery object
+            const panelEl = jQuery('#trbl-tkts-open-files');
+
+            if (!panelEl.length) {
+                console.log('Panel not found');
+                return;
+            }
+
+            // clear existing
+            panelEl.empty();
+
+            // IMPORTANT
+            twcUI.init(newPanel, panelEl);
+        }
         return {
 
             init: function () {
