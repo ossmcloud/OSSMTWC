@@ -2,33 +2,16 @@
 TODO:
 -----
 
-when ticket is new do not show 'Resolution file' panel  = >DONE
+NEW TICKET PICTURES:
+    change button label to 'Add Picture'
+    also show the Open Ticket Files and let user delete uploaded files
+    
+    the files sublist should be two:
+        Open Ticket Files (new one, under main trouble ticket group)
+            => this should only show file type where custrecord_twc_file_type_image=T and custrecord_twc_file_type_completion_img=F
 
-new ticket:
-    below Create New Trouble Ticket or Provide Safety / Security Feedback    = >DONE
-        add panel to upload photos when ticket created
-
-OSSMTWC - Trouble Ticket Category > Requires Resolution Photos => do not let status gop to complete if no resolution pics    = >DONE
-
-
-
-button Upload resolution photos should only appear when status is:  Assessed, Resolved                   =>DONE
-add assigned to based on company selected                                                                =>DONE
-on save record function: if assigned to is selected and status = New then change status to 'Assessed'    =>DONE  (Please check if the conditions are correct) TroubleTicketUtils.js line 260 and 318
-when clicking cancel => ask for comment (mandatory) then set comment into field: CA Taken incl Root Cause =>DONE
-when clicking resolve => ask:                                                                             =>DONE
-    corrective action Date
-    scheduled date
-    comment
-
-
-edit / delete photos:                                                                                     => DONE
-    just edit name/description
-    for delete just set 'inactive' = true on TWC File record (soft delete)
-
-    FileCabinet\SuiteScripts\OSSMTWC\ui\js\oTWC_spaceRequest.js
-        manageSRFFile
-
+        Resolution Files (already there)    
+            => this should only show file type where custrecord_twc_file_type_image=T and custrecord_twc_file_type_completion_img=T
 
 
 TEST WORKFLOW:

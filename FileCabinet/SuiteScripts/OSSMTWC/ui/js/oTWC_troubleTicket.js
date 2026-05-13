@@ -174,17 +174,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var fileCtrl = this.ui.getControl(twcFile.Type);
                 if (fileCtrl) {
                     fileCtrl.onToolbarClick = e => {
-                    if (e.action == 'edit') {
-                        this.manageFile(e.rowData, e.table);
-
-                    } else if (e.action == 'delete') {
-                        dialog.confirm('Are you sure you wish to delete this resoltuion image', () => {
-                            e.rowData.delete = true;
+                        if (e.action == 'edit') {
                             this.manageFile(e.rowData, e.table);
-                        })
+
+                        } else if (e.action == 'delete') {
+                            dialog.confirm('Are you sure you wish to delete this resoltuion image', () => {
+                                e.rowData.delete = true;
+                                this.manageFile(e.rowData, e.table);
+                            })
+                        }
                     }
                 }
-            }
 
                 this.ui.find('#resolve-button').on('click', async (e) => {
                     await this.resolveTicket();
@@ -265,10 +265,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 let rec = twcTkt.get(this.data.trblTktInfo.id);
                 let tktCategory = rec.category;
-                
+
                 if (tktCategory) {
                     var isResPicReq = this.reqResPhotos(this.data.trblTktInfo.id)
-                    
+
                     if (isResPicReq == false) {
                         dialog.error("Please add Resoltuion Image to resolve the ticket!!")
                         return
@@ -352,20 +352,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             reqResPhotos(tktId) {
-            //    var tktInfo = coreSql.first(`
-            //         select distinct t.id
-            //         from ${twcTkt.Type} t
-            //         join customrecord_twc_trbl_tkt_category cat
-            //         on cat.id = t.custrecord_twc_trbl_tkt_category
-            //         left join customrecord_twc_file f
-            //         on f.custrecord_twc_file_recid = t.id
-            //         and f.isinactive = 'F'
-            //         and f.custrecord_twc_file_rectype = '${twcTkt.Type}'
-            //         where t.id = ${tktId}
-            //         and cat.custrecord_twc_trbl_tkt_requires_res_pic = 'T'
-            //         and f.id is null
-            //     `);
-            var tktInfo = coreSql.first(`
+                //    var tktInfo = coreSql.first(`
+                //         select distinct t.id
+                //         from ${twcTkt.Type} t
+                //         join customrecord_twc_trbl_tkt_category cat
+                //         on cat.id = t.custrecord_twc_trbl_tkt_category
+                //         left join customrecord_twc_file f
+                //         on f.custrecord_twc_file_recid = t.id
+                //         and f.isinactive = 'F'
+                //         and f.custrecord_twc_file_rectype = '${twcTkt.Type}'
+                //         where t.id = ${tktId}
+                //         and cat.custrecord_twc_trbl_tkt_requires_res_pic = 'T'
+                //         and f.id is null
+                //     `);
+                var tktInfo = coreSql.first(`
                     select distinct t.id
                     from ${twcTkt.Type} t
                     join customrecord_twc_trbl_tkt_category cat
@@ -382,7 +382,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             or f.id is not null
                         )
                 `);
-                
+
                 return !!tktInfo
             }
 
@@ -410,7 +410,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         try {
                             var obj = form.getValues(true);
                             for (var k in obj) {
-                               // if (k == 'name') { continue; }
+                                // if (k == 'name') { continue; }
                                 if (obj[k]?.value !== undefined) {
                                     tktfFile[k] = obj[k].value;
                                     tktfFile[k + '_name'] = obj[k].text;
@@ -422,7 +422,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                             if (!this.data.trblTktInfo.files) { this.data.trblTktInfo.files = table.data; }
                             if (this.data.trblTktInfo.files.indexOf(tktfFile) < 0) { this.data.trblTktInfo.files.push(tktfFile); }
-                           
+
                             table.render(this.data.trblTktInfo.files, true)
 
                             this.dirty = true
@@ -441,7 +441,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             deleteRecord(tktRecord, table) {
                 if (tktRecord.delete) {
-                   
+
                     if (tktRecord.id) {
                         if (!this.data.trblTktInfo['files_deleted']) { this.data.trblTktInfo['files_deleted'] = []; }
                         this.data.trblTktInfo['files_deleted'].push(tktRecord);
@@ -506,6 +506,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     ok: (dlg) => {
                         console.log('pic', photos);
 
+                        if (!this.data?.trblTktInfo?.id) {
+                            this.#resFiles = photos;
+                            dlg.close();
+                            return;
+                        }
+
                         this.uploadPhoto(photoList, photos, 0, () => {
                             var errors = photos.filter(p => { return p.error !== undefined; })
                             if (errors.length > 0) {
@@ -518,19 +524,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             // this.postSync({ action: 'edit-saf-status' }, { saf: this.data.siteAccessInfo.id, status: twcSaf.Status.PhotosReceived });
 
                             dlg.close();
-                           // location.reload();
-                            
-                           console.log("ID",this.data.trblTktInfo.id)
-                             if(this.data?.trblTktInfo?.id){
-                                 location.reload();
-                             }else{
+                            // location.reload();
+
+                            console.log("ID", this.data.trblTktInfo.id)
+                            if (this.data?.trblTktInfo?.id) {
+                                location.reload();
+                            } else {
                                 var html = `<html><body><h2 id="msg">Image(s) Uploaded Successfully</h2><script>var count=0;var interval=setInterval(function(){count++;document.getElementById("msg").innerHTML="Image(s) Uploaded Successfully"+".".repeat(count);if(count===3){clearInterval(interval);}},500);</script></body></html>`;
                                 dialog.message({
-                                title: 'Resolution Image',
-                                message: html,
-                                size: { width: '450px', height: '20vh' }
-                            })
-                             }
+                                    title: 'Resolution Image',
+                                    message: html,
+                                    size: { width: '450px', height: '20vh' }
+                                })
+                            }
                         });
 
 
@@ -541,16 +547,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             uploadPhoto(photoList, photos, idx, callback) {
-                if( !this.data?.trblTktInfo?.id){
-                    if (photos[idx]?.deleted) {
-                        
-                         photos.splice(idx, 1);   
-                        this.#resFiles = photos;
-                        return;
-                    }
-                    this.#resFiles=photos
-                }
-                
+                // if (!this.data?.trblTktInfo?.id) {
+                //     if (photos[idx]?.deleted) {
+
+                //         photos.splice(idx, 1);
+                //         this.#resFiles = photos;
+                //         return;
+                //     }
+                //     this.#resFiles = photos
+                //     return;
+                // }
+
                 if (photos[idx] === undefined) {
                     callback();
                     return;
@@ -563,6 +570,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.uploadPhoto(photoList, photos, idx + 1, callback);
                     return;
                 }
+
                 this.post({ action: 'upload-tkt-photo' }, { tkt: this.data.trblTktInfo.id, photo: photos[idx] }).then(resp => {
                     if (resp.error) {
                         photoListItem.html(twcIcons.get('exclamation', 16, 'red'));
@@ -590,7 +598,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (!this.dirty) { throw new Error('The record has not changed'); }
 
                     //throw new Error(JSON.stringify(this.data))
-                    var resFilesAdded= this.#resFiles
+                    var resFilesAdded = this.#resFiles
 
                     var payload = this.#changes;
 
@@ -599,7 +607,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     payload.files_deleted = this.data.trblTktInfo['files_deleted']
                     payload.files_edited = this.data.trblTktInfo['files']
                     payload.newFiles = resFilesAdded
-                   // throw new Error(JSON.stringify(payload))
+                    // throw new Error(JSON.stringify(payload))
                     var resp = await this.post({ action: 'save' }, payload);
                     this.dirty = false;
 

@@ -5,6 +5,8 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_troubleTickets.js', '../../data/oTWC_troubleTicketsUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/oTWC_nsFileUtils.js', '../../data/oTWC_file.js'],
     (core, coreSQL, twcUtils, twcTrblTkts, twcTrblTktsUI, twcUI, twcConfig, twcSite, twcSiteUI, recu, nsFileUtils, twcFile) => {
 
+
+
         function getTroubleTickets(options, userInfo) {
             var ticketFields = twcUtils.getFields(twcTrblTkts.Type);
             var userFields = twcTrblTktsUI.getTicketsTableFields();
@@ -350,7 +352,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             deleteTrblTktsFile(payload);
             saveResolutionFile(payload)
-            saveNewResolutionFiles(payload)
+            saveTktImage(payload)
 
             return payload.id;
         }
@@ -364,22 +366,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 recu.submit(twcFile.Type, file.id, 'isinactive', true);
             })
         }
-          function saveResolutionFile(payload) {
+        function saveResolutionFile(payload) {
             if (!payload.files_edited) { return; }
-            log.debug("payload fiels edited",payload.files_edited)
-
-            var tktInfo = coreSQL.first(`
-                select  s.name, site.${twcSite.Fields.SITE_ID} as site_id
-                from    ${twcTrblTkts.Type} s
-                join    ${twcSite.Type} site on site.id = s.${twcTrblTkts.Fields.SITE}
-                where   s.id = ${payload.id}
-            `)
-
-             var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/${tktInfo.name}`);
-
+            
             core.array.each(payload.files_edited, file => {
                 if (!file.dirty) { return; }
-
                 var tktFile = twcFile.get(file.id);
                 tktFile.recordType = twcTrblTkts.Type;
                 tktFile.recordID = payload.id;
@@ -389,34 +380,63 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     tktFile.set(k, file[k])
                 }
                 tktFile.save();
-
-                // var nsFile = nsFileUtils.writeFile({
-                //     name: `${tktFile.id}_${file.name}`,
-                //     fileType: nsFileUtils.getFileType(file.type),
-                //     content: file.content,
-                //     folder: tktFolder,
-                // });
-                // recu.submit(twcFile.Type, tktFile.id, twcFile.Fields.FILE, nsFile.fileId);
-
-           })
+            })
         }
 
-        function saveNewResolutionFiles(payload){
-            if (!payload.newFiles) { return; }
-            log.debug("payload files new",payload.newFiles)
+        // function saveNewResolutionFiles(payload) {
+        //     if (!payload.newFiles) { return; }
+        //     log.debug("payload files new", payload.newFiles)
 
-            var fileType = coreSQL.first(`select id from customrecord_twc_file_type where custrecord_twc_file_type_image = 'T' and id = 7`)?.id;
+        //     var fileType = coreSQL.first(`select id from customrecord_twc_file_type where custrecord_twc_file_type_image = 'T' and id = 7`)?.id;
 
+        //     var tktInfo = coreSQL.first(`
+        //         select  s.name, site.${twcSite.Fields.SITE_ID} as site_id
+        //         from    ${twcTrblTkts.Type} s
+        //         join    ${twcSite.Type} site on site.id = s.${twcTrblTkts.Fields.SITE}
+        //         where   s.id = ${payload.id}
+        //     `)
+
+        //     var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/${tktInfo.name}`);
+
+        //     core.array.each(payload.newFiles, file => {
+        //         var nsFile = nsFileUtils.writeFile({
+        //             name: `${payload.id}_${file.name}`,
+        //             fileType: nsFileUtils.getFileType(file.type),
+        //             content: file.content,
+        //             folder: tktFolder,
+        //         });
+
+        //         var tktImage = twcFile.get();
+        //         tktImage.name = file.name;
+        //         tktImage.recordType = twcTrblTkts.Type;
+        //         tktImage.recordID = payload.id;
+        //         tktImage.description = file.notes || '';
+        //         tktImage.file = nsFile.fileId;
+        //         tktImage.r_type = fileType
+        //         tktImage.save();
+        //     })
+        // }
+        function saveTktImage(options) {
+            // @@NOTE: this function can be called in two cases:
+            //  1. A new ticket is saved with pictures, in this case we will have the following properties
+            //                                                      options.newFiles   <= a collection of file objects
+            //                                                      options.id         <= the ID of the newly saved ticket
+            //                                                   
+            //  2. A resolution image is uploaded,      in this case we will have the following properties
+            //                                                      options.tkt        <= the ID of the ticket
+            //                                                      options.photo      <= the file being uploaded
+            var isResolutionImage = (options.txt);
+            var fileType = coreSQL.first(`select id from customrecord_twc_file_type where custrecord_twc_file_type_image = 'T' and NVL(custrecord_twc_file_type_completion_img, 'F') = ${isResolutionImage ? 'T' : 'F'}`)?.id;
             var tktInfo = coreSQL.first(`
-                select  s.name, site.${twcSite.Fields.SITE_ID} as site_id
-                from    ${twcTrblTkts.Type} s
-                join    ${twcSite.Type} site on site.id = s.${twcTrblTkts.Fields.SITE}
-                where   s.id = ${payload.id}
+                select  tk.id, site.${twcSite.Fields.SITE_ID} as site_id
+                from    ${twcTrblTkts.Type} tk
+                join    ${twcSite.Type} site on site.id = tk.${twcTrblTkts.Fields.SITE}
+                where   tk.id = ${options.tkt || options.id}
             `)
 
-             var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/${tktInfo.name}`);
-
-            core.array.each(payload.newFiles, file => {
+            var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/${tktInfo.id}`);
+            var pictures = options.newFiles || [options.photo];
+            core.array.each(pictures, file => {
                 var nsFile = nsFileUtils.writeFile({
                     name: `${payload.id}_${file.name}`,
                     fileType: nsFileUtils.getFileType(file.type),
@@ -427,47 +447,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var tktImage = twcFile.get();
                 tktImage.name = file.name;
                 tktImage.recordType = twcTrblTkts.Type;
-                tktImage.recordID = payload.id;
+                tktImage.recordID = tktInfo.id;
                 tktImage.description = file.notes || '';
                 tktImage.file = nsFile.fileId;
                 tktImage.r_type = fileType
                 tktImage.save();
             })
-
-        }
-        function saveTktImage(options) {
-
-          if(!options.tkt) return
-            var fileType = coreSQL.first(`select id from customrecord_twc_file_type where custrecord_twc_file_type_image = 'T' and id = 7`)?.id;
-
-            var tktInfo = coreSQL.first(`
-                select  tk.id, site.${twcSite.Fields.SITE_ID} as site_id
-                from    ${twcTrblTkts.Type} tk
-                join    ${twcSite.Type} site on site.id = tk.${twcTrblTkts.Fields.SITE}
-                where   tk.id = ${options.tkt}
-            `)
-            
-            var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/${tktInfo.id}`);
-            log.debug('tktFolder', tktFolder)
-
-            var nsFile = nsFileUtils.writeFile({
-                name: `${options.tkt}_${options.photo.name}`,
-                fileType: nsFileUtils.getFileType(options.photo.type),
-                content: options.photo.content,
-                folder: tktFolder,
-            });
-            log.debug('nsFile', nsFile)
-
-            var tktImage = twcFile.get();
-            tktImage.name = options.photo.name;
-            tktImage.recordType = twcTrblTkts.Type;
-            tktImage.recordID = options.tkt;
-            tktImage.description = options.photo.notes || '';
-            tktImage.file = nsFile.fileId;
-            tktImage.r_type = fileType;
-            tktImage.save();
-            log.debug('tktImage', tktImage)
-        
         }
 
 
