@@ -92,7 +92,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 } else {
                     this.#column.table.closeAllFilters();
 
-                    var isDate = this.#colHeader.data('type') == 'date';
+                    var isDate = (this.#colHeader.data('type') == 'date' || this.#colHeader.data('type') == 'datetime');
                     var values = []; var valueGrouped = {};
                     core.array.each(this.#column.table.data, (d, i) => {
 
@@ -432,7 +432,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     styles += 'text-align: right;';
                 } else if (this.type == 'bool') {
                     styles += 'text-align: center;';
-                } else if (this.type == 'date') {
+                } else if (this.type == 'date' || this.type == 'datetime') {
                     styles += 'text-align: center;';
                 }
 
@@ -471,9 +471,14 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         } else if (formattedValue === 'F') {
                             formattedValue = '';
                         }
-                    } else if (this.type == 'date') {
+                    } else if (this.type == 'date' || this.type == 'datetime') {
                         formattedValue = new Date(value);
-                        formattedValue = `${formattedValue.getDate()}/${formattedValue.getMonth() + 1}/${formattedValue.getFullYear()}`;
+                        //formattedValue = `${formattedValue.getDate()}/${formattedValue.getMonth() + 1}/${formattedValue.getFullYear()}`;
+                        if (this.type == 'datetime') {
+                            formattedValue = `${formattedValue.getDate()}/${formattedValue.getMonth() + 1}/${formattedValue.getFullYear()} ${formattedValue.getHours().pad()}:${formattedValue.getMinutes().pad()}`;
+                        } else {
+                            formattedValue = `${formattedValue.getDate()}/${formattedValue.getMonth() + 1}/${formattedValue.getFullYear()}`;
+                        }
                     }
 
                 }
@@ -1046,7 +1051,6 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     var actionSpan = jQuery(e.currentTarget);
                     var tableRow = actionSpan.closest('.o-row');
                     var tableRowData = this.#data[jQuery(tableRow).data('idx')];
-                    console.log("tableRowDataaaaaaaaaa", tableRowData)
                     if (this.onToolbarClick) {
                         this.onToolbarClick({ action: actionSpan.data('action'), table: this, row: tableRow, rowData: tableRowData, id: actionSpan.data('id') })
                     }
@@ -1127,7 +1131,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                             } else if (dataType.lower() == 'number') {
                                 fieldValueA = parseFloat(fieldValueA || '0');
                                 fieldValueB = parseFloat(fieldValueB || '0');
-                            } else if (dataType.lower() == 'date') {
+                            } else if (dataType.lower() == 'date' || dataType.lower() == 'datetime') {
                                 fieldValueA = new Date(fieldValueA);
                                 fieldValueB = new Date(fieldValueB);
                             }

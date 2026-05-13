@@ -202,8 +202,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.findField(fieldName, true) != null;
             }
             findField(fieldName, doNotThrowError) {
-                if (fieldName == 'name') { return { name: 'name', type: 'text' }; }
-                if (fieldName == 'id') { return { name: 'id', type: 'int' }; }
+                if (fieldName == 'name') { return { name: 'name', alias: 'name', type: 'text' }; }
+                if (fieldName == 'id') { return { name: 'id', alias: 'id', type: 'int' }; }
                 var field = this.#fields[fieldName.toUpperCase()];
                 if (field) { return field; }
                 for (var f in this.#fields) {
@@ -295,7 +295,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             if (Array.isArray(options.fields)) {
                                 core.array.each(options.fields, f => {
                                     var field = this.findField(f.name || f);
-                                    sql += selectFormat(field, f.alias);
+                                    var alias = field.alias;
+                                    if (options.useNames || options.noAlias) { alias = field.name; }
+                                    sql += selectFormat(field, alias);
                                 })
                             } else {
                                 for (var f in options.fields) {

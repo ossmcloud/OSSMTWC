@@ -8,19 +8,12 @@ define([], () => {
     const beforeLoad = (context) => {
 
         try {
-
             const form = context.form;
-
-            form.clientScriptModulePath =
-                './oTWC_power_supply_cs.js';
-
+            form.clientScriptModulePath = './oTWC_power_supply_cs.js';
             form.addButton({
-                id:
-                    'custpage_select_gen_backup',
-                label:
-                    'Select Generator Backup',
-                functionName:
-                    'openGeneratorBackupSelector'
+                id: 'custpage_select_gen_backup',
+                label: 'Select Generator Backup',
+                functionName: 'openGeneratorBackupSelector'
             });
 
         } catch (e) {

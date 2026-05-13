@@ -34,12 +34,12 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                     f.description = 'kept for historical purposes';
                     f.file = currentFile;
                     f.metaData = certCode;
-                    f.r_type = fileType;
-                    f.status = twcUtils.FileStatus.Superseded;
+                    f.r_type = fileType?.value;
+                    f.status = (fileType) ? twcUtils.FileStatus.Superseded : null;
                     f.uploadedBy = userInfo?.profile;
                     f.save();
                 } catch (error) {
-                    core.logDebug('PROFILE-ARCHIVE-CERT', `cert: ${c} - profile id: ${response.id} - file id: ${currentFile} - error: ${error.message}`);
+                    core.logDebug('PROFILE-ARCHIVE-CERT', `cert: ${certCode} - profile id: ${profileRecord.id} - file id: ${currentFile} - error: ${error.message}`);
                 }
             }
         }
@@ -90,9 +90,9 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 if (options.profile.certs) {
                     for (var c in options.profile.certs) {
                         var fileObject = options.profile.certs[c];
-                        
+
                         archiveProfileCurrentFile(c, childRecord, fileObject.name, userInfo);
-                        
+
                         var folder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/C${company.id.pad(7)}/P${response.id.pad(7)}`);
                         var fileId = saveFile(response.id, fileObject, folder);
                         recu.submit(twcProfile.Type, response.id, `custrecord_twc_prof_${c}_filename`, fileId);
@@ -104,7 +104,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
             } else {
                 throw new Error(`Invalid Child Record Type: ${childRecord.type}`)
             }
-            
+
             return response
         }
 

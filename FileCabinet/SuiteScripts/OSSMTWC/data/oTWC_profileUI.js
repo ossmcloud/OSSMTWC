@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_profile.js'],
-    (runtime, core, coreSQL, twcUtils, configUIFields, twcUI, twcProfile) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_table.js', './oTWC_profile.js', './oTWC_file.js'],
+    (runtime, core, coreSQL, twcUtils, configUIFields, twcUI, uiTable, twcProfile, twcFile) => {
 
 
 
@@ -40,8 +40,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS, label: 'Accreditation Status', readOnly: nonTwcReadOnly, width: '175px' })
             basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_SUBMITTED, label: 'Submitted', readOnly: nonTwcReadOnly, width: '150px' })
             basicInfo2.fields.push({ id: twcProfile.Fields.PICW_ACCEPTABLE, label: 'PICW', readOnly: nonTwcReadOnly }),
-            basicInfo2.fields.push({ id: twcProfile.Fields.USER_ACTION_NEEDED, label: 'User Action Needed', readOnly: nonTwcReadOnly }),
-            basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS_COMMENT, label: 'Accreditation Comment', readOnly: nonTwcReadOnly, width: '100%', rows: "4", styles: { height: '111px', display: 'inline-block', width: '100%' } })
+                basicInfo2.fields.push({ id: twcProfile.Fields.USER_ACTION_NEEDED, label: 'User Action Needed', readOnly: nonTwcReadOnly }),
+                basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS_COMMENT, label: 'Accreditation Comment', readOnly: nonTwcReadOnly, width: '100%', rows: "4", styles: { height: '111px', display: 'inline-block', width: '100%' } })
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
@@ -66,7 +66,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var nonTwcReadOnly = userInfo.isEmployee ? undefined : true;
             var certGroup = { id: 'profile-cart-' + title.toLowerCase(), title: title, fields: [] };
             certGroup.fields.push({ id: fieldStatus, label: 'Status', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
-            certGroup.fields.push({ id: fieldExpiry, label: 'Expiry', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true, mandatory: true })
+            certGroup.fields.push({ id: fieldExpiry, label: 'Expiry', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
             certGroup.fields.push({ id: certCode.toLowerCase() + '_file_name', type: 'text', value: dataSource.getText(fieldFileName), label: 'File', width: '100%', readOnly: true, lineBreak: true })
 
             if (fileId) { certGroup.fields.push({ id: 'view-file-' + fileId, value: 'View File', styles: { width: 'calc(50% - 5px)', display: 'inline-block', 'margin-top': '3px' }, type: 'button' }) }
@@ -130,9 +130,64 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
 
+        function getCertFileHistory(options) {
+            var fileType = twcUtils.getFileTypes().find(f => { return f.isCert; });
+
+            var where = {
+                [twcFile.Fields.RECORD_TYPE]: twcProfile.Type,
+                [twcFile.Fields.RECORD_ID]: options.profile,
+                [twcFile.Fields.R_TYPE]: fileType?.value || 0,
+            }
+            if (options.certCode) {
+                where[twcFile.Fields.META_DATA] = options.certCode;
+            }
+
+            var fields = [
+                twcFile.Fields.NAME,
+                twcFile.Fields.DESCRIPTION,
+                twcFile.Fields.R_TYPE,
+                twcFile.Fields.STATUS,
+                twcFile.Fields.UPLOADED_BY,
+                twcFile.Fields.CREATED
+
+            ];
+            var files = twcFile.select({ fields: fields, where: where, orderBy: `${twcFile.Fields.CREATED} desc`, noAlias: true });
+
+            return uiTable.render({
+                id: 'file_history',
+                onColumnInit: (tbl, col) => {
+                    if (col.id == twcFile.Fields.R_TYPE || col.id == twcFile.Fields.STATUS || col.id == twcFile.Fields.UPLOADED_BY) { return false; }
+                    if (col.id == twcFile.Fields.NAME) {
+                        col.title = 'File Name';
+                        col.link = {
+                            url: 'onclick="window.twcPreviewFile(' + "'" + '${id}' + "'" + ')"',
+                            valueField: 'id',
+                            target: '_self'
+                        }
+                    } else if (col.id == twcFile.Fields.DESCRIPTION) {
+                        col.title = 'Description';
+                    } else if (col.id.startsWith(twcFile.Fields.R_TYPE)) {
+                        col.title = 'Type';
+                    } else if (col.id.startsWith(twcFile.Fields.STATUS)) {
+                        col.title = 'Status';
+                    } else if (col.id.startsWith(twcFile.Fields.UPLOADED_BY)) {
+                        col.title = 'Uploaded By';
+                    } else if (col.id.startsWith(twcFile.Fields.CREATED)) {
+                        col.type = 'date';
+                        col.title = 'Uploaded On';
+                    }
+
+                }
+            }, files);
+
+        }
+
+
+
         return {
             RecordType: twcProfile.Type,
-            getUIFields: getProfileInfoPanels
+            getUIFields: getProfileInfoPanels,
+            getCertFileHistory: getCertFileHistory
 
         }
     });
