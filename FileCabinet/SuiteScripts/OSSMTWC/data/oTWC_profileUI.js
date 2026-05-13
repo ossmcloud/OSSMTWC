@@ -39,7 +39,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push(basicInfo2);
             basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS, label: 'Accreditation Status', readOnly: nonTwcReadOnly, width: '175px' })
             basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_SUBMITTED, label: 'Submitted', readOnly: nonTwcReadOnly, width: '150px' })
-            basicInfo2.fields.push({ id: twcProfile.Fields.PICW_ACCEPTABLE, label: 'PICW', readOnly: nonTwcReadOnly })
+            basicInfo2.fields.push({ id: twcProfile.Fields.PICW_ACCEPTABLE, label: 'PICW', readOnly: nonTwcReadOnly }),
+            basicInfo2.fields.push({ id: twcProfile.Fields.USER_ACTION_NEEDED, label: 'User Action Needed', readOnly: nonTwcReadOnly }),
             basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS_COMMENT, label: 'Accreditation Comment', readOnly: nonTwcReadOnly, width: '100%', rows: "4", styles: { height: '111px', display: 'inline-block', width: '100%' } })
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
@@ -65,7 +66,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var nonTwcReadOnly = userInfo.isEmployee ? undefined : true;
             var certGroup = { id: 'profile-cart-' + title.toLowerCase(), title: title, fields: [] };
             certGroup.fields.push({ id: fieldStatus, label: 'Status', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
-            certGroup.fields.push({ id: fieldExpiry, label: 'Expiry', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
+            certGroup.fields.push({ id: fieldExpiry, label: 'Expiry', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true, mandatory: true })
             certGroup.fields.push({ id: certCode.toLowerCase() + '_file_name', type: 'text', value: dataSource.getText(fieldFileName), label: 'File', width: '100%', readOnly: true, lineBreak: true })
 
             if (fileId) { certGroup.fields.push({ id: 'view-file-' + fileId, value: 'View File', styles: { width: 'calc(50% - 5px)', display: 'inline-block', 'margin-top': '3px' }, type: 'button' }) }

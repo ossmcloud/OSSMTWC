@@ -14,6 +14,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             
 
             pageData.profileInfo = twcCompanyProfileUtils.getProfileInfo(pageData);
+            log.debug("pageData.profilrInfooooooooooooo", Object.keys(pageData));
             pageData.recId = pageData.profileInfo.id;
 
             var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_companyProfile');
@@ -21,7 +22,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var readOnly = context.request.parameters.edit != 'T';
             // @@NOTE: if permission lvl is 1 it means view only so even if parameter passed force to read only
             if (pageData.userInfo.permission.lvl == 1) { readOnly = true; }
-
             var fieldGroups = twcCompanyProfileUtils.getCompanyInfoPanels(pageData);
             html = html.replaceAll('{COMPANY_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
 

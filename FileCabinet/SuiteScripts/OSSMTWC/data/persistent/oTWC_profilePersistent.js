@@ -10,6 +10,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             RADIX_PROFILE_TABLE_ENTRY_NUMBER: 'custrecord_twc_prof_radix_entry_num',
             COMPANY: 'custrecord_twc_prof_company',
             ACCREDITATION_STATUS: 'custrecord_twc_prof_accred_status',
+            USER_ACTION_NEEDED: 'custrecord_twc_user_act_need',
             ACCREDITATION_STATUS_COMMENT: 'custrecord_twc_prof_accred_comment',
             ACCREDITATION_SUBMITTED: 'custrecord_twc_prof_accred_submitted',
             ACCREDITATION_STATUS_CHANGE_DATE: 'custrecord_twc_prof_accred_sts_date',
@@ -56,6 +57,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             RADIX_PROFILE_TABLE_ENTRY_NUMBER: { name: 'custrecord_twc_prof_radix_entry_num', type: 'integer', alias: 'rADIXProfileTableentrynumber', display: 'normal', mandatory: false },
             COMPANY: { name: 'custrecord_twc_prof_company', type: 'select', alias: 'company', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             ACCREDITATION_STATUS: { name: 'custrecord_twc_prof_accred_status', type: 'select', alias: 'accreditationStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof_accred_status' },
+            USER_ACTION_NEEDED: { name: 'custrecord_twc_user_act_need', type: 'checkbox', alias: 'accreditationUserActionNeeded', display: 'normal', mandatory: false },
             ACCREDITATION_STATUS_COMMENT: { name: 'custrecord_twc_prof_accred_comment', type: 'clobtext', alias: 'accreditationStatusComment', display: 'normal', mandatory: false },
             ACCREDITATION_SUBMITTED: { name: 'custrecord_twc_prof_accred_submitted', type: 'date', alias: 'accreditationSubmitted', display: 'normal', mandatory: false },
             ACCREDITATION_STATUS_CHANGE_DATE: { name: 'custrecord_twc_prof_accred_sts_date', type: 'date', alias: 'accreditationStatusChangeDate', display: 'normal', mandatory: false },
@@ -132,6 +134,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.ACCREDITATION_STATUS_COMMENT);
             } set accreditationStatusComment(value) {
                 this.set(_recordFields.ACCREDITATION_STATUS_COMMENT, value)
+            }
+
+            get accreditationUserActionNeeded() {
+                return this.get(_recordFields.USER_ACTION_NEEDED);
+            } set accreditationUserActionNeeded(value) {
+                this.set(_recordFields.USER_ACTION_NEEDED, value)
             }
             
             get accreditationSubmitted() {

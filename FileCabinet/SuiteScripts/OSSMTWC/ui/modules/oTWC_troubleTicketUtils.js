@@ -427,7 +427,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             //                                                      options.tkt        <= the ID of the ticket
             //                                                      options.photo      <= the file being uploaded
             var isResolutionImage = (options.txt);
-            var fileType = coreSQL.first(`select id from customrecord_twc_file_type where custrecord_twc_file_type_image = 'T' and NVL(custrecord_twc_file_type_completion_img, 'F') = ${isResolutionImage ? 'T' : 'F'}`)?.id;
+            var fileType = coreSQL.first(`select id from customrecord_twc_file_type where custrecord_twc_file_type_image = 'T' and NVL(custrecord_twc_file_type_completion_img, 'F') = '${isResolutionImage ? 'T' : 'F'}'`)?.id;
             var tktInfo = coreSQL.first(`
                 select  tk.id, site.${twcSite.Fields.SITE_ID} as site_id
                 from    ${twcTrblTkts.Type} tk
@@ -439,7 +439,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var pictures = options.newFiles || [options.photo];
             core.array.each(pictures, file => {
                 var nsFile = nsFileUtils.writeFile({
-                    name: `${payload.id}_${file.name}`,
+                    name: `${options.id}_${file.name}`,
                     fileType: nsFileUtils.getFileType(file.type),
                     content: file.content,
                     folder: tktFolder,
