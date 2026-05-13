@@ -34,7 +34,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var overview = { id: 'site-overview', title: 'Overview', fields: [] };
             overview.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Site Code' })
             overview.fields.push({ id: twcSite.Fields.SITE_NAME, label: 'Site Name' })
-            overview.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type' })
+            // overview.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type' })
             overview.fields.push({
                 id: twcInfra.Fields.STRUCTURE_TYPE,
                 childTable: {
@@ -48,14 +48,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 },
                 label: 'Structure'
             })
-            overview.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL' })
+            // overview.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL' })
             mainInfoFieldGroups.push(overview);
 
             var location = { id: 'site-location', title: 'Location', fields: [] };
             location.fields.push({ id: twcSite.Fields.ADDRESS, label: 'Address' })
             location.fields.push({ id: twcSite.Fields.ADDRESS_COUNTY, label: 'County' })
-            location.fields.push({ id: twcSite.Fields.ADDRESS_REGION, label: 'Region' })
-
+            
             location.fields.push({ id: twcSite.Fields.SITE_EASTING, label: 'Easting' })
             location.fields.push({ id: twcSite.Fields.SITE_NORTHING, label: 'Northing' })
             location.fields.push({ id: twcSite.Fields.SITE_LATITUDE, label: 'Latitude' })
@@ -116,7 +115,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push(locations);
             locations.fields.push({ id: twcSite.Fields.ADDRESS, label: 'Address', width: '75%', lineBreak: true })
             locations.fields.push({ id: twcSite.Fields.ADDRESS_COUNTY, label: 'County' })
-            locations.fields.push({ id: twcSite.Fields.ADDRESS_REGION, label: 'Region', lineBreak: true })
             locations.fields.push({ id: twcSite.Fields.SITE_LATITUDE, label: 'Latitude' })
             locations.fields.push({ id: twcSite.Fields.SITE_LONGITUDE, label: 'Longitude' })
             locations.fields.push({ id: twcSite.Fields.SITE_EASTING, label: 'Easting' })

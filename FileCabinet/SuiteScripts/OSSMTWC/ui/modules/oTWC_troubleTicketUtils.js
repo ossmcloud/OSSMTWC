@@ -120,10 +120,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 <div>
                                     {FILTER_COUNTIES}
                                 </div>
-                                <div>
-                                    {FILTER_REGION}
-                                </div>
-
+                                
                                  <h3 class="twc">Limit by Location</h3>
                             <div class="twc-div-table-r">
                                 <div>
@@ -151,7 +148,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             html = html.replace('{FILTER_PRIORITY}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Priority', width: '50%', multiSelect: true, id: twcTrblTkts.Fields.PRIORITY, noEmpty: true, dataSource: twcUtils.getTicketPriority() }));
             html = html.replace('{FILTER_RAISED_BY}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Raised By', width: '50%', multiSelect: true, id: twcTrblTkts.Fields.ASSIGNED_TO, noEmpty: true, dataSource: twcUtils.getTicketAssignedTo() })); //@JESNA
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: '50%', multiSelect: true, id: twcTrblTkts.Fields.CATEGORY, noEmpty: true, dataSource: twcUtils.getCounties() }));
-            html = html.replace('{FILTER_REGION}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Region', width: '50%', multiSelect: true, id: twcTrblTkts.Fields.CATEGORY, noEmpty: true, dataSource: twcUtils.getRegions() }));
             html = html.replace('{FILTER_LAT}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Latitude', id: 'twc-coord-latitude', width: '250px' }));
             html = html.replace('{FILTER_LNG}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Longitude', id: 'twc-coord-longitude', width: '250px' }));
             html = html.replace('{FILTER_RADIUS}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Radius (km)s', id: 'twc-coord-radius' }));

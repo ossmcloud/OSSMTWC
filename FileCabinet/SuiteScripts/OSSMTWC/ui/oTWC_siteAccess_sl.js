@@ -23,7 +23,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 var safRequiresSrf = twcUtils.getSafType(pageData.siteAccessInfo[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';
 
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteAccessInfo.siteId || context.request.parameters.siteId);
-                pageData.siteInfo.mainFields.forEach(s => s.fields = s.fields.filter(f => !['custrecord_twc_site_type','custrecord_twc_site_height_asl','custrecord_twc_site_address_region'].includes(f.id)));
+                // pageData.siteInfo.mainFields.forEach(s => s.fields = s.fields.filter(f => !['custrecord_twc_site_type','custrecord_twc_site_height_asl','custrecord_twc_site_address_region'].includes(f.id)));
 
                 pageData.timeBlocks = twcUtils.getSafTimeBlocks();
                 pageData.siteTimeBlocks = twcSiteAccessUtils.getAllSafTimeBlocks(pageData.siteAccessInfo, pageData.userInfo);
@@ -71,7 +71,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteAccess');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
-                html= updateHtml(html)
+                // html= updateHtml(html)
 
                 var readOnly = context.request.parameters.edit != 'T';
                 var fieldGroups = twcSiteAccessUtils.getSAFInfoPanels(pageData.siteAccessInfo, pageData.userInfo, { siteTimeBlocks: pageData.siteTimeBlocks, editMode: pageData.editMode });

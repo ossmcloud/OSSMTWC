@@ -181,9 +181,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     {FILTER_COUNTIES}
                                 </div>
                                 <div>
-                                    {FILTER_REGION}
-                                </div>
-                                <div>
                                     {FILTER_PORTFOLIO}
                                 </div>
                             </div>
@@ -212,7 +209,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             html = html.replace('{FILTER_SITE_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Type', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));
             html = html.replace('{FILTER_SITE_LEVEL}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Level', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_LEVEL, noEmpty: true, dataSource: twcUtils.getSiteLevels() }));
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'County', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
-            html = html.replace('{FILTER_REGION}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Region', width: '50%', multiSelect: true, id: twcSite.Fields.REGION, noEmpty: true, dataSource: twcUtils.getRegions() }));
             html = html.replace('{FILTER_PORTFOLIO}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Portfolio', width: '50%', multiSelect: true, id: twcSite.Fields.SITE_PORTFOLIO, noEmpty: true, dataSource: twcUtils.getPortfolios() }));
 
             html = html.replace('{FILTER_LAT}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Latitude', id: 'twc-coord-latitude', width: '250px' }));
