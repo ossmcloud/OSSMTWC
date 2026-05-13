@@ -33,6 +33,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        // @@Note: These values are changed from : CertsExpired - SP Expired | ACA To Be Renewed - No Site Access.
         const COMPANY_ACCREDITATION_STATUS = {
             Inactive: 1,
             Accredited: 2,
