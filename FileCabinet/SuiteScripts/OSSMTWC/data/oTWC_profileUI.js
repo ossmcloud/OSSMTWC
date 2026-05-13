@@ -69,8 +69,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             certGroup.fields.push({ id: fieldExpiry, label: 'Expiry', width: '100%', readOnly: nonTwcReadOnly, lineBreak: true })
             certGroup.fields.push({ id: certCode.toLowerCase() + '_file_name', type: 'text', value: dataSource.getText(fieldFileName), label: 'File', width: '100%', readOnly: true, lineBreak: true })
 
-            if (fileId) { certGroup.fields.push({ id: 'view-file-' + fileId, value: 'View File', styles: { width: 'calc(50% - 5px)', display: 'inline-block', 'margin-top': '3px' }, type: 'button' }) }
-            certGroup.fields.push({ id: 'upload-file-' + certCode.toLowerCase(), value: 'Upload New', styles: { width: 'calc(50% - 5px)', display: 'inline-block', 'margin-top': '3px' }, type: 'button' })
+            if (fileId) { certGroup.fields.push({ id: 'view-file-' + fileId, value: 'View', styles: { width: 'calc(33% - 5px)', display: 'inline-block', 'margin-top': '3px' }, type: 'button' }) }
+            certGroup.fields.push({ id: 'upload-file-' + certCode.toLowerCase(), value: 'Upload', styles: { width: 'calc(33% - 5px)', display: 'inline-block', 'margin-top': '3px' }, type: 'button' })
+            certGroup.fields.push({ id: 'view-history-' + certCode.toLowerCase(), value: 'History', styles: { width: 'calc(33% - 5px)', display: 'inline-block', 'margin-top': '3px' }, type: 'button' })
 
             if (certCode == 'SAFE_PASS') {
                 certGroup.fields.push({ id: twcProfile.Fields.SAFE_PASS_ID, label: 'Safe Pass ID', width: '100%', lineBreak: true })
@@ -146,12 +147,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 twcFile.Fields.NAME,
                 twcFile.Fields.DESCRIPTION,
                 twcFile.Fields.R_TYPE,
+                twcFile.Fields.META_DATA,
                 twcFile.Fields.STATUS,
                 twcFile.Fields.UPLOADED_BY,
                 twcFile.Fields.CREATED
 
             ];
             var files = twcFile.select({ fields: fields, where: where, orderBy: `${twcFile.Fields.CREATED} desc`, noAlias: true });
+            core.array.each(files, f => {
+                var certCode = f[twcFile.Fields.META_DATA]?.toUpperCase();
+                if (certCode) {
+                    f[twcFile.Fields.META_DATA] = twcUtils.Certs[certCode].attendAs.replace('_',' ');
+                }
+            })
 
             return uiTable.render({
                 id: 'file_history',
@@ -166,6 +174,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         }
                     } else if (col.id == twcFile.Fields.DESCRIPTION) {
                         col.title = 'Description';
+                    } else if (col.id == twcFile.Fields.META_DATA) {
+                        col.title = 'Cert. Type';
+                        col.nullText = '';
                     } else if (col.id.startsWith(twcFile.Fields.R_TYPE)) {
                         col.title = 'Type';
                     } else if (col.id.startsWith(twcFile.Fields.STATUS)) {

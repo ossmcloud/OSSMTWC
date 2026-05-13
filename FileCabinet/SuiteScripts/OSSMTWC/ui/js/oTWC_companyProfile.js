@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../data/oTWC_profile.js', '../../data/oTWC_file.js', '../../data/oTWC_utils.js'],
-    (core, coreSql, b64, twcPageBase, dialog, twcUIPanel, twcConfig, twcIcons, twcProfile, twcFile, twcUtils) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../data/oTWC_profile.js', '../../data/oTWC_profileUI.js', '../../data/oTWC_file.js', '../../data/oTWC_utils.js', '../../O/controls/oTWC_ui_ctrl.js'],
+    (core, coreSql, b64, twcPageBase, dialog, twcUIPanel, twcConfig, twcIcons, twcProfile, twcProfileUI, twcFile, twcUtils, twcUI) => {
 
 
         class TWCCompanyProfilePage extends twcPageBase.TWCPageBase {
@@ -119,8 +119,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (e.id.startsWith('custrecord_twc_co_el_') || e.id.startsWith('custrecord_twc_co_pl_') || e.id.startsWith('custrecord_twc_co_pi_')) {
                         var statusId = `${e.id.substring(0, 'custrecord_twc_co_el_'.length)}status`;
                         if (e.id == statusId) { return; }
-                        this.ui.getControl(statusId).value=twcUtils.NoActiveExpired.Pending;
-                        
+                        this.ui.getControl(statusId).value = twcUtils.NoActiveExpired.Pending;
+
                     }
                     console.log(e)
                 })
@@ -156,6 +156,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 this.previewFile(e.target.id.replace('view-file-', ''));
                             } else if (e.target.id.startsWith('upload-file')) {
                                 jQuery('#' + e.target.id.replace('upload-file', 'upload-file-input')).click();
+                            } else if (e.target.id.startsWith('view-history')) {
+                                viewCertsHistory(profile.id, e.target.id.replace('view-history-', ''));
                             }
                         }
                     });
@@ -324,10 +326,39 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             }
 
+            test() {
+                viewCertsHistory(4250)
+            }
+
+        }
+
+
+        function viewCertsHistory(profile, certCode) {
+            try {
+
+                window.twcPreviewFile = (id) => {
+                    dialog.error(`UNDER DEV (${id})`)
+                }
+
+                var tbl = jQuery(twcProfileUI.getCertFileHistory({ profile: profile, certCode: certCode }));
+                var ui = twcUI.init({}, tbl);
+                ui.ui.find('#file_history').css('display', 'table')
+                ui.controls[0].onInitEvents = (tbl) => {
+                    tbl.ui.find('#file_history').css('display', 'table')
+                }
+                dialog.message({
+                    title: 'Cert File History',
+                    message: ui.ui,
+                    size: { width: '70%', height: '500px' }
+                })
+
+            } catch (error) {
+                dialog.error(error);
+            }
         }
 
         return {
-
+            viewCertsHistory: viewCertsHistory,
             init: function () {
                 twcPageBase.init(new TWCCompanyProfilePage())
             }
