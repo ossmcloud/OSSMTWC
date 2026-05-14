@@ -16,7 +16,11 @@ define([ 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/c
             Fields: twcEquipAction.Fields,
             FieldsInfo: twcEquipAction.FieldsInfo,
 
-            get: twcEquipAction.get,
+            get: function (id) {
+                var rec = new OSSMTWC_EquipAction(id);
+                rec.load();
+                return rec;
+            },
 
             select: function (options) {
                 var rec = new OSSMTWC_EquipAction();
