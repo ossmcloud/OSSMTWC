@@ -7,7 +7,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, coreSql, twcPageBase, dialog, twcIcons, twcConfig, twcTkt, uiTable, twcSiteLocatorPanel, twcSiteInfoPanel, twcUI, twcUIPanel, b64, twcFile,twcTroubleTicketsUI) => {
 
         var _tktLink = null;
-        var txt = ''
+        var _isRes = ''
         function ticketViewLink(id) {
             if (!_tktLink) { _tktLink = core.url.script('oTWC_troubleTicket_sl'); }
             return `${_tktLink}&recId=${id}`
@@ -190,7 +190,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     await this.cancelTicket();
                 });
                 this.ui.getControl('upload-resolution-photo')?.on('click', e => {
-                    txt = 'T'
+                    _isRes = 'T'
                     this.uploadPhotos();
                 })
                 this.ui.getControl('tk-submit')?.on('click', e => {
@@ -496,9 +496,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         photoList.append(photoListItem);
                     })
                 })
+                var dlgTitle = _isRes ? 'Upload Resolution Photos' : 'Upload Ticket Files';
 
                 dialog.open({
-                    title: 'Upload Resolution Photos',
+                    title: dlgTitle,
                     content: form.ui,
                     size: { width: '1000px', height: '500px' },
                     ok: (dlg) => {
@@ -507,9 +508,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (!this.data?.trblTktInfo?.id) {
                             this.#resFiles = photos;
                             dlg.close();
-
-                                refreshOpenPicturesTable.call(this, photos);
-
+                            refreshOpenPicturesTable.call(this, photos);
                             return;
                         }
 
@@ -572,7 +571,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     return;
                 }
 
-                this.post({ action: 'upload-tkt-photo' }, { tkt: this.data.trblTktInfo.id, txt, photo: photos[idx] }).then(resp => {
+                this.post({ action: 'upload-tkt-photo' }, { tkt: this.data.trblTktInfo.id, _isRes, photo: photos[idx] }).then(resp => {
                     if (resp.error) {
                         photoListItem.html(twcIcons.get('exclamation', 16, 'red'));
                         photos[idx].error = resp;
@@ -679,50 +678,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             });
         }
 
-        // function refreshOpenPicturesTable(photos = []) {
-
-        //     const newFiles = photos.map((p) => ({
-        //         created: new Date().toLocaleString(),
-        //         name: p.name,
-        //         custrecord_twc_file_type_name: p.type,
-        //         custrecord_twc_file_description: p.notes,
-        //         preview_link: "",
-        //         _fileObj: p
-        //     }));
-
-        //     this.data.trblTktInfo.tempOpenFiles = [...newFiles];
-        //     this.data.trblTktInfo.type = 'customrecord_twc_trbl_tkt';
-
-        //     const newPanel = twcTroubleTicketsUI.getTKOpenPictures(
-        //         this.data.trblTktInfo,
-        //         this.userInfo
-        //     );
-
-        //     const panelEl = jQuery('#trbl-tkts-files');
-
-        //     if (!panelEl.length) return;
-
-        //     panelEl.empty();
-
-        //     if (!newPanel || !newPanel.controls || !newPanel.controls.length) {
-        //         console.log('Invalid panel structure', newPanel);
-        //         return;
-        //     }
-
-        //     twcUI.init(newPanel.controls[0], panelEl);
-
-        //     panelEl.find('[data-action="edit"]').hide();
-
-        //     panelEl.find('[data-action="delete"]').off('click').on('click', e => {
-        //         const row = jQuery(e.currentTarget).closest('.o-row');
-        //         const idx = row.data('idx');
-
-        //         photos.splice(idx, 1);
-        //         this.#resFiles = photos;
-
-        //         refreshOpenPicturesTable.call(this, photos);
-        //     });
-        // }
 
         return {
 

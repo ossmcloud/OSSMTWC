@@ -426,7 +426,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             //  2. A resolution image is uploaded,      in this case we will have the following properties
             //                                                      options.tkt        <= the ID of the ticket
             //                                                      options.photo      <= the file being uploaded
-            var isResolutionImage = (options.txt);
+            var isResolutionImage = (options._isRes);
             var fileType = coreSQL.first(`select id from customrecord_twc_file_type where custrecord_twc_file_type_image = 'T' and NVL(custrecord_twc_file_type_completion_img, 'F') = '${isResolutionImage ? 'T' : 'F'}'`)?.id;
             var tktInfo = coreSQL.first(`
                 select  tk.id, site.${twcSite.Fields.SITE_ID} as site_id
