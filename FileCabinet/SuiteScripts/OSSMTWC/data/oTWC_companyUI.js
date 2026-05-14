@@ -162,8 +162,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var basicInfo = { id: 'company-profile-list', fields: [] };
             fieldGroup.controls.push(basicInfo);
 
-            var today = twcUtils.today();
-
+           
             basicInfo.fields.push({
                 id: `${twcProfile.Type}`, label: 'Company Profile List',
                 fields: {
@@ -188,7 +187,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcProfile.Fields.ELECTRICIAN_CERTIFIED_STATUS]: { hide: true },
                     [twcProfile.Fields.DRONE_CERTIFIED_STATUS]: { hide: true },
                     [twcProfile.Fields.SAFE_PASS_STATUS]: { hide: true },
-                    //[twcProfile.Fields.SAFE_PASS_EXPIRY]: { title: 'Safe Pass', nullText: '', type: 'date' },
 
 
                 },
@@ -197,31 +195,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 showToolbar: true,
                 readOnly: editMode || (userInfo.permission.lvl < 3),
                 onColumnInit: (tbl, col) => { // @@NOTE: Commented this code as we don't have the Status columns on the Profile View. 
-                    // if (col.id == (twcProfile.Fields.CLIMBER_CERTIFIED_STATUS + '_name') ||
-                    //     col.id == (twcProfile.Fields.RESCUE_CERTIFIED_STATUS + '_name') ||
-                    //     col.id == (twcProfile.Fields.RF_CERTIFIED_STATUS + '_name') ||
-                    //     col.id == (twcProfile.Fields.ROOFTOP_CERTIFIED_STATUS + '_name') ||
-                    //     col.id == (twcProfile.Fields.ELECTRICIAN_CERTIFIED_STATUS + '_name') ||
-                    //     col.id == (twcProfile.Fields.DRONE_CERTIFIED_STATUS + '_name') ||
-                    //     col.id == (twcProfile.Fields.SAFE_PASS_STATUS + '_name')) {
-
-                    //     col.styles = { width: '130px' };
-                    //     col.formatValue = (v, fv, d) => {
-                    //         return twcProfile.getCertStatusHtml(v, d[col.id.replace('_sts_name', '_exp')])
-                    //     }
-                    // } else 
                     if (col.id == (twcProfile.Fields.ACCREDITATION_STATUS + '_name')) {
                         col.formatValue = (v, fv, d) => {
                             col.styles = { width: '200px', 'text-align': 'center' };
                             return twcProfile.getAccreditationStatusHtml(v)
                         }
                     }
-
-                    // if (col.id == twcProfile.Fields.SAFE_PASS_EXPIRY) {
-                    //     col.formatValue = (v, fv, d) => {
-                    //         return twcProfile.getDateStatusHtml(v, today)
-                    //     }
-                    // }
                 }
             });
 

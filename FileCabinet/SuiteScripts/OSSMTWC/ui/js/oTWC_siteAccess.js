@@ -50,6 +50,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (col.id == 'id') { return false; }
                 if (col.id == 'record_id') { return false; }
                 if (col.id == 'site_id') { return false; }
+                if (col.id == twcSite.Fields.ADDRESS_COUNTY || col.id == twcSite.Fields.SITE_TYPE || col.id == twcSite.Fields.SITE_PORTFOLIO) { return false; }
                 if (col.id == 'name') {
                     col.title = 'SAF ID';
                     col.addCount = true;

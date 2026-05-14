@@ -18,8 +18,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.created desc`;
             var tickets = coreSQL.run(`
-                select  ${sqlFields}
+                select  ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO}
                 from    ${twcTrblTkts.Type} s
+                join    ${twcSite.Type} site on site.id = s.${twcTrblTkts.Fields.SITE}
                 ${whereClause} 
                 ${orderBy}
             `)
@@ -110,15 +111,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 <div>
                                     {FILTER_STATUS}
                                     {FILTER_CATEGORY}
-                                </div>
-                                <div>
-                                    {FILTER_ASSIGNED_TO}
-                                </div>
-                                <div>
                                     {FILTER_PRIORITY}
                                 </div>
                                 <div>
                                     {FILTER_RAISED_BY}
+                                    {FILTER_ASSIGNED_TO}
                                 </div>
                                 <div>
                                     {FILTER_COUNTIES}
@@ -134,7 +131,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             <div class="twc-div-table-r">
                                 <div>
                                     {ACTION_CLEAR_FILTERS}
-                                    {ACTION_NEW_SITE}
+                                    
                                 </div>
                             </div>
                                 
@@ -144,18 +141,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 </div>
             </div>`;
 
-            html = html.replace('{FILTER_SITE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site', width: '75%', id: 'record_id', noEmpty: true, dataSource: twcUtils.getSiteNames() }));
-            html = html.replace('{FILTER_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Status', width: 'calc(25% - 2px)', multiSelect: true, id: twcTrblTkts.Fields.STATUS, noEmpty: true, dataSource: twcUtils.getTicketStatus() })); // 
-            html = html.replace('{FILTER_CATEGORY}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Category', width: 'calc(25% - 2px)', multiSelect: true, id: twcTrblTkts.Fields.CATEGORY, noEmpty: true, dataSource: twcUtils.getTicketCategory() }));
-            html = html.replace('{FILTER_ASSIGNED_TO}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Assigned To', width: '50%', multiSelect: true, id: twcTrblTkts.Fields.ASSIGNED_TO, noEmpty: true, dataSource: twcUtils.getTicketAssignedTo() }));
-            html = html.replace('{FILTER_PRIORITY}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Priority', width: '50%', multiSelect: true, id: twcTrblTkts.Fields.PRIORITY, noEmpty: true, dataSource: twcUtils.getTicketPriority() }));
-            html = html.replace('{FILTER_RAISED_BY}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Raised By', width: '50%', multiSelect: true, id: twcTrblTkts.Fields.ASSIGNED_TO, noEmpty: true, dataSource: twcUtils.getTicketAssignedTo() })); //@JESNA
-            html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: '50%', multiSelect: true, id: twcTrblTkts.Fields.CATEGORY, noEmpty: true, dataSource: twcUtils.getCounties() }));
+            html = html.replace('{FILTER_SITE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames() }));
+            html = html.replace('{FILTER_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Status', width: 'calc(16% - 2px)', multiSelect: true, id: twcTrblTkts.Fields.STATUS, noEmpty: true, dataSource: twcUtils.getTicketStatus() })); // 
+            html = html.replace('{FILTER_CATEGORY}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Category', width: 'calc(17% - 2px)', multiSelect: true, id: twcTrblTkts.Fields.CATEGORY, noEmpty: true, dataSource: twcUtils.getTicketCategory() }));
+            html = html.replace('{FILTER_PRIORITY}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Priority', width: 'calc(17% - 3px)', multiSelect: true, id: twcTrblTkts.Fields.PRIORITY, noEmpty: true, dataSource: twcUtils.getTicketPriority() }));
+
+            html = html.replace('{FILTER_RAISED_BY}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Raised By', width: 'calc(25% - 2px)', multiSelect: true, id: twcTrblTkts.Fields.AUTHOR, noEmpty: true, dataSource: twcUtils.getTicketAssignedTo() })); //@JESNA
+            html = html.replace('{FILTER_ASSIGNED_TO}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Assigned To', width: 'calc(25% - 2px)', multiSelect: true, id: twcTrblTkts.Fields.ASSIGNED_TO, noEmpty: true, dataSource: twcUtils.getTicketAssignedTo() }));
+            
+            
+            html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
             html = html.replace('{FILTER_LAT}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Latitude', id: 'twc-coord-latitude', width: '250px' }));
             html = html.replace('{FILTER_LNG}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Longitude', id: 'twc-coord-longitude', width: '250px' }));
             html = html.replace('{FILTER_RADIUS}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Radius (km)s', id: 'twc-coord-radius' }));
             html = html.replace('{ACTION_CLEAR_FILTERS}', twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Clear Filters', id: 'twc-action-clear-filter' }));
-            html = html.replace('{ACTION_NEW_SITE}', twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'New Site', id: 'twc-action-new-site' }));
+            
             return html;
         }
         function fromJsToNs(nsDate) {

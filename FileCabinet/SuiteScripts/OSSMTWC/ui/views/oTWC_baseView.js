@@ -293,10 +293,10 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                 return res;
             }
 
-            async previewFile(file, e) {
+            async previewFile(file, e, getHtml) {
                 await TWCPageBase.previewFileStatic(file, e);
             }
-            static async previewFileStatic(file, e) {
+            static async previewFileStatic(file, e, getHtml) {
                 var icon = '';
                 if (e) {
                     icon = jQuery(e.currentTarget).html();
@@ -311,15 +311,18 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                     return;
                 }
                 var dataType = `data:application/${res.type.toLowerCase()}`;
-                var html = `<object style="width: 100%;height: 100%;" data="${dataType};base64,${res.fileContent}">`;
+                var html = `<object style="width: 100%;height: 100%;" data="${dataType};base64,${res.fileContent}"></object>`;
                 if (res.type.indexOf('IMAGE') > 0) {
                     dataType = `data:image/${res.type.toLowerCase().replace('image', '')}`;
                     html = `<img style="width: 100%; border: 1px solid var(--grid-color);" src="${dataType};base64,${res.fileContent}" />`;
                 }
+                
 
                 if (e) {
                     jQuery(e.currentTarget).html(icon);
                 }
+
+                if (getHtml) { return html; }
 
                 dialog.message({
                     title: res.name,
@@ -429,8 +432,8 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             initPageData: initPageData,
             initView: initView,
 
-            async previewFile(file, e) {
-                await TWCPageBase.previewFileStatic(file, e)
+            async previewFile(file, e, getHtml) {
+                return await TWCPageBase.previewFileStatic(file, e, getHtml)
             }
 
         }

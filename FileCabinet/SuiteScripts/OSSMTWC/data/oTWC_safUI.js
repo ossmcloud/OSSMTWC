@@ -498,9 +498,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             } else {
                 var requiresSrf = twcUtils.getSafType(dataSource[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';
 
-                fieldGroups.push(getSAFInfoPanels_Info(dataSource, userInfo));
-                fieldGroups.push(getSAFInfoPanels_WorkFlowInfo(dataSource, userInfo));
+                fieldGroups.push(getSAFInfoPanels_Info(dataSource, userInfo, requiresSrf));
                 if (requiresSrf) {
+                    fieldGroups.push(getSAFInfoPanels_WorkFlowInfo(dataSource, userInfo));
                     fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Images(dataSource, userInfo));
                 }
                 fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Files(dataSource, userInfo));
@@ -581,6 +581,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (dataSource[twcSaf.Fields.TL_BUILDING_ACCESS] == 'T') { detailsInfo.fields.push({ id: twcSaf.Fields.ACCOMMODATION, label: 'Accommodation', dataSource: siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Accommodation }), lineBreak: true }); }
             detailsInfo.fields.push({ id: twcSaf.Fields.SUMMARY_OF_WORKS, label: 'Summary of Works', width: '100%', rows: 5, lineBreak: true });
 
+            var requiresSrf = twcUtils.getSafType(dataSource[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';
+            if (!requiresSrf) {
+                detailsInfo.fields.push({ id: twcSaf.Fields.REVIEW_COMMENT, width: '100%', rows: 5, label: 'Review Comment', lineBreak: true })
+            }
+
             var infoLists = { id: 'site-access-lists', collapsed: false, renderAsTable: { width: '100%' }, fields: [] };
             fieldGroup.controls.push(infoLists);
 
@@ -606,7 +611,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
             });
 
-            var requiresSrf = twcUtils.getSafType(dataSource[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';
+            
             if (requiresSrf) {
                 // @@TODO: use constant
                 var eaActionLink = core.url.record('customrecord_twc_eq_action');

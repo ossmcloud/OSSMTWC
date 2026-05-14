@@ -50,7 +50,6 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                             <div class="twc-div-table-r">
                                 <div>
                                     {ACTION_CLEAR_FILTERS}
-                                    {ACTION_NEW_SITE}
                                 </div>
                             </div>
                         </div>
@@ -58,17 +57,16 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 </div>
             </div>`;
 
-            html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site', width: '75%', id: 'record_id', noEmpty: true, dataSource: twcUtils.getSiteNames() }));
-            html = html.replace('{FILTER_SAF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SAF ID', width: 'calc(25% - 2px)', multiSelect: true, id: twcSaf.Fields.SAF_ID, noEmpty: true, dataSource: twcUtils.getSafIds() })); // @@Note Free form field, filter not working
+            html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames() }));
+            html = html.replace('{FILTER_SAF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SAF ID', width: 'calc(25% - 2px)', multiSelect: true, id: 'record_id', noEmpty: true, dataSource: twcUtils.getSafIds() })); // @@Note Free form field, filter not working
             html = html.replace('{FILTER_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Status', width: 'calc(25% - 2px)', multiSelect: true, id: twcSaf.Fields.STATUS, noEmpty: true, dataSource: twcUtils.getSafStatus() }));
-            html = html.replace('{FILTER_ACCESS_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Access Type', width: '50%', multiSelect: true, id: twcSaf.Fields.TYPE, noEmpty: true, dataSource: twcUtils.getSafTypes() }));
+            html = html.replace('{FILTER_ACCESS_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Access Type', width: '50%', multiSelect: true, id: twcSaf.Fields.R_TYPE, noEmpty: true, dataSource: twcUtils.getSafTypes() }));
             html = html.replace('{FILTER_CUSTOMER}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Customer', width: '50%', multiSelect: true, id: twcSaf.Fields.CUSTOMER, noEmpty: true, dataSource: twcUtils.getCustomers(userInfo), noAutoSelect: true }));
             html = html.replace('{FILTER_CONTRACTOR}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Contractor', width: '50%', multiSelect: true, id: twcSaf.Fields.PRIMARY_CONTRACTOR, noEmpty: true, dataSource: twcUtils.getVendors(userInfo), noAutoSelect: true }));
-            html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: '50%', multiSelect: true, id: twcSaf.Fields.COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
-            html = html.replace('{FILTER_START_DATE}', twcUI.render({ type: twcUI.CTRL_TYPE.DATE, label: 'Start Date', id: 'twc-saf-start-date', width: '250px' }));
-            html = html.replace('{FILTER_END_DATE}', twcUI.render({ type: twcUI.CTRL_TYPE.DATE, label: 'End Date', id: 'twc-saf-end-date', width: '250px' }));
+            html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
+            html = html.replace('{FILTER_START_DATE}', twcUI.render({ type: twcUI.CTRL_TYPE.DATE, label: 'Start Date', id: twcSaf.Fields.START_TIME_BLOCK, width: '250px' }));
+            html = html.replace('{FILTER_END_DATE}', twcUI.render({ type: twcUI.CTRL_TYPE.DATE, label: 'End Date', id: twcSaf.Fields.END_TIME_BLOCK, width: '250px' }));
             html = html.replace('{ACTION_CLEAR_FILTERS}', twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Clear Filters', id: 'twc-action-clear-filter' }));
-            html = html.replace('{ACTION_NEW_SITE}', twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'New Site', id: 'twc-action-new-site' }));
             return html;
         }
 
@@ -299,24 +297,27 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
                 if (certCount.length < condQuantity) {
                     if (certCount.length == 0 && certExCount.length == 0) {
-                        validationErrors.push(`${cond.quantity} ${cond.name} ${cond.quantity == 1 ? 'is' : 'are'} required, there are none in the crew`);
+                        //validationErrors.push(`${cond.quantity} ${cond.name} ${cond.quantity == 1 ? 'is' : 'are'} required, there are none in the crew`);
+                        validationErrors.push(`${cond.quantity} ${cond.name}${cond.quantity == 1 ? '' : 's'} must be certified, there are none in the crew`);
                     } else if (certCount.length == 0 && certExCount.length > 0) {
                         // @@TODO: SAF: get expiry date
                         var crewNames = certExCount.map(i => { return `<li>${i.text}</li>` }).join('');
-                        validationErrors.push(`${cond.quantity} ${cond.name} ${cond.quantity == 1 ? 'is' : 'are'} required, there ${certExCount.length == 1 ? 'is' : 'are'} only ${certExCount.length} in the crew but the cert is expired: <ul class="twc">${crewNames}</ul>`);
+                        //validationErrors.push(`${cond.quantity} ${cond.name} ${cond.quantity == 1 ? 'is' : 'are'} required, there ${certExCount.length == 1 ? 'is' : 'are'} only ${certExCount.length} compliant in the crew but the cert is expired: <ul class="twc">${crewNames}</ul>`);
+                        validationErrors.push(`${cond.quantity} ${cond.name}${cond.quantity == 1 ? '' : 's'} must be certified, there ${certExCount.length == 1 ? 'is' : 'are'} only ${certExCount.length} compliant in the crew but the cert is expired: <ul class="twc">${crewNames}</ul>`);
                     } else {
                         var expiredCrews = '';
                         var crewNames = certCount.map(i => { return `<li>${i.text}</li>` }).join('');
                         if (certExCount.length > 0) {
                             expiredCrews = `
-                                The following crew members have the certificate but it is expired by the time of the SAF
+                                The following crew members have certification which is not valid for the duration of the SAF
                                 <ul class="twc">
                                     ${certExCount.map(i => { return `<li> ${i.text}</li>` }).join('')}
                                 </ul>
                             `;
 
                         }
-                        validationErrors.push(`${cond.quantity} ${cond.name} ${cond.quantity == 1 ? 'is' : 'are'} required, there ${certCount.length == 1 ? 'is' : 'are'} only ${certCount.length} in the crew: <ul class="twc">${crewNames}</ul>${expiredCrews}`);
+                        //validationErrors.push(`${cond.quantity} ${cond.name} ${cond.quantity == 1 ? 'is' : 'are'} required, there ${certCount.length == 1 ? 'is' : 'are'} only ${certCount.length} compliant in the crew: <ul class="twc">${crewNames}</ul>${expiredCrews}`);
+                        validationErrors.push(`${cond.quantity} ${cond.name}${cond.quantity == 1 ? '' : 's'} must be certified, there ${certCount.length == 1 ? 'is' : 'are'} only ${certCount.length} compliant in the crew: <ul class="twc">${crewNames}</ul>${expiredCrews}`);
                     }
 
                 }
@@ -329,7 +330,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
 
             if (validationErrors.length > 0) {
-                var errorHtml = 'The SAF cannot be saved, please:<ul class="twc">';
+                var errorHtml = 'The SAF cannot be saved:<ul class="twc">';
                 core.array.each(validationErrors, e => {
                     errorHtml += `<li>${e}</li>`;
                 })

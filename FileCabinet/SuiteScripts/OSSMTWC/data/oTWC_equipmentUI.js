@@ -20,7 +20,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getInventoryTableFields() {
             var inventoryFields = [
                 { field: twcInventory.Fields.EQUIPMENT_ID },
-                { field: twcInventory.Fields.EQUIPMENT_STATUS },
+                { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS },
                 { field: twcInventory.Fields.CUSTOMER },
                 { field: twcInventory.Fields.MAKE },
                 { field: twcInventory.Fields.MODEL },

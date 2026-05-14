@@ -205,6 +205,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (t.is_method != 'T' && t.is_hs != 'T') { return; }
                 }
 
+                t.isInsurance = t.is_insurance == 'T';
                 t.isMethod = t.is_method == 'T';
                 t.isHS = t.is_hs == 'T';
                 t.isImage = t.is_image == 'T';
@@ -212,6 +213,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 t.isCert = t.is_cert == 'T';
                 t.statuses = t.allowed_statuses?.split(',').map(i => { return parseInt(i.trim()) });
 
+                delete t.is_insurance;
                 delete t.is_hs;
                 delete t.is_method;
                 delete t.is_image;
@@ -1027,7 +1029,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getSafIds() {
-            return coreSQL.run(`select id as id, custrecord_twc_saf_id as text from customrecord_twc_saf where 1 = 1 order by id`)
+            return coreSQL.run(`select id as value, name as text from customrecord_twc_saf where 1 = 1 order by id`)
         }
 
         function getSrfStatus() {
@@ -1037,6 +1039,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSrfIds() {
             return getLookUpTableValues('customrecord_twc_srf');
         }
+
+        function getEquipmentIds() {
+            return coreSQL.run(`select id as value, custrecord_twc_equip_id as text from customrecord_twc_equip where 1 = 1 order by id`)   
+        }
+        function getEquipmentStatus() {
+            return getLookUpTableValues('customrecord_twc_equip_install_status');
+        }
+
 
         function getSafTimeBlocks(siteId) {
             // @@TODO: we could have time slots specific to a site if needed
@@ -1332,6 +1342,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getCompanies: getCompanies,
             getCustomers: getCustomers,
             getVendors: getVendors,
+            getEquipmentIds: getEquipmentIds,
+            getEquipmentStatus: getEquipmentStatus,
             getSafIds: getSafIds,
             getSrfIds: getSrfIds,
             getSrfStatus: getSrfStatus,
