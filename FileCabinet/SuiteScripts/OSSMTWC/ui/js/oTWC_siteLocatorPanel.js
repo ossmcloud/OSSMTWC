@@ -44,7 +44,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             initEvents() {
                 this.#page.ui.on('change', e => {
                     try {
-                        if (e.id.startsWith('cust') || e.id == 'record_id') {
+                        if (e.id.startsWith('cust') || e.id == 'record_id' || e.id == 'name' || e.id == 'site_id') {
                             this.updateResults();
                         } else if (e.id.startsWith('twc-coord')) {
                             this.updateResultsByCoord();
@@ -91,41 +91,113 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             clearFilters() {
                 core.array.each(this.ui.controls, c => {
-                    if (c.id.startsWith('twc-coord') || c.id.startsWith('cust') || c.id == 'record_id') {
-                        c.value = (c.id == 'twc-coord-radius') ? 5 : null;
+                    if (c.id.startsWith('twc-coord') || c.id.startsWith('cust') || c.id == 'record_id' || c.id == 'name' || c.id == 'site_id') {
+                        c.setValue((c.id == 'twc-coord-radius') ? 5 : null);
                     }
                 })
                 this.updateResults();
             }
 
+            // updateResults_OLD() {
+            //     // @@TODO: filter sites on memory OR load filtered list
+            //     var filters = this.ui.getValues();
+            //     console.log(filters)
+
+            //     var siteIds = [];
+            //     this.#dataFiltered = this.#data.filter(s => {
+            //         var match = true;
+            //         for (var f in filters) {
+            //             if (!f.startsWith('cust') && f != 'record_id' && f != 'name') { continue; }
+            //             if (!filters[f]) { continue; }
+            //             var values = filters[f].split(',').map(i => { return i?.toString() });
+            //             match = values.indexOf(s[f]?.toString()) >= 0;
+            //             if (!match) { break; }
+            //         }
+            //         if (match) { siteIds.push(s.id) }
+            //         return match;
+            //     });
+
+            //     if (this.#tableData) {
+            //         this.#tableDataFiltered = this.#tableData.filter(s => {
+            //             return siteIds.indexOf(s.site_id) >= 0;
+            //         });
+            //         this.#sitesTable.refresh(this.#tableDataFiltered);
+            //     } else {
+
+            //         this.#sitesTable.refresh(this.#dataFiltered);
+            //     }
+            //     this.updateGoogleMap(null);
+            // }
+
             updateResults() {
-                // @@TODO: filter sites on memory OR load filtered list
                 var filters = this.ui.getValues();
-                console.log(filters)
 
-                var siteIds = [];
-                this.#dataFiltered = this.#data.filter(s => {
-                    var match = true;
-                    for (var f in filters) {
-                        if (!f.startsWith('cust') && f != 'record_id') { continue; }
-                        if (!filters[f]) { continue; }
-                        var values = filters[f].split(',').map(i => { return i?.toString() });
-                        match = values.indexOf(s[f]?.toString()) >= 0;
-                        if (!match) { break; }
-                    }
-                    if (match) { siteIds.push(s.id) }
-                    return match;
-                });
-
+                var siteIds = []; var hasFilters = false;
                 if (this.#tableData) {
                     this.#tableDataFiltered = this.#tableData.filter(s => {
-                        return siteIds.indexOf(s.site_id) >= 0;
+                        var match = true;
+
+                        for (var f in filters) {
+                            if (!f.startsWith('cust') && f != 'record_id' && f != 'name' && f != 'site_id') { continue; }
+                            if (!filters[f]) { continue; }
+                            hasFilters = true;
+
+                            var values = filters[f].split(',').map(i => { return i?.toString() });
+                            var value = s[f]?.toString();
+
+                            var ctrl = this.ui.getControl(f);
+                            if (ctrl.type == 'date') {
+                                if (value) { value = value.substring(0, 10); }
+                            }
+
+                            match = values.indexOf(value) >= 0;
+
+                            if (!match) { break; }
+                        }
+
+
+                        if (match) {
+                            if (siteIds.indexOf(s.site_id) < 0) { siteIds.push(s.site_id); }
+                        }
+                        return match;
                     });
                     this.#sitesTable.refresh(this.#tableDataFiltered);
+
+                    if (hasFilters) {
+                        this.#dataFiltered = this.#data.filter(s => {
+                            return siteIds.indexOf(s.id) >= 0;
+                        });
+                    } else {
+                        this.#dataFiltered = this.#data;
+                    }
+
+
                 } else {
+                    this.#dataFiltered = this.#data.filter(s => {
+                        var match = true;
+                        for (var f in filters) {
+                            if (!f.startsWith('cust') && f != 'record_id') { continue; }
+                            if (!filters[f]) { continue; }
+                            var values = filters[f].split(',').map(i => { return i?.toString() });
+                            match = values.indexOf(s[f]?.toString()) >= 0;
+                            if (!match) { break; }
+                        }
+                        if (match) { siteIds.push(s.id) }
+                        return match;
+                    });
 
                     this.#sitesTable.refresh(this.#dataFiltered);
                 }
+
+                // if (this.#tableData) {
+                //     this.#tableDataFiltered = this.#tableData.filter(s => {
+                //         return siteIds.indexOf(s.site_id) >= 0;
+                //     });
+                //     this.#sitesTable.refresh(this.#tableDataFiltered);
+                // } else {
+
+                //     this.#sitesTable.refresh(this.#dataFiltered);
+                // }
                 this.updateGoogleMap(null);
             }
 

@@ -85,13 +85,18 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 }
                 return this.#input.val();
             } set value(v) {
+                this.setValue(v);
+                this.on('change');
+            }
+
+            setValue(v) {
+                if (this.disabled) { return; }
                 if (this.#options.type == ctrlBase.CTRL_TYPE.CHECKBOX) {
                     this.#input.prop('checked', v ? 'checked' : '');
                 } else {
                     this.#input.val(v);
                 }
                 this.#ui.attr('data-value', v);
-                this.on('change');
             }
 
             get valueObj() {

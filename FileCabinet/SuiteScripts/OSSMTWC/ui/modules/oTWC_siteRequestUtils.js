@@ -274,14 +274,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 </div>
                                 <div>
                                     {FILTER_SITE_TYPE}
-                                    {FILTER_SITE_LEVEL}
+                                    {FILTER_PORTFOLIO}
                                 </div>
                                 <div>
                                     {FILTER_COUNTIES}
                                 </div>
-                                <div>
-                                    {FILTER_PORTFOLIO}
-                                </div>
+                                
                             </div>
 
                             <h3 class="twc">Filter by Location</h3>
@@ -296,7 +294,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             <div class="twc-div-table-r">
                                 <div>
                                     {ACTION_CLEAR_FILTERS}
-                                    {ACTION_NEW_SITE}
+                                    
                                 </div>
                             </div>
                         </div>
@@ -304,20 +302,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 </div>
             </div>`;
 
-            html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Name', width: '75%', id: 'record_id', noEmpty: true, dataSource: twcUtils.getSiteNames() }));
-            html = html.replace('{FILTER_SRF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SRF ID', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSrfIds() }));
-            html = html.replace('{FILTER_SRF_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SRF STATUS', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_LEVEL, noEmpty: true, dataSource: twcUtils.getSrfStatus() }));
+            html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Name', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames() }));
+            html = html.replace('{FILTER_SRF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SRF ID', width: 'calc(25% - 2px)', multiSelect: true, id: 'record_id', noEmpty: true, dataSource: twcUtils.getSrfIds() }));
+            html = html.replace('{FILTER_SRF_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SRF STATUS', width: 'calc(25% - 2px)', multiSelect: true, id: twcSrf.Fields.SRF_STATUS, noEmpty: true, dataSource: twcUtils.getSrfStatus() }));
             html = html.replace('{FILTER_SITE_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Type', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));
-            html = html.replace('{FILTER_SITE_LEVEL}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Level', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_LEVEL, noEmpty: true, dataSource: twcUtils.getSiteLevels() }));
-            html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'County', width: '50%', multiSelect: true, id: twcSite.Fields.COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
-            html = html.replace('{FILTER_PORTFOLIO}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Portfolio', width: '50%', multiSelect: true, id: twcSite.Fields.SITE_PORTFOLIO, noEmpty: true, dataSource: twcUtils.getPortfolios() }));
+            html = html.replace('{FILTER_PORTFOLIO}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Portfolio', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_PORTFOLIO, noEmpty: true, dataSource: twcUtils.getPortfolios() }));
+            html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'County', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
+            
 
             html = html.replace('{FILTER_LAT}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Latitude', id: 'twc-coord-latitude', width: '250px' }));
             html = html.replace('{FILTER_LNG}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Longitude', id: 'twc-coord-longitude', width: '250px' }));
             html = html.replace('{FILTER_RADIUS}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Radius (Km)', id: 'twc-coord-radius', value: 5, width: '75px', min: 5, max: 300 }));
 
             html = html.replace('{ACTION_CLEAR_FILTERS}', twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Clear Filters', id: 'twc-action-clear-filter' }));
-            html = html.replace('{ACTION_NEW_SITE}', twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'New Site', id: 'twc-action-new-site' }));
+            
 
             return html;
         }
