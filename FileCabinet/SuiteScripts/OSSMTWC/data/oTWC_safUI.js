@@ -86,6 +86,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 { field: twcSaf.Fields.ROOFTOP_ACCESS },
                 { field: twcSaf.Fields.CRANE__CHERRYPICKER },
                 { field: twcSaf.Fields.ELECTRICAL_WORKS },
+                { field: twcSaf.Fields.DRONE_SURVEY },
 
 
             ];
@@ -254,7 +255,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
             // @@@NOTE: Crane/Cherrypick
             if (siteTypeInfo.mewp) {
-                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-crane-access', label: 'Crane / Cherrypicker', width: '150px', value: dataSource[twcSaf.Fields.CRANE__CHERRYPICKER], allowAll: false, lineBreak: true, dataSource: siteTypeInfo.mewp });
+                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-crane-access', label: 'Crane / Cherrypicker', width: '150px', value: dataSource[twcSaf.Fields.CRANE__CHERRYPICKER], allowAll: false, dataSource: siteTypeInfo.mewp });
+            }
+            // @@@NOTE: Drone
+            if (siteTypeInfo.drone) {
+                step2Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-drone-survey', label: 'Drone Use', width: '150px', value: dataSource[twcSaf.Fields.DRONE_SURVEY], allowAll: false, lineBreak: true, dataSource: siteTypeInfo.drone });
             }
 
             // @@@NOTE: if Mast Access then ask what structure 
@@ -468,6 +473,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcSaf.Fields.ROOFTOP_ACCESS]: 'Rooftop',
                     [twcSaf.Fields.CRANE__CHERRYPICKER]: 'Crane/Cherryicker',
                     [twcSaf.Fields.ELECTRICAL_WORKS]: 'Electrical',
+                    [twcSaf.Fields.DRONE_SURVEY]: 'Drone Survey',
 
                 },
                 where: { [twcSaf.Fields.SITE]: dataSource.siteId },
@@ -567,7 +573,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             detailsInfo.fields.push({ id: twcSaf.Fields.TL_BUILDING_ACCESS, label: 'TL Building Access' })
             detailsInfo.fields.push({ id: twcSaf.Fields.ROOFTOP_ACCESS, label: 'Rooftop Access' })
             detailsInfo.fields.push({ id: twcSaf.Fields.ELECTRICAL_WORKS, label: 'Electrical Works' })
-            detailsInfo.fields.push({ id: twcSaf.Fields.CRANE__CHERRYPICKER, label: 'Crane / Cherrypicker', lineBreak: true })
+            detailsInfo.fields.push({ id: twcSaf.Fields.CRANE__CHERRYPICKER, label: 'Crane / Cherrypicker' })
+            detailsInfo.fields.push({ id: twcSaf.Fields.DRONE_SURVEY, label: 'Drone Survey', lineBreak: true })
 
             var siteInfraStructures = twcUtils.getInfraStructures(dataSource, userInfo.isEmployee);
             if (dataSource[twcSaf.Fields.MAST_ACCESS] == 'T') { detailsInfo.fields.push({ id: twcSaf.Fields.STRUCTURE, label: 'Structure', dataSource: siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Structure }) }) }

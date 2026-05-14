@@ -83,7 +83,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 if (col.id == twcSite.Fields.SITE_LATITUDE || col.id == twcSite.Fields.SITE_LONGITUDE) { col.styles = { 'text-align': 'right' }; }
 
-                if (col.id == twcSaf.Fields.MAST_ACCESS || col.id == twcSaf.Fields.TL_BUILDING_ACCESS || col.id == twcSaf.Fields.CRANE__CHERRYPICKER || col.id == twcSaf.Fields.ROOFTOP_ACCESS || col.id == twcSaf.Fields.ELECTRICAL_WORKS) {
+                if (col.id == twcSaf.Fields.MAST_ACCESS || col.id == twcSaf.Fields.TL_BUILDING_ACCESS || col.id == twcSaf.Fields.CRANE__CHERRYPICKER || col.id == twcSaf.Fields.ROOFTOP_ACCESS || col.id == twcSaf.Fields.ELECTRICAL_WORKS || col.id == twcSaf.Fields.DRONE_SURVEY) {
                     col.title = col.title.replace(' Access', '');
                     col.styles = { 'min-width': '100px', 'max-width': '100px' }
                 }
@@ -177,6 +177,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.getControl('saf-rooftop-access')?.on('change', e => { this.refreshAccessRequirements(); });
                 this.ui.getControl('saf-electrical-access')?.on('change', e => { this.refreshAccessRequirements(); });
                 this.ui.getControl('saf-crane-access')?.on('change', e => { this.refreshAccessRequirements(); });
+                this.ui.getControl('saf-drone-survey')?.on('change', e => { this.refreshAccessRequirements(); });
                 this.ui.getControl('saf-customer')?.on('change', e => {
                     manageVendorDropDown('saf-vendor', e);
                     manageVendorDropDown('saf-picw', e);
@@ -351,6 +352,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (this.ui.getControl('saf-rooftop-access') && this.ui.getControl('saf-rooftop-access').value == '') { showStep3 = false; }
                 if (this.ui.getControl('saf-electrical-access') && this.ui.getControl('saf-electrical-access').value == '') { showStep3 = false; }
                 if (this.ui.getControl('saf-crane-access') && this.ui.getControl('saf-crane-access').value == '') { showStep3 = false; }
+                if (this.ui.getControl('saf-drone-survey') && this.ui.getControl('saf-drone-survey').value == '') { showStep3 = false; }
                 if (this.ui.getControl('saf-structure')) { this.ui.getControl('saf-structure').hide = this.ui.getControl('saf-mast-access')?.value != 'T' }
                 if (this.ui.getControl('saf-accommodation')) { this.ui.getControl('saf-accommodation').hide = this.ui.getControl('saf-building-access')?.value != 'T' }
 

@@ -22,6 +22,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             TWCPageBase: TWCPageBase,
 
+            async previewFile(file, e) {
+                await TWCPageBase.previewFileStatic(file, e)
+            },
+
+
             init: function (page) {
                 window.twc = {};
                 window.twc.page = page;

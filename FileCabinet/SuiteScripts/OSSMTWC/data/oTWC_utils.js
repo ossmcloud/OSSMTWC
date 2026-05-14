@@ -228,10 +228,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
-        const SAF_TYPE = {
-            SURVEY_DRONE: 5
-        }
-        // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SAF_ACTION_STATUS = {
             Pending: 1,
             Complete: 2,
@@ -1182,7 +1178,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSiteTypeInfo(options) {
             var info = coreSQL.first(`
                 select  t.id, NVL(t.custrecord_twc_site_types_roof_access, 'N') rooftop, NVL(t.custrecord_twc_site_types_mast_access, 'N') as mast, 
-                        NVL(t.custrecord_twc_site_types_mewp_access, 'N') as mewp, NVL(t.custrecord_twc_site_types_electr_access, 'N') as electrical
+                        NVL(t.custrecord_twc_site_types_mewp_access, 'N') as mewp, NVL(t.custrecord_twc_site_types_electr_access, 'N') as electrical,
+                        NVL(t.custrecord_twc_site_types_drone, 'N') as drone
                 from    customrecord_twc_site s
                 join    customrecord_twc_site_type t on t.id = s.custrecord_twc_site_type
                 where   s.id = ${options.siteId};
@@ -1200,6 +1197,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             info.mast = getYesNoOptions(info.mast);
             info.mewp = getYesNoOptions(info.mewp);
             info.electrical = getYesNoOptions(info.electrical);
+            info.drone = getYesNoOptions(info.drone);
             info.noStructure = info.id == twcSite.SiteType.NO_STRUCTURE;
 
             return info;
@@ -1272,7 +1270,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             InfraType: INFRA_TYPE,
             InfrStatus: INFRA_STATUS,
 
-            SafType: SAF_TYPE,
             SafStatus: SAF_STATUS,
             SafActionStatus: SAF_ACTION_STATUS,
             EaActionStatus: EA_ACTION_STATUS,

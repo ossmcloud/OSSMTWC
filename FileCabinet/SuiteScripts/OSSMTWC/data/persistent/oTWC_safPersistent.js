@@ -22,6 +22,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CRANE__CHERRYPICKER: 'custrecord_twc_saf_crane_cherrypicker',
             ROOFTOP_ACCESS: 'custrecord_twc_saf_rooftop_access',
             ELECTRICAL_WORKS: 'custrecord_twc_saf_electrical_works',
+            DRONE_SURVEY: 'custrecord_twc_saf_drone',
             CONDITIONS_OF_ACCESS: 'custrecord_twc_saf_conditions_access',
             CUSTOMER: 'custrecord_twc_saf_customer',
             PRIMARY_CONTRACTOR: 'custrecord_twc_saf_primary_contractor',
@@ -38,9 +39,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             STRUCTURE: 'custrecord_twc_saf_strcture',
             HEALTH__AND__SAFETY: 'custrecord_twc_saf_health_safety',
             METHOD_STATEMENT: 'custrecord_twc_saf_method_statement',
-            SAF_COMPLETION_PHOTOS_DELETE: 'custrecord_twc_saf_comp_photo',
-            CREW__VISITORS_DELETE: 'custrecord_twc_saf_crew_visitors',
-            ASSOCIATED_SRFS_DELETE: 'custrecord_twc_saf_associated_srfs',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -63,6 +61,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CRANE__CHERRYPICKER: { name: 'custrecord_twc_saf_crane_cherrypicker', type: 'checkbox', alias: 'craneCherrypicker', display: 'normal', mandatory: false },
             ROOFTOP_ACCESS: { name: 'custrecord_twc_saf_rooftop_access', type: 'checkbox', alias: 'rooftopAccess', display: 'normal', mandatory: false },
             ELECTRICAL_WORKS: { name: 'custrecord_twc_saf_electrical_works', type: 'checkbox', alias: 'electricalWorks', display: 'normal', mandatory: false },
+            DRONE_SURVEY: { name: 'custrecord_twc_saf_drone', type: 'checkbox', alias: 'droneSurvey', display: 'normal', mandatory: false },
             CONDITIONS_OF_ACCESS: { name: 'custrecord_twc_saf_conditions_access', type: 'clobtext', alias: 'conditionsofAccess', display: 'normal', mandatory: false },
             CUSTOMER: { name: 'custrecord_twc_saf_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             PRIMARY_CONTRACTOR: { name: 'custrecord_twc_saf_primary_contractor', type: 'select', alias: 'primaryContractor', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
@@ -79,9 +78,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             STRUCTURE: { name: 'custrecord_twc_saf_strcture', type: 'select', alias: 'structure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
             HEALTH__AND__SAFETY: { name: 'custrecord_twc_saf_health_safety', type: 'multiselect', alias: 'health_and_Safety', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
             METHOD_STATEMENT: { name: 'custrecord_twc_saf_method_statement', type: 'multiselect', alias: 'methodStatement', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
-            SAF_COMPLETION_PHOTOS_DELETE: { name: 'custrecord_twc_saf_comp_photo', type: 'document', alias: 'sAFCompletionPhotosDELETE', display: 'normal', mandatory: false },
-            CREW__VISITORS_DELETE: { name: 'custrecord_twc_saf_crew_visitors', type: 'select', alias: 'crewVisitorsDELETE', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
-            ASSOCIATED_SRFS_DELETE: { name: 'custrecord_twc_saf_associated_srfs', type: 'select', alias: 'associatedSRFsDELETE', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -192,6 +188,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.ELECTRICAL_WORKS, value)
             }
             
+            get droneSurvey() {
+                return this.get(_recordFields.DRONE_SURVEY);
+            } set droneSurvey(value) {
+                this.set(_recordFields.DRONE_SURVEY, value)
+            }
+            
             get conditionsofAccess() {
                 return this.get(_recordFields.CONDITIONS_OF_ACCESS);
             } set conditionsofAccess(value) {
@@ -297,26 +299,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.METHOD_STATEMENT, value)
             }
             get methodStatementName() { return this.getText(_recordFields.METHOD_STATEMENT); }
-            
-            get sAFCompletionPhotosDELETE() {
-                return this.get(_recordFields.SAF_COMPLETION_PHOTOS_DELETE);
-            } set sAFCompletionPhotosDELETE(value) {
-                this.set(_recordFields.SAF_COMPLETION_PHOTOS_DELETE, value)
-            }
-            
-            get crewVisitorsDELETE() {
-                return this.get(_recordFields.CREW__VISITORS_DELETE);
-            } set crewVisitorsDELETE(value) {
-                this.set(_recordFields.CREW__VISITORS_DELETE, value)
-            }
-            get crewVisitorsDELETEName() { return this.getText(_recordFields.CREW__VISITORS_DELETE); }
-            
-            get associatedSRFsDELETE() {
-                return this.get(_recordFields.ASSOCIATED_SRFS_DELETE);
-            } set associatedSRFsDELETE(value) {
-                this.set(_recordFields.ASSOCIATED_SRFS_DELETE, value)
-            }
-            get associatedSRFsDELETEName() { return this.getText(_recordFields.ASSOCIATED_SRFS_DELETE); }
             
             get created() {
                 return this.get(_recordFields.CREATED);

@@ -337,7 +337,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             try {
 
                 window.twcPreviewFile = (id) => {
-                    dialog.error(`UNDER DEV (${id})`)
+                    //dialog.error(`UNDER DEV (${id})`)
+                    twcPageBase.previewFile(id);
                 }
 
                 var tbl = jQuery(twcProfileUI.getCertFileHistory({ profile: profile, certCode: certCode }));

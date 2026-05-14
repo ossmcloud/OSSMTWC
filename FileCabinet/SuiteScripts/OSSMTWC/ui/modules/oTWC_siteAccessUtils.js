@@ -162,7 +162,9 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 }
             }
             if (options['saf-electrical-access'] == 'T') { conditions.push({ quantity: 1, name: 'Electrician', cert: twcUtils.Certs.ELECTRICAL }) }
-            if (options.safType == twcUtils.SafType.SURVEY_DRONE) { conditions.push({ quantity: 1, name: 'Drone Certified', cert: twcUtils.Certs.DRONE }) }
+            if (options['saf-drone-survey'] == 'T') {
+                conditions.push({ quantity: 1, name: 'Drone Certified', cert: twcUtils.Certs.DRONE })
+            }
 
             var customer = options['saf-customer'];
             var vendor = options['saf-vendor'];
@@ -357,6 +359,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             saf.craneCherrypicker = payload['saf-crane-access'] == 'T';
             saf.rooftopAccess = payload['saf-rooftop-access'] == 'T';
             saf.electricalWorks = payload['saf-electrical-access'] == 'T';
+            saf.droneSurvey = payload['saf-drone-survey'] == 'T';
             saf.customer = payload['saf-customer'];
             saf.primaryContractor = payload['saf-vendor'];
             saf.summaryofWorks = payload['saf-work-summary'];
@@ -506,18 +509,12 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     if (safRequiresSrf) { validateAndDetachActions(options.saf); }
                 }
 
-                var logMsg = ''; var info = '';
+                var logMsgStatus = ''; var infoStatus = '';
                 if (statusChanged) {
-                    logMsg = 'status changed to: ' + twcSaf.getSafStatusName(options.status);
-                    info = 'old status: ' + saf.statusName;
+                    logMsgStatus = 'status changed';
+                    infoStatus = `status changed to: ${twcSaf.getSafStatusName(options.status)} - old status: ${saf.statusName}`;
                 }
-                if (commentCHanged) {
-                    if (logMsg) { logMsg += ', ' }
-                    if (info) { info += ', ' }
-                    logMsg += 'comment changed';
-                    info += 'old comment: ' + saf.reviewComment
-                }
-
+                
                 if (options.status) {
                     saf.status = options.status;
                     if (options.status == twcSaf.Status.Approved) {
@@ -537,10 +534,16 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
                 saf.save();
 
-                if (statusChanged && options.status == twcSaf.Status.Rejected) {
-                    saf.logWarn(logMsg, info);
-                } else {
-                    saf.logInfo(logMsg, info);
+                if (statusChanged) {
+                    if (options.status == twcSaf.Status.Rejected) {
+                        saf.logWarn(logMsgStatus, infoStatus);
+                    } else {
+                        saf.logInfo(logMsgStatus, infoStatus);
+                    }
+                }
+
+                if (commentCHanged) {
+                    saf.logInfo('Comment', options.comment);
                 }
             } catch (error) {
                 saf.logEx('Error while changing status/comments', error);

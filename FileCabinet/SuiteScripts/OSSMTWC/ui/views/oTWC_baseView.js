@@ -294,6 +294,9 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             }
 
             async previewFile(file, e) {
+                await TWCPageBase.previewFileStatic(file, e);
+            }
+            static async previewFileStatic(file, e) {
                 var icon = '';
                 if (e) {
                     icon = jQuery(e.currentTarget).html();
@@ -317,7 +320,7 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                 if (e) {
                     jQuery(e.currentTarget).html(icon);
                 }
-                
+
                 dialog.message({
                     title: res.name,
                     message: html,
@@ -425,6 +428,10 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             TWCPageBase: TWCPageBase,
             initPageData: initPageData,
             initView: initView,
+
+            async previewFile(file, e) {
+                await TWCPageBase.previewFileStatic(file, e)
+            }
 
         }
     });

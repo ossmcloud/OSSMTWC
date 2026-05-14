@@ -150,14 +150,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 twcFile.Fields.META_DATA,
                 twcFile.Fields.STATUS,
                 twcFile.Fields.UPLOADED_BY,
-                twcFile.Fields.CREATED
+                twcFile.Fields.CREATED,
+                twcFile.Fields.FILE,
 
             ];
             var files = twcFile.select({ fields: fields, where: where, orderBy: `${twcFile.Fields.CREATED} desc`, noAlias: true });
             core.array.each(files, f => {
                 var certCode = f[twcFile.Fields.META_DATA]?.toUpperCase();
                 if (certCode) {
-                    f[twcFile.Fields.META_DATA] = twcUtils.Certs[certCode].attendAs.replace('_',' ');
+                    f[twcFile.Fields.META_DATA] = twcUtils.Certs[certCode].attendAs.replace('_', ' ');
                 }
             })
 
@@ -168,8 +169,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     if (col.id == twcFile.Fields.NAME) {
                         col.title = 'File Name';
                         col.link = {
-                            url: 'onclick="window.twcPreviewFile(' + "'" + '${id}' + "'" + ')"',
-                            valueField: 'id',
+                            url: 'onclick="window.twcPreviewFile(' + "'" + '${' + twcFile.Fields.FILE + '}' + "'" + ')"',
+                            valueField: twcFile.Fields.FILE,
                             target: '_self'
                         }
                     } else if (col.id == twcFile.Fields.DESCRIPTION) {
