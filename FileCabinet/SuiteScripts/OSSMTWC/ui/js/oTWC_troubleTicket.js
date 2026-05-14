@@ -7,6 +7,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, coreSql, twcPageBase, dialog, twcIcons, twcConfig, twcTkt, uiTable, twcSiteLocatorPanel, twcSiteInfoPanel, twcUI, twcUIPanel, b64, twcFile,twcTroubleTicketsUI) => {
 
         var _tktLink = null;
+        var txt = ''
         function ticketViewLink(id) {
             if (!_tktLink) { _tktLink = core.url.script('oTWC_troubleTicket_sl'); }
             return `${_tktLink}&recId=${id}`
@@ -189,6 +190,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     await this.cancelTicket();
                 });
                 this.ui.getControl('upload-resolution-photo')?.on('click', e => {
+                    txt = 'T'
                     this.uploadPhotos();
                 })
                 this.ui.getControl('tk-submit')?.on('click', e => {
@@ -508,24 +510,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                                 refreshOpenPicturesTable.call(this, photos);
 
-                        //     this.data.trblTktInfo.tempOpenFiles = photos.map(file => ({
-                        //         created: new Date().toLocaleString(),
-                        //         name: file.name,
-                        //         custrecord_twc_file_type_name: file.type,
-                        //         custrecord_twc_file_description: '',
-                        //         preview_link: ''
-                        //     }));
-
-                        //     // RE-RENDER EXISTING PANEL
-                        //     this.data.trblTktInfo.type = 'customrecord_twc_trbl_tkt'
-                           
-                        //    const newPanel =
-                        //         twcTroubleTicketsUI.getTKOpenPictures(
-                        //             this.data.trblTktInfo,
-                        //             this.userInfo
-                        //         );
-                        //         console.log('newPanel',newPanel)
-
                             return;
                         }
 
@@ -588,7 +572,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     return;
                 }
 
-                this.post({ action: 'upload-tkt-photo' }, { tkt: this.data.trblTktInfo.id, photo: photos[idx] }).then(resp => {
+                this.post({ action: 'upload-tkt-photo' }, { tkt: this.data.trblTktInfo.id, txt, photo: photos[idx] }).then(resp => {
                     if (resp.error) {
                         photoListItem.html(twcIcons.get('exclamation', 16, 'red'));
                         photos[idx].error = resp;
@@ -643,17 +627,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
      
         function refreshOpenPicturesTable(photos) {
 
-            // map photos to table datasource format
-            this.data.trblTktInfo.tempOpenFiles = photos.map(p => ({
+            const existingCount =
+                (this.data.trblTktInfo.tempOpenFiles || []).length;
+
+            const newFiles = photos.map((p, idx) => ({
                 created: new Date().toLocaleString(),
                 name: p.name,
                 custrecord_twc_file_type_name: p.type,
-                custrecord_twc_file_description: '',
-                preview_link: ''
+                custrecord_twc_file_description: p.notes,
+                preview_link: "",
+                _fileObj: p
             }));
+
+            this.data.trblTktInfo.tempOpenFiles = [
+                ...(this.data.trblTktInfo.tempOpenFiles || []),
+                ...newFiles
+            ];
+
             this.data.trblTktInfo.type = 'customrecord_twc_trbl_tkt'
 
-            // regenerate panel using existing UI code
             const newPanel = twcTroubleTicketsUI.getTKOpenPictures(
                 this.data.trblTktInfo,
                 this.userInfo
@@ -661,20 +653,77 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             console.log('newPanel', newPanel);
 
-            // MUST be jquery object
-            const panelEl = jQuery('#trbl-tkts-open-files');
+            const panelEl = jQuery('#trbl-tkts-files');
 
             if (!panelEl.length) {
                 console.log('Panel not found');
                 return;
             }
 
-            // clear existing
             panelEl.empty();
 
-            // IMPORTANT
-            twcUI.init(newPanel, panelEl);
+            twcUI.init(newPanel.controls[0], panelEl);
+            panelEl.find('[data-action="edit"]').hide();
+
+            panelEl.find('[data-action="delete"]').off('click').on('click', e => {
+                const row = jQuery(e.currentTarget).closest('.o-row');
+                const idx = row.data('idx');
+                this.data.trblTktInfo.tempOpenFiles.splice(idx, 1);
+                photos.splice(idx, 1);
+                this.resFiles = photos;
+
+                refreshOpenPicturesTable.call(
+                    this,
+                    []
+                );
+            });
         }
+
+        // function refreshOpenPicturesTable(photos = []) {
+
+        //     const newFiles = photos.map((p) => ({
+        //         created: new Date().toLocaleString(),
+        //         name: p.name,
+        //         custrecord_twc_file_type_name: p.type,
+        //         custrecord_twc_file_description: p.notes,
+        //         preview_link: "",
+        //         _fileObj: p
+        //     }));
+
+        //     this.data.trblTktInfo.tempOpenFiles = [...newFiles];
+        //     this.data.trblTktInfo.type = 'customrecord_twc_trbl_tkt';
+
+        //     const newPanel = twcTroubleTicketsUI.getTKOpenPictures(
+        //         this.data.trblTktInfo,
+        //         this.userInfo
+        //     );
+
+        //     const panelEl = jQuery('#trbl-tkts-files');
+
+        //     if (!panelEl.length) return;
+
+        //     panelEl.empty();
+
+        //     if (!newPanel || !newPanel.controls || !newPanel.controls.length) {
+        //         console.log('Invalid panel structure', newPanel);
+        //         return;
+        //     }
+
+        //     twcUI.init(newPanel.controls[0], panelEl);
+
+        //     panelEl.find('[data-action="edit"]').hide();
+
+        //     panelEl.find('[data-action="delete"]').off('click').on('click', e => {
+        //         const row = jQuery(e.currentTarget).closest('.o-row');
+        //         const idx = row.data('idx');
+
+        //         photos.splice(idx, 1);
+        //         this.#resFiles = photos;
+
+        //         refreshOpenPicturesTable.call(this, photos);
+        //     });
+        // }
+
         return {
 
             init: function () {
