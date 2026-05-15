@@ -79,12 +79,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             mainInfoFieldGroups.push(location);
 
             var access = { id: 'site-access', title: 'Access', fields: [] };
-            access.fields.push({ id: twcSite.Fields.EASTING_ACCESS, label: 'Access Easting' })
-            access.fields.push({ id: twcSite.Fields.NORTHING_ACCESS, label: 'Northing' })
-            access.fields.push({ id: twcSite.Fields.LATITUDE_ACCESS, label: 'Access Latitude' })
-            access.fields.push({ id: twcSite.Fields.LONGITUDE_ACCESS, label: 'Access Longitude' })
+            access.fields.push({ id: twcSite.Fields.ACCESS_EASTING, label: 'Access Easting' })
+            access.fields.push({ id: twcSite.Fields.ACCESS_NORTHING, label: 'Northing' })
+            access.fields.push({ id: twcSite.Fields.ACCESS_LATITUDE, label: 'Access Latitude' })
+            access.fields.push({ id: twcSite.Fields.ACCESS_LONGITUDE, label: 'Access Longitude' })
             access.fields.push({ id: twcSite.Fields.DIRECTIONS, label: 'Directions' })
-            access.fields.push({ id: twcSite.Fields.INSTRUCTIONS, label: 'Access Instructions' })
+            access.fields.push({ id: twcSite.Fields.ACCESS_INSTRUCTIONS, label: 'Access Instructions' })
 
             mainInfoFieldGroups.push(access);
 
@@ -143,16 +143,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var locations = { id: 'site-summary-access', title: 'Access Track / Safety Info', fields: [] };
             fieldGroup.controls.push(locations);
             locations.fields.push({ id: twcSite.Fields.TRACK_TYPE, label: 'Track Type' })
-            locations.fields.push({ id: twcSite.Fields.LATITUDE_ACCESS, label: 'Latitude' })
-            locations.fields.push({ id: twcSite.Fields.LONGITUDE_ACCESS, label: 'Longitude' })
-            locations.fields.push({ id: twcSite.Fields.EASTING_ACCESS, label: 'Easting' })
-            locations.fields.push({ id: twcSite.Fields.NORTHING_ACCESS, label: 'Northing', lineBreak: true })
+            locations.fields.push({ id: twcSite.Fields.ACCESS_LATITUDE, label: 'Latitude' })
+            locations.fields.push({ id: twcSite.Fields.ACCESS_LONGITUDE, label: 'Longitude' })
+            locations.fields.push({ id: twcSite.Fields.ACCESS_EASTING, label: 'Easting' })
+            locations.fields.push({ id: twcSite.Fields.ACCESS_NORTHING, label: 'Northing', lineBreak: true })
 
             locations.fields.push({ id: twcSite.Fields.DIRECTIONS, label: 'Directions', width: '75%', rows: 5, lineBreak: true })
-            locations.fields.push({ id: twcSite.Fields.INSTRUCTIONS, label: 'Instructions', width: '75%', rows: 5, lineBreak: true })
+            locations.fields.push({ id: twcSite.Fields.ACCESS_INSTRUCTIONS, label: 'Access Instructions', width: '75%', rows: 5, lineBreak: true })
 
             locations.fields.push({ id: twcSite.Fields.TENANT_CARD_REQUIRED, label: 'Tenant Card Required', labelNoWrap: false })
-            //locations.fields.push({ id: twcSite.Fields.LONGITUDE_ACCESS, label: 'Dual Lock Installed', lineBreak: true })  //Field removed comment in shema.
+            //locations.fields.push({ id: twcSite.Fields.ACCESS_LONGITUDE, label: 'Dual Lock Installed', lineBreak: true })  //Field removed comment in shema.
             locations.fields.push({ id: twcSite.Fields.FOURX4_REQUIRED, label: '4x4 Required', labelNoWrap: false, lineBreak: true })
             locations.fields.push({ id: twcSite.Fields.PARKING_RESTRICTIONS, label: 'Parking Restrictions', width: '50%', lineBreak: true })
             locations.fields.push({ id: twcSite.Fields.CRANEMEWP_ACCESS, label: 'Crane/Mewp Access', lineBreak: true })

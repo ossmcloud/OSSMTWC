@@ -94,7 +94,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FIBRE_PARTNER_PRIORITY: 'custrecord_twc_infra_fibre_partner_prior',
             FIBRE_COMMENTS: 'custrecord_twc_infra_fibre_comm',
             ACCOMMODATION_TYPE: 'custrecord_twc_accom_type',
-            ACCESS_INSTRUCTIONS: 'custrecord_twc_acc_inst',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -189,7 +188,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FIBRE_PARTNER_PRIORITY: { name: 'custrecord_twc_infra_fibre_partner_prior', type: 'text', alias: 'fibrePartnerPriority', display: 'normal', mandatory: false },
             FIBRE_COMMENTS: { name: 'custrecord_twc_infra_fibre_comm', type: 'text', alias: 'fibreComments', display: 'normal', mandatory: false },
             ACCOMMODATION_TYPE: { name: 'custrecord_twc_accom_type', type: 'select', alias: 'accommodationType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_accom_type' },
-            ACCESS_INSTRUCTIONS: { name: 'custrecord_twc_acc_inst', type: 'clobtext', alias: 'accessInstructions', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -760,12 +758,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.ACCOMMODATION_TYPE, value)
             }
             get accommodationTypeName() { return this.getText(_recordFields.ACCOMMODATION_TYPE); }
-            
-            get accessInstructions() {
-                return this.get(_recordFields.ACCESS_INSTRUCTIONS);
-            } set accessInstructions(value) {
-                this.set(_recordFields.ACCESS_INSTRUCTIONS, value)
-            }
             
             get created() {
                 return this.get(_recordFields.CREATED);

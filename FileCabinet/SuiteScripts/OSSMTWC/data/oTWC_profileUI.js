@@ -23,6 +23,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getProfileInfoPanels_mainInfo(dataSource, userInfo) {
             var nonTwcReadOnly = userInfo.isEmployee ? undefined : true;
             var newRecordReadOnly = userInfo.isEmployee ? false : (dataSource.id ? true : false);
+            var readOnyIfNotNew = (dataSource.id ? true : false);
 
             var fieldGroup = { id: 'profile-info', collapsed: false, renderAsTable: { width: '100%', 'table-layout': 'fixed' }, controls: [] };
 
@@ -41,7 +42,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_SUBMITTED, label: 'Submitted', readOnly: nonTwcReadOnly, width: '150px' })
             basicInfo2.fields.push({ id: twcProfile.Fields.PICW_ACCEPTABLE, label: 'PICW', readOnly: nonTwcReadOnly }),
                 basicInfo2.fields.push({ id: twcProfile.Fields.USER_ACTION_NEEDED, label: 'User Action Needed', readOnly: nonTwcReadOnly }),
-                basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS_COMMENT, label: 'Accreditation Comment', readOnly: nonTwcReadOnly, width: '100%', rows: "4", styles: { height: '111px', display: 'inline-block', width: '100%' } })
+                basicInfo2.fields.push({ id: twcProfile.Fields.ACCREDITATION_STATUS_COMMENT, label: 'Accreditation Comment', readOnly: readOnyIfNotNew, width: '100%', rows: "4", styles: { height: '111px', display: 'inline-block', width: '100%' } })
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;

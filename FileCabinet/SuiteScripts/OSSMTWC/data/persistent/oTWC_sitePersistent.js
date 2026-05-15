@@ -31,12 +31,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SITE_SAF_AUTO_APPROVE: 'custrecord_twc_site_saf_auto_approve',
             SITE_SAF_STATUS: 'custrecord_twc_site_saf_status',
             TRACK_TYPE: 'custrecord_twc_site_track_type',
-            EASTING_ACCESS: 'custrecord_twc_site_easting_access',
-            NORTHING_ACCESS: 'custrecord_twc_site_northing_access',
-            LONGITUDE_ACCESS: 'custrecord_twc_site_longitude_access',
-            LATITUDE_ACCESS: 'custrecord_twc_site_latitude_access',
+            ACCESS_EASTING: 'custrecord_twc_site_easting_access',
+            ACCESS_NORTHING: 'custrecord_twc_site_northing_access',
+            ACCESS_LONGITUDE: 'custrecord_twc_site_longitude_access',
+            ACCESS_LATITUDE: 'custrecord_twc_site_latitude_access',
             DIRECTIONS: 'custrecord_twc_site_directions',
-            INSTRUCTIONS: 'custrecord_twc_site_instructions',
+            ACCESS_INSTRUCTIONS: 'custrecord_twc_site_instructions',
             TENANT_CARD_REQUIRED: 'custrecord_twc_site_tenant_card_req',
             FOURX4_REQUIRED: 'custrecord_twc_site_4x4_req',
             PARKING_RESTRICTIONS: 'custrecord_twc_site_parking_restr',
@@ -104,12 +104,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SITE_SAF_AUTO_APPROVE: { name: 'custrecord_twc_site_saf_auto_approve', type: 'checkbox', alias: 'siteSAFAutoApprove', display: 'normal', mandatory: false },
             SITE_SAF_STATUS: { name: 'custrecord_twc_site_saf_status', type: 'select', alias: 'siteSAFStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_saf_sts' },
             TRACK_TYPE: { name: 'custrecord_twc_site_track_type', type: 'select', alias: 'trackType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_track_type' },
-            EASTING_ACCESS: { name: 'custrecord_twc_site_easting_access', type: 'float', alias: 'eastingAccess', display: 'normal', mandatory: false },
-            NORTHING_ACCESS: { name: 'custrecord_twc_site_northing_access', type: 'float', alias: 'northingAccess', display: 'normal', mandatory: false },
-            LONGITUDE_ACCESS: { name: 'custrecord_twc_site_longitude_access', type: 'float', alias: 'longitudeAccess', display: 'normal', mandatory: false },
-            LATITUDE_ACCESS: { name: 'custrecord_twc_site_latitude_access', type: 'float', alias: 'latitudeAccess', display: 'normal', mandatory: false },
+            ACCESS_EASTING: { name: 'custrecord_twc_site_easting_access', type: 'float', alias: 'accessEasting', display: 'normal', mandatory: false },
+            ACCESS_NORTHING: { name: 'custrecord_twc_site_northing_access', type: 'float', alias: 'accessNorthing', display: 'normal', mandatory: false },
+            ACCESS_LONGITUDE: { name: 'custrecord_twc_site_longitude_access', type: 'float', alias: 'accessLongitude', display: 'normal', mandatory: false },
+            ACCESS_LATITUDE: { name: 'custrecord_twc_site_latitude_access', type: 'float', alias: 'accessLatitude', display: 'normal', mandatory: false },
             DIRECTIONS: { name: 'custrecord_twc_site_directions', type: 'clobtext', alias: 'directions', display: 'normal', mandatory: false },
-            INSTRUCTIONS: { name: 'custrecord_twc_site_instructions', type: 'clobtext', alias: 'instructions', display: 'normal', mandatory: false },
+            ACCESS_INSTRUCTIONS: { name: 'custrecord_twc_site_instructions', type: 'clobtext', alias: 'accessInstructions', display: 'normal', mandatory: false },
             TENANT_CARD_REQUIRED: { name: 'custrecord_twc_site_tenant_card_req', type: 'checkbox', alias: 'tenantCardRequired', display: 'normal', mandatory: false },
             FOURX4_REQUIRED: { name: 'custrecord_twc_site_4x4_req', type: 'checkbox', alias: 'fourx4Required', display: 'normal', mandatory: false },
             PARKING_RESTRICTIONS: { name: 'custrecord_twc_site_parking_restr', type: 'textarea', alias: 'parkingRestrictions', display: 'normal', mandatory: false },
@@ -316,28 +316,28 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get trackTypeName() { return this.getText(_recordFields.TRACK_TYPE); }
             
-            get eastingAccess() {
-                return this.get(_recordFields.EASTING_ACCESS);
-            } set eastingAccess(value) {
-                this.set(_recordFields.EASTING_ACCESS, value)
+            get accessEasting() {
+                return this.get(_recordFields.ACCESS_EASTING);
+            } set accessEasting(value) {
+                this.set(_recordFields.ACCESS_EASTING, value)
             }
             
-            get northingAccess() {
-                return this.get(_recordFields.NORTHING_ACCESS);
-            } set northingAccess(value) {
-                this.set(_recordFields.NORTHING_ACCESS, value)
+            get accessNorthing() {
+                return this.get(_recordFields.ACCESS_NORTHING);
+            } set accessNorthing(value) {
+                this.set(_recordFields.ACCESS_NORTHING, value)
             }
             
-            get longitudeAccess() {
-                return this.get(_recordFields.LONGITUDE_ACCESS);
-            } set longitudeAccess(value) {
-                this.set(_recordFields.LONGITUDE_ACCESS, value)
+            get accessLongitude() {
+                return this.get(_recordFields.ACCESS_LONGITUDE);
+            } set accessLongitude(value) {
+                this.set(_recordFields.ACCESS_LONGITUDE, value)
             }
             
-            get latitudeAccess() {
-                return this.get(_recordFields.LATITUDE_ACCESS);
-            } set latitudeAccess(value) {
-                this.set(_recordFields.LATITUDE_ACCESS, value)
+            get accessLatitude() {
+                return this.get(_recordFields.ACCESS_LATITUDE);
+            } set accessLatitude(value) {
+                this.set(_recordFields.ACCESS_LATITUDE, value)
             }
             
             get directions() {
@@ -346,10 +346,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.DIRECTIONS, value)
             }
             
-            get instructions() {
-                return this.get(_recordFields.INSTRUCTIONS);
-            } set instructions(value) {
-                this.set(_recordFields.INSTRUCTIONS, value)
+            get accessInstructions() {
+                return this.get(_recordFields.ACCESS_INSTRUCTIONS);
+            } set accessInstructions(value) {
+                this.set(_recordFields.ACCESS_INSTRUCTIONS, value)
             }
             
             get tenantCardRequired() {
