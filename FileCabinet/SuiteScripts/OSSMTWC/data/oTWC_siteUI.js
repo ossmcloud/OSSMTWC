@@ -79,12 +79,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             mainInfoFieldGroups.push(location);
 
             var access = { id: 'site-access', title: 'Access', fields: [] };
-            access.fields.push({ id: twcSite.Fields.EASTING_ACCESS, label: 'Easting' })
+            access.fields.push({ id: twcSite.Fields.EASTING_ACCESS, label: 'Access Easting' })
             access.fields.push({ id: twcSite.Fields.NORTHING_ACCESS, label: 'Northing' })
-            access.fields.push({ id: twcSite.Fields.LATITUDE_ACCESS, label: 'Latitude' })
-            access.fields.push({ id: twcSite.Fields.LONGITUDE_ACCESS, label: 'Longitude' })
+            access.fields.push({ id: twcSite.Fields.LATITUDE_ACCESS, label: 'Access Latitude' })
+            access.fields.push({ id: twcSite.Fields.LONGITUDE_ACCESS, label: 'Access Longitude' })
             access.fields.push({ id: twcSite.Fields.DIRECTIONS, label: 'Directions' })
-            access.fields.push({ id: twcSite.Fields.INSTRUCTIONS, label: 'Instructions' })
+            access.fields.push({ id: twcSite.Fields.INSTRUCTIONS, label: 'Access Instructions' })
 
             mainInfoFieldGroups.push(access);
 

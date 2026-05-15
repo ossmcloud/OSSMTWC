@@ -299,8 +299,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (!this.#calendar.datesContent[timeBlockDate]) {
                             this.#calendar.datesContent[timeBlockDate] = [];
                         } else {
-                            if (this.#calendar.datesContent[timeBlockDate].indexOf('This') < 0) {
-                                this.#calendar.datesContent[timeBlockDate].push('This');
+                            if (this.#calendar.datesContent[timeBlockDate].indexOf('SAF') < 0) {
+                                this.#calendar.datesContent[timeBlockDate].push('SAF');
                             }
                         }
                         this.#calendar.refresh();

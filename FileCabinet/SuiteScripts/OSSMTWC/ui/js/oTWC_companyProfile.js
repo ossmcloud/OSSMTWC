@@ -186,7 +186,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     });
 
-                    dialog.confirm({ title: profile.id ? 'manage company profile' : 'new company profile', message: form.ui, width: '75%', height: '70hv' }, (dlg) => {
+                    dialog.confirm({ title: profile.id ? 'Manage Profile Details' : 'New Profile Details', message: form.ui, width: '75%', height: '70hv' }, (dlg) => {
                         try {
                             var obj = form.getValues(true);
                             for (var k in obj) {
