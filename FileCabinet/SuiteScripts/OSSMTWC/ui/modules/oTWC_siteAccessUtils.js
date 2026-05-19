@@ -94,7 +94,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 if (!options.reUse) {
                     if (safId == options.id) {
                         safId = 't';
-                        safCode = 'This';
+                        safCode = 'SAF';
                     }
                 }
 
