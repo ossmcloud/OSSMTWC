@@ -14,8 +14,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             dataSource.Type = twcCompany.Type;
             var fieldGroups = [];
             fieldGroups.push(getCompanyInfoPanels_mainInfo(dataSource, userInfo, pageData.editMode));
-            fieldGroups.push(getCompanyInfoPanels_insuranceInfo(dataSource, userInfo, pageData.editMode));
             fieldGroups.push(getCompanyInfoPanels_accreditationInfo(dataSource, userInfo, pageData.editMode));
+            fieldGroups.push(getCompanyInfoPanels_insuranceInfo(dataSource, userInfo, pageData.editMode));
             fieldGroups.push(getCompanyInfoPanels_acl(dataSource, userInfo, pageData.editMode));
             fieldGroups.push(getCompanyInfoPanels_documents(dataSource, userInfo, pageData.editMode));
             fieldGroups.push(getCompanyInfoPanels_profiles(dataSource, userInfo, pageData.editMode));
@@ -94,7 +94,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getCompanyInfoPanels_accreditationInfo(dataSource, userInfo, editMode) {
-            var fieldGroup = { id: 'company-accreditation', title: 'Accreditation Info', collapsed: !editMode, controls: [] };
+            var fieldGroup = { id: 'company-accreditation', title: 'Accreditation Info', collapsed: false, controls: [] };
 
             var basicInfo = { id: 'company-accreditation-info', fields: [] };
             fieldGroup.controls.push(basicInfo);

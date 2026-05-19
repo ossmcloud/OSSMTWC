@@ -73,7 +73,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             RADIX_COMPANY_TABLE_ENTRY_NUMBER: { name: 'custrecord_twc_co_radix_entry_num', type: 'integer', alias: 'rADIXCompanyTableentrynumber', display: 'normal', mandatory: false },
             ENTITY: { name: 'custrecordtwc_entity', type: 'select', alias: 'entity', display: 'normal', mandatory: false, recordType: '-9' },
             ACCREDITATION_STATUS: { name: 'custrecord_twc_co_accred_status', type: 'select', alias: 'accreditationStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_co_accred_status' },
-            ACCREDITATION_STATUS_COMMENT: { name: 'custrecord_twc_co_accred_sts_cmt', type: 'text', alias: 'accreditationStatusComment', display: 'normal', mandatory: false },
+            ACCREDITATION_STATUS_COMMENT: { name: 'custrecord_twc_co_accred_sts_cmt', type: 'clobtext', alias: 'accreditationStatusComment', display: 'normal', mandatory: false },
             ACCREDITATION_SUBMITTED: { name: 'custrecord_twc_co_accred_submitted', type: 'text', alias: 'accreditationSubmitted', display: 'normal', mandatory: false },
             ACCREDITATION_STATUS_CHANGE_DATE: { name: 'custrecord_twc_co_accred_sts_date', type: 'date', alias: 'accreditationStatusChangeDate', display: 'normal', mandatory: false },
             COMPANY_ADDRESS: { name: 'custrecord_twc_co_address', type: 'clobtext', alias: 'companyAddress', display: 'normal', mandatory: false },
