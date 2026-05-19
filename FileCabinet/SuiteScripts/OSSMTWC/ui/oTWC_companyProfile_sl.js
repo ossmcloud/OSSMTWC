@@ -7,7 +7,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     function (core, cored, coreSql, uis, twcBaseView, twcConfig, twcCompanyProfileUtils, twcUIPanel) {
         var PAGE_VERSION = 'v0.01';
 
-        var suiteLet = uis.new({ title: 'TWC Company Profile', script: 'SuiteScripts/OSSMTWC/ui/oTWC_companyProfile_cs.js' });
+        var suiteLet = uis.new({ title: 'TL Company Profile', script: 'SuiteScripts/OSSMTWC/ui/oTWC_companyProfile_cs.js' });
         suiteLet.get = (context, s) => {
             var pageData = twcBaseView.initPageData(context);
 

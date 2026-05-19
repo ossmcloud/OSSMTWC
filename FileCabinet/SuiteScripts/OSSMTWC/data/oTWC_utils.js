@@ -1258,7 +1258,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         return {
-            ROOT_FILE_FOLDER: 'TWC Files',
+            ROOT_FILE_FOLDER: 'TL Files',
             HEIGH_LIMIT_FOR_1_CLIMBER: HEIGH_LIMIT_FOR_1_CLIMBER,
 
             EqLibStatus: EQ_LIB_STATUS,

@@ -9,7 +9,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function render(params) {
             params.portlet.clientScriptModulePath = 'SuiteScripts/OSSMTWC/ui/oTWC_dashBoards_cs.js'
-            params.portlet.title = 'TWC Dashboard';
+            params.portlet.title = 'TL Dashboard';
 
             // @@NOTE: we need to pass the id of the suitelet here so the permission module can get the right permission 
             var pageData = twcBaseView.initPageData('otwc_dashboards_sl');
@@ -20,7 +20,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var newField = params.portlet.addField({ id: 'htmlfield', type: 'INLINEHTML', label: 'html' });
             newField.defaultValue = html;
 
-            params.portlet.title = 'TWC Dashboard';
+            params.portlet.title = 'TL Dashboard';
         }
 
 

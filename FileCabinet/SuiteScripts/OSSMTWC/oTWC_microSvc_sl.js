@@ -6,7 +6,7 @@
  */
 define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_config.js'],
     function (file, uis, core, coreSQL, recu, twcConfig) {
-        var suiteLet = uis.new({ title: 'TWC Micro Service' });
+        var suiteLet = uis.new({ title: 'TL Micro Service' });
         suiteLet.get = (context, s) => {
             return { status: 'success' };
         }

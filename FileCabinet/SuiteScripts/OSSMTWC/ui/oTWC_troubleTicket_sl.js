@@ -7,7 +7,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     function (core, cored, coreSql, uis, twcBaseView, twcConfig, twcTroubleTicketUtils, twcUIPanel, twcSiteInfoUtils, twcTkt, twcUI,twcUtils) {
         var PAGE_VERSION = 'v0.01';
 
-        var suiteLet = uis.new({ title: 'TWC Trouble Ticket', script: 'SuiteScripts/OSSMTWC/ui/oTWC_troubleTicket_cs.js' });
+        var suiteLet = uis.new({ title: 'TL Trouble Ticket', script: 'SuiteScripts/OSSMTWC/ui/oTWC_troubleTicket_cs.js' });
         suiteLet.get = (context, s) => {
             var pageData = twcBaseView.initPageData(context);
 

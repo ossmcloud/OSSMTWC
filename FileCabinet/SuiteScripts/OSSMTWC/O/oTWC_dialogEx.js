@@ -261,7 +261,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             var dlg = dialog.open({
-                title: 'TWC Icon Piker',
+                title: 'TL Icon Piker',
                 content: content,
                 size: {
                     width: '750px',

@@ -7,7 +7,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
         var PAGE_VERSION = 'v0.01';
 
-        var suiteLet = uis.new({ title: 'TWC Site Access', script: 'SuiteScripts/OSSMTWC/ui/oTWC_siteAccess_cs.js' });
+        var suiteLet = uis.new({ title: 'TL Site Access', script: 'SuiteScripts/OSSMTWC/ui/oTWC_siteAccess_cs.js' });
         suiteLet.get = (context, s) => {
 
             var pageData = twcBaseView.initPageData(context);

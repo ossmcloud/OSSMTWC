@@ -7,7 +7,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     function (core, cored, coreSql, uis, twcBaseView) {
         var PAGE_VERSION = 'v0.01';
 
-        var suiteLet = uis.new({ title: 'TWC Dashboard', script: 'SuiteScripts/OSSMTWC/ui/oTWC_dashBoards_cs.js' });
+        var suiteLet = uis.new({ title: 'TL Dashboard', script: 'SuiteScripts/OSSMTWC/ui/oTWC_dashBoards_cs.js' });
         suiteLet.get = (context, s) => {
             var pageData = twcBaseView.initPageData(context);
             var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_dashBoards');

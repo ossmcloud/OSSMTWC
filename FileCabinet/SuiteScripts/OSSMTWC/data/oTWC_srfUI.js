@@ -77,7 +77,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (dataSource.id) {
                 fieldGroups.push(getSRFInfoPanels(dataSource, userInfo));
                 if (dataSource[twcSrf.Fields.SRF_STATUS] != twcSrf.Status.Draft) {
-                    // @@TODO : these fields should only be editable by TWC staff I suppose
+                    // @@TODO : these fields should only be editable by TL staff I suppose
                     // fieldGroups.push(getSRFWorkFlowPanels(dataSource, userInfo));
                 }
             } else {

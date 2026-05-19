@@ -7,7 +7,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
         var PAGE_VERSION = 'v0.01';
 
-        var suiteLet = uis.new({ title: 'TWC Space Request', script: 'SuiteScripts/OSSMTWC/ui/oTWC_spaceRequest_cs.js' });
+        var suiteLet = uis.new({ title: 'TL Space Request', script: 'SuiteScripts/OSSMTWC/ui/oTWC_spaceRequest_cs.js' });
         suiteLet.get = (context, s) => {
 
             var pageData = twcBaseView.initPageData(context);
@@ -97,7 +97,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
             } else if (context.request.parameters.action == 'get-file') {
                 var srfFle = twcSiteRequestUtils.getFile(JSON.parse(context.request.body).file);
-                if (!srfFle) { throw new Error(`TWC File record not found [${JSON.parse(context.request.body).file}]`); }
+                if (!srfFle) { throw new Error(`TL File record not found [${JSON.parse(context.request.body).file}]`); }
                 var file = nsFile.load(srfFle.file_id);
                 return { fileContent: file.getContents(), name: file.name, type: file.fileType }
 

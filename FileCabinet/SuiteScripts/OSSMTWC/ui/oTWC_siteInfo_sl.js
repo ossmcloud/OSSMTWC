@@ -8,7 +8,7 @@ define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bund
 
         var PAGE_VERSION = 'v0.01';
 
-        var suiteLet = uis.new({ title: 'TWC Site', script: 'SuiteScripts/OSSMTWC/ui/oTWC_siteInfo_cs.js' });
+        var suiteLet = uis.new({ title: 'TL Site', script: 'SuiteScripts/OSSMTWC/ui/oTWC_siteInfo_cs.js' });
         suiteLet.get = (context, s) => {
 
             if (!context.request.parameters.recId) {

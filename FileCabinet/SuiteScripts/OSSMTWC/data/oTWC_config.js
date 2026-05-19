@@ -161,7 +161,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             if (userInfo.type != 'Employee') {
                 if (!userInfo.companyProfile) {
-                    throw new Error(`Your user [${userInfo.id}] is not associated to any company profile, please contact TWC administrator to set you up.`)
+                    throw new Error(`Your user [${userInfo.id}] is not associated to any company profile, please contact TL administrator to set you up.`)
                 }
 
                 userInfo.companyProfile.isVendor = userInfo.companyProfile.is_vendor == 'T';
@@ -217,7 +217,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             userInfo.profile = profileInfo?.id || null;
             userInfo.profileInfo = profileInfo;
 
-            if (!userInfo.profile) { throw new Error('Your user is not associated to any profile, please contact TWC administrator to set you up.') }
+            if (!userInfo.profile) { throw new Error('Your user is not associated to any profile, please contact TL administrator to set you up.') }
 
             return userInfo;
         }

@@ -43,13 +43,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     return twcProfile.getCertStatusHtml(v, d[col.id.replace('_sts_name', '_exp')])
                 }
                 // @@NOTE: Commented this line as we are not using those fields in the Profile View.
-                // this.initProfileFormatValueColumn(table, twcProfile.Fields.CLIMBER_CERTIFIED_STATUS, formatValue);
-                // this.initProfileFormatValueColumn(table, twcProfile.Fields.RESCUE_CERTIFIED_STATUS, formatValue);
-                // this.initProfileFormatValueColumn(table, twcProfile.Fields.RF_CERTIFIED_STATUS, formatValue);
-                // this.initProfileFormatValueColumn(table, twcProfile.Fields.ROOFTOP_CERTIFIED_STATUS, formatValue);
-                // this.initProfileFormatValueColumn(table, twcProfile.Fields.ELECTRICIAN_CERTIFIED_STATUS, formatValue);
-                // this.initProfileFormatValueColumn(table, twcProfile.Fields.DRONE_CERTIFIED_STATUS, formatValue);
-                // this.initProfileFormatValueColumn(table, twcProfile.Fields.SAFE_PASS_STATUS, formatValue);
+                this.initProfileFormatValueColumn(table, twcProfile.Fields.CLIMBER_CERTIFIED_STATUS, formatValue);
+                this.initProfileFormatValueColumn(table, twcProfile.Fields.RESCUE_CERTIFIED_STATUS, formatValue);
+                this.initProfileFormatValueColumn(table, twcProfile.Fields.RF_CERTIFIED_STATUS, formatValue);
+                this.initProfileFormatValueColumn(table, twcProfile.Fields.ROOFTOP_CERTIFIED_STATUS, formatValue);
+                this.initProfileFormatValueColumn(table, twcProfile.Fields.ELECTRICIAN_CERTIFIED_STATUS, formatValue);
+                this.initProfileFormatValueColumn(table, twcProfile.Fields.DRONE_CERTIFIED_STATUS, formatValue);
+                this.initProfileFormatValueColumn(table, twcProfile.Fields.SAFE_PASS_STATUS, formatValue);
 
                 this.initProfileFormatValueColumn(table, twcProfile.Fields.ACCREDITATION_STATUS, (v, fv, d) => {
                     return twcProfile.getAccreditationStatusHtml(v)
