@@ -14,7 +14,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             
 
             pageData.profileInfo = twcCompanyProfileUtils.getProfileInfo(pageData);
-            log.debug("pageData.profilrInfooooooooooooo", Object.keys(pageData));
             pageData.recId = pageData.profileInfo.id;
 
             var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_companyProfile');
