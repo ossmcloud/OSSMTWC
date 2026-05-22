@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_srf.js', '../data/oTWC_equipmentLibCfg.js', '../data/oTWC_equipmentLib.js'],
-    function (nsFile, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcSrf, twcEqLibCfg, twcEqLib) {
+define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_srf.js', '../data/oTWC_equipmentLibCfg.js', '../data/oTWC_equipmentLib.js'],
+    function (render ,nsFile, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcSrf, twcEqLibCfg, twcEqLib) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -24,7 +24,16 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 if (context.request.parameters.recId) {
                     var srfCode = pageData.siteRequestInfo.name;
                     s.form.f.title += ` - ${srfCode}`;
+                    let printSDSButton = '';
+                    if (Number(pageData.siteRequestInfo.custrecord_twc_srf_status) === 11) { // Later change it to 6 - Licence Requested
+                        printSDSButton = `
+                            <div style="margin-left: 10px;">
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Print SDS', id: 'print-sds' })}
+                            </div>
+                        `;
+                    }
                     pageData.recordStatus = `
+                    <div style="display:flex; align-items:flex-start;">
                         <div class="twc-div-span-table">
                             <span class="twc-record-status" style="border: 1px solid var(--grid-color); padding: 0px 34px; font-size: 20px; vertical-align: middle; background-color: var(--accent-bkgd-color); color: var(--accent-fore-color)">
                                 ${srfCode}
@@ -32,6 +41,8 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                             <span style="width: 5px;"></span>
                             ${pageData.recordStatus}
                         </div>
+                        ${printSDSButton}
+                    </div>
                     `
                 }
 
@@ -101,6 +112,30 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 var file = nsFile.load(srfFle.file_id);
                 return { fileContent: file.getContents(), name: file.name, type: file.fileType }
 
+            } else if (context.request.parameters.action == 'print-pdf') {
+
+                // Load XML file
+                const xmlFile = nsFile.load({
+                    id: 'SuiteScripts/OSSMTWC/XML/oTwc_print_SDS.xml'
+                });
+                var xmlRenderer = render.create();
+                xmlRenderer.templateContent = xmlFile.getContents();
+                // Optional custom data source
+                // xmlRenderer.addCustomDataSource({
+                //     format: render.DataSource.OBJECT,
+                //     alias: 'requestJSON',
+                //     data: requestJSON
+                // });
+
+                var xmlContent = xmlRenderer.renderAsString();
+                log.debug('XML CONTENT', xmlContent);
+                var pdfFile = render.xmlToPdf({
+                    xmlString: xmlContent
+                });
+
+                context.response.write(pdfFile);
+                log.debug("Print SDS Clicked");
+                return;
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);
             }

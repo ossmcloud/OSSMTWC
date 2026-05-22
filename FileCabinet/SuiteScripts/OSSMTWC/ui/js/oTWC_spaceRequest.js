@@ -131,6 +131,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.onSave(e);
                     });
 
+                    this.ui.getControl('print-sds')?.on('click', e => {
+                        this.openPrintSDS(e);
+                    })
+
                     this.ui.on('change', e => {
                         if (e.target.type != 'table') {
                             this.data.siteRequestInfo[e.id] = e.value;
@@ -172,6 +176,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#sitesTable = new TWCSiteSrfTable(this);
                     this.#sitePanel = twcSiteLocatorPanel.get({ page: this, table: this.#sitesTable, data: this.data.data.srfInfo.sites, tableData: this.data.data.srfInfo.srfs });
 
+                }
+            }
+
+            async openPrintSDS(e){
+                const targetId = e.id || e.target.id;
+                console.log("Print SDS Clicked", e.target.id)
+                try {
+                    if (targetId != 'print-sds') {
+                        if (!this.dirty) { throw new Error('The record has not changed'); }
+                    }
+                    var payload = this.data.siteRequestInfo;
+                    console.log("LLLLLLLLLLLLL", payload.id)
+                    // window.open("https://www.google.com")
+                    // const url = '/app/site/hosting/scriptlet.nl?script=customscript_otwc_spacerequest_sl&deploy=1&action=print-pdf';
+
+                    window.open(`/app/site/hosting/scriptlet.nl?script=customscript_otwc_print_srf_sds_sl&deploy=1&recid=${payload.id}`, `_blank`);
+                    // var res = await this.post({ action: 'print-pdf' }, payload);
+                } catch(error){
+                    await dialog.errorAsync(error);
                 }
             }
 

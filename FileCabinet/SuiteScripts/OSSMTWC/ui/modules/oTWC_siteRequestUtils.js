@@ -320,6 +320,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return html;
         }
 
+        function getSrfInfo(recId){
+            var srfInfo = {}
+            log.debug("Inside siteRequestUtils", recId);
+            if (recId){
+                srfInfo.srfDetails = coreSQL.run(`select custrecord_twc_srf_op_site_id, custrecord_twc_srf_site from ${twcSrf.Type} where id = ${recId}`);
+                const siteID = srfInfo.srfDetails[0].custrecord_twc_srf_site;
+                log.debug("SITEIDDDD", siteID)
+                srfInfo.siteDetails = coreSQL.run(`
+                    select custrecord_twc_site_old_id, custrecord_twc_site_name, custrecord_twc_site_address, custrecord_twc_site_address_zip, custrecord_twc_site_address_county,
+                          custrecord_twc_site_easting_access, custrecord_twc_site_northing_access, custrecord_twc_site_longitude_access, custrecord_twc_site_latitude_access,
+
+                    from customrecord_twc_site 
+                    where id = ${siteID}`)
+                srfInfo.srfItems = coreSQL.run(`
+                    select custrecord_twc_srf_itm_stype as step_type, BUILTIN.DF(custrecord_twc_srf_itm_req_type) as status, custrecord_twc_srf_itm_srf as srf_id, id, custrecord_twc_srf_itm_type as type, custrecord_twc_srf_itm_desc as description,
+                        custrecord_twc_srf_itm_length_mm as length, custrecord_twc_srf_itm_width_mm as width, custrecord_twc_srf_itm_depth_mm as depth, custrecord_twc_srf_itm_ht_on_twr as equip_height,
+                        custrecord_twc_srf_itm_weight_kg as weight, custrecord_twc_srf_itm_azimuth as azimuth, custrecord_twc_srf_itm_b_end as b_end, custrecord_twc_srf_itm_loc as location, 
+                        custrecord_twc_srf_itm_invent_flag as inventory_flag, custrecord_twc_srf_itm_feeder_count as feeder_count, 
+                    from ${twcSrfItem.Type} where custrecord_twc_srf_itm_srf = ${recId} `)
+            }
+            return srfInfo;
+        }
+
         return {
 
             getSRFInfoPanels: twcSrfUI.getSRFInfoPanels,
@@ -372,6 +395,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             saveSiteSrf: saveSiteSrf,
             renderSiteLocatorPanel: renderSiteLocatorPanel,
+            getSrfInfo: getSrfInfo,
 
         }
 
