@@ -51,6 +51,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
             MODIFIED_BY: 'lastmodifiedby',
+            COMPANY_DESIGNATED_CONTACT: 'custrecord_twc_prof_co_desig_cont',
         }
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
@@ -98,6 +99,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
             MODIFIED_BY: { name: 'lastmodifiedby', type: 'select', alias: 'last_modified_by', display: 'inline', recordType: 'employee'}, 
+            COMPANY_DESIGNATED_CONTACT: { name: 'custrecord_twc_prof_co_desig_cont', type: 'multiselect', alias: 'companyDesignatedContact', display: 'normal', mandatory: false, recordType: 'customrecord_twc_comp_des_contact' },
         }
 
         class OSSMTWC_Profile extends customRec.RecordBase {
@@ -384,6 +386,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.MODIFIED_BY);
             } set last_modified_by(value) {
                 this.set(_recordFields.MODIFIED_BY, value)
+            }
+
+            get company_designated_contact() {
+                return this.get(_recordFields.COMPANY_DESIGNATED_CONTACT);
+            } set company_designated_contact(value) {
+                this.set(_recordFields.COMPANY_DESIGNATED_CONTACT, value)
             }
             
         }

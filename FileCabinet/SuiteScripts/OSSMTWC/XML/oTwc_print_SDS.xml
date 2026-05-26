@@ -23,13 +23,13 @@
         }
 
         .sectionHeader {
-            background-color: #9fd3f2;
+            background-color: #AADCFF;
             text-align: center;
             font-weight: bold;
         }
 
         .subHeader {
-            background-color: #d9edf9;
+            background-color: #AADCFF;
             text-align: center;
             font-weight: bold;
         }
@@ -51,7 +51,7 @@
                 </font>
             </td>
             <td border="0" width="30%" align="right">
-                Towercom
+                <img src="https://9061443-sb1.app.netsuite.com/core/media/media.nl?id=21788&amp;c=9061443_SB1&amp;h=9K50eGpbmS68ktYJKqc2crZrZXhyOACwey9FegJNb6Se6Okm" height="30%;" width="80%" />
             </td>
         </tr>
     </table>
@@ -73,73 +73,39 @@
 
     <!-- SITE DETAILS -->
     <table>
+        <tr><td align="center" colspan="6" class="sectionHeader"> Site Details </td></tr>
         <tr>
-            <td align="center" colspan="6" class="sectionHeader">
-                Site Details
-            </td>
+            <td width="12%" class="label" align="right"> Site Name </td>
+            <td width="20%"> ${requestJSON.siteDetails[0].site_name} </td>
+            <td width="20%" class="label" align="right"> Site ID: </td>
+            <td width="20%"> ${requestJSON.siteDetails[0].site_id} </td>
+            <td width="20%" class="label" align="right"> Operator Site ID: </td>
+            <td width="20%"> KEDMH </td>
         </tr>
         <tr>
-            <td width="12%" class="label" align="right">
-                Site Name
-            </td>
-            <td width="20%">
-                Dunmurry Hill
-            </td>
-            <td width="12%" class="label" align="right">
-                Site ID:
-            </td>
-            <td width="18%">
-                TKE1019
-            </td>
-            <td width="15%" class="label" align="right">
-                Operator Site ID:
-            </td>
-            <td width="23%">
-                KEDMH
-            </td>
-        </tr>
-        <tr>
-            <td class="label" align="right">
-                Site Address:
-            </td>
+            <td class="label" align="right">Site Address:</td>
             <td colspan="5">
-                Dunmurry Hill, Kildare
+                <#if requestJSON.siteDetails[0].address?has_content && requestJSON.siteDetails[0].address != "null"> ${requestJSON.siteDetails[0].address} </#if>
+                <#if requestJSON.siteDetails[0].add_zipcode?has_content && requestJSON.siteDetails[0].add_zipcode != "null">, ${requestJSON.siteDetails[0].add_zipcode} </#if>
+                <#if requestJSON.siteDetails[0].add_county?has_content && requestJSON.siteDetails[0].add_county != "null">, ${requestJSON.siteDetails[0].add_county} </#if>
             </td>
         </tr>
         <tr>
-            <td class="label" align="right">
-                Coordinates:
-            </td>
-            <td>
-                Easting:271331
-            </td>
-            <td>
-                Northing: 216961
-            </td>
-            <td>
-                Latitude:53.198581
-            </td>
-            <td colspan="2">
-                Longitude: -6.933398
-            </td>
+            <td class="label" align="right"> Coordinates: </td>
+            <td border-right ="0"> Easting: ${requestJSON.siteDetails[0].easting} </td>
+            <td border-left ="0"> Northing: ${requestJSON.siteDetails[0].northing} </td>
+            <td border-right ="0" colspan="2"> Latitude: ${requestJSON.siteDetails[0].latitude} </td>
+            <td border-left ="0"> Longitude: ${requestJSON.siteDetails[0].longitude} </td>
         </tr>
     </table>
 
     <br />
     <!-- DETAILS OF THE PARTIES -->
     <table>
+        <tr> <td align="center" colspan="4" class="sectionHeader"> Details of the Parties </td> </tr>
         <tr>
-            <td align="center" colspan="4" class="sectionHeader">
-                Details of the Parties
-            </td>
-        </tr>
-        <tr>
-            <td align="center" colspan="2" width="50%" class="subHeader">
-                Licensor:
-            </td>
-            <td align="center" colspan="2" width="50%" class="subHeader">
-                Operator:
-            </td>
+            <td align="center" colspan="2" width="50%" class="subHeader"> Licensor: </td>
+            <td align="center" colspan="2" width="50%" class="subHeader"> Operator: </td>
         </tr>
         <tr>
             <td colspan="2" style="line-height: 16px;">
@@ -168,38 +134,19 @@
             </td>
         </tr>
         <tr>
-            <td width="18%" class="label" align="right">
-                SRF Number:
-            </td>
-            <td width="32%">
-                S7507
-            </td>
-            <td width="18%" class="label" align="right">
-                SRF Approved:
-            </td>
-            <td width="32%">
-                03-12-2025
-            </td>
+            <td width="18%" class="label" align="right"> SRF Number: </td>
+            <td width="32%"> S7507 </td>
+            <td width="18%" class="label" align="right"> SRF Approved: </td>
+            <td width="32%"> 03-12-2025 </td>
         </tr>
         <tr>
-            <td class="label" align="right">
-                Drawing ref:
-            </td>
-            <td>
-                TKE1019-VF-3D_BLD-19
-            </td>
-            <td colspan="2">
-                The drawing referenced forms an integral part of the SDS and
-                illustrates the equipment licenced and/or proposed for removal.
-            </td>
+            <td class="label" align="right"> Drawing ref: </td>
+            <td> TKE1019-VF-3D_BLD-19 </td>
+            <td colspan="2"> The drawing referenced forms an integral part of the SDS and illustrates the equipment licenced and/or proposed for removal. </td>
         </tr>
         <tr>
-            <td colspan="2" class="label" align="right">
-                Site Access Reference Documents
-            </td>
-            <td colspan="2">
-                TCO16_TKE1019 Site Access Info Dunmurry Hill.pdf
-            </td>
+            <td colspan="2" class="label" align="right"> Site Access Reference Documents </td>
+            <td colspan="2"> TCO16_TKE1019 Site Access Info Dunmurry Hill.pdf </td>
         </tr>
 
     </table>
@@ -209,143 +156,66 @@
 
         <!-- Section Header -->
         <tr>
-            <td colspan="16" align="center" style="background-color:#9fd3f2; border:1px solid #666; text-align:center; font-weight:bold; padding:5px;">
-                Tower Mounted Equipment
-            </td>
+            <td class="sectionHeader" colspan="16" align="center" style="border:1px solid #666; text-align:center; font-weight:bold; padding:5px;"> Tower Mounted Equipment </td>
         </tr>
 
         <!-- Column Headers -->
-        <tr style="background-color:#cfe8f7;
-                text-align:center;
-                font-weight:bold;">
-
+        <tr class="subHeader" style="text-align:center; font-weight:bold;">
             <td style="border:1px solid #666; padding:4px;">Status</td>
             <td style="border:1px solid #666; padding:4px;">SRF ID</td>
             <td style="border:1px solid #666; padding:4px;">ID</td>
             <td style="border:1px solid #666; padding:4px;">Type</td>
             <td style="border:1px solid #666; padding:4px;">Description</td>
-
-            <td style="border:1px solid #666; padding:4px;">
-                Length<br />(mm)
-            </td>
-
-            <td style="border:1px solid #666; padding:4px;">
-                Width<br />(mm)
-            </td>
-
-            <td style="border:1px solid #666; padding:4px;">
-                Depth<br />(mm)
-            </td>
-
-            <td style="border:1px solid #666; padding:4px;">
-                Equipment<br />Height (m)
-            </td>
-
-            <td style="border:1px solid #666; padding:4px;">
-                Weight<br />(kg)
-            </td>
-
+            <td style="border:1px solid #666; padding:4px;"> Length<br />(mm) </td>
+            <td style="border:1px solid #666; padding:4px;"> Width<br />(mm) </td>
+            <td style="border:1px solid #666; padding:4px;"> Depth<br />(mm) </td>
+            <td style="border:1px solid #666; padding:4px;"> Equipment<br />Height (m) </td>
+            <td style="border:1px solid #666; padding:4px;"> Weight<br />(kg) </td>
             <td style="border:1px solid #666; padding:4px;">Azimuth</td>
             <td style="border:1px solid #666; padding:4px;">B-End</td>
             <td style="border:1px solid #666; padding:4px;">Location</td>
-
-            <td style="border:1px solid #666; padding:4px;">
-                Inventory<br />Flag
-            </td>
-
-            <td style="border:1px solid #666; padding:4px;">
-                Atme<br />Count
-            </td>
-
-            <td style="border:1px solid #666; padding:4px;">
-                Feeder<br />Count
-            </td>
+            <td style="border:1px solid #666; padding:4px;"> Inventory<br />Flag </td>
+            <td style="border:1px solid #666; padding:4px;"> Atme<br />Count </td>
+            <td style="border:1px solid #666; padding:4px;"> Feeder<br />Count </td>
         </tr>
 
-        <!-- Row 1 -->
-        <tr>
-            <td style="border:1px solid #666; padding:4px;">Installed</td>
-            <td style="border:1px solid #666; padding:4px;">[climb]</td>
-            <td style="border:1px solid #666; padding:4px;">2152</td>
-            <td style="border:1px solid #666; padding:4px;">Other</td>
-            <td style="border:1px solid #666; padding:4px;">Joleo - Paging System</td>
-
-            <td style="border:1px solid #666; padding:4px; text-align:center;">
-                2500
-            </td>
-
-            <td style="border:1px solid #666; padding:4px;"></td>
-
-            <td style="border:1px solid #666; padding:4px; text-align:center;">
-                0
-            </td>
-
-            <td style="border:1px solid #666; padding:4px; text-align:center;">
-                39
-            </td>
-
-            <td style="border:1px solid #666; padding:4px; text-align:center;">
-                0
-            </td>
-
-            <td style="border:1px solid #666; padding:4px; text-align:center;">
-                000
-            </td>
-
-            <td style="border:1px solid #666; padding:4px;">-</td>
-            <td style="border:1px solid #666; padding:4px;">Mast</td>
-
-            <td style="border:1px solid #666; padding:4px; text-align:center;">
-                B
-            </td>
-
-            <td style="border:1px solid #666; padding:4px; text-align:center;">
-                0
-            </td>
-
-            <td style="border:1px solid #666; padding:4px; text-align:center;">
-                1
-            </td>
+        <#list requestJSON.srfItems as srfItems> 
+        <tr <#if srfItems_index % 2 == 0>background-color="#C8D8E5"</#if>>
+            <#if srfItems.step_type != "3">
+                <td style="border:1px solid #666; padding:4px;">${srfItems.status}</td>
+                <td style="border:1px solid #666; padding:4px;">[${srfItems.srf_id}]</td>
+                <td style="border:1px solid #666; padding:4px;">${srfItems.id}</td>
+                <td style="border:1px solid #666; padding:4px;">${srfItems.type}</td>
+                <td style="border:1px solid #666; padding:4px;">${srfItems.description}</td>
+                <td style="border:1px solid #666; padding:4px;">${srfItems.length}</td>
+                <td style="border:1px solid #666; padding:4px;">${srfItems.width}</td>
+                <td style="border:1px solid #666; padding:4px;">${srfItems.depth}</td>
+                <td style="border:1px solid #666; padding:4px;">${srfItems.equip_height}</td>
+                <td style="border:1px solid #666; padding:4px;">${srfItems.weight}</td>
+                <td style="border:1px solid #666; padding:4px;">${srfItems.azimuth}</td>
+                <td style="border:1px solid #666; padding:4px;">${srfItems.b_end}</td>
+                <td style="border:1px solid #666; padding:4px;">${srfItems.location}</td>
+                <td style="border:1px solid #666; padding:4px;">${srfItems.inventory_flag}</td>
+                <td style="border:1px solid #666; padding:4px;">
+                <#if srfItems.step_type == "2" > 
+                    1
+                <#else>
+                    0
+                </#if>
+                </td>
+                <td style="border:1px solid #666; padding:4px;">${srfItems.feeder_count}</td>
+            </#if>
         </tr>
-
-        <!-- Row 2 -->
-        <tr>
-            <td style="border:1px solid #666; padding:4px;">Installed</td>
-            <td style="border:1px solid #666; padding:4px;">[climb]</td>
-            <td style="border:1px solid #666; padding:4px;">2152</td>
-            <td style="border:1px solid #666; padding:4px;">Other</td>
-            <td style="border:1px solid #666; padding:4px;">Other</td>
-
-            <td style="border:1px solid #666; padding:4px;"></td>
-            <td style="border:1px solid #666; padding:4px;"></td>
-            <td style="border:1px solid #666; padding:4px;"></td>
-            <td style="border:1px solid #666; padding:4px;"></td>
-            <td style="border:1px solid #666; padding:4px;"></td>
-            <td style="border:1px solid #666; padding:4px;"></td>
-            <td style="border:1px solid #666; padding:4px;"></td>
-            <td style="border:1px solid #666; padding:4px;"></td>
-            <td style="border:1px solid #666; padding:4px;"></td>
-
-            <td style="border:1px solid #666; padding:4px;">-</td>
-            <td style="border:1px solid #666; padding:4px;">-</td>
-        </tr>
+        </#list>
 
     </table>
 
     <!-- GROUND / INDOOR EQUIPMENT -->
     <table style="width:100%; border-collapse:collapse; margin-top:14px; font-family:Arial, sans-serif; font-size:10px; border:1px solid #666;">
-        <!-- Section Header -->
         <tr>
-            <td align="center" colspan="10" style="background-color:#9fd3f2; border:1px solid #666; text-align:center; font-weight:bold; padding:5px;">
-                Ground/Indoor Equipment
-            </td>
+            <td class="sectionHeader" align="center" colspan="10" style="border:1px solid #666; text-align:center; font-weight:bold; padding:5px;"> Ground/Indoor Equipment </td>
         </tr>
-
-        <!-- Column Headers -->
-        <tr style="background-color:#cfe8f7;
-                text-align:center;
-                font-weight:bold;">
-
+        <tr class="subHeader" style="text-align:center; font-weight:bold;">
             <td style="border:1px solid #666; padding:4px;">Status</td>
             <td style="border:1px solid #666; padding:4px;">SRF ID</td>
             <td style="border:1px solid #666; padding:4px;">ID</td>
@@ -357,173 +227,71 @@
             <td style="border:1px solid #666; padding:4px;">Location</td>
             <td style="border:1px solid #666; padding:4px;">Inventory Flag</td>
         </tr>
-
-        <!-- Row 1 -->
-        <tr>
-            <td style="border:1px solid #666; padding:4px;">Installed</td>
-            <td style="border:1px solid #666; padding:4px;"></td>
-            <td style="border:1px solid #666; padding:4px;">5933</td>
-            <td style="border:1px solid #666; padding:4px;">
-                Ground/Indoor Equipment
-            </td>
-
-            <td style="border:1px solid #666; padding:4px;">
-                Alcatel TX Rack
-            </td>
-
-            <td style="border:1px solid #666; padding:4px;">600</td>
-            <td style="border:1px solid #666; padding:4px;">300</td>
-            <td style="border:1px solid #666; padding:4px;"></td>
-
-            <td style="border:1px solid #666; padding:4px;">
-                (#22) Comms Room 1
-            </td>
-
-            <td style="border:1px solid #666; padding:4px;"></td>
-        </tr>
-
-        <!-- Row 2 -->
-        <tr>
-            <td style="border:1px solid #666; padding:4px;">Installed</td>
-            <td style="border:1px solid #666; padding:4px;"></td>
-            <td style="border:1px solid #666; padding:4px;">5934</td>
-
-            <td style="border:1px solid #666; padding:4px;">
-                Ground/Indoor Equipment
-            </td>
-
-            <td style="border:1px solid #666; padding:4px;">
-                Alcatel TX Rack
-            </td>
-
-            <td style="border:1px solid #666; padding:4px;">600</td>
-            <td style="border:1px solid #666; padding:4px;">300</td>
-            <td style="border:1px solid #666; padding:4px;"></td>
-
-            <td style="border:1px solid #666; padding:4px;">
-                (#23) Comms Room 1
-            </td>
-
-            <td style="border:1px solid #666; padding:4px;"></td>
-        </tr>
-
+        <#list requestJSON.srfItems as srfItems>
+            <tr>
+                <#if srfItems.step_type == "3">
+                    <td style="border:1px solid #666; padding:4px;">${srfItems.status}</td>
+                    <td style="border:1px solid #666; padding:4px;">${srfItems.srf_id}</td>
+                    <td style="border:1px solid #666; padding:4px;">${srfItems.id}</td>
+                    <td style="border:1px solid #666; padding:4px;">${srfItems.type}</td>
+                    <td style="border:1px solid #666; padding:4px;">${srfItems.description}</td>
+                    <td style="border:1px solid #666; padding:4px;">${srfItems.length}</td>
+                    <td style="border:1px solid #666; padding:4px;">${srfItems.width}</td>
+                    <td style="border:1px solid #666; padding:4px;">${srfItems.equip_height}</td>
+                    <td style="border:1px solid #666; padding:4px;">${srfItems.location}</td>
+                    <td style="border:1px solid #666; padding:4px;">${srfItems.inventory_flag}</td>
+                </#if>
+            </tr>
+        </#list>
     </table>
 
     <!-- POWER SUPPLY -->
     <table style="width:100%; border-collapse:collapse; margin-top:14px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
-        <!-- Section Header -->
         <tr>
-            <td colspan="2"
-                style="background-color:#9fd3f2; border:1px solid #666; text-align:center; padding:5px; font-weight:bold;">
-                Power Supply
-            </td>
+            <td class="sectionHeader" align="center" colspan="2" style="border:1px solid #666; text-align:center; padding:5px; font-weight:bold;"> Power Supply </td>
         </tr>
-
-        <!-- Row 1 -->
         <tr>
-            <td style="width:50%; border:1px solid #666; padding:7px; background-color:gainsboro;">
-                Towercom Temp Supply Required:
-            </td>
-            <td style="width:50%; border:1px solid #666; padding:7px;">
-                No
-            </td>
+            <td style="width:50%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Towercom Temp Supply Required: </td>
+            <td style="width:50%; border:1px solid #666; padding:7px;"> No </td>
         </tr>
-
-        <!-- Row 2 -->
         <tr>
-            <td style="border:1px solid #666; padding:7px; background-color:gainsboro;">
-                Other (please specify):
-            </td>
-            <td style="border:1px solid #666; padding:7px;">
-                Temporary power connection from Towercom.
-            </td>
+            <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Other (please specify): </td>
+            <td style="border:1px solid #666; padding:7px;"> Temporary power connection from Towercom. </td>
         </tr>
     </table>
 
     <!-- FIBRE -->
     <table style="width:100%; border-collapse:collapse; margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
-        <!-- Section Header -->
         <tr>
-            <td align="center" colspan="4" style="background-color:#9fd3f2; border:1px solid #666; text-align:center; padding:5px; font-weight:bold;">
-                Fibre
-            </td>
+            <td class="sectionHeader" align="center" colspan="4" style="border:1px solid #666; text-align:center; padding:5px; font-weight:bold;"> Fibre </td>
         </tr>
-
-        <!-- Row 1 -->
         <tr>
-
-            <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;">
-                Fibre Rights:
-            </td>
-
-            <td style="width:25%; border:1px solid #666; padding:7px;">
-                No
-            </td>
-
-            <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;">
-                Fibre Duct Route:
-            </td>
-
-            <td style="width:25%; border:1px solid #666; padding:7px;">
-            </td>
-
+            <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Rights: </td>
+            <td style="width:25%; border:1px solid #666; padding:7px;"> No </td>
+            <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Duct Route: </td>
+            <td style="width:25%; border:1px solid #666; padding:7px;"> </td>
         </tr>
-
-        <!-- Row 2 -->
         <tr>
-
-            <td style="border:1px solid #666;
-                    padding:7px;
-                    background-color:gainsboro;">
-                Fibre Provider:
-            </td>
-
-            <td style="border:1px solid #666;
-                    padding:7px;">
-                -
-            </td>
-
-            <td style="border:1px solid #666;
-                    padding:7px;
-                    background-color:gainsboro;">
-                Other Provider:
-            </td>
-
-            <td style="border:1px solid #666;
-                    padding:7px;">
-            </td>
-
+            <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Provider: </td>
+            <td style="border:1px solid #666; padding:7px;"> - </td>
+            <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Other Provider: </td>
+            <td style="border:1px solid #666; padding:7px;"> </td>
         </tr>
-
-        <!-- Row 3 -->
         <tr>
-
-            <td style="border:1px solid #666;
-                    padding:7px;
-                    background-color:gainsboro;">
-                Fibre Conditions:
-            </td>
-
-            <td colspan="3"
-                style="border:1px solid #666;
-                    padding:7px;">
-            </td>
-
+            <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Conditions: </td>
+            <td colspan="3" style="border:1px solid #666; padding:7px;"> </td>
         </tr>
 
     </table>
 
-
     <!-- LICENCE FEES -->
     <table style="width:100%; border-collapse:collapse; margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
-        <!-- Section Header -->
         <tr>
-            <td align="center" colspan="8" style="background-color:#9fd3f2; border:1px solid #666; text-align:center; padding:5px; font-weight:bold;">
+            <td class="sectionHeader" align="center" colspan="8" style="border:1px solid #666; text-align:center; padding:5px; font-weight:bold;">
                 Licence Fees
             </td>
         </tr>
 
-        <!-- Fees Row -->
         <tr>
             <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
                 Previous Licence Fee:
@@ -550,7 +318,6 @@
                 €485,987.20
             </td>
         </tr>
-        <!-- Commencement Date -->
         <tr>
             <td colspan="1"
                 style="border:1px solid #666; padding:7px; background-color:gainsboro;">
@@ -561,11 +328,9 @@
             </td>
         </tr>
 
-        <!-- Notes -->
         <tr>
             <td colspan="8"
                 style="border:1px solid #666; padding:10px 12px; background-color:gainsboro;">
-                
                     • The Licence Fee is the value of the inventory on the site
                     calculated in accordance with the Cost Table applicable at the
                     date hereof.
@@ -575,40 +340,30 @@
 
     <!-- SDS CONDITIONS -->
     <table style="width:100%; border-collapse:collapse; margin-top:22px; font-family:Arial, sans-serif; font-size:11px;">
-
-        <!-- Header -->
         <tr>
-            <td align="center" style="background-color:#9fd3f2; border:1px solid #666; padding:5px; font-weight:bold; text-align:center;">
+            <td class="sectionHeader" align="center" style="border:1px solid #666; padding:5px; font-weight:bold; text-align:center;">
                 SDS Conditions
             </td>
         </tr>
-
-        <!-- Grey Section -->
         <tr>
             <td style="background-color:#d9d9d9; padding:8px; border-left:1px solid #666; border-right:1px solid #666;">
-
                 <table style="width:100%; border-collapse:collapse;">
-
                     <tr>
                         <td border="0" style="padding-bottom:6px;">
                             1. This SDS becomes effective on the SDS commencement date and supersedes any previous SDS in respect of this site.
                         </td>
                     </tr>
-
                     <tr>
                         <td border="0" style="padding-bottom:6px;">
                             2. The effective date for additional equipment is the date the SRF is approved.
                         </td>
                     </tr>
-
                     <tr>
                         <td border="0">
                             3. The effective date for equipment removals is the date the equipment is removed.
                         </td>
                     </tr>
-
                 </table>
-
             </td>
         </tr>
 
@@ -657,13 +412,11 @@
 
     <!-- SIGNED FOR OPERATOR -->
     <table style="width:100%; border-collapse:collapse;margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
-        <!-- Header -->
         <tr>
-            <td align="center" style="background-color:#9fd3f2; border:1px solid #666; text-align:center; padding:5px;font-weight:bold;">
+            <td class="sectionHeader" align="center" style="border:1px solid #666; text-align:center; padding:5px;font-weight:bold;">
                 Signed for Operator
             </td>
         </tr>
-        <!-- Signature Row -->
         <tr>
             <td style="border:1px solid #666; padding:8px; background-color:gainsboro;">
                 Electronically signed on behalf of Operator by
@@ -675,13 +428,11 @@
 
     <!-- SIGNED FOR TOWERCOM -->
     <table style="width:100%; border-collapse:collapse; margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
-        <!-- Header -->
         <tr>
-            <td align="center" style="background-color:#9fd3f2; border:1px solid #666; text-align:center; padding:5px; font-weight:bold;">
+            <td class="sectionHeader" align="center" style="border:1px solid #666; text-align:center; padding:5px; font-weight:bold;">
                 Signed for Towercom
             </td>
         </tr>
-        <!-- Signature Row -->
         <tr>
             <td style="border:1px solid #666; padding:8px; background-color:gainsboro;">
                 Electronically signed on behalf of Towercom by

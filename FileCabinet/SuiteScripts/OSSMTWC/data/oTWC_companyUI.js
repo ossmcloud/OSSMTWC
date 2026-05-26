@@ -170,6 +170,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcProfile.Fields.E_MAIL]: { hide: true },
                     [twcProfile.Fields.PHONE]: { hide: true },
                     [twcProfile.Fields.POSITION]: 'Position',
+                    [twcProfile.Fields.COMPANY_DESIGNATED_CONTACT]: {title: 'Company Designated Contact', nullText: ''},
                     [twcProfile.Fields.ACCREDITATION_STATUS]: 'Accreditation Status',
                     [twcProfile.Fields.USER_ACTION_NEEDED]: { title: 'User Action needed', type: 'bool', nullText: '' },
                     [twcProfile.Fields.PICW_ACCEPTABLE]: { title: 'PICW', type: 'bool' },
@@ -219,6 +220,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             });
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
+            core.logDebug("TESTINGGGGGGGGGGGGGG", fieldGroup.controls)
             return fieldGroup;
         }
 
