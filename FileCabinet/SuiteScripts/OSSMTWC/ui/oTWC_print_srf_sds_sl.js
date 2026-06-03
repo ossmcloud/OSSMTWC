@@ -3,8 +3,8 @@
  * @NScriptType Suitelet
  */
 
-define(['N/render', 'N/file', '../ui/modules/oTWC_siteRequestUtils.js'],
-    (render, file, twcSiteRequestUtils) => {
+define(['N/render', 'N/file', '../ui/modules/oTWC_siteRequestUtils.js', '../O/oTWC_dialogEx.js'],
+    (render, file, twcSiteRequestUtils, dialog) => {
 
     const onRequest = (context) => {
 

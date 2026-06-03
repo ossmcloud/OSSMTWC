@@ -179,21 +179,177 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
-            async openPrintSDS(e){
-                const targetId = e.id || e.target.id;
-                console.log("Print SDS Clicked", e.target.id)
-                try {
-                    if (targetId != 'print-sds') {
-                        if (!this.dirty) { throw new Error('The record has not changed'); }
-                    }
-                    var payload = this.data.siteRequestInfo;
-                    console.log("LLLLLLLLLLLLL", payload.id)
-                    // window.open("https://www.google.com")
-                    // const url = '/app/site/hosting/scriptlet.nl?script=customscript_otwc_spacerequest_sl&deploy=1&action=print-pdf';
+            // async openPrintSDS(e){
+            //     const targetId = e.id || e.target.id;
+            //     console.log("Print SDS Clicked", e.target.id)
+            //     try {
+            //         if (targetId != 'print-sds') {
+            //             if (!this.dirty) { throw new Error('The record has not changed'); }
+            //         }
+            //         var payload = this.data.siteRequestInfo;
+            //         console.log("LLLLLLLLLLLLL", payload.id)
+            //         // window.open("https://www.google.com")
+            //         // const url = '/app/site/hosting/scriptlet.nl?script=customscript_otwc_spacerequest_sl&deploy=1&action=print-pdf';
 
-                    window.open(`/app/site/hosting/scriptlet.nl?script=customscript_otwc_print_srf_sds_sl&deploy=1&recid=${payload.id}`, `_blank`);
-                    // var res = await this.post({ action: 'print-pdf' }, payload);
-                } catch(error){
+            //         window.open(`/app/site/hosting/scriptlet.nl?script=customscript_otwc_print_srf_sds_sl&deploy=1&recid=${payload.id}`, `_blank`);
+            //         // var res = await this.post({ action: 'print-pdf' }, payload);
+            //     } catch(error){
+            //         await dialog.errorAsync(error);
+            //     }
+            // }
+
+            async openPrintSDS(e) {
+
+                try {
+                    var payload = this.data.siteRequestInfo;
+                    const content = jQuery(`
+                    <div style="padding:15px;">
+
+                        <table style="width:100%; border-collapse:collapse;">
+                            <tr>
+                                <td style="width:220px; padding:8px;">
+                                    <label>Drawing Reference</label>
+                                </td>
+                                <td style="padding:8px;">
+                                    <input id="drawingReference" type="text" class="twc" style="width:250px;" />
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding:8px;">
+                                    <label>Operator Site ID</label>
+                                </td>
+                                <td style="padding:8px;">
+                                    <input id="operatorSiteId" type="text" class="twc" style="width:250px;" />
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding:8px;">
+                                    <label>Include Licence Map</label>
+                                </td>
+                                <td style="padding:8px;">
+                                    <span><input type="radio" name="includeLicenceMap" value="T" checked /> Yes </span>
+                                    <sapn style="margin-left:20px;"> <input type="radio" name="includeLicenceMap" value="F" /> No </sapn>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding:8px;">
+                                    <label>Commencement Date</label>
+                                </td>
+                                <td style="padding:8px;">
+                                    <input id="commencementDate" type="date" class="twc" style="width:250px;" />
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="vertical-align:top; padding:8px;">
+                                    <label>Additional SRF Conditions</label>
+                                </td>
+                                <td style="padding:8px;">
+                                    <textarea id="additionalSrfConditions" style="width:100%; height:70px;"></textarea>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="vertical-align:top; padding:8px;">
+                                    <label>Power Supply Comments</label>
+                                </td>
+                                <td style="padding:8px;">
+                                    <textarea id="powerSupplyComments" style="width:100%; height:70px;"></textarea>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <hr style="margin:20px 0;" />
+
+                        <table style="width:100%; border-collapse:collapse;">
+                            <tr>
+                                <td style="width:220px; padding:8px;">
+                                    <label>Fibre Rights</label>
+                                </td>
+                                <td style="padding:8px;">
+                                    <span> <input type="radio" name="fibreRights" value="T" /> Yes </sapn>
+                                    <sapn style="margin-left:20px;"> <input type="radio" name="fibreRights" value="F" checked /> No </sapn>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding:8px;">
+                                    <label>Fibre Provider</label>
+                                </td>
+                                <td style="padding:8px;">
+                                    <select id="fibreProvider" class="twc" style="width:250px;">
+                                        <option value="">-</option>
+                                        <option value="ABC">Telstra</option>
+                                        <option value="XZY">Optus</option>
+                                        <option value="LMN">TPG</option>
+                                        <option value="QRS">Other</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding:8px;">
+                                    <label>Other Provider</label>
+                                </td>
+                                <td style="padding:8px;">
+                                    <input id="otherProvider" type="text" class="twc" style="width:250px;" placeholder="Other Provider" />
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding:8px;">
+                                    <label>Fibre Duct Route</label>
+                                </td>
+                                <td style="padding:8px;">
+                                    <input id="fibreDuctRoute" type="text" class="twc" style="width:250px;" placeholder="Fibre Duct Route" />
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="vertical-align:top; padding:8px;">
+                                    <label>Notes/Conditions</label>
+                                </td>
+                                <td style="padding:8px;">
+                                    <textarea id="notesConditions" style="width:100%; height:70px;"></textarea>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                    `);
+
+                    dialog.open({
+                        title: 'SDS/SRF Pack Produced Check',
+                        content: content,
+                        size: { width: '700px', height: '400px' },
+                        ok: () => {
+                            const values = {
+                                drawingReference: content.find('#drawingReference').val(),
+                                operatorSiteId: content.find('#operatorSiteId').val(),
+                                includeLicenceMap: content.find('input[name="includeLicenceMap"]:checked').val(),
+                                commencementDate: content.find('#commencementDate').val(),
+                                additionalSrfConditions: content.find('#additionalSrfConditions').val(),
+                                powerSupplyComments: content.find('#powerSupplyComments').val(),
+                                fibreRights: content.find('input[name="fibreRights"]:checked').val(),
+                                fibreProvider: content.find('#fibreProvider').val(),
+                                otherProvider: content.find('#otherProvider').val(),
+                                fibreDuctRoute: content.find('#fibreDuctRoute').val(),
+                                notesConditions: content.find('#notesConditions').val()
+                            };
+                            console.log('SDS Values', values);
+                            return;
+                            window.open(
+                                `/app/site/hosting/scriptlet.nl` + `?script=customscript_otwc_print_srf_sds_sl` + `&deploy=1` + `&recid=${payload.id}` +
+                                `&drawingReference=${encodeURIComponent(drawingReference)}` + `&operatorSiteId=${encodeURIComponent(operatorSiteId)}`, '_blank'
+                            );
+                            return true;
+                        }
+                    });
+
+                } catch(error) {
                     await dialog.errorAsync(error);
                 }
             }
