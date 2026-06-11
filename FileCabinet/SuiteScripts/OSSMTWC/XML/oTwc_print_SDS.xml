@@ -80,7 +80,7 @@
             <td width="20%" class="label" align="right"> Site ID: </td>
             <td width="20%"> ${requestJSON.siteDetails[0].site_id} </td>
             <td width="20%" class="label" align="right"> Operator Site ID: </td>
-            <td width="20%"> KEDMH </td>
+            <td width="20%"> ${requestJSON.sdsData.operatorSiteId} </td>
         </tr>
         <tr>
             <td class="label" align="right">Site Address:</td>
@@ -141,7 +141,7 @@
         </tr>
         <tr>
             <td class="label" align="right"> Drawing ref: </td>
-            <td> TKE1019-VF-3D_BLD-19 </td>
+            <td> ${requestJSON.sdsData.drawingReference} </td>
             <td colspan="2"> The drawing referenced forms an integral part of the SDS and illustrates the equipment licenced and/or proposed for removal. </td>
         </tr>
         <tr>
@@ -256,7 +256,7 @@
         </tr>
         <tr>
             <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Other (please specify): </td>
-            <td style="border:1px solid #666; padding:7px;"> Temporary power connection from Towercom. </td>
+            <td style="border:1px solid #666; padding:7px;"> Temporary power connection from Towercom. <br/> ${requestJSON.sdsData.powerSupplyComments}</td>
         </tr>
     </table>
 
@@ -267,19 +267,19 @@
         </tr>
         <tr>
             <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Rights: </td>
-            <td style="width:25%; border:1px solid #666; padding:7px;"> No </td>
+            <td style="width:25%; border:1px solid #666; padding:7px;"> <#if requestJSON.sdsData.fibreRights == "T"> Yes <#elseif requestJSON.sdsData.fibreRights == "F"> No </#if> </td>
             <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Duct Route: </td>
-            <td style="width:25%; border:1px solid #666; padding:7px;"> </td>
+            <td style="width:25%; border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.fibreDuctRoute} </td>
         </tr>
         <tr>
             <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Provider: </td>
-            <td style="border:1px solid #666; padding:7px;"> - </td>
+            <td style="border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.fibreProvider} </td>
             <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Other Provider: </td>
-            <td style="border:1px solid #666; padding:7px;"> </td>
+            <td style="border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.otherProvider} </td>
         </tr>
         <tr>
             <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Conditions: </td>
-            <td colspan="3" style="border:1px solid #666; padding:7px;"> </td>
+            <td colspan="3" style="border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.notesConditions} </td>
         </tr>
 
     </table>
@@ -297,25 +297,25 @@
                 Previous Licence Fee:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €480,804.20
+                €${requestJSON.sdsData.previousLicenceFee}
             </td>
             <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
                 Fee Reduction:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €0.00
+                €${requestJSON.sdsData.feeReduction}
             </td>
             <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
                 Fee Uplift:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €5,183.00
+                €${requestJSON.sdsData.feeUplift}
             </td>
             <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
                 Licence Fee:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €485,987.20
+                €${requestJSON.sdsData.newLicenceFee}
             </td>
         </tr>
         <tr>
@@ -324,16 +324,14 @@
                 SDS Commencement Date:
             </td>
             <td colspan="7" style="border:1px solid #666; padding:7px;">
-                03-12-2025
+                ${requestJSON.sdsData.commencementDate}
             </td>
         </tr>
 
         <tr>
             <td colspan="8"
                 style="border:1px solid #666; padding:10px 12px; background-color:gainsboro;">
-                    • The Licence Fee is the value of the inventory on the site
-                    calculated in accordance with the Cost Table applicable at the
-                    date hereof.
+                    ${requestJSON.sdsData.feeChangeBreakdown}
             </td>
         </tr>
     </table>

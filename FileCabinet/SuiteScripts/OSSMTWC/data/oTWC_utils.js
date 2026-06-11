@@ -1213,6 +1213,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return info;
         }
 
+        function getCompanyInsuranceDetails(companyId) {
+            return coreSQL.run(`
+                select custrecord_twc_co_el_limit as el_limit, 
+                    custrecord_twc_co_pl_limit as pl_limit,
+                    custrecord_twc_co_pi_limit as pi_limit,
+                    custrecord_twc_co_el_expiry as el_expiry,
+                    custrecord_twc_co_pl_expiry as pl_expiry,
+                    custrecord_twc_co_pi_expiry as pi_expiry
+                from customrecord_twc_company where id = ${companyId}`)
+        }
 
 
         function formatLongDate(d) {
@@ -1356,6 +1366,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getYesNoOptions: getYesNoOptions,
             getFiles: getFiles,
             getFilePreviewLink: getFilePreviewLink,
+            getCompanyInsuranceDetails: getCompanyInsuranceDetails,
             formatLongDate: formatLongDate,
             fromJsToNs: fromJsToNs,
             fromNsToJs: fromNsToJs,

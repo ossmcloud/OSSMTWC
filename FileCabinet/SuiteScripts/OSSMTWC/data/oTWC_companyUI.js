@@ -220,7 +220,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             });
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
-            core.logDebug("TESTINGGGGGGGGGGGGGG", fieldGroup.controls)
             return fieldGroup;
         }
 
@@ -240,7 +239,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 fieldGroup.controls.push(basicInfo);
                 basicInfo.fields.push(getCompanyInfoPanels_acl_list(userInfo, 'customer'));
             }
-
+            log.debug("USER INFO", userInfo.companyProfile);
             if (userInfo.companyProfile.isCustomer) {
                 var basicInfo = { id: 'company-acl-list', title: userInfo.companyProfile.isBoth ? 'Accredited Contractors List' : undefined, fields: [] };
                 fieldGroup.controls.push(basicInfo);
@@ -259,7 +258,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             ${twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY} as accredited_contractor_expiry
                     from    customrecord_twc_acl acl
                     join    ${twcCompany.Type} c on c.id = acl.custrecord_twc_acl_cust
-                    where   custrecord_twc_acl_cont = ${userInfo.companyProfile.id}
+                    where   custrecord_twc_acl_cont = ${userInfo.companyProfile.id} and ${twcCompany.Fields.ACCREDITATION_STATUS} = 2
                     order by c.name
                 `)
             } else {
@@ -269,18 +268,18 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             ${twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY} as accredited_contractor_expiry
                     from    customrecord_twc_acl acl
                     join    ${twcCompany.Type} c on c.id = acl.custrecord_twc_acl_cont
-                    where   custrecord_twc_acl_cust = ${userInfo.companyProfile.id}
+                    where   custrecord_twc_acl_cust = ${userInfo.companyProfile.id} and ${twcCompany.Fields.ACCREDITATION_STATUS} = 2
                     order by c.name
-                `)
+                `)  
             }
 
             return {
                 id: 'no-rec-acl-' + listType,
                 fields: {
                     name: { title: 'Name', styles: { width: '350px' } },
-                    accreditation_status: { title: 'Accreditation Status', styles: { width: '200px', 'padding': '3px', 'text-align': 'center' } },
-                    accreditation_status_note: { title: 'Accreditation Comments', nullText: '', styles: { 'padding': '3px' } },
-                    accredited_contractor_expiry: { title: 'Accredited Contractor Expiry', nullText: '', styles: { width: '250px', 'padding': '3px', 'text-align': 'center' } },
+                    accreditation_status: { hide: true, title: 'Accreditation Status', styles: { width: '200px', 'padding': '3px', 'text-align': 'center' } },
+                    accreditation_status_note: { hide: true, title: 'Accreditation Comments', nullText: '', styles: { 'padding': '3px' } },
+                    accredited_contractor_expiry: { hide: true, title: 'Accredited Contractor Expiry', nullText: '', styles: { width: '250px', 'padding': '3px', 'text-align': 'center' } },
                 },
                 dataSource: aclList,
                 readOnly: true,

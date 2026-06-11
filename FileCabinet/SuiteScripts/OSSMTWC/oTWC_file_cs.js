@@ -85,16 +85,28 @@ define(['N/currentRecord', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.
 
             var fileInfo = recu.lookUp(twcFile.Type, currentRecord.get().id, [twcFile.Fields.RECORD_ID, twcFile.Fields.FILE]);
             var preview = await twcBaseView.previewFile(fileInfo[twcFile.Fields.FILE].value, null, true);
+            var companyRecId = fileInfo[twcFile.Fields.RECORD_ID];
             var html = jQuery(`
                 <div class="twc-div-table-t" >
                     <div style="height: calc(90vh - 100px);">
                         ${preview}
                     </div>
-                    <div style="width: 200px">
+                    <div style="width: 500px">
                         ${twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'insuranceType', label: 'Insurance Type', dataSource: insuranceTypes })}
                         <br />
                         ${twcUI.render({ type: twcUI.CTRL_TYPE.DATE, id: 'insuranceExpiry', label: 'Expiry Date' })}
                         <br />
+                        <br />
+                        ${twcUI.render({ type: twcUI.CTRL_TYPE.TABLE, dataSource: twcUtils.getCompanyInsuranceDetails(companyRecId), label: 'Current Insurance Details',
+                            columns: [
+                                { id: 'el_limit', title: 'EL Limit', styles: { 'text-wrap': 'auto' }, },
+                                { id: 'pl_limit', title: 'PL Limit', styles: { 'text-wrap': 'auto' }, },
+                                { id: 'pi_limit', title: 'PI Limit', styles: { 'text-wrap': 'auto' }, },
+                                { id: 'el_expiry', title: 'EL Expiry', styles: { 'text-wrap': 'auto' }, },
+                                { id: 'pl_expiry', title: 'PL Expiry', styles: { 'text-wrap': 'auto' }, },
+                                { id: 'pi_expiry', title: 'PI Expiry', styles: { 'text-wrap': 'auto' }, },
+                            ],
+                         })}
                         <br />
                         ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, id: 'file-accept', value: 'Accept' })}
                         ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, id: 'file-reject', value: 'Reject' })}

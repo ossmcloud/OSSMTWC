@@ -11,10 +11,12 @@ define(['N/render', 'N/file', '../ui/modules/oTWC_siteRequestUtils.js', '../O/oT
         try {
 
             const recId = context.request.parameters.recid;
+            // Get popup values
+            const sdsData = context.request.parameters || '{}';
+            log.debug("Received Parameters", context.request.parameters);
             // Fetch data
             const requestJSON = twcSiteRequestUtils.getSrfInfo(recId);
-            log.debug("RESULT", requestJSON);
-            log.debug("SITE Name", requestJSON.siteDetails[0].custrecord_twc_site_old_id)
+            requestJSON.sdsData = sdsData;
             // Load XML template
             const xmlFile = file.load({ id: 'SuiteScripts/OSSMTWC/XML/oTwc_print_SDS.xml' });
             const xmlString = xmlFile.getContents();

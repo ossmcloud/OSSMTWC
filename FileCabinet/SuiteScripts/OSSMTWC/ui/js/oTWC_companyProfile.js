@@ -34,8 +34,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 const formatValue = (v, fv, d) => {
                     return twcUtils.getCompAccredStatusHtml(d.accreditation_status_id, 'twc-record-status-row')
                 }
-                table.getColumn('accreditation_status').formatValue = formatValue;
-                table.getColumnOption('accreditation_status').formatValue = formatValue;
+                // @@NOTE: Commented this line as we are not using those fields in the Accreditation Status Associated Customer List (Ticket Number - 107)
+                // table.getColumn('accreditation_status').formatValue = formatValue;
+                // table.getColumnOption('accreditation_status').formatValue = formatValue;
             }
 
             initProfileFormatValueColumns(table) {

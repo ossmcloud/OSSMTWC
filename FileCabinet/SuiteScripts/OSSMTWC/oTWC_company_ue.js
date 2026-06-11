@@ -21,6 +21,17 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
                 if (context.type == 'create' || context.type == 'edit') {
                     form.fieldReadOnly('custrecord_twc_co_tl_co_id')
                 }
+                const STATUS_ACTIVE = 2;
+                const statusFieldMap = {
+                    custrecord_twc_co_el_status: 'custrecord_twc_co_el_expiry',
+                    custrecord_twc_co_pl_status: 'custrecord_twc_co_pl_expiry',
+                    custrecord_twc_co_pi_status: 'custrecord_twc_co_pi_expiry'
+                };
+                for (const [statusFieldId, expiryFieldId] of Object.entries(statusFieldMap)) {
+                    if (context.newRecord.getValue(statusFieldId) == STATUS_ACTIVE) {
+                        form.f.getField(expiryFieldId).isMandatory = true;
+                    }
+                }
 
             } catch (error) {
                 core.logDebug('BEFORE-LOAD', error.message);

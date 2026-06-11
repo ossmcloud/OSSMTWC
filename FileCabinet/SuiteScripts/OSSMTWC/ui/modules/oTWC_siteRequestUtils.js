@@ -71,7 +71,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 srfItem.save();
             })
 
-            log.debug("Before itemssss", items);
             // @@TODO: JAVEED: Save Eq. Actions Records
             core.array.each(items, item => {
 
@@ -183,13 +182,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 try {
                     // @@NOTE: Deleting Eq. Action record first to avoid dependency issue on SRF Item record.
                     var srfItemId = item.id;
-                    log.debug('Deleting SRF Item', srfItemId);
                     if (!srfItemId) { return; }
                     var eqActions = coreSQL.run(` SELECT id FROM ${twcEqAct.Type} WHERE ${twcEqAct.Fields.SRF_ITEM} = ${srfItemId} `);
-                    log.debug('Related Eq Actions', eqActions);
                     core.array.each(eqActions, action => {
                         try {
-                            log.debug('Deleting Eq Action', action.id);
                             recu.del(twcEqAct.Type, action.id);
                         } catch (eqErr) {
                             log.error('Failed Deleting Eq Action', eqErr.message);
@@ -322,11 +318,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getSrfInfo(recId){
             var srfInfo = {}
-            log.debug("Inside siteRequestUtils", recId);
             if (recId){
-                srfInfo.srfDetails = coreSQL.run(`select custrecord_twc_srf_op_site_id, custrecord_twc_srf_site from ${twcSrf.Type} where id = ${recId}`);
+                srfInfo.srfDetails = coreSQL.run(`
+                    select srf.custrecord_twc_srf_op_site_id, srf.custrecord_twc_srf_site, company.custrecordtwc_entity 
+                    from ${twcSrf.Type} srf INNER JOIN customrecord_twc_company company ON srf.custrecord_twc_srf_cust = company.id where srf.id = ${recId}`);
                 const siteID = srfInfo.srfDetails[0].custrecord_twc_srf_site;
-                log.debug("SITEIDDDD", siteID)
                 srfInfo.siteDetails = coreSQL.run(`
                     select custrecord_twc_site_old_id as site_id, custrecord_twc_site_name as site_name, custrecord_twc_site_address as address, custrecord_twc_site_address_zip as add_zipCode, 
                         BUILTIN.DF(custrecord_twc_site_address_county) as add_county, custrecord_twc_site_easting_access as easting, custrecord_twc_site_northing_access as northing, 
