@@ -29,6 +29,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getLibToEquipmentFieldMap() {
             var map = [
+                { libField: twcEqLib.Fields.DESCRIPTION, eqField: twcSrfItem.Fields.DESCRIPTION, canEdit: true },
+
+                { libField: twcEqLib.Fields.MAKE, eqField: twcSrfItem.Fields.MAKE },
+                { libField: twcEqLib.Fields.MODEL, eqField: twcSrfItem.Fields.MODEL },
                 { libField: twcEqLib.Fields.LENGTH_MM, eqField: twcSrfItem.Fields.LENGTH_MM },
                 { libField: twcEqLib.Fields.WIDTH_MM, eqField: twcSrfItem.Fields.WIDTH_MM },
                 { libField: twcEqLib.Fields.HEIGHTDEPTH_MM, eqField: twcSrfItem.Fields.DEPTH_MM },

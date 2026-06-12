@@ -37,8 +37,13 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             get id() { return this.#options.id; }
-            get type() { { return this.#options?.type; } }
-            get label() { { return this.#options?.label; } }
+            get type() { return this.#options?.type; }
+            get label() {
+                return this.#options?.label;
+            } set label(val) {
+                this.#options.label = val;
+                this.#ui.find('label').html(`${this.#options.label}${this.mandatory ? ' *' : ''}`);
+            }
 
             get allowAll() { return this.#options.allowAll !== false; }
             get allowNone() { return this.#options.allowNone; }
@@ -55,6 +60,11 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 return this.#ui.closest('ossm').css('display') == 'none';
             } set hide(val) {
                 this.#ui.closest('ossm').css('display', val ? 'none' : 'inline');
+            }
+            get visible() {
+                return !this.hide;
+            } set visible(val) {
+                this.hide = !val;
             }
 
             // @@TODO: we need to implement the disabled attr on arrow
@@ -237,7 +247,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     } else {
                         var selectedValue = item.attr('data-value');
                         if (selectedValue == undefined) { selectedValue = ''; }
-                        
+
                         this.#ui.attr('data-value', selectedValue);
                         if (item.attr('data-value')) {
                             this.#input.val(this.valueObj.text);

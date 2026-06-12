@@ -8,13 +8,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         const EQ_CLASS_ENUM = {
             TME: 1,
             ATME: 2,
-            GIE: 3
+            GIE: 3,
+            FEEDER: 4
         }
 
         const EQ_CLASS_TITLES = {
             [EQ_CLASS_ENUM.TME]: "TME / Tower Mounted Equipment",
             [EQ_CLASS_ENUM.ATME]: "ATME / Additional Tower Mounted Equipment",
-            [EQ_CLASS_ENUM.GIE]: "GIE / Ground & Indoor Equipment"
+            [EQ_CLASS_ENUM.GIE]: "GIE / Ground & Indoor Equipment",
+            [EQ_CLASS_ENUM.FEEDER]: "Feeders"
         };
 
         function getInventoryTableFields() {
@@ -66,7 +68,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 [twcInventory.Fields.AZIMUTH]: { title: 'Az', styles: { width: '65px' } },
                 [twcInventory.Fields.B_END]: 'B-End',
                 [twcInventory.Fields.CUSTOMER_REF]: 'Cust. Ref',
-                [twcInventory.Fields.INVENTORY_FLAG]: 'Inventory Flag',
+                [twcInventory.Fields.INVENTORY_FLAG]: 'Equipment Flag',
                 [twcInventory.Fields.CREATED]: 'Date',
                 [twcInventory.Fields.FEEDERS]: 'Feeders',
                 [twcInventory.Fields.WIDTH_MM]: { hide: true },
@@ -109,6 +111,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_ENUM.TME))
             fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_ENUM.ATME))
             fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_ENUM.GIE))
+            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_ENUM.FEEDER))
             return fieldGroups;
         }
 

@@ -14,8 +14,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EQUIPMENT_LIBRARY: 'custrecord_twc_srf_itm_eq_lib',
             EQUIPMENT_ID: 'custrecord_twc_srf_itm_equip_id',
             TME_ID: 'custrecord_twc_srf_itm_tme_id',
+            STRUCTURE: 'custrecord_twc_srf_itm_structure',
             DESCRIPTION: 'custrecord_twc_srf_itm_desc',
-            LOCATION: 'custrecord_twc_srf_itm_loc',
+            MAKE: 'custrecord_twc_srf_itm_make',
+            MODEL: 'custrecord_twc_srf_itm_model',
             LENGTH_MM: 'custrecord_twc_srf_itm_length_mm',
             WIDTH_MM: 'custrecord_twc_srf_itm_width_mm',
             DEPTH_MM: 'custrecord_twc_srf_itm_depth_mm',
@@ -38,6 +40,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             APPLICATION_REFERENCE: 'custrecord_twc_srf_itm_app_ref',
             FEEDERS_DESCRIPTION: 'custrecord_twc_srf_itm_feeder_desc',
             LOCATION_TEXT: 'custrecord_twc_srf_itm_loc_txt',
+            LOCATION_OBSOLETE: 'custrecord_twc_srf_itm_loc',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -52,8 +55,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EQUIPMENT_LIBRARY: { name: 'custrecord_twc_srf_itm_eq_lib', type: 'select', alias: 'equipmentLibrary', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_lib' },
             EQUIPMENT_ID: { name: 'custrecord_twc_srf_itm_equip_id', type: 'select', alias: 'equipmentID', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip' },
             TME_ID: { name: 'custrecord_twc_srf_itm_tme_id', type: 'select', alias: 'tMEID', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip' },
+            STRUCTURE: { name: 'custrecord_twc_srf_itm_structure', type: 'select', alias: 'structure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
             DESCRIPTION: { name: 'custrecord_twc_srf_itm_desc', type: 'text', alias: 'description', display: 'normal', mandatory: false },
-            LOCATION: { name: 'custrecord_twc_srf_itm_loc', type: 'select', alias: 'location', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
+            MAKE: { name: 'custrecord_twc_srf_itm_make', type: 'text', alias: 'make', display: 'normal', mandatory: false },
+            MODEL: { name: 'custrecord_twc_srf_itm_model', type: 'text', alias: 'model', display: 'normal', mandatory: false },
             LENGTH_MM: { name: 'custrecord_twc_srf_itm_length_mm', type: 'text', alias: 'lengthmm', display: 'normal', mandatory: false },
             WIDTH_MM: { name: 'custrecord_twc_srf_itm_width_mm', type: 'text', alias: 'widthmm', display: 'normal', mandatory: false },
             DEPTH_MM: { name: 'custrecord_twc_srf_itm_depth_mm', type: 'text', alias: 'depthmm', display: 'normal', mandatory: false },
@@ -76,6 +81,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             APPLICATION_REFERENCE: { name: 'custrecord_twc_srf_itm_app_ref', type: 'text', alias: 'applicationreference', display: 'normal', mandatory: false },
             FEEDERS_DESCRIPTION: { name: 'custrecord_twc_srf_itm_feeder_desc', type: 'text', alias: 'feedersDescription', display: 'normal', mandatory: false },
             LOCATION_TEXT: { name: 'custrecord_twc_srf_itm_loc_txt', type: 'text', alias: 'locationText', display: 'normal', mandatory: false },
+            LOCATION_OBSOLETE: { name: 'custrecord_twc_srf_itm_loc', type: 'select', alias: 'locationOBSOLETE', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -141,18 +147,30 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get tMEIDName() { return this.getText(_recordFields.TME_ID); }
             
+            get structure() {
+                return this.get(_recordFields.STRUCTURE);
+            } set structure(value) {
+                this.set(_recordFields.STRUCTURE, value)
+            }
+            get structureName() { return this.getText(_recordFields.STRUCTURE); }
+            
             get description() {
                 return this.get(_recordFields.DESCRIPTION);
             } set description(value) {
                 this.set(_recordFields.DESCRIPTION, value)
             }
             
-            get location() {
-                return this.get(_recordFields.LOCATION);
-            } set location(value) {
-                this.set(_recordFields.LOCATION, value)
+            get make() {
+                return this.get(_recordFields.MAKE);
+            } set make(value) {
+                this.set(_recordFields.MAKE, value)
             }
-            get locationName() { return this.getText(_recordFields.LOCATION); }
+            
+            get model() {
+                return this.get(_recordFields.MODEL);
+            } set model(value) {
+                this.set(_recordFields.MODEL, value)
+            }
             
             get lengthmm() {
                 return this.get(_recordFields.LENGTH_MM);
@@ -289,6 +307,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set locationText(value) {
                 this.set(_recordFields.LOCATION_TEXT, value)
             }
+            
+            get locationOBSOLETE() {
+                return this.get(_recordFields.LOCATION_OBSOLETE);
+            } set locationOBSOLETE(value) {
+                this.set(_recordFields.LOCATION_OBSOLETE, value)
+            }
+            get locationOBSOLETEName() { return this.getText(_recordFields.LOCATION_OBSOLETE); }
             
             get created() {
                 return this.get(_recordFields.CREATED);

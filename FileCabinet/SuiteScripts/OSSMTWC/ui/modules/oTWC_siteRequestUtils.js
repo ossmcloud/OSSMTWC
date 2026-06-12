@@ -47,6 +47,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             saveSiteSrfItem(payload, twcSrfItem.StepType.TME);
             saveSiteSrfItem(payload, twcSrfItem.StepType.ATME);
             saveSiteSrfItem(payload, twcSrfItem.StepType.GIE);
+            saveSiteSrfItem(payload, twcSrfItem.StepType.FEEDER);
             saveSiteSrfFile(payload);
 
             return payload.id;

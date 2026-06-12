@@ -5,10 +5,15 @@
 define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItem.js', './oTWC_equipmentType.js', './oTWC_file.js', './oTWC_equipment.js'],
     (runtime, core, coreSQL, twcUI, twcUtils, twcSrf, twcSrfItem, twcEquipmentType, twcFile, twcEquipment) => {
 
-        function getUIFields(srf, srfItem) {
+        function getUIFields(srf, srfItem, userInfo) {
+            //throw new Error(JSON.stringify(core.utils.classToObject(srf)))
             var fieldGroup = { id: 'srf-item', title: 'Main', collapsed: false, controls: [] };
 
             var isNewRecord = !srfItem.id;
+
+            var siteInfraStructures = twcUtils.getInfraStructures({ siteId: srf.site }, userInfo.isEmployee);
+            var siteStructures = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Structure })
+
 
             var basicInfo = { id: 'srf-item-info', title: 'Basic Info', fields: [] };
             fieldGroup.controls.push(basicInfo);
@@ -19,44 +24,42 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 basicInfo.fields.push({ id: twcSrfItem.Fields.TME_ID, label: 'TME', mandatory: true, dataSource: twcEquipment.lookUp({ customer: srf.customer, stepType: twcSrfItem.StepType.TME }) })
             }
             basicInfo.fields.push({ id: twcSrfItem.Fields.ITEM_TYPE, label: 'Item Type', mandatory: true, hide: true, dataSource: twcEquipmentType.lookUp(srfItem.stepType) })
-            basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-from-library', label: '', value: 'Pick From Library', disabled: isNewRecord });
+            basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-from-library', label: '', value: 'Pick From Library', disabled: isNewRecord, lineBreak: true });
             basicInfo.fields.push({ type: twcUI.CTRL_TYPE.PANEL, id: 'srf-pick-from-library-msg', styles: { color: 'var(--accent-fore-color)', padding: '7px', display: 'none' } })
-
-
             basicInfo.fields.push({ id: twcSrfItem.Fields.DESCRIPTION, label: 'Description', mandatory: true, width: '100%' })
-            if (srfItem.stepType != twcSrfItem.StepType.GIE) {
-                basicInfo.fields.push({ id: twcSrfItem.Fields.LOCATION, label: 'Location', mandatory: true })
-            }
 
-            var dimensionInfo = { id: 'srf-item-dimension', title: 'Dimensions / Location', hide: isNewRecord, fields: [] };
+            
+            var dimensionInfo = { id: 'srf-item-dimension', title: 'Equipment Details', hide: isNewRecord, fields: [] };
             fieldGroup.controls.push(dimensionInfo);
+            dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem[twcSrfItem.Fields.STRUCTURE], dataSource: siteStructures, mandatory: (srfItem.stepType != twcSrfItem.StepType.GIE), noAutoSelect: (srfItem.stepType == twcSrfItem.StepType.GIE) });
+            dimensionInfo.fields.push({ id: twcSrfItem.Fields.MAKE, label: 'Make', mandatory: true })
+            dimensionInfo.fields.push({ id: twcSrfItem.Fields.MODEL, label: 'Model', mandatory: true })
             dimensionInfo.fields.push({ id: twcSrfItem.Fields.LENGTH_MM, label: 'Length (mm)', mandatory: true })
             dimensionInfo.fields.push({ id: twcSrfItem.Fields.WIDTH_MM, label: 'Width (mm)', mandatory: true })
             dimensionInfo.fields.push({ id: twcSrfItem.Fields.DEPTH_MM, label: 'Depth (mm)', mandatory: true })
             dimensionInfo.fields.push({ id: twcSrfItem.Fields.WEIGHT_KG, label: 'Weight (kg)', mandatory: true })
             dimensionInfo.fields.push({ id: twcSrfItem.Fields.HEIGHT_ON_TOWER, label: 'Height on Tower', mandatory: true })
             dimensionInfo.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: twcSrfItem.Fields.EQUIPMENT_LIBRARY, label: 'Eq. Lib', hide: true })
-            
 
+
+            var specInfo = { id: 'srf-item-spec', title: 'Specifications', hide: isNewRecord, fields: [] };
             if (srfItem.stepType == twcSrfItem.StepType.TME) {
-                var specInfo = { id: 'srf-item-spec', title: 'Specifications', hide: isNewRecord, fields: [] };
-                fieldGroup.controls.push(specInfo);
-
                 specInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_TYPE, label: 'Voltage Type', mandatory: true })
                 specInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_RANGE, label: 'Voltage Range', mandatory: true })
                 specInfo.fields.push({ id: twcSrfItem.Fields.AZIMUTH, label: 'Azimuth', mandatory: true })
                 specInfo.fields.push({ id: twcSrfItem.Fields.B_END, label: 'B-End', mandatory: true })
                 specInfo.fields.push({ id: twcSrfItem.Fields.CUSTOMER_REF, label: 'Customer Ref.', mandatory: true })
-                specInfo.fields.push({ id: twcSrfItem.Fields.INVENTORY_FLAG, label: 'Inventory Flag', mandatory: true })
 
-            } else {
-                dimensionInfo.fields.push({ id: twcSrfItem.Fields.INVENTORY_FLAG, label: 'Inventory Flag', mandatory: true })
+            } else if (srfItem.stepType == twcSrfItem.StepType.FEEDER) {
+                specInfo.fields.push({ id: twcSrfItem.Fields.TYPE_OPT, label: 'Type Opt', dataSource: twcUtils.getSrfItemTypeOpts(), mandatory: true })
 
             }
 
-            if (srfItem.stepType != twcSrfItem.StepType.GIE) {
-                // @@TODO: FEEDERS
+            if (userInfo.isEmployee) {
+                specInfo.fields.push({ id: twcSrfItem.Fields.INVENTORY_FLAG, label: 'Equipment Flag', mandatory: true })
             }
+
+            if (specInfo.fields.length > 0) { fieldGroup.controls.push(specInfo); }
 
             return fieldGroup;
         }
@@ -69,7 +72,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 [twcSrfItem.Fields.REQUEST_TYPE]: 'Request Type',
                 [twcSrfItem.Fields.ITEM_TYPE]: 'Type',
                 [twcSrfItem.Fields.DESCRIPTION]: 'Description',
-                [twcSrfItem.Fields.LOCATION]: 'Location',
+                [twcSrfItem.Fields.MAKE]: 'Make',
+                [twcSrfItem.Fields.MODEL]: 'Model',
                 [twcSrfItem.Fields.LENGTH_MM]: 'Length (mm)',
                 [twcSrfItem.Fields.WIDTH_MM]: 'Width (mm)',
                 [twcSrfItem.Fields.DEPTH_MM]: 'Depth (mm)',
@@ -79,13 +83,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             if (stepType == twcSrfItem.StepType.TME) {
                 label = 'Request Tower Mounted Equipment (TME) Installation / Removal';
-                // @@TODO: add required fields
             } else if (stepType == twcSrfItem.StepType.ATME) {
                 label = 'Request Additional Tower Mounted Equipment (ATME) Installation / Removal';
-                // @@TODO: add required fields
             } else if (stepType == twcSrfItem.StepType.GIE) {
                 label = 'Request Ground/Indoor Equipment (GIE) Installation / Removal';
-                // @@TODO: add required fields
+            } else if (stepType == twcSrfItem.StepType.FEEDER) {
+                label = 'Request Feeders Installation / Removal';
             } else {
                 throw new Error(`Invalid SRF Item Step Type: ${stepType}`);
             }

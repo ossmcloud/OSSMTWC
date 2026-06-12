@@ -258,7 +258,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             ${twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY} as accredited_contractor_expiry
                     from    customrecord_twc_acl acl
                     join    ${twcCompany.Type} c on c.id = acl.custrecord_twc_acl_cust
-                    where   custrecord_twc_acl_cont = ${userInfo.companyProfile.id} and ${twcCompany.Fields.ACCREDITATION_STATUS} = 2
+                    where   custrecord_twc_acl_cont = ${userInfo.companyProfile.id}
                     order by c.name
                 `)
             } else {
@@ -268,11 +268,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             ${twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY} as accredited_contractor_expiry
                     from    customrecord_twc_acl acl
                     join    ${twcCompany.Type} c on c.id = acl.custrecord_twc_acl_cont
-                    where   custrecord_twc_acl_cust = ${userInfo.companyProfile.id} and ${twcCompany.Fields.ACCREDITATION_STATUS} = 2
+                    where   custrecord_twc_acl_cust = ${userInfo.companyProfile.id}
                     order by c.name
                 `)  
             }
-
+            log.debug("ACL List", aclList);
             return {
                 id: 'no-rec-acl-' + listType,
                 fields: {
@@ -280,10 +280,22 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     accreditation_status: { hide: true, title: 'Accreditation Status', styles: { width: '200px', 'padding': '3px', 'text-align': 'center' } },
                     accreditation_status_note: { hide: true, title: 'Accreditation Comments', nullText: '', styles: { 'padding': '3px' } },
                     accredited_contractor_expiry: { hide: true, title: 'Accredited Contractor Expiry', nullText: '', styles: { width: '250px', 'padding': '3px', 'text-align': 'center' } },
+                    accreditation_status_id: { hide: true, title: 'Accreditation Status ID', styles: { width: '200px', 'padding': '3px', 'text-align': 'center' }, },
                 },
                 dataSource: aclList,
                 readOnly: true,
                 onColumnInit: (tbl, col) => {
+                    // Modified the Name Column and add "Not Valid"
+                    if (col.id == 'name'){
+                        col.formatValue = (v, fv, d) => {
+                                log.debug("NAMEEEE", d.name);
+                                if (d.accreditation_status_id != 2) {
+                                    return `${d.name}` + ` - (Not Valid)`;
+                                } else {
+                                    return d.name;
+                                }
+                        }
+                    }
                     if (col.id == 'accreditation_status') {
                         col.formatValue = (v, fv, d) => {
                             return twcUtils.getCompAccredStatusHtml(d.accreditation_status_id, 'twc-record-status-row')

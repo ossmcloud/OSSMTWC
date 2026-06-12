@@ -354,7 +354,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         </div>
                    `);
 
-                   const getValue = selector =>
+                    const getValue = selector =>
                         content.find(selector).val()?.toString().trim() || '';
 
                     const getRadioValue = name =>
@@ -396,7 +396,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     ${Object.entries(values).map(([key, value]) => `
                                         <tr>
                                             <td style="border:1px solid #ccc;padding:8px;font-weight:bold;width:35%;"> ${key} </td>
-                                            <td style="border:1px solid #ccc;padding:8px;"> ${ Array.isArray(value) ? value.join(', ') : (value || '-') } </td>
+                                            <td style="border:1px solid #ccc;padding:8px;"> ${Array.isArray(value) ? value.join(', ') : (value || '-')} </td>
                                         </tr>
                                     `).join('')}
                                 </table>
@@ -418,43 +418,43 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     });
 
                     dialog.confirm({ title: 'SDS/SRF Pack Produced Check', message: content, width: '75%', height: '70hv', }, (dlg) => {
-                            const getValue = selector => content.find(selector).val()?.trim() || '';
-                            const getRadioValue = name => content.find(`input[name="${name}"]:checked`).val() || '';
-                            const values = {
-                                drawingReference: getValue('#drawingReference'),
-                                operatorSiteId: getValue('#operatorSiteId'),
-                                includeLicenceMap: getRadioValue('includeLicenceMap'),
-                                commencementDate: getValue('#commencementDate'),
-                                additionalSrfConditions: getValue('#additionalSrfConditions'),
-                                powerSupplyComments: getValue('#powerSupplyComments'),
+                        const getValue = selector => content.find(selector).val()?.trim() || '';
+                        const getRadioValue = name => content.find(`input[name="${name}"]:checked`).val() || '';
+                        const values = {
+                            drawingReference: getValue('#drawingReference'),
+                            operatorSiteId: getValue('#operatorSiteId'),
+                            includeLicenceMap: getRadioValue('includeLicenceMap'),
+                            commencementDate: getValue('#commencementDate'),
+                            additionalSrfConditions: getValue('#additionalSrfConditions'),
+                            powerSupplyComments: getValue('#powerSupplyComments'),
 
-                                fibreRights: getRadioValue('fibreRights'),
-                                fibreProvider: getValue('#fibreProvider'),
-                                otherProvider: getValue('#otherProvider'),
-                                fibreDuctRoute: getValue('#fibreDuctRoute'),
-                                notesConditions: getValue('#notesConditions'),
+                            fibreRights: getRadioValue('fibreRights'),
+                            fibreProvider: getValue('#fibreProvider'),
+                            otherProvider: getValue('#otherProvider'),
+                            fibreDuctRoute: getValue('#fibreDuctRoute'),
+                            notesConditions: getValue('#notesConditions'),
 
-                                previousLicenceFee: Number(getValue('#previousLicenceFee')) || 0,
-                                feeReduction: Number(getValue('#feeReduction')) || 0,
-                                feeUplift: Number(getValue('#feeUplift')) || 0,
-                                newLicenceFee: Number(getValue('#newLicenceFee')) || 0,
-                                feeChangeBreakdown: getValue('#feeChangeBreakdown'),
+                            previousLicenceFee: Number(getValue('#previousLicenceFee')) || 0,
+                            feeReduction: Number(getValue('#feeReduction')) || 0,
+                            feeUplift: Number(getValue('#feeUplift')) || 0,
+                            newLicenceFee: Number(getValue('#newLicenceFee')) || 0,
+                            feeChangeBreakdown: getValue('#feeChangeBreakdown'),
 
-                                agreementTemplate: getValue('#agreementTemplate'),
-                                siteType: content.find('#siteType').val() || [],
-                                accessDrawing: getValue('#accessDrawing'),
-                                fibreDrawing: getValue('#fibreDrawing')
-                            };
-                            console.log('SDS Values', values);
-                            const params = new URLSearchParams({ recid: payload.id, ...values });
-                            window.open(
-                                `/app/site/hosting/scriptlet.nl?script=customscript_otwc_print_srf_sds_sl&deploy=1&${params.toString()}`,
-                                '_blank'
-                            );
-                            return true;
+                            agreementTemplate: getValue('#agreementTemplate'),
+                            siteType: content.find('#siteType').val() || [],
+                            accessDrawing: getValue('#accessDrawing'),
+                            fibreDrawing: getValue('#fibreDrawing')
+                        };
+                        console.log('SDS Values', values);
+                        const params = new URLSearchParams({ recid: payload.id, ...values });
+                        window.open(
+                            `/app/site/hosting/scriptlet.nl?script=customscript_otwc_print_srf_sds_sl&deploy=1&${params.toString()}`,
+                            '_blank'
+                        );
+                        return true;
                     });
 
-                } catch(error) {
+                } catch (error) {
                     await dialog.errorAsync(error);
                 }
             }
@@ -541,7 +541,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             form.getControl(twcSrfItem.Fields.ITEM_TYPE).hide = (!e.value || e.value == twcSrfItem.RequestType.REMOVE);
                         }
 
-                        
+
 
                         if (e.id == twcSrfItem.Fields.REQUEST_TYPE || e.id == twcSrfItem.Fields.ITEM_TYPE) {
                             var reqType = form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
@@ -560,10 +560,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             jQuery('#srf-pick-from-library-msg').parent().css('display', cfg?.user_notes ? 'block' : '');
 
                             form.getControl('srf-pick-from-library').disabled = !pickFromLb;
-                            form.ui.find('#srf-item-dimension').css('display', showPanels ? 'block': 'none');
-                            if (srfItem[twcSrfItem.Fields.STEP_TYPE] == twcEqUI.EqClass.TME) {
-                                form.ui.find('#srf-item-spec').css('display', showPanels ? 'block' : 'none');
-                            }
+                            form.ui.find('#srf-item-dimension').css('display', showPanels ? 'block' : 'none');
+                            form.ui.find('#srf-item-spec').css('display', showPanels ? 'block' : 'none');
 
                         }
 
@@ -581,23 +579,33 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             if (!cfg) { return; }
 
                             form.ui.find('#srf-item-dimension').css('display', 'block');
-                            if (srfItem[twcSrfItem.Fields.STEP_TYPE] == twcEqUI.EqClass.TME) {
-                                form.ui.find('#srf-item-spec').css('display', 'block');
-                            }
+                            form.ui.find('#srf-item-spec').css('display', 'block');
 
                             var fieldMaps = twcEqLibUI.getLibToEquipmentFieldMap();
                             cfg = JSON.parse(cfg.configurations || '[]');
                             core.array.each(fieldMaps, fieldMap => {
+
                                 if (fieldMap.tmeOnly && srfItem[twcSrfItem.Fields.STEP_TYPE] != twcEqUI.EqClass.TME) { return; }
+
                                 var fieldCfg = cfg.find(c => { return c.field == fieldMap.eqField; })
 
-                                form.getControl(fieldMap.eqField).visible = true;
+                                var eqField = form.getControl(fieldMap.eqField);
+                                if (!eqField) { return; }
+                                eqField.visible = true;
                                 if (fieldCfg || fieldMap.libField == null) {
-                                    form.getControl(fieldMap.eqField).mandatory = true;
+
+
+                                    if (fieldCfg?.hide) {
+                                        eqField.visible = false;
+                                    } else {
+                                        eqField.mandatory = true;
+                                    }
+
+                                    if (fieldCfg?.label) { eqField.label = fieldCfg?.label; }
                                 } else {
-                                    form.getControl(fieldMap.eqField).mandatory = false;
-                                    form.getControl(fieldMap.eqField).readOnly = true;
-                                    form.getControl(fieldMap.eqField).value = pickedEq.e.rowsData[0][fieldMap.libField];
+                                    eqField.mandatory = fieldMap.canEdit;     // false;
+                                    eqField.readOnly = !fieldMap.canEdit;     //true;
+                                    eqField.value = pickedEq.e.rowsData[0][fieldMap.libField];
                                 }
                             })
 
@@ -700,22 +708,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
-            // setFeedbackIssued() {
-            //     dialog.open({
-            //         title: '',
-            //         content: '',
-            //         ok: (dlg) => {
-            //             if (!dlg.find('#my-message-input-id')) {
-            //                 dialog.error('please enter a message')
-            //                 return false;
-            //             }
-            //             if (dlg.find('#my-message-input-id').val().length < 20) {
-
-            //             }
-            //             this.onSave()
-            //         }
-            //     })
-            // }
 
             async onSave(e) {
                 const targetId = e.id || e.target.id;

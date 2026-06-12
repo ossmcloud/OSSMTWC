@@ -1,41 +1,13 @@
 
 TODO-NEXT:
 ----------
-    00. SAF:
-       	// @@TODO: SAF 
-    	
-    00. FileCabinet\SuiteScripts\OSSMTWC\ui\js\oTWC_siteLocatorPanel.js
-            searching by SAF ID/Status (and eventually SRF) does not work as the panel is designed to first filter the sites and the sites would no t have status/safid because they are a different record
-            if a non site filter is selected we should filter the SAF first then the stores
-            
-    00. SRF Type => what is this??? we do not have oit in Radix
-    
-    05. twcUI:
-		dropdown: 	
-			allow to open record 
-			if readonly/disabled do not show arrow
-		table: 
-			does not store the 'options' if rendered on server
-
-	06. OSSMTWC - ACL List, OSSMTWC - ASCL List
-            make sure no duplicates are created
-
-
-
-
-
-
-
+    OSSMTWC - ACL List, OSSMTWC - ASCL List
+        make sure no duplicates are created
 
 ________________________________________________________________________________________________________________________________________________________________
 
 TO REVIEW:
 ----------
-SRF 
-    big files will cause the UI to take time to save
-    preview file not work for csv
-    if re-uploading same file increase version
-
 Radix Role is assigned to the NS Role
     This means that a user could assign an 'Admin' radix role to a customer or vendor which should not be done under any circumstances
     We need to figure out a way to avoid this (cannot use Sourcing on the custom field as 'Center Type' is not available as List/Record option)

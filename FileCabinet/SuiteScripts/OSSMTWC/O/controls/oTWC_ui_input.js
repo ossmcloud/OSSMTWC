@@ -40,8 +40,13 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             get id() { return this.#options.id; }
-            get type() { { return this.#options?.type; } }
-            get label() { { return this.#options?.label; } }
+            get type() { return this.#options?.type; }
+            get label() {
+                return this.#options?.label;
+            } set label(val) {
+                this.#options.label = val;
+                this.#ui.find('label').html(`${this.#options.label}${this.mandatory ? ' *' : ''}`);
+            }
             get input() { return this.#input; }
             get inputDelay() { return this.#options.inputDelay; }
             get mandatory() {
@@ -56,6 +61,11 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 return this.#ui.closest('ossm').css('display') == 'none';
             } set hide(val) {
                 this.#ui.closest('ossm').css('display', val ? 'none' : 'inline');
+            }
+            get visible() {
+                return !this.hide;
+            } set visible(val) {
+                this.hide = !val;
             }
 
             get disabled() {
