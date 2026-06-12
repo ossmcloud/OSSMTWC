@@ -3,8 +3,8 @@
  *@NScriptType ClientScript
  *@NModuleScope public
  */
-define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_saf.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js', './O/oTWC_nsFileUtils.js', './O/controls/oTWC_ui_ctrl.js', './oTWC_otop_test.js', './data/oTWC_profileUI.js', './modules/oTWC_certStatusEngine.js'],
-    function (core, coreSQL, dialog, recu, twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields, siteInfoUtils, twcSaf, twcSrfUI, twcEquipment, nsFileUtils, twcUI, otop, twcProfileUI, twcCertStatusEngine) {
+define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_saf.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js', './O/oTWC_nsFileUtils.js', './O/controls/oTWC_ui_ctrl.js', './oTWC_otop_test.js', './data/oTWC_profileUI.js', './modules/oTWC_certStatusEngine.js', './data/oTWC_equipAction.js'],
+    function (core, coreSQL, dialog, recu, twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields, siteInfoUtils, twcSaf, twcSrfUI, twcEquipment, nsFileUtils, twcUI, otop, twcProfileUI, twcCertStatusEngine, twcEquipAction) {
         var _ui;
 
         function pageInit(context) {
@@ -47,20 +47,23 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             testFunction() {
                 try {
 
-                    var tbl = jQuery(twcProfileUI.getCertFileHistory({
-                        profile: 4277,
-                        //certCode: 'safe_pass'
-                    }));
-                    var ui = twcUI.init({}, tbl);
-                    ui.ui.find('#file_history').css('display', 'table')
-                    ui.controls[0].onInitEvents = (tbl) => {
-                        tbl.ui.find('#file_history').css('display', 'table')
-                    }
-                    dialog.message({
-                        title: 'File History',
-                        message: ui.ui,
-                        size: { width: '70%', height: '500px' }
-                    })
+                    var eqAction = twcEquipAction.get();
+
+
+                    // var tbl = jQuery(twcProfileUI.getCertFileHistory({
+                    //     profile: 4277,
+                    //     //certCode: 'safe_pass'
+                    // }));
+                    // var ui = twcUI.init({}, tbl);
+                    // ui.ui.find('#file_history').css('display', 'table')
+                    // ui.controls[0].onInitEvents = (tbl) => {
+                    //     tbl.ui.find('#file_history').css('display', 'table')
+                    // }
+                    // dialog.message({
+                    //     title: 'File History',
+                    //     message: ui.ui,
+                    //     size: { width: '70%', height: '500px' }
+                    // })
 
                     // coreSQL.each('select id, 	custrecord_twc_equip_type, from customrecord_twc_equip where 	custrecord_twc_equip_class is null ', e => {
                     //     recu.submit('customrecord_twc_equip', e.id, 'custrecord_twc_equip_class', e.custrecord_twc_equip_type)

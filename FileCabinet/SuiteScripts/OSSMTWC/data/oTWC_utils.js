@@ -16,6 +16,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const EQ_ACTION_STATUS = {
+            Pending: 1,
+            Complete: 2,
+            Cancelled: 3,
+            Released: 4,
+            AlreadyInstalled: 5,
+            NeverInstalled: 6,
+            AlreadyRemoved: 7
+        }
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const CUSTOMER_FLAG = {
             Customer: 1,
             No: 2
@@ -949,7 +960,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getEquipmentIds() {
-            return coreSQL.run(`select id as value, custrecord_twc_equip_id as text from customrecord_twc_equip where 1 = 1 order by id`)   
+            return coreSQL.run(`select id as value, custrecord_twc_equip_id as text from customrecord_twc_equip where 1 = 1 order by id`)
         }
         function getEquipmentStatus() {
             return getLookUpTableValues('customrecord_twc_equip_install_status');
@@ -1180,6 +1191,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             HEIGH_LIMIT_FOR_1_CLIMBER: HEIGH_LIMIT_FOR_1_CLIMBER,
 
             EqLibStatus: EQ_LIB_STATUS,
+            EqActionStatus: EQ_ACTION_STATUS,
 
             CustomerFlag: CUSTOMER_FLAG,
             ContractorFlag: CONTRACTOR_FLAG,

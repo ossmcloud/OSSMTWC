@@ -1160,11 +1160,14 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     } else {
                         var text = '';
                         for (var k in r.data) {
+
                             var t = (r.data[k] || '').toString();
                             if (options.col && options.col == k) {
                                 text = t;
                                 break;
                             } else {
+                                var c = this.columns.find(c => { return c.field == k; })
+                                if (!c || c.hide) { continue; }
                                 text += t;
                             }
                         }

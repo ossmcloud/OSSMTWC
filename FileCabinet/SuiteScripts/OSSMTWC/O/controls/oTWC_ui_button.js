@@ -27,6 +27,18 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get ui() { return this.#ui; }
             get input() { { return this.#input; } }
             get type() { { return this.#options?.type; } }
+
+            get hide() {
+                return this.#ui.closest('ossm').css('display') == 'none';
+            } set hide(val) {
+                this.#ui.closest('ossm').css('display', val ? 'none' : 'inline');
+            }
+            get visible() {
+                return !this.hide;
+            } set visible(val) {
+                this.hide = !val;
+            }
+
             get disabled() {
                 return this.#input.attr("disabled") !== undefined;
             } set disabled(val) {
@@ -68,6 +80,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 html = ctrlBase.render(html, {
                     client: this.ui != null,
                     type: 'button',
+                    hide: this.#options.hide,
                     styles: this.#options.styles
                 });
 

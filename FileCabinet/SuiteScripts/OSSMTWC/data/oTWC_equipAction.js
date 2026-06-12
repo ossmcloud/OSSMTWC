@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define([ 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './persistent/oTWC_equipActionPersistent.js', './oTWC_utils.js' ],
-    (core, coreSQL, twcEquipAction, twcUtils) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './persistent/oTWC_equipActionPersistent.js', './oTWC_config.js' ],
+    (core, coreSQL, twcEquipAction, twcConfig) => {
 
         class OSSMTWC_EquipAction extends twcEquipAction.PersistentRecord {
             constructor(id, staticLoad) {
@@ -28,7 +28,7 @@ define([ 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/c
             },
 
             getFields: () => {
-                return twcUtils.getFields(twcEquipAction.Type);
+                return twcConfig.getFields(twcEquipAction.Type);
             }
         };
 

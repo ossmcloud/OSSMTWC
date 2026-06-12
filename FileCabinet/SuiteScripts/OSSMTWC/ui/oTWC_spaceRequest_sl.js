@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_srf.js', '../data/oTWC_equipmentLibCfg.js', '../data/oTWC_equipmentLib.js'],
-    function (render ,nsFile, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcSrf, twcEqLibCfg, twcEqLib) {
+define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_srf.js', '../data/oTWC_equipmentLibCfg.js', '../data/oTWC_equipmentLib.js', '../data/oTWC_equipment.js'],
+    function (render, nsFile, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcSrf, twcEqLibCfg, twcEqLib, twcEquipment) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -19,6 +19,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 pageData.libCfg = twcEqLibCfg.select();
                 // @@TODO: select based on status (i.e.: active only I think)
                 pageData.eqLib = twcEqLib.select({ where: { [twcEqLib.Fields.LIBRARY_ENTRY_STATUS]: twcEqLib.EqLibStatus.Active }, noAlias: true });
+                
 
                 pageData.recordStatus = `<div class="twc-div-span-table">${twcSrf.getSrfStatusHtml(pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS])}</div>`;
                 if (context.request.parameters.recId) {
@@ -46,18 +47,14 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     `
                 }
 
-                let actions = '';
-                // @@NOTE: Add 
-                if (context.request.parameters.siteId && pageData.userInfo.isEmployee) {
-                    actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Add Equipment', id: 'add-equipment-button' });
-                } else {
-                    pageData.forceViewOnly = true;
-                }
 
                 // @@NOTES: if the SRF is submitted we still let users with full access to edit it but only if we are a Towercom employee 
                 if (context.request.parameters.recId) {
                     var canSubmit = pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued;
                     pageData.forceViewOnly = !(canSubmit ? true : (pageData.userInfo.isEmployee && pageData.userInfo.permission.lvl == twcConfig.PERMISSION_LEVEL.FULL));
+                    if (!pageData.forceViewOnly && pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.SRFCancelled) {
+                        pageData.forceViewOnly = true;    
+                    }
                 } else {
                     pageData.forceViewOnly = true;
                 }
@@ -79,7 +76,9 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     html = html.replaceAll('<div id="custom-actions"></div>', `
                         <div id="custom-actions">
                             ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Submit', id: 'submit-button' })}
+                            ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SRF', id: 'cancel-srf-button' })}
                         </div>
+                        
                     `);
                 }
 
@@ -111,6 +110,9 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 if (!srfFle) { throw new Error(`TL File record not found [${JSON.parse(context.request.body).file}]`); }
                 var file = nsFile.load(srfFle.file_id);
                 return { fileContent: file.getContents(), name: file.name, type: file.fileType }
+
+            } else if (context.request.parameters.action == 'get-equipment') {
+                return { data: twcSiteRequestUtils.getEquipment(JSON.parse(context.request.body)) }
 
             } else if (context.request.parameters.action == 'print-pdf') {
 

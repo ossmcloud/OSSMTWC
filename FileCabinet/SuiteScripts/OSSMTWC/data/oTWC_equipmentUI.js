@@ -21,14 +21,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getInventoryTableFields() {
             var inventoryFields = [
-                { field: twcInventory.Fields.EQUIPMENT_ID },
-                { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS },
-                { field: twcInventory.Fields.CUSTOMER },
-                { field: twcInventory.Fields.MAKE },
-                { field: twcInventory.Fields.MODEL },
-                { field: twcInventory.Fields.LENGTH_MM },
-                { field: twcInventory.Fields.WIDTH_MM },
-                { field: twcInventory.Fields.HEIGHTDEPTH_MM },
+                { field: twcInventory.Fields.EQUIPMENT_ID , title: 'Eq. ID'},
+                { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS , title: 'Install Status'},
+                { field: twcInventory.Fields.CUSTOMER , title: 'Customer'},
+                { field: twcInventory.Fields.MAKE , title: 'Make'},
+                { field: twcInventory.Fields.MODEL , title: 'Model'},
+                { field: twcInventory.Fields.LENGTH_MM , title: 'Length (mm)'},
+                { field: twcInventory.Fields.WIDTH_MM , title: 'Width (mm)'},
+                { field: twcInventory.Fields.HEIGHTDEPTH_MM, title: 'Depth<br />(mm)'},
 
             ];
             return inventoryFields;

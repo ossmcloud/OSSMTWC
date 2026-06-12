@@ -3,40 +3,9 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_file.js', '../../data/oTWC_equipmentLibUI.js', '../../data/oTWC_equipmentUI.js'],
-    (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, twcUI, uiTable, twcSite, twcSrf, twcSrfItem, twcUIPanel, twcFile, twcEqLibUI, twcEqUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_utils.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_file.js', '../../data/oTWC_equipmentLibUI.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js'],
+    (core, coreSql, b64, twcPageBase, twcUtils, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, twcUI, uiTable, twcSite, twcSrf, twcSrfItem, twcUIPanel, twcFile, twcEqLibUI, twcEqUI, twcEquipment) => {
 
-
-        function builtTestObjects(srfItem) {
-            // @@TODO: test only
-            if (core.ossm()) {
-                var testData = {
-                    "custrecord_twc_srf_itm_req_type": "1",
-                    "custrecord_twc_srf_itm_desc": "Test Dish Install",
-                    "custrecord_twc_srf_itm_loc": "1",
-                    "custrecord_twc_srf_itm_length_mm": "60",
-                    "custrecord_twc_srf_itm_width_mm": "60",
-                    "custrecord_twc_srf_itm_depth_mm": "60",
-                    "custrecord_twc_srf_itm_ht_on_twr": "5",
-                    "custrecord_twc_srf_itm_weight_kg": "1",
-                    "custrecord_twc_srf_itm_invent_flag": "18"
-                }
-                if (srfItem.custrecord_twc_srf_itm_stype == 1) {
-                    testData.custrecord_twc_srf_itm_equip_id = "";
-                    testData.custrecord_twc_srf_itm_type = "1";
-                    testData.custrecord_twc_srf_itm_volt_type = "1";
-                    testData.custrecord_twc_srf_itm_volt_range = "1";
-                    testData.custrecord_twc_srf_itm_azimuth = "0";
-                    testData.custrecord_twc_srf_itm_b_end = "0";
-                    testData.custrecord_twc_srf_itm_cust_ref = "XXX";
-
-                }
-                for (var k in testData) {
-                    srfItem[k] = testData[k];
-                }
-            }
-
-        }
 
 
         class TWCSiteSrfTable {
@@ -130,6 +99,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.ui.getControl('submit-button')?.on('click', e => {
                         this.onSave(e);
                     });
+                    this.ui.getControl('cancel-srf-button')?.on('click', e => {
+                        dialog.confirmAsync('Are you sure you wish to cancel this SRF?').then(() => {
+                            this.data.siteRequestInfo[twcSrf.Fields.SRF_STATUS] = twcUtils.SrfStatus.SRFCancelled;
+                            this.data.siteRequestInfo.dirty = true;
+                            this.onSave(e);
+                        });
+
+                    });
 
                     this.ui.getControl('print-sds')?.on('click', e => {
                         this.openPrintSDS(e);
@@ -179,24 +156,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
-            // async openPrintSDS(e){
-            //     const targetId = e.id || e.target.id;
-            //     console.log("Print SDS Clicked", e.target.id)
-            //     try {
-            //         if (targetId != 'print-sds') {
-            //             if (!this.dirty) { throw new Error('The record has not changed'); }
-            //         }
-            //         var payload = this.data.siteRequestInfo;
-            //         console.log("LLLLLLLLLLLLL", payload.id)
-            //         // window.open("https://www.google.com")
-            //         // const url = '/app/site/hosting/scriptlet.nl?script=customscript_otwc_spacerequest_sl&deploy=1&action=print-pdf';
-
-            //         window.open(`/app/site/hosting/scriptlet.nl?script=customscript_otwc_print_srf_sds_sl&deploy=1&recid=${payload.id}`, `_blank`);
-            //         // var res = await this.post({ action: 'print-pdf' }, payload);
-            //     } catch(error){
-            //         await dialog.errorAsync(error);
-            //     }
-            // }
+          
 
             async openPrintSDS(e) {
 
@@ -538,6 +498,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (e.id == twcSrfItem.Fields.REQUEST_TYPE) {
                             form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).hide = (!e.value || e.value == twcSrfItem.RequestType.INSTALL);
                             form.getControl(twcSrfItem.Fields.EQUIPMENT_ID).mandatory = !(!e.value || e.value == twcSrfItem.RequestType.INSTALL);
+                            form.getControl('srf-pick-equipment').hide = (!e.value || e.value == twcSrfItem.RequestType.INSTALL);
+
                             form.getControl(twcSrfItem.Fields.ITEM_TYPE).hide = (!e.value || e.value == twcSrfItem.RequestType.REMOVE);
                         }
 
@@ -613,6 +575,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         })
                     })
 
+                    form.getControl('srf-pick-equipment').on('click', e => {
+                        this.pickEquipment(srfItem[twcSrfItem.Fields.STEP_TYPE], (pickedEq) => {
+                            console.log(pickedEq)
+                            console.log(pickedEq.e.rowsData[0].id);
+
+                        })
+                    })
+
                     dialog.confirm({ title: 'manage item', message: form.ui, width: '75%', height: '75vh' }, () => {
                         try {
                             var obj = form.getValues(true);
@@ -665,30 +635,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             pickFromLibrary(eqClass, eqType, callback) {
                 try {
                     // @@TODO: filter by step/type
-
                     var fields = twcEqLibUI.getLibTableFields()
                     const onColumnInit = (tbl, col) => {
                         var cf = fields.find(cf => { return cf.field == col.id });
                         if (!cf) { return false; }
                         for (var k in cf) { col[k] = cf[k]; }
                         col.nullText = '';
-
                     }
-
-
 
                     var container = jQuery(`
                         <div>
                             ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, id: 'twc_eq_lib_search', width: '100%', hint: 'type to search library' })}
                         </div>
                     `);
-                    container.find('#twc_eq_lib_search').on('input', e => {
-                        // @@TODO: filter table
-                    })
-
+                  
 
                     var dlg = dialog.open({ title: 'pick item from library', content: container, size: { width: '60%', height: '70vh' } });
-
                     var tblContainer = jQuery(`<div style="height: calc(70vh - 150px); overflow: auto;"></div>`);
                     var eqLibTable = new uiTable.TableControl(tblContainer, onColumnInit, { id: 'twc_eq_lib', fitContainer: false, fitScreen: false })
                     eqLibTable.init(this.data.eqLib.filter(el => { return el[twcEqLibUI.Fields.EQUIPMENT_CLASS] == eqClass && el[twcEqLibUI.Fields.EQUIPMENT_TYPE] == eqType }))
@@ -703,6 +665,58 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     container.append(tblContainer);
                     eqLibTable.table.ui.css('overflow', 'unset')
 
+                    container.find('#twc_eq_lib_search').on('input', e => {
+                        eqLibTable.table.filter({ src: jQuery(e.currentTarget).val() })
+                    })
+
+                } catch (error) {
+                    dialog.error(error);
+                }
+            }
+
+            pickEquipment(eqClass, callback) {
+                try {
+                    if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER]) { throw new Error('You need to specify a customer'); }
+
+                    var res = this.postSync({ action: 'get-equipment' }, { site: this.data.siteInfo.site.id, customer: this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER], eqClass: eqClass })
+
+
+                    var fields = twcEqUI.getInventoryTableFields()
+                    const onColumnInit = (tbl, col) => {
+                        if (col.id == 'id') { return false; }
+                        var cf = fields.find(cf => { return cf.field == col.id });
+                        if (!cf) { return false; }
+                        for (var k in cf) { col[k] = cf[k]; }
+                        col.nullText = '';
+                    }
+
+                    var container = jQuery(`
+                        <div>
+                            ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, id: 'twc_eq_search', width: '100%', hint: 'type to search the installed equipment' })}
+                        </div>
+                    `);
+                   
+
+                    var dlg = dialog.open({ title: 'pick item from list', content: container, size: { width: '60%', height: '70vh' } });
+                    var tblContainer = jQuery(`<div style="height: calc(70vh - 150px); overflow: auto;"></div>`);
+                    var eqTable = new uiTable.TableControl(tblContainer, onColumnInit, { id: 'twc_equipment', fitContainer: false, fitScreen: false })
+                    //eqTable.init(this.data.eqLib.filter(el => { return el[twcEqLibUI.Fields.EQUIPMENT_CLASS] == eqClass  }))
+                    eqTable.init(res.data);
+                    eqTable.table.on('dblclick', e => {
+                        try {
+                            callback(e);
+                            dlg.close();
+                        } catch (error) {
+                            dialog.error(error);
+                        }
+                    })
+                    container.append(tblContainer);
+                    eqTable.table.ui.css('overflow', 'unset')
+                    
+                    container.find('#twc_eq_search').on('input', e => {
+                        eqTable.table.filter({ src: jQuery(e.currentTarget).val() })
+                    })
+
                 } catch (error) {
                     dialog.error(error);
                 }
@@ -713,13 +727,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 const targetId = e.id || e.target.id;
                 try {
 
-                    if (targetId != 'submit-button') {
+                    if (targetId != 'submit-button' && targetId != 'cancel-srf-button') {
                         if (!this.dirty) { throw new Error('The record has not changed'); }
                     }
 
                     var payload = this.data.siteRequestInfo;
-                    alert('payload before submit', JSON.stringify(payload));
-                    console.log('payload before submit', payload);
                     if (targetId == 'submit-button') {
                         if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft) {
                             await dialog.confirmAsync('Are you sure you want to submit this request?');

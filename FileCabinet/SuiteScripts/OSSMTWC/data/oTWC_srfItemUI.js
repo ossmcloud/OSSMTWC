@@ -18,8 +18,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var basicInfo = { id: 'srf-item-info', title: 'Basic Info', fields: [] };
             fieldGroup.controls.push(basicInfo);
 
-            basicInfo.fields.push({ id: twcSrfItem.Fields.REQUEST_TYPE, label: 'Request Type', mandatory: true })
-            basicInfo.fields.push({ id: twcSrfItem.Fields.EQUIPMENT_ID, label: 'Equipment', mandatory: true, hide: true, noAutoSelect: true, dataSource: twcEquipment.lookUp({ customer: srf.customer, stepType: srfItem.stepType }) })
+            basicInfo.fields.push({ id: twcSrfItem.Fields.REQUEST_TYPE, label: 'Request Type', mandatory: true, readOnly: !isNewRecord })
+            basicInfo.fields.push({ id: twcSrfItem.Fields.EQUIPMENT_ID, label: 'Equipment', mandatory: true, hide: true, noAutoSelect: true, dataSource: [] })
+            basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-equipment', label: '', value: '...', hide: true });
+
             if (srfItem.stepType == twcSrfItem.StepType.ATME) {
                 basicInfo.fields.push({ id: twcSrfItem.Fields.TME_ID, label: 'TME', mandatory: true, dataSource: twcEquipment.lookUp({ customer: srf.customer, stepType: twcSrfItem.StepType.TME }) })
             }
@@ -28,7 +30,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ type: twcUI.CTRL_TYPE.PANEL, id: 'srf-pick-from-library-msg', styles: { color: 'var(--accent-fore-color)', padding: '7px', display: 'none' } })
             basicInfo.fields.push({ id: twcSrfItem.Fields.DESCRIPTION, label: 'Description', mandatory: true, width: '100%' })
 
-            
+
             var dimensionInfo = { id: 'srf-item-dimension', title: 'Equipment Details', hide: isNewRecord, fields: [] };
             fieldGroup.controls.push(dimensionInfo);
             dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem[twcSrfItem.Fields.STRUCTURE], dataSource: siteStructures, mandatory: (srfItem.stepType != twcSrfItem.StepType.GIE), noAutoSelect: (srfItem.stepType == twcSrfItem.StepType.GIE) });

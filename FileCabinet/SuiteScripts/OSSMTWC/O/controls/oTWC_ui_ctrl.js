@@ -38,7 +38,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         obj[c.id] = c.value;
                     }
 
-                    if (!obj[c.id] && c.mandatory && !c.disabled) {
+                    if (!obj[c.id] && c.mandatory && !c.disabled && !c.hide) {
                         errors += `field: <b>${c.label || c.id}</b> cannot be empty<br />`;
                     }
 

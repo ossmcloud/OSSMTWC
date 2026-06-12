@@ -126,10 +126,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             get(fieldName) {
-                return this.r.get(fieldName);
+                return this.#r.get(fieldName);
             }
             getText(fieldName) {
-                return this.r.getText(fieldName);
+                return this.#r.getText(fieldName);
             }
 
             set(fieldName, value) {

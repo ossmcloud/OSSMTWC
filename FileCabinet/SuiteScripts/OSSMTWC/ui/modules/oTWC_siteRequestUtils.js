@@ -2,12 +2,33 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_utils.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js', '../../data/oTWC_config.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_equipmentLib.js', '../../data/oTWC_equipAction.js', 'N/record'],
-    (core, coreSQL, recu, twcUtils, twcSite, twcSrf, twcSrfItem, twcSrfUI, twcFile, nsFileUtils, twcConfig, twcUI, twcEqLib, twcEqAct, record) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_utils.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js', '../../data/oTWC_config.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_equipmentLib.js', '../../data/oTWC_equipAction.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js'],
+    (core, coreSQL, recu, twcUtils, twcSite, twcSrf, twcSrfItem, twcSrfUI, twcFile, nsFileUtils, twcConfig, twcUI, twcEqLib, twcEqAct, twcEquipmentUI, twcEquipment) => {
+
+        function getEquipment(options) {
+
+            var fields = twcEquipmentUI.getInventoryTableFields();
+            var fieldsSql = '';
+            fields.map(f => { fieldsSql += `${f.field}, ` });
+
+            var sql = `
+                    select  eq.id, ${fieldsSql}
+                    from    ${twcEquipment.Type} eq
+                    join   customrecord_twc_infra infra on infra.id = eq.custrecord_twc_equip_str
+                    where  eq.custrecord_twc_equip_customer = ${options.customer}
+                    and    eq.custrecord_twc_equip_class = ${options.eqClass}
+                    and    infra.custrecord_twc_infra_site = ${options.site}
+                    order by eq.name
+                `
+
+            return coreSQL.run(sql);
+
+        }
+
 
         function saveSiteSrf(userInfo, payload) {
-            // @@NOTE: @@REVIEW: this routine could be generalised to be used with different record types, not only twcSite
 
+            
             // @@TODO: run validations on srf and srfItems records
 
             // @@TODO: error handling????
@@ -30,12 +51,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 newSrf.sRFStatus = twcSrf.Status.Draft;
                 newSrf.sRFRequestedDate = (new Date()).addHours(12);    // @@NOTE: to account for the GMT difference of US servers
                 newSrf.sRFSubmittedBy = userInfo.profile || null;
-
                 core.array.each(submitInfo[twcSrf.Type].fields, (field, idx) => {
                     if (!newSrf.hasField(field)) { return; }
                     newSrf.set(field, submitInfo[twcSrf.Type].values[idx]);
                 })
-
                 payload.id = newSrf.save();
             }
 
@@ -44,16 +63,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             deleteSitesSrfFile(payload);
 
             //
-            saveSiteSrfItem(payload, twcSrfItem.StepType.TME);
-            saveSiteSrfItem(payload, twcSrfItem.StepType.ATME);
-            saveSiteSrfItem(payload, twcSrfItem.StepType.GIE);
-            saveSiteSrfItem(payload, twcSrfItem.StepType.FEEDER);
+            var maxId = parseInt(coreSQL.first(`SELECT MAX(TO_NUMBER(REGEXP_SUBSTR(custrecord_twc_eq_action_id, '\\d+'))) as max_id FROM ${twcEqAct.Type}`).max_id || 0) + 1;
+
+            saveSiteSrfItem(payload, twcSrfItem.StepType.TME, maxId);
+            saveSiteSrfItem(payload, twcSrfItem.StepType.ATME, maxId);
+            saveSiteSrfItem(payload, twcSrfItem.StepType.GIE, maxId);
+            saveSiteSrfItem(payload, twcSrfItem.StepType.FEEDER, maxId);
             saveSiteSrfFile(payload);
 
             return payload.id;
 
         }
-        function saveSiteSrfItem(payload, stepType) {
+        function saveSiteSrfItem(payload, stepType, maxId) {
             var items = payload[`items_${stepType}`] || [];
 
             core.array.each(items, item => {
@@ -65,126 +86,58 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (k == 'name') { continue; }
                     // @@IMPORTANT: field itemType is dependent on the stepType field
                     //              when stepTypeField is set the itemType is reset since we set the step type above make sure we skip it from here
-                    if (k == 'custrecord_twc_srf_itm_stype') { continue; }
+                    if (k == twcSrfItem.Fields.STEP_TYPE) { continue; }
                     if (!srfItem.hasField(k)) { continue; }
                     srfItem.set(k, item[k])
                 }
-                srfItem.save();
+                if (!item.id) { item.isNew = true; }
+                item.id = srfItem.save();
+
             })
 
-            // @@TODO: JAVEED: Save Eq. Actions Records
+
+
             core.array.each(items, item => {
-
-                if (!item.dirty) { return; }
-
-                // Only process correct stepType
-                if (parseInt(item.custrecord_twc_srf_itm_stype) !== parseInt(stepType)) {
-                    return;
-                }
-
                 try {
-                    var requestType = item.custrecord_twc_srf_itm_req_type;
-                    // Resolve equipment
-                    var equipmentId = item.custrecord_twc_srf_itm_equip_id || item.custrecord_twc_srf_itm_tme_id;
-                    // Generate ID
-                    var finalSrfItemId = item._savedSrfItemId || item.id;
-                    var result = coreSQL.first(`
-                        SELECT MAX(TO_NUMBER(REGEXP_SUBSTR(custrecord_twc_eq_action_id, '\\d+'))) as max_id
-                        FROM ${twcEqAct.Type}
-                    `);
-                    var next = (result && result.max_id) ? parseInt(result.max_id) + 1 : 1;
-                    function generateId(num) {
-                        return `EQAC-${String(num).padStart(6, '0')}`;
-                    }
-                    // INSTALL
-                    if (requestType == twcSrfItem.RequestType.INSTALL) {
+                    // @@NOTE: equipment action are only created when the SRF Item is created
+                    //         this is because no value can be changed from the SRF form 
+                    //         when a draft SRF item is edited the request type cannot change 
+                    //         once submitted / workflow started it cannot be edited either, only status changes
+                    if (!item.isNew) { return; }
 
-                        var eqAction = record.create({
-                            type: twcEqAct.Type,
-                            isDynamic: true
-                        });
-                        eqAction.setValue({ fieldId: 'custrecord_twc_eq_action_srf', value: payload.id });
-                        if (finalSrfItemId) {
-                            eqAction.setValue({ fieldId: 'custrecord_twc_eq_action_srf_item', value: finalSrfItemId });
-                        }
-                        if (equipmentId) {
-                            eqAction.setValue({ fieldId: 'custrecord_twc_eq_action_eq', value: equipmentId });
-                        }
-                        eqAction.setValue({ fieldId: 'custrecord_twc_eq_action_type', value: twcSrfItem.RequestType.INSTALL });
-                        eqAction.setValue({ fieldId: 'custrecord_twc_eq_action_sts', value: 1 });
-                        eqAction.setValue({ fieldId: 'custrecord_twc_eq_action_id', value: generateId(next) });
-                        eqAction.save();
-                    }
-                    // REMOVE
-                    else if (requestType == twcSrfItem.RequestType.REMOVE) {
-
-                        var eqAction = record.create({ type: twcEqAct.Type, isDynamic: true });
-                        eqAction.setValue({ fieldId: 'custrecord_twc_eq_action_srf', value: payload.id });
-                        if (finalSrfItemId) {
-                            eqAction.setValue({ fieldId: 'custrecord_twc_eq_action_srf_item', value: finalSrfItemId });
-                        }
-                        if (equipmentId) {
-                            eqAction.setValue({ fieldId: 'custrecord_twc_eq_action_eq', value: equipmentId });
-                        }
-                        eqAction.setValue({ fieldId: 'custrecord_twc_eq_action_type', value: twcSrfItem.RequestType.REMOVE });
-                        eqAction.setValue({ fieldId: 'custrecord_twc_eq_action_sts', value: 1 });
-                        eqAction.setValue({ fieldId: 'custrecord_twc_eq_action_id', value: generateId(next) });
-                        eqAction.save();
-                    }
+                    var requestType = item[twcSrfItem.Fields.REQUEST_TYPE];
+                    var equipmentId = item[twcSrfItem.Fields.EQUIPMENT_ID] || item[twcSrfItem.Fields.TME_ID];
+                    saveEqAction(item, payload, equipmentId, (requestType == twcSrfItem.RequestType.SWAP) ? twcSrfItem.RequestType.REMOVE : requestType, maxId)
                     // SWAP (REMOVE + INSTALL)
-                    else if (requestType == twcSrfItem.RequestType.SWAP) {
-
-                        // REMOVE
-                        var eqRemove = record.create({ type: twcEqAct.Type, isDynamic: true });
-                        eqRemove.setValue({ fieldId: 'custrecord_twc_eq_action_srf', value: payload.id });
-                        if (finalSrfItemId) {
-                            eqRemove.setValue({ fieldId: 'custrecord_twc_eq_action_srf_item', value: finalSrfItemId });
-                        }
-                        if (equipmentId) {
-                            eqRemove.setValue({ fieldId: 'custrecord_twc_eq_action_eq', value: equipmentId });
-                        }
-                        eqRemove.setValue({ fieldId: 'custrecord_twc_eq_action_type', value: twcSrfItem.RequestType.REMOVE });
-                        eqRemove.setValue({ fieldId: 'custrecord_twc_eq_action_sts', value: 1 });
-                        eqRemove.setValue({ fieldId: 'custrecord_twc_eq_action_id', value: generateId(next) });
-                        eqRemove.save();
-                        // INSTALL (next ID)
-                        next++;
-
-                        var eqInstall = record.create({ type: twcEqAct.Type, isDynamic: true });
-                        eqInstall.setValue({ fieldId: 'custrecord_twc_eq_action_srf', value: payload.id });
-                        if (finalSrfItemId) {
-                            eqInstall.setValue({ fieldId: 'custrecord_twc_eq_action_srf_item', value: finalSrfItemId });
-                        }
-                        eqInstall.setValue({ fieldId: 'custrecord_twc_eq_action_type', value: twcSrfItem.RequestType.INSTALL });
-                        eqInstall.setValue({ fieldId: 'custrecord_twc_eq_action_sts', value: 1 });
-                        eqInstall.setValue({ fieldId: 'custrecord_twc_eq_action_id', value: generateId(next) });
-                        eqInstall.save();
-                    }
+                    if (requestType == twcSrfItem.RequestType.SWAP) { saveEqAction(item, payload, null, twcSrfItem.RequestType.INSTALL, maxId); }
 
                 } catch (e) {
                     log.error('Equip Action Save Failed', e);
+                    log.error('Equip Action Save Failed', e.stack);
                 }
             });
         }
+        function saveEqAction(item, payload, equipmentId, requestType, maxId) {
+            var eqAction = twcEqAct.get();
+            eqAction.set(twcEqAct.Fields.EA_SRF, payload.id)
+            eqAction.set(twcEqAct.Fields.EA_SRF_ITEM, item.id)
+            eqAction.set(twcEqAct.Fields.EA_EQUIPMENT, equipmentId)
+            eqAction.set(twcEqAct.Fields.EA_TYPE, requestType);
+            eqAction.set(twcEqAct.Fields.EA_STATUS, twcUtils.EqActionStatus.Pending);
+            eqAction.set(twcEqAct.Fields.EQUIP_ACTION_ID, `EQAC-${String(maxId++).padStart(6, '0')}`);
+            eqAction.save();
+        }
 
-        // function deleteSitesSrfItem(payload) {
-        //     if (!payload.items_deleted) { return; }
-        //     core.array.each(payload.items_deleted, item => {
-        //         recu.del(twcSrfItem.Type, item.id);
-        //     })
 
-        //     // @@TODO: JAVEED: Delete Eq. Actions Records
-        // }
 
         function deleteSitesSrfItem(payload) {
-            log.debug("Payload Items", JSON.stringify(payload));
             if (!payload.items_deleted) { return; }
             core.array.each(payload.items_deleted, item => {
                 try {
                     // @@NOTE: Deleting Eq. Action record first to avoid dependency issue on SRF Item record.
                     var srfItemId = item.id;
                     if (!srfItemId) { return; }
-                    var eqActions = coreSQL.run(` SELECT id FROM ${twcEqAct.Type} WHERE ${twcEqAct.Fields.SRF_ITEM} = ${srfItemId} `);
+                    var eqActions = coreSQL.run(`SELECT id FROM ${twcEqAct.Type} WHERE ${twcEqAct.Fields.SRF_ITEM} = ${srfItemId} `);
                     core.array.each(eqActions, action => {
                         try {
                             recu.del(twcEqAct.Type, action.id);
@@ -192,11 +145,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             log.error('Failed Deleting Eq Action', eqErr.message);
                         }
                     });
-                    // Deleting SRF Item record
-                    log.debug('Deleting SRF Item', srfItemId);
                     recu.del(twcSrfItem.Type, srfItemId);
                 } catch (e) {
                     log.error('Delete SRF Item Failed', e.message);
+                    // @@TODO:
                 }
             });
         }
@@ -305,21 +257,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             html = html.replace('{FILTER_SITE_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Type', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));
             html = html.replace('{FILTER_PORTFOLIO}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Portfolio', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_PORTFOLIO, noEmpty: true, dataSource: twcUtils.getPortfolios() }));
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'County', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
-            
+
 
             html = html.replace('{FILTER_LAT}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Latitude', id: 'twc-coord-latitude', width: '250px' }));
             html = html.replace('{FILTER_LNG}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Longitude', id: 'twc-coord-longitude', width: '250px' }));
             html = html.replace('{FILTER_RADIUS}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Radius (Km)', id: 'twc-coord-radius', value: 5, width: '75px', min: 5, max: 300 }));
 
             html = html.replace('{ACTION_CLEAR_FILTERS}', twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Clear Filters', id: 'twc-action-clear-filter' }));
-            
+
 
             return html;
         }
 
-        function getSrfInfo(recId){
+        function getSrfInfo(recId) {
             var srfInfo = {}
-            if (recId){
+            if (recId) {
                 srfInfo.srfDetails = coreSQL.run(`
                     select srf.custrecord_twc_srf_op_site_id, srf.custrecord_twc_srf_site, company.custrecordtwc_entity 
                     from ${twcSrf.Type} srf INNER JOIN customrecord_twc_company company ON srf.custrecord_twc_srf_cust = company.id where srf.id = ${recId}`);
@@ -394,6 +346,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             saveSiteSrf: saveSiteSrf,
             renderSiteLocatorPanel: renderSiteLocatorPanel,
             getSrfInfo: getSrfInfo,
+            getEquipment: getEquipment,
 
         }
 
