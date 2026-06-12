@@ -288,19 +288,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     // Modified the Name Column and add "Not Valid"
                     if (col.id == 'name'){
                         col.formatValue = (v, fv, d) => {
-                            col.formatValue = (v, fv, d) => {
                                 log.debug("NAMEEEE", d.name);
                                 if (d.accreditation_status_id != 2) {
-                                    log.debug("If Name Column Value", v);
-                                    log.debug("If Name Column Data", d);
-                                    log.debug("If Name Column Accreditation Status", d.accreditation_status_id);
                                     return `${d.name}` + ` - (Not Valid)`;
-                                }
-                                else {
-                                    log.debug("Else Name Column Value", v);
+                                } else {
                                     return d.name;
                                 }
-                            }
                         }
                     }
                     if (col.id == 'accreditation_status') {
