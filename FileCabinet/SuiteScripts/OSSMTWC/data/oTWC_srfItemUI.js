@@ -19,30 +19,32 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push(basicInfo);
 
             basicInfo.fields.push({ id: twcSrfItem.Fields.REQUEST_TYPE, label: 'Request Type', mandatory: true, readOnly: !isNewRecord })
-            basicInfo.fields.push({ id: twcSrfItem.Fields.EQUIPMENT_ID, label: 'Equipment', mandatory: true, hide: true, noAutoSelect: true, dataSource: [] })
+            basicInfo.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'srf-equipment', label: 'Equipment', mandatory: true, hide: true, readOnly: true })
             basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-equipment', label: '', value: '...', hide: true });
 
             if (srfItem.stepType == twcSrfItem.StepType.ATME) {
-                basicInfo.fields.push({ id: twcSrfItem.Fields.TME_ID, label: 'TME', mandatory: true, dataSource: twcEquipment.lookUp({ customer: srf.customer, stepType: twcSrfItem.StepType.TME }) })
+                basicInfo.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'srf-tme-equipment', label: 'TME', mandatory: true, readOnly: true })
+                basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-tme-equipment', label: '', value: '...' });
             }
+
             basicInfo.fields.push({ id: twcSrfItem.Fields.ITEM_TYPE, label: 'Item Type', mandatory: true, hide: true, dataSource: twcEquipmentType.lookUp(srfItem.stepType) })
             basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-from-library', label: '', value: 'Pick From Library', disabled: isNewRecord, lineBreak: true });
             basicInfo.fields.push({ type: twcUI.CTRL_TYPE.PANEL, id: 'srf-pick-from-library-msg', styles: { color: 'var(--accent-fore-color)', padding: '7px', display: 'none' } })
-            basicInfo.fields.push({ id: twcSrfItem.Fields.DESCRIPTION, label: 'Description', mandatory: true, width: '100%' })
+            basicInfo.fields.push({ id: twcSrfItem.Fields.DESCRIPTION, label: 'Description', width: '100%' })
 
-
-            var dimensionInfo = { id: 'srf-item-dimension', title: 'Equipment Details', hide: isNewRecord, fields: [] };
-            fieldGroup.controls.push(dimensionInfo);
-            dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem[twcSrfItem.Fields.STRUCTURE], dataSource: siteStructures, mandatory: (srfItem.stepType != twcSrfItem.StepType.GIE), noAutoSelect: (srfItem.stepType == twcSrfItem.StepType.GIE) });
-            dimensionInfo.fields.push({ id: twcSrfItem.Fields.MAKE, label: 'Make', mandatory: true })
-            dimensionInfo.fields.push({ id: twcSrfItem.Fields.MODEL, label: 'Model', mandatory: true })
-            dimensionInfo.fields.push({ id: twcSrfItem.Fields.LENGTH_MM, label: 'Length (mm)', mandatory: true })
-            dimensionInfo.fields.push({ id: twcSrfItem.Fields.WIDTH_MM, label: 'Width (mm)', mandatory: true })
-            dimensionInfo.fields.push({ id: twcSrfItem.Fields.DEPTH_MM, label: 'Depth (mm)', mandatory: true })
-            dimensionInfo.fields.push({ id: twcSrfItem.Fields.WEIGHT_KG, label: 'Weight (kg)', mandatory: true })
-            dimensionInfo.fields.push({ id: twcSrfItem.Fields.HEIGHT_ON_TOWER, label: 'Height on Tower', mandatory: true })
-            dimensionInfo.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: twcSrfItem.Fields.EQUIPMENT_LIBRARY, label: 'Eq. Lib', hide: true })
-
+            if (srfItem.stepType != twcSrfItem.StepType.FEEDER) {
+                var dimensionInfo = { id: 'srf-item-dimension', title: 'Equipment Details', hide: isNewRecord, fields: [] };
+                fieldGroup.controls.push(dimensionInfo);
+                dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem[twcSrfItem.Fields.STRUCTURE], dataSource: siteStructures, mandatory: (srfItem.stepType != twcSrfItem.StepType.GIE), noAutoSelect: (srfItem.stepType == twcSrfItem.StepType.GIE) });
+                dimensionInfo.fields.push({ id: twcSrfItem.Fields.MAKE, label: 'Make', mandatory: true })
+                dimensionInfo.fields.push({ id: twcSrfItem.Fields.MODEL, label: 'Model', mandatory: true })
+                dimensionInfo.fields.push({ id: twcSrfItem.Fields.LENGTH_MM, label: 'Length (mm)', mandatory: true })
+                dimensionInfo.fields.push({ id: twcSrfItem.Fields.WIDTH_MM, label: 'Width (mm)', mandatory: true })
+                dimensionInfo.fields.push({ id: twcSrfItem.Fields.DEPTH_MM, label: 'Depth (mm)', mandatory: true })
+                dimensionInfo.fields.push({ id: twcSrfItem.Fields.WEIGHT_KG, label: 'Weight (kg)', mandatory: true })
+                dimensionInfo.fields.push({ id: twcSrfItem.Fields.HEIGHT_ON_TOWER, label: 'Height on Tower', mandatory: true })
+                dimensionInfo.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: twcSrfItem.Fields.EQUIPMENT_LIBRARY, label: 'Eq. Lib', hide: true })
+            }
 
             var specInfo = { id: 'srf-item-spec', title: 'Specifications', hide: isNewRecord, fields: [] };
             if (srfItem.stepType == twcSrfItem.StepType.TME) {
@@ -58,7 +60,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
             if (userInfo.isEmployee) {
-                specInfo.fields.push({ id: twcSrfItem.Fields.INVENTORY_FLAG, label: 'Equipment Flag', mandatory: true })
+                specInfo.fields.push({ id: twcSrfItem.Fields.INVENTORY_FLAG, label: 'Equipment Flag' })
             }
 
             if (specInfo.fields.length > 0) { fieldGroup.controls.push(specInfo); }
@@ -72,14 +74,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fields = {
                 //[twcSrfItem.Fields.STEP_TYPE]: 'Step Type',
                 [twcSrfItem.Fields.REQUEST_TYPE]: 'Request Type',
-                [twcSrfItem.Fields.ITEM_TYPE]: 'Type',
-                [twcSrfItem.Fields.DESCRIPTION]: 'Description',
+                [twcSrfItem.Fields.EQUIPMENT_ID]: { title: 'Equipment', nullText: '' },
+                [twcSrfItem.Fields.ITEM_TYPE]: { title: 'Type', nullText: '' },
                 [twcSrfItem.Fields.MAKE]: 'Make',
                 [twcSrfItem.Fields.MODEL]: 'Model',
+                [twcSrfItem.Fields.DESCRIPTION]: 'Description',
+                [twcSrfItem.Fields.HEIGHT_ON_TOWER]: 'Height on Tower',
                 [twcSrfItem.Fields.LENGTH_MM]: 'Length (mm)',
                 [twcSrfItem.Fields.WIDTH_MM]: 'Width (mm)',
                 [twcSrfItem.Fields.DEPTH_MM]: 'Depth (mm)',
-                [twcSrfItem.Fields.HEIGHT_ON_TOWER]: 'Height on Tower',
                 [twcSrfItem.Fields.WEIGHT_KG]: 'Weight (kg)',
             }
 

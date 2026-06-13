@@ -63,18 +63,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             deleteSitesSrfFile(payload);
 
             //
-            var maxId = parseInt(coreSQL.first(`SELECT MAX(TO_NUMBER(REGEXP_SUBSTR(custrecord_twc_eq_action_id, '\\d+'))) as max_id FROM ${twcEqAct.Type}`).max_id || 0) + 1;
-
-            saveSiteSrfItem(payload, twcSrfItem.StepType.TME, maxId);
-            saveSiteSrfItem(payload, twcSrfItem.StepType.ATME, maxId);
-            saveSiteSrfItem(payload, twcSrfItem.StepType.GIE, maxId);
-            saveSiteSrfItem(payload, twcSrfItem.StepType.FEEDER, maxId);
+            saveSiteSrfItem(payload, twcSrfItem.StepType.TME);
+            saveSiteSrfItem(payload, twcSrfItem.StepType.ATME);
+            saveSiteSrfItem(payload, twcSrfItem.StepType.GIE);
+            saveSiteSrfItem(payload, twcSrfItem.StepType.FEEDER);
             saveSiteSrfFile(payload);
 
             return payload.id;
 
         }
-        function saveSiteSrfItem(payload, stepType, maxId) {
+        function saveSiteSrfItem(payload, stepType) {
             var items = payload[`items_${stepType}`] || [];
 
             core.array.each(items, item => {
@@ -107,9 +105,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     var requestType = item[twcSrfItem.Fields.REQUEST_TYPE];
                     var equipmentId = item[twcSrfItem.Fields.EQUIPMENT_ID] || item[twcSrfItem.Fields.TME_ID];
-                    saveEqAction(item, payload, equipmentId, (requestType == twcSrfItem.RequestType.SWAP) ? twcSrfItem.RequestType.REMOVE : requestType, maxId)
+                    saveEqAction(item, payload, equipmentId, (requestType == twcSrfItem.RequestType.SWAP) ? twcSrfItem.RequestType.REMOVE : requestType)
                     // SWAP (REMOVE + INSTALL)
-                    if (requestType == twcSrfItem.RequestType.SWAP) { saveEqAction(item, payload, null, twcSrfItem.RequestType.INSTALL, maxId); }
+                    if (requestType == twcSrfItem.RequestType.SWAP) { saveEqAction(item, payload, null, twcSrfItem.RequestType.INSTALL); }
 
                 } catch (e) {
                     log.error('Equip Action Save Failed', e);
@@ -117,14 +115,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             });
         }
-        function saveEqAction(item, payload, equipmentId, requestType, maxId) {
+        function saveEqAction(item, payload, equipmentId, requestType) {
             var eqAction = twcEqAct.get();
             eqAction.set(twcEqAct.Fields.EA_SRF, payload.id)
             eqAction.set(twcEqAct.Fields.EA_SRF_ITEM, item.id)
             eqAction.set(twcEqAct.Fields.EA_EQUIPMENT, equipmentId)
             eqAction.set(twcEqAct.Fields.EA_TYPE, requestType);
             eqAction.set(twcEqAct.Fields.EA_STATUS, twcUtils.EqActionStatus.Pending);
-            eqAction.set(twcEqAct.Fields.EQUIP_ACTION_ID, `EQAC-${String(maxId++).padStart(6, '0')}`);
             eqAction.save();
         }
 

@@ -29,7 +29,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getLibToEquipmentFieldMap() {
             var map = [
-                { libField: twcEqLib.Fields.DESCRIPTION, eqField: twcSrfItem.Fields.DESCRIPTION, canEdit: true },
+                { libField: twcEqLib.Fields.DESCRIPTION, eqField: twcSrfItem.Fields.DESCRIPTION, canEdit: true, notMandatory: true },
 
                 { libField: twcEqLib.Fields.MAKE, eqField: twcSrfItem.Fields.MAKE },
                 { libField: twcEqLib.Fields.MODEL, eqField: twcSrfItem.Fields.MODEL },
@@ -44,7 +44,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 { libField: null, eqField: twcSrfItem.Fields.AZIMUTH, tmeOnly: true },
                 { libField: null, eqField: twcSrfItem.Fields.B_END, tmeOnly: true },
                 { libField: null, eqField: twcSrfItem.Fields.CUSTOMER_REF, tmeOnly: true },
-                { libField: null, eqField: twcSrfItem.Fields.INVENTORY_FLAG, tmeOnly: true },
+                
             ];
             return map;
         }

@@ -28,7 +28,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 })
             }
 
-            getValues(asObj) {
+            getValues(asObj, skipValidations) {
                 var errors = '';
                 var obj = {};
                 core.array.each(this.#controls, c => {
@@ -38,10 +38,11 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         obj[c.id] = c.value;
                     }
 
-                    if (!obj[c.id] && c.mandatory && !c.disabled && !c.hide) {
-                        errors += `field: <b>${c.label || c.id}</b> cannot be empty<br />`;
+                    if (!skipValidations) {
+                        if (!obj[c.id] && c.mandatory && !c.disabled && !c.hide) {
+                            errors += `field: <b>${c.label || c.id}</b> cannot be empty<br />`;
+                        }
                     }
-
                 });
                 if (errors) { throw new Error(errors); }
                 return obj;

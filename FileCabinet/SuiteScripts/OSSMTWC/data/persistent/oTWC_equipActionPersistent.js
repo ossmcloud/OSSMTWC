@@ -7,7 +7,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordType = 'customrecord_twc_eq_action';
         var _recordFields = {
             NAME: 'name',
-            EQUIP_ACTION_ID: 'custrecord_twc_eq_action_id',
             EA_EQUIPMENT: 'custrecord_twc_eq_action_eq',
             EA_SRF: 'custrecord_twc_eq_action_srf',
             EA_SRF_ITEM: 'custrecord_twc_eq_action_srf_item',
@@ -22,7 +21,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
-            EQUIP_ACTION_ID: { name: 'custrecord_twc_eq_action_id', type: 'text', alias: 'equipActionID', display: 'normal', mandatory: false },
             EA_EQUIPMENT: { name: 'custrecord_twc_eq_action_eq', type: 'select', alias: 'eAEquipment', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip' },
             EA_SRF: { name: 'custrecord_twc_eq_action_srf', type: 'select', alias: 'eASRF', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf' },
             EA_SRF_ITEM: { name: 'custrecord_twc_eq_action_srf_item', type: 'select', alias: 'eASRFItem', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm' },
@@ -45,13 +43,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set name(value) {
                 this.set('name', value)
             }
-            
-            get equipActionID() {
-                return this.get(_recordFields.EQUIP_ACTION_ID);
-            } set equipActionID(value) {
-                this.set(_recordFields.EQUIP_ACTION_ID, value)
-            }
-            
+                        
             get eAEquipment() {
                 return this.get(_recordFields.EA_EQUIPMENT);
             } set eAEquipment(value) {
