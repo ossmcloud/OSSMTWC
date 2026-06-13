@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_utils.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_file.js', '../../data/oTWC_equipmentLibUI.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js'],
-    (core, coreSql, b64, twcPageBase, twcUtils, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, twcUI, uiTable, twcSite, twcSrf, twcSrfItem, twcUIPanel, twcFile, twcEqLibUI, twcEqUI, twcEquipment) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_utils.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_file.js', '../../data/oTWC_equipmentLibUI.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js', '../../modules/oTWC_srfWorkflowEngineUI.js.js'],
+    (core, coreSql, b64, twcPageBase, twcUtils, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, twcUI, uiTable, twcSite, twcSrf, twcSrfItem, twcUIPanel, twcFile, twcEqLibUI, twcEqUI, twcEquipment, twcSrfWorkflowEngineUI) => {
 
 
 
@@ -354,6 +354,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #map = null;
             #sitesTable = null;
             #sitePanel = null;
+            #workflowForm = null;
             constructor() {
                 super({ scriptId: 'otwc_spaceRequest_sl' });
             }
@@ -364,57 +365,80 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // @@NOTE: this is record view/edit mode
                     this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
 
-                    this.ui.getControl('submit-button')?.on('click', e => {
-                        this.onSave(e);
-                    });
-                    this.ui.getControl('cancel-srf-button')?.on('click', e => {
-                        dialog.confirmAsync('Are you sure you wish to cancel this SRF?').then(() => {
-                            this.data.siteRequestInfo[twcSrf.Fields.SRF_STATUS] = twcUtils.SrfStatus.SRFCancelled;
-                            this.data.siteRequestInfo.dirty = true;
-                            this.onSave(e);
+                    if (this.data.isWorkflowView) {
+                        this.#workflowForm = twcSrfWorkflowEngineUI.getForm({ srf: this.data.siteRequestInfo.id })
+                        this.page.find('#twc-site-request-details-panel').html(this.#workflowForm.render())
+
+                    } else {
+                        this.ui.getControl('open-workflow-button')?.on('click', e => {
+                            location.href = core.url.script('otwc_spacerequest_sl', { recId: this.data.siteRequestInfo.id, wkf: 'T' });
+                        });
+                        this.ui.getControl('view-workflow-button')?.on('click', e => {
+                            this.#workflowForm = twcSrfWorkflowEngineUI.getForm({ srf: this.data.siteRequestInfo.id })
+                            this.#workflowForm.popUp();
+                        })
+
+                        this.ui.getControl('submit-button')?.on('click', e => {
+                            dialog.confirmAsync('Are you sure you want to submit this request?').then(() => {
+                                this.wait();
+                                this.post({ action: 'submit' }, { srf: this.data.siteRequestInfo.id })
+                                    .then(res => {
+                                        location.reload();
+                                    }).catch(err => {
+                                        dialog.error(err);
+                                    });
+                            });
+
+                        });
+                        this.ui.getControl('cancel-srf-button')?.on('click', e => {
+                            dialog.confirmAsync('Are you sure you wish to cancel this SRF?').then(() => {
+                                this.data.siteRequestInfo[twcSrf.Fields.SRF_STATUS] = twcUtils.SrfStatus.SRFCancelled;
+                                this.data.siteRequestInfo.dirty = true;
+                                this.onSave(e);
+                            });
+
                         });
 
-                    });
+                        this.ui.getControl('print-sds')?.on('click', e => {
+                            this.openPrintSDS(e);
+                        })
 
-                    this.ui.getControl('print-sds')?.on('click', e => {
-                        this.openPrintSDS(e);
-                    })
+                        this.ui.on('change', e => {
+                            if (e.target.type != 'table') {
+                                this.data.siteRequestInfo[e.id] = e.value;
+                                this.dirty = true
+                            }
+                        })
+                        core.array.each(this.ui.controls, c => {
+                            if (c.type !== 'table') { return; }
 
-                    this.ui.on('change', e => {
-                        if (e.target.type != 'table') {
-                            this.data.siteRequestInfo[e.id] = e.value;
-                            this.dirty = true
-                        }
-                    })
-                    core.array.each(this.ui.controls, c => {
-                        if (c.type !== 'table') { return; }
+                            c.onToolbarClick = e => {
+                                var manageMethod = e.table.id == twcFile.Type ? 'manageSRFFile' : 'manageSRFItem';
+                                if (e.action == 'add-new') {
+                                    this[manageMethod](null, e.table);
 
-                        c.onToolbarClick = e => {
-                            var manageMethod = e.table.id == twcFile.Type ? 'manageSRFFile' : 'manageSRFItem';
-                            if (e.action == 'add-new') {
-                                this[manageMethod](null, e.table);
-
-                            } else if (e.action == 'edit') {
-                                this[manageMethod](e.rowData, e.table);
-
-                            } else if (e.action == 'delete') {
-                                dialog.confirm('Are you sure you wish to delete this record', () => {
-                                    e.rowData.delete = true;
+                                } else if (e.action == 'edit') {
                                     this[manageMethod](e.rowData, e.table);
-                                })
 
+                                } else if (e.action == 'delete') {
+                                    dialog.confirm('Are you sure you wish to delete this record', () => {
+                                        e.rowData.delete = true;
+                                        this[manageMethod](e.rowData, e.table);
+                                    })
+
+                                }
+                            }
+                        })
+
+
+                        // @@TODO: test only
+                        if (core.ossm()) {
+                            if (this.data.editMode && !this.data.siteRequestInfo.id) {
+                                this.ui.getControl(twcSrf.Fields.CUSTOMER).value = 11;
                             }
                         }
-                    })
 
-
-                    // @@TODO: test only
-                    if (core.ossm()) {
-                        if (this.data.editMode && !this.data.siteRequestInfo.id) {
-                            this.ui.getControl(twcSrf.Fields.CUSTOMER).value = 11;
-                        }
                     }
-
 
                 } else {
                     // @@NOTE: this is site locator mode
@@ -794,17 +818,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (targetId == 'submit-button') {
                         if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft) {
                             await dialog.confirmAsync('Are you sure you want to submit this request?');
-
                             payload[twcSrf.Fields.SRF_STATUS] = twcSrf.Status.Submitted;
-                            console.log('payload', payload);
-                            // return
                         } else if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued) {
                             await dialog.confirmAsync('Are you sure you want to resubmit this request?');
-
                             payload[twcSrf.Fields.SRF_STATUS] = twcSrf.Status.Resubmitted;
                         }
                     }
-                    // return;
+
                     this.wait();
 
                     var res = await this.post({ action: 'save' }, payload);

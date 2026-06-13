@@ -2331,12 +2331,13 @@ table.twc-table-b>thead>tr>th {
 }
 
 table.twc-table-b>tbody>tr>td {
-    padding: 7px;
+    padding: 3px;
     vertical-align: top;
-    cursor: pointer;
+    /* cursor: pointer; */
 }
 
 table.twc-table-b>tbody>tr:hover>td {
+    color: var(--accent-fore-color);
     background-color: var(--accent-bkgd-color);
 }
 

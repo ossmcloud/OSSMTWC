@@ -1010,7 +1010,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 from    customrecord_twc_srf srf
                 join    customrecord_twc_company c on c.id = srf.custrecord_twc_srf_cust
                 where   srf.custrecord_twc_srf_site = ${options.siteId}
-                and     srf.custrecord_twc_srf_status between ${SRF_STATUS.WorksPermitted} and ${SRF_STATUS.SRFCancelled}
+                and     srf.custrecord_twc_srf_permit_date <= CURRENT_DATE
                 order by srf.custrecord_twc_srf_app_date desc
             `, srf => {
                 siteSrfs.push({

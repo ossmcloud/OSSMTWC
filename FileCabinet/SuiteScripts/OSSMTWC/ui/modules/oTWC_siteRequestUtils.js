@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_utils.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js', '../../data/oTWC_config.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_equipmentLib.js', '../../data/oTWC_equipAction.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js'],
-    (core, coreSQL, recu, twcUtils, twcSite, twcSrf, twcSrfItem, twcSrfUI, twcFile, nsFileUtils, twcConfig, twcUI, twcEqLib, twcEqAct, twcEquipmentUI, twcEquipment) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_utils.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js', '../../data/oTWC_config.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_equipmentLib.js', '../../data/oTWC_equipAction.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js', '../../modules/oTWC_srfWorkflowEngine.js'],
+    (core, coreSQL, recu, twcUtils, twcSite, twcSrf, twcSrfItem, twcSrfUI, twcFile, nsFileUtils, twcConfig, twcUI, twcEqLib, twcEqAct, twcEquipmentUI, twcEquipment, twcSrfWorkflowEngine) => {
 
         function getEquipment(options) {
 
@@ -25,6 +25,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+        function submitSiteSrf(userInfo, payload) {
+
+            payload.profile = userInfo.profile;
+            twcSrfWorkflowEngine.initWorkFlow(payload);
+            
+        }
 
         function saveSiteSrf(userInfo, payload) {
 
@@ -344,6 +350,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             renderSiteLocatorPanel: renderSiteLocatorPanel,
             getSrfInfo: getSrfInfo,
             getEquipment: getEquipment,
+            submitSiteSrf: submitSiteSrf,
 
         }
 
