@@ -2341,6 +2341,7 @@ table.twc-table-b>tbody>tr:hover>td {
     background-color: var(--accent-bkgd-color);
 }
 
+
 div.twc-tile-chart-series {
     padding: 7px;
 }
@@ -2674,4 +2675,17 @@ div.twc-table-toolbar-button>div {
 
 div.twc-table-toolbar-button:hover {
     background-color: var(--bkgd-color-1);
+}
+
+
+div.omt-ui-flex-panel {
+    display: flex;
+}
+div.omt-ui-flex-panel>ossm {
+    margin-right: 3px;
+}
+
+.ktl-highlight-red {
+    background-color: red !important;
+    color: white !important;
 }

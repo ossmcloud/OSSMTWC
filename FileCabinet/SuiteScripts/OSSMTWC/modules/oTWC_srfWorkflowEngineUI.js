@@ -1,61 +1,207 @@
+
 /**
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_site.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfWorkflowEngine.js', '../data/oTWC_icons.js'],
-    function (core, coreSql, recu, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSite, dialog, twcUi, twcSrfWorkflowEngine, twcIcons) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_site.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfWorkflowEngine.js', '../data/oTWC_icons.js'],
+    function (core, coreSql, recu, https, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSite, dialog, twcUi, twcSrfWorkflowEngine, twcIcons) {
 
-        function getWorkFlow(options) {
-            if (!options) { throw new Error('no parameters passed'); }
-            if (!options.srf) { throw new Error('invalid parameters passed'); }
+        const TODAY = (new Date()).format();
 
-            var workflow = coreSql.first(`
-                select  w.id, custrecord_twc_srf_wkf_status as status, BUILTIN.DF(custrecord_twc_srf_wkf_status) as status_name, custrecord_twc_srf_wkf_notes as notes,
-                        custrecord_twc_srf_wkf_parent as srf, srf.name as srf_name,
-                        srf.custrecord_twc_srf_site as site, BUILTIN.DF(custrecord_twc_srf_site) as site_name,
-                        srf.custrecord_twc_srf_cust as customer, BUILTIN.DF(srf.custrecord_twc_srf_cust) as customer_name,
-                        srf.custrecord_twc_srf_cust_plan_ins_date as customer_planned_date
-                    
-                from    ${twcSrfWorkflow.Type} w
-                join    customrecord_twc_srf srf on srf.id = w.custrecord_twc_srf_wkf_parent
-                where   ${twcSrfWorkflow.Fields.SRF} = ${options.srf}
-            `);
-            if (!workflow) { throw new Error(`No Workflow found for SRF: ${options.srf}`); }
-
-            // @@TODO: use constants
-            workflow.items = coreSql.run(`
-                select  wi.id, ws.name as stage_name, ws.custrecord_twc_srf_wks_step_no step_no, ws.custrecord_twc_srf_wks_seq_no as seq_no,
-                        wi.custrecord_twc_srf_wkfi_status as status, BUILTIN.DF(custrecord_twc_srf_wkfi_status) as status_name,
-                        TO_CHAR(wi.custrecord_twc_srf_wkfi_planned, 'YYYY-MM-DD') as planned, TO_CHAR(wi.custrecord_twc_srf_wkfi_actual, 'YYYY-MM-DD') as actual,
-                        custrecord_twc_srf_wkfi_cprofile as profile, BUILTIN.DF(custrecord_twc_srf_wkfi_cprofile) as profile_name
-                from    customrecord_twc_srf_wkfi wi
-                join    customrecord_twc_srf_wks ws on ws.id = wi.custrecord_twc_srf_wkfi_stage
-                where   wi.custrecord_twc_srf_wkfi_parent = ${workflow.id}
-                order by ws.custrecord_twc_srf_wks_step_no, ws.custrecord_twc_srf_wks_seq_no, wi.created
-            `)
-
-
-            return workflow;
+        function getStatusStyles(status, isItem) {
+            var styles = { color: 'white', bkgd: 'silver' };
+            if (status == twcSrfWorkflowEngine.WorkflowStatus.NEW) {
+                if (isItem) {
+                    styles.bkgd = 'rgb(220, 220, 220)';
+                    styles.color = 'black';
+                } else {
+                    styles.bkgd = 'yellow';
+                    styles.color = 'maroon';
+                }
+            } else if (status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS) {
+                styles.bkgd = 'steelblue';
+            } else if (status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED) {
+                styles.bkgd = 'green';
+            } else if (status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {
+                styles.bkgd = 'red';
+            }
+            return `color: ${styles.color}; background-color: ${styles.bkgd}`;
         }
 
+
+
         class WorkflowFormItem {
+            #workflowForm = null;
             #item = null;
+            #workflow = null;
             #ui = null;
             #form = null;
-            constructor(item) {
+            #readOnly = false;
+            constructor(form, item) {
+                this.#workflowForm = form;
+                this.#workflow = form.workflow;
                 this.#item = item;
+                this.#readOnly = this.#item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || this.#item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED;
             }
 
             render(callback) {
-                this.#ui = jQuery(`<div></div>`);
 
-                this.#ui.append(twcUi.render({ type: twcUi.CTRL_TYPE.DATE, id: 'planned_date', label: 'Planned', value: this.#item.planned }));
-                this.#ui.append(twcUi.render({ type: twcUi.CTRL_TYPE.DATE, id: 'actual_date', label: 'Actual', value: this.#item.actual }));
 
-                dialog.confirm({ title: 'manage item', message: this.#ui, width: '700px', height: '500px' }, dlg => {
-                    try {
+                var statusLabel = '';
+                if (this.#item.set_status_name) {
+                    statusLabel = `
+                        <span class="twc-record-status" style="${getStatusStyles(this.#item.set_status)}">
+                            ${this.#item.set_status_name}
+                        </span>
+                    `;
+                }
+                this.#ui = jQuery(`
+                    <div>
+                        <div class="omt-ui-flex-panel" style="margin-bottom: 3px;">
+                            ${twcUi.render({ type: twcUi.CTRL_TYPE.DATE, id: 'actual_date', label: 'Actual', value: this.#item.actual || TODAY, readOnly: this.#readOnly })}
+                            ${twcUi.render({ type: twcUi.CTRL_TYPE.DATE, id: 'planned_date', label: 'Planned', value: this.#item.planned, readOnly: this.#readOnly })}
+                            <div>
+                                <label style="margin-top: 2px; margin-bottom: 11px;">SRF Status will be set to</label>
+                                ${statusLabel}
+                            </div>
+                        </div>
                         
-                        callback(this.#item);
+                    </div>
+                `);
+
+                var nextSteps = [];
+                if (!this.#readOnly) {
+
+                    nextSteps = this.#workflow.items.filter(i => {
+                        if (this.#item.next_stage_pick == 'T') {
+                            return this.#item.next_stage.indexOf(i.stage) >= 0 && i.status == twcSrfWorkflowEngine.WorkflowStatus.NEW;
+                        } else {
+                            return this.#item.next_stage.indexOf(i.stage) >= 0 && this.#item.id < i.id;
+                        }
+
+                    })
+                    if (nextSteps.length > 0) {
+
+                        var nextStepContainerOuter = jQuery(`<div style="margin-top: 7px; padding: 3px; border: 1px solid var(--grid-color);"><h3 style="margin-bottom: 7px; border-bottom: 1px solid var(--grid-color);">Next Steps Planned Dates</h3></div>`);
+                        var nextStepContainer = jQuery(`<div class="twc-div-table-r" style="table-layout: fixed;"></div>`);
+                        nextStepContainerOuter.append(nextStepContainer);
+                        core.array.each(nextSteps, next => {
+                            var assignToDropDOwn = '';
+                            if (next.is_review == 'T') {
+                                assignToDropDOwn = `<div>${twcUi.render({ type: twcUi.CTRL_TYPE.DROPDOWN, id: `assigned_to_${next.id}`, value: next.assigned_to, dataSource: this.#workflowForm.data.assignToList, hint: 'Assign to' })}</div>`;
+                            }
+
+                            var radioButton = '';
+                            if (this.#item.next_stage_pick == 'T') {
+                                radioButton = `<div style="width: 30px;"><input type="radio" style="transform: scale(2);" name="pick_next_stage" data-id="${next.id}" /></div>`;
+                            }
+
+                            nextStepContainer.append(`
+                                <div>
+                                    ${radioButton}
+                                    <div style="width: 150px; padding: 0px 3px;">
+                                        ${next.stage_name}
+                                    </div>
+                                    <div style="padding: 0px 3px;">
+                                        ${twcUi.render({ type: twcUi.CTRL_TYPE.DATE, id: `planned_date_${next.id}`, value: next.planned })}
+                                    </div>
+                                    ${assignToDropDOwn}
+                                </div>
+                            `)
+                        })
+                        this.#ui.append(nextStepContainerOuter);
+                    }
+                }
+
+
+                var formData = null;
+                if (this.#item.form_data) {
+                    formData = JSON.parse(this.#item.form_data);
+                    var formDataContainer = jQuery(`
+                        <div style="margin-top: 7px; padding: 3px; border: 1px solid var(--grid-color);">
+                            <h3 style="margin-bottom: 7px; border-bottom: 1px solid var(--grid-color);">${formData.title}</h3>
+                        </div>
+                    `);
+                    for (var k in formData.fields) {
+                        formData.fields[k].value = this.#item[formData.fields[k].id];
+                        formData.fields[k].readOnly = this.#readOnly;
+                        formDataContainer.append(twcUi.render(formData.fields[k]))
+                    }
+                    this.#ui.append(formDataContainer);
+                }
+
+
+
+                this.#form = twcUi.init({}, this.#ui);
+
+                var method = this.#readOnly ? 'open' : 'confirm';
+
+                dialog[method]({ title: 'manage item', content: this.#ui, size: { width: '700px', height: '550px' } }, dlg => {
+                    try {
+                        var values = this.#form.getValues();
+
+                        var pickedNextStage = null;
+                        if (this.#item.next_stage_pick == 'T') {
+                            var checked = this.#ui.find('input[type="radio"]:checked');
+                            if (checked.length == 0) { throw new Error(`Please specify the next stage`); }
+                            pickedNextStage = checked.data('id');
+                        }
+
+                        var items = [];
+                        const appendItem = (item, form) => {
+                            var i = {
+                                id: item.id,
+                                stage: item.stage,
+                                [twcSrfWorkflowItem.Fields.PLANNED]: item.planned,
+                                [twcSrfWorkflowItem.Fields.STATUS]: item.status,
+                                [twcSrfWorkflowItem.Fields.ASSIGNED_TO]: item.assigned_to,
+                            };
+                            if (item.actual) { i[twcSrfWorkflowItem.Fields.ACTUAL] = item.actual; }
+                            if (form) {
+                                i.formData = { record: form.record, passField: item.review_pass_field };
+                                for (var k in form.fields) { i.formData[form.fields[k].id] = values[form.fields[k].id]; }
+                                item.review_passed = values[item.review_pass_field] ? 'T' : 'F';
+                            }
+                            items.push(i);
+
+                        }
+
+                        this.#item.actual = values.actual_date;
+                        this.#item.planned = values.planned_date;
+                        this.#item.status = twcSrfWorkflowEngine.WorkflowStatus.COMPLETED;
+                        this.#item.status_name = 'In Progress';
+                        if (formData) {
+                            for (var k in formData.fields) {
+                                this.#item[formData.fields[k].id] = values[formData.fields[k].id];
+                            }
+                        }
+                        appendItem(this.#item, formData);
+
+                        var setStatus = this.#item.set_status;
+                        core.array.each(nextSteps, next => {
+                            if (pickedNextStage && pickedNextStage != next.id) { return; }
+                            next.planned = values[`planned_date_${next.id}`];
+                            next.assigned_to = values[`assigned_to_${next.id}`];
+                            next.status = (next.is_last_stage == 'T') ? twcSrfWorkflowEngine.WorkflowStatus.COMPLETED : twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS;
+                            next.status_name = 'In Progress';
+
+                            setStatus = next.set_status;
+
+                            appendItem(next);
+                        })
+
+                        dialog.saving(dlg, 'saving data...<br />do not close the pop-up or refresh the page.');
+
+                        this.#workflowForm.post('update-workflow', { setStatus: this.#readOnly ? null : setStatus, items: items })
+                            .then(res => {
+                                callback(this.#item);
+                                dlg.close();
+                            }).catch(err => {
+                                dialog.savingError(dlg, err);
+                            });
+
+                        return false;
+
                     } catch (error) {
                         dialog.error(error);
                         return false;
@@ -63,21 +209,56 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 });
             }
 
-            static open(item, callback) {
-                var form = new WorkflowFormItem(item);
+            static open(workflowForm, item, callback) {
+                var form = new WorkflowFormItem(workflowForm, item);
                 form.render(callback);
             }
         }
 
         class WorkflowForm {
+            #options = null;
+            #page = null;
             #workflow = null;
             #ui = null;
             #uiTable = null;
-            constructor(workflow) {
-                this.#workflow = workflow;
+            #container = null;
+            constructor(page, options) {
+                this.#page = page;
+                this.#options = options;
+                //this.#workflow = page.postSync({ action: 'get-workflow' }, options);
             }
 
-            render() {
+            get workflow() { return this.#workflow; }
+            get data() { return this.#page.data; }
+
+            async post(action, payload) {
+                if (action == 'update-workflow') {
+                    payload.wkf = this.#workflow.id;
+                    payload.srf = this.#workflow.srf;
+                }
+                return this.#page.post({ action: action }, payload);
+            }
+
+            render(container) {
+                if (container) { this.#container = container; }
+                this.#container.html(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 64)}</span>`)
+                this.post('get-workflow', this.#options).then(res => {
+                    console.log(res);
+                    if (res.error) { throw res; }
+                    this.#workflow = res;
+                    this.renderWorkflow();
+                }).catch(res => {
+                    this.#container.html(`
+                        <div style="color: red;">
+                            ${res.error || res.message}
+                            <hr />
+                            ${(res.stack || 'no stack trace').replaceAll('\n', '<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')}
+                        </div>
+                    `)
+                });
+            }
+
+            renderWorkflow() {
                 this.#ui = jQuery(`
                     <div>
                         <div id="srf-workflow-header" style="display: flex; ">
@@ -98,7 +279,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             <div style="width: 20%; text-align: center; display: flex; flex-direction: column; align-items: center;">
                                 <span>SRF Workflow</span>
                                 
-                                <span class="twc-record-status" style="width: auto; ${twcSrfWorkflowEngine.getStatusStyles(this.#workflow.status)}">${this.#workflow.status_name}</span>
+                                <span class="twc-record-status" style="width: auto; ${getStatusStyles(this.#workflow.status)}">${this.#workflow.status_name}</span>
                             </div>
                             <div class="twc-div-table-r" style="width: 40%; text-align: right;">
                                 <div>
@@ -134,57 +315,120 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 `)
                 this.#ui.find('#srf-workflow-table').html(this.#uiTable);
 
-                var tblBody = this.#uiTable.find('tbody');
+                var tblBody = this.#uiTable.find('tbody'); var loopStart = false; var loopCellAdded = false; var prevItem = null; var loopCount = 0;
                 core.array.each(this.#workflow.items, (item, idx) => {
+                    if (item.stage_hidden == 'T') {
+                        loopStart = true;
+                        loopCellAdded = false;
+                        tblBody.append(`<tr><td cellspan="6"></td></tr>`);
+                        return;
+                    }
 
-                    var editIcon = `<span class="edit-item" style="cursor: pointer;">${twcIcons.get('pencil', 16, 'green')}</span>`;
-                    if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW && this.#workflow.items[idx - 1]?.status != twcSrfWorkflowEngine.WorkflowStatus.COMPLETED) { editIcon = ''; }
+                    if (item.stage_loop != 'T') {
+                        loopStart = false;
+                        loopCellAdded = false;
+                    }
 
-                    var plannedDateInput = `<input type="date" style="text-align: center;" id="date-planned-${item.id}" value="${item.planned || ''}" />`;
+
+                    // if (item.set_status == twcUtils.SrfStatus.Resubmitted) {
+                    //     tblBody.append(`<tr><td cellspan="6"></td></tr>`);
+                    // }
+
+
+                    var editIcon = '';
+                    if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {
+                        editIcon = `<span class="edit-item" style="cursor: pointer;">${twcIcons.get('lock', 16)}</span>`;
+                    } else {
+                        if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW || item.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS) {
+                            editIcon = `<span class="edit-item" style="cursor: pointer;">${twcIcons.get('pencil', 16)}</span>`;
+                            if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW && prevItem?.status != twcSrfWorkflowEngine.WorkflowStatus.COMPLETED) {
+                                editIcon = ''
+                            }
+                        }
+                    }
+
+                    var plannedDateInput = `<input type="date" style="text-align: center; border: none; background-color: transparent; color: inherit;" id="date-planned-${item.id}" value="${item.planned || ''}" />`;
                     if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || this.#workflow.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || this.#workflow.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {
-                        plannedDateInput = item.planned || '-';
+                        plannedDateInput = item.planned ? twcUtils.fromJsToNs(item.planned) : '-';
+                    }
+
+                    var styles = getStatusStyles(item.status, true);
+                    if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED && item.is_review == 'T' && item.review_passed != 'T') {
+                        styles = `background-color: red !important; color: white !important`;
+                    }
+
+                    var loopTCell = `<td></td>`;
+                    if (loopStart) {
+                        if (loopCellAdded) {
+                            loopTCell = '';
+                        } else {
+                            loopTCell = `<td rowspan="6" style="vertical-align: middle; max-width: 25px;"><div style="-webkit-transform: rotate(-90deg); white-space: nowrap; margin-top: 75px;">Feedback Loop (${++loopCount})</div></td>`;
+                            loopCellAdded = true;
+                        }
                     }
 
                     var tableRow = jQuery(`
-                        <tr style="${twcSrfWorkflowEngine.getItemStatusStyles(item.status)}">
-                            <td></td>
+                        <tr style="${styles}">
+                            ${loopTCell}
                             <td style="text-align: center;">${item.step_no}</td>
                             <td>${item.stage_name}</td>
-                            <td style="text-align: center;">
+                            <td class="${(item.planned && item.planned < TODAY) ? 'ktl-highlight-red' : ''}" style="text-align: center;">
                                 ${plannedDateInput}
                             </td>
-                            <td style="text-align: center;">${item.actual || '-'}</td>
+                            <td style="text-align: center;">${item.actual ? twcUtils.fromJsToNs(item.actual) : '-'}</td>
                             <td style="text-align: center;">${editIcon}</td>
                         </tr>
                     `);
                     tblBody.append(tableRow);
 
-                    tableRow.find('.edit-item').click(async e => {
-                        console.log(item);
-                        WorkflowFormItem.open(item, () => {
-                            console.log(item);
-                        })
+
+                    tableRow.find('input').change(async e => {
+                        var dateInput = jQuery(e.currentTarget);
+                        var waitIcon = jQuery(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 16)}</span>`);
+                        try {
+                            dateInput.css('display', 'none');
+                            dateInput.parent().append(waitIcon);
+
+                            var date = dateInput.val();
+                            await this.post('update-workflow', { item: { id: item.id, [twcSrfWorkflowItem.Fields.PLANNED]: date } });
+                            item.planned = date;
+                            if (date && date < TODAY) {
+                                dateInput.addClass('ktl-highlight-red');
+                            } else {
+                                dateInput.removeClass('ktl-highlight-red');
+                            }
+
+                        } catch (error) {
+                            dateInput.val('');
+                            dialog.error(error);
+                        } finally {
+                            dateInput.css('display', 'inline-block');
+                            waitIcon.remove();
+                        }
                     })
+                    tableRow.find('.edit-item').click(async e => {
+                        WorkflowFormItem.open(this, item, () => { this.renderWorkflow(); })
+                    })
+
+                    prevItem = item;
+
                 })
 
-                return this.#ui;
+                this.#container.html(this.#ui);
             }
 
 
             popUp() {
-                if (!this.#ui) { this.render(); }
-
-                dialog.open({ title: 'manage item', content: this.#ui, size: { width: '750px', height: '90vh' } });
-
-
+                this.render(jQuery('<div></div>'));
+                dialog.open({ title: 'manage item', content: this.#container, size: { width: '750px', height: '90vh' } });
             }
         }
 
 
 
         return {
-            getForm: (options) => {
-                return new WorkflowForm(getWorkFlow(options));
+            getForm: (page, options) => {
+                return new WorkflowForm(page, options);
             }
         }
     });

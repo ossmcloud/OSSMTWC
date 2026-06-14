@@ -26,10 +26,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function submitSiteSrf(userInfo, payload) {
-
             payload.profile = userInfo.profile;
             twcSrfWorkflowEngine.initWorkFlow(payload);
-            
         }
 
         function saveSiteSrf(userInfo, payload) {
@@ -296,6 +294,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return srfInfo;
         }
 
+        function getAssignToEmployees(options) {
+            return coreSQL.run(`
+                select  id as value, entityid as text
+                from    employee
+                where   isinactive = 'F'
+                order by entityid
+            `);
+        }
+
         return {
 
             getSRFInfoPanels: twcSrfUI.getSRFInfoPanels,
@@ -352,6 +359,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getEquipment: getEquipment,
             submitSiteSrf: submitSiteSrf,
 
+            getAssignToEmployees: getAssignToEmployees,
         }
 
     });

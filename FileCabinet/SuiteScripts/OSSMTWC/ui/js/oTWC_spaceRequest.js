@@ -366,15 +366,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
 
                     if (this.data.isWorkflowView) {
-                        this.#workflowForm = twcSrfWorkflowEngineUI.getForm({ srf: this.data.siteRequestInfo.id })
-                        this.page.find('#twc-site-request-details-panel').html(this.#workflowForm.render())
+                        this.#workflowForm = twcSrfWorkflowEngineUI.getForm(this, { srf: this.data.siteRequestInfo.id })
+                        this.#workflowForm.render(this.page.find('#twc-site-request-details-panel'));
 
                     } else {
                         this.ui.getControl('open-workflow-button')?.on('click', e => {
                             location.href = core.url.script('otwc_spacerequest_sl', { recId: this.data.siteRequestInfo.id, wkf: 'T' });
                         });
                         this.ui.getControl('view-workflow-button')?.on('click', e => {
-                            this.#workflowForm = twcSrfWorkflowEngineUI.getForm({ srf: this.data.siteRequestInfo.id })
+                            this.#workflowForm = twcSrfWorkflowEngineUI.getForm(this, { srf: this.data.siteRequestInfo.id })
                             this.#workflowForm.popUp();
                         })
 
@@ -815,15 +815,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
 
                     var payload = this.data.siteRequestInfo;
-                    if (targetId == 'submit-button') {
-                        if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft) {
-                            await dialog.confirmAsync('Are you sure you want to submit this request?');
-                            payload[twcSrf.Fields.SRF_STATUS] = twcSrf.Status.Submitted;
-                        } else if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued) {
-                            await dialog.confirmAsync('Are you sure you want to resubmit this request?');
-                            payload[twcSrf.Fields.SRF_STATUS] = twcSrf.Status.Resubmitted;
-                        }
-                    }
+                    // if (targetId == 'submit-button') {
+                    //     if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft) {
+                    //         await dialog.confirmAsync('Are you sure you want to submit this request?');
+                    //         payload[twcSrf.Fields.SRF_STATUS] = twcSrf.Status.Submitted;
+                    //     } else if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued) {
+                    //         await dialog.confirmAsync('Are you sure you want to resubmit this request?');
+                    //         payload[twcSrf.Fields.SRF_STATUS] = twcSrf.Status.Resubmitted;
+                    //     }
+                    // }
 
                     this.wait();
 

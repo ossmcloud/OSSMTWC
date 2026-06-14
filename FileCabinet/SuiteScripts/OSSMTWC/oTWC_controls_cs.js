@@ -47,8 +47,8 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             testFunction() {
                 try {
 
-                    twcSrfWorkflowEngineUI.getForm({ srf: 22 }).popUp();
-                    //twcSrfWorkflowEngine.deleteWorkflow({ srf: 22 })
+                    //twcSrfWorkflowEngineUI.getForm({ srf: 22 }).popUp();
+                    twcSrfWorkflowEngine.deleteWorkflow({ srf: 22 })
                     //twcSrfWorkflowEngine.initWorkFlow({ srf: 22 });
 
                     //var eqAction = twcEquipAction.get();

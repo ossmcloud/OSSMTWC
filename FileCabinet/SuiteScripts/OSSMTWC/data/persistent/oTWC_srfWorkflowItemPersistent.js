@@ -14,6 +14,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ACTUAL: 'custrecord_twc_srf_wkfi_actual',
             REVIEW: 'custrecord_twc_srf_wkfi_review',
             CUSTOMER_PROFILE: 'custrecord_twc_srf_wkfi_cprofile',
+            ASSIGNED_TO: 'custrecord_twc_srf_wkfi_assigned_to',
+            REVIEW_PASSED: 'custrecord_twc_srf_wkfi_review_passed',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -28,6 +30,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ACTUAL: { name: 'custrecord_twc_srf_wkfi_actual', type: 'date', alias: 'actual', display: 'normal', mandatory: false },
             REVIEW: { name: 'custrecord_twc_srf_wkfi_review', type: 'select', alias: 'review', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_rev' },
             CUSTOMER_PROFILE: { name: 'custrecord_twc_srf_wkfi_cprofile', type: 'select', alias: 'customerProfile', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
+            ASSIGNED_TO: { name: 'custrecord_twc_srf_wkfi_assigned_to', type: 'select', alias: 'assignedto', display: 'normal', mandatory: false, recordType: '-4' },
+            REVIEW_PASSED: { name: 'custrecord_twc_srf_wkfi_review_passed', type: 'checkbox', alias: 'reviewPassed', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -90,6 +94,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.CUSTOMER_PROFILE, value)
             }
             get customerProfileName() { return this.getText(_recordFields.CUSTOMER_PROFILE); }
+            
+            get assignedto() {
+                return this.get(_recordFields.ASSIGNED_TO);
+            } set assignedto(value) {
+                this.set(_recordFields.ASSIGNED_TO, value)
+            }
+            get assignedtoName() { return this.getText(_recordFields.ASSIGNED_TO); }
+            
+            get reviewPassed() {
+                return this.get(_recordFields.REVIEW_PASSED);
+            } set reviewPassed(value) {
+                this.set(_recordFields.REVIEW_PASSED, value)
+            }
             
             get created() {
                 return this.get(_recordFields.CREATED);

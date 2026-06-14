@@ -174,7 +174,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (!options) { return; }
             if (options.constructor.name == 'Object') {
                 if (!options.title) { options.title = 'confirm'; }
-                if (!options.message) { options.message = 'no confirm message;' }
+                if (!options.message && !options.content) { options.message = 'no confirm message;' }
             } else {
                 options = {
                     title: 'confirm',
@@ -183,10 +183,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             return dialog.open({
                 title: options.title,
-                content: options.message,
+                content: options.message || options.content,
                 size: {
-                    width: options.width || '500px',
-                    height: options.height || '300px'
+                    width: options.size?.width || options.width || '500px',
+                    height: options.size?.height || options.height || '300px'
                 },
                 ok: callback
             });
@@ -276,12 +276,35 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             })
         }
 
+        function saving(dlg, comment) {
+            var saving = jQuery(`
+                <div class="twc-overlay" style="padding-top: 50px; margin-left: -7px;">
+                    <span class="twc-wait-cursor">
+                        ${twcIcons.ICONS.waitWheel}
+                    </span>
+                    <div style="color: var(--nav-icon-color);">
+                        ${comment || ''}
+                    </div>
+                </div>
+            `);
+            dlg.options.content.append(saving);
+            dlg.dialog.find('#o-dialog_ok').css('display', 'none');
+        }
+        function savingError(dlg, error) {
+            dialog.error(error);
+            dlg.options.content.find('.twc-overlay').remove();
+            dlg.dialog.find('#o-dialog_ok').css('display', 'inline-block');
+        }
+
         return {
 
             CONFIGS: dialog.CONFIGS,
             Dialog: dialog.Dialog,
             get: dialog.get,
             open: dialog.open,
+
+            saving: saving,
+            savingError: savingError,
 
             DialogWizardBase: DialogWizardBase,
 

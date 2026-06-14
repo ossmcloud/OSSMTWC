@@ -5,7 +5,7 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './persistent/oTWC_srfWorkflowStagePersistent.js', './oTWC_config.js'],
     (core, coreSQL, twcSafWorkflowStage, twcConfig) => {
 
-        class OSSMTWC_SAFWorkflowStage extends twcSafWorkflowStage.PersistentRecord {
+        class OSSMTWC_SRFWorkflowStage extends twcSafWorkflowStage.PersistentRecord {
             constructor(id, staticLoad) {
                 super(id, staticLoad);
             }
@@ -18,13 +18,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: twcSafWorkflowStage.FieldsInfo,
 
             get: function (id) {
-                var rec = new OSSMTWC_SAFWorkflowStage(id);
+                var rec = new OSSMTWC_SRFWorkflowStage(id);
                 rec.load();
                 return rec;
             },
 
             select: function (options) {
-                var rec = new OSSMTWC_SAFWorkflowStage();
+                var rec = new OSSMTWC_SRFWorkflowStage();
                 return rec.select(options);
             },
 
