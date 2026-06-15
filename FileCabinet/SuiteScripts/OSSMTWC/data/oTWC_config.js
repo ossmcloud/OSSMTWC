@@ -212,7 +212,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             }
 
-            var profileInfo = coreSQL.first(`select id, custrecord_twc_prof_phone as phone from customrecord_twc_prof where custrecord_twc_prof_username = ${userInfo.recordId}`);
+            var profileInfo = coreSQL.first(`select id, custrecord_twc_prof_phone as phone, name from customrecord_twc_prof where custrecord_twc_prof_username = ${userInfo.recordId}`);
 
             userInfo.profile = profileInfo?.id || null;
             userInfo.profileInfo = profileInfo;

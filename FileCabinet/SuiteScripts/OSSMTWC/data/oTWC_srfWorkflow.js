@@ -30,9 +30,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             getFields: () => {
                 return twcConfig.getFields(twcSafWorkflow.Type);
+            },
+
+            getField: (name) => {
+                for (var k in twcSafWorkflow.FieldsInfo) {
+                    if (twcSafWorkflow.FieldsInfo[k].name == name) {
+                        return twcSafWorkflow.FieldsInfo[k];
+                    }
+                }
             }
-
-
 
         }
     });

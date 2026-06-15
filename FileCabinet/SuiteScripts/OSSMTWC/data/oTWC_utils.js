@@ -294,7 +294,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Resubmitted: 4,
             SRFApproved: 5,
             LicenceRequested: 6,
-            WorksPermitted: 7,
+            // WorksPermitted: 7,
             LicenceIssued: 8,
             LicenceExecuted: 9,
             SRFCancelled: 10
@@ -308,7 +308,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Resubmitted: { color: 'white', backgroundColor: 'olive' },
             SRFApproved: { color: 'blue', backgroundColor: 'lime' },
             LicenceRequested: { color: 'white', backgroundColor: 'steelblue' },
-            WorksPermitted: { color: 'white', backgroundColor: 'mediumblue' },
+            // WorksPermitted: { color: 'white', backgroundColor: 'mediumblue' },
             LicenceIssued: { color: 'white', backgroundColor: 'blue' },
             LicenceExecuted: { color: 'white', backgroundColor: 'green' },
             SRFCancelled: { color: 'white', backgroundColor: 'red' }
@@ -339,6 +339,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     ${statusName}
                 </span>
             `
+        }
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const SRF_REVIEW_STATUS = {
+            Approved: 1,
+            FeedbackIssued: 2
         }
 
 
@@ -1075,26 +1081,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var info = { height: 0 };
             coreSQL.each(`
                 select  BUILTIN.DF(i.custrecord_twc_infra_type) as type, i.custrecord_twc_infra_str_ht_m as height,
-                        t.custrecord_twc_infra_str_type_rooftop as is_rooftop, t.custrecord_twc_infra_str_type_mast as is_mast, t.custrecord_twc_infra_str_type_tower as is_tower,
-                        s.custrecord_twc_site_crane_mewp_access as crane,
+                        
                 from    customrecord_twc_infra i
                 join    customrecord_twc_infra_str_type t on t.id = i.custrecord_twc_infra_str_type
                 join    customrecord_twc_site s on s.id = i.custrecord_twc_infra_site
                 where  	i.custrecord_twc_infra_site = ${options.siteId}
                 and     i.id = ${options.id || 0}
             `, r => {
-
-                // @@TODO: this is no longer needed
-                if (r.is_rooftop == 'T') {
-                    info.roofTop = true;
-                } else if (r.is_mast == 'T') {
-                    info.mast = true;
-                } else if (r.is_tower == 'T') {
-                    info.tower = true;
-                } else if (r.crane == 'T') {
-                    info.crane = true;
-                }
-
+               
                 if (r.height > info.height) { info.height = r.height; }
 
                 // @@NOTE: these are required all the time
@@ -1187,6 +1181,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         return {
+            // @@HARDCODED:
+            TWC_COMPANY: 57,
+
             ROOT_FILE_FOLDER: 'TL Files',
             HEIGH_LIMIT_FOR_1_CLIMBER: HEIGH_LIMIT_FOR_1_CLIMBER,
 
@@ -1217,6 +1214,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SrfStepType: SRF_ITEM_STEP_TYPE,
             SrfRequestType: SRF_ITEM_REQUEST_TYPE,
             SrfStatus: SRF_STATUS,
+            SrfReviewStatus: SRF_REVIEW_STATUS,
 
             getFileStatusName: getFileStatusName,
             getFileStatusHtml: getFileStatusHtml,

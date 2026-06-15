@@ -15,8 +15,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fileTypes = twcUtils.getFileTypes(userInfo);
                 
             fieldGroup.fields.push({ id: 'upload-file', label: 'File', width: '100%', type: 'file', accept: '.pdf' })
-            fieldGroup.fields.push({ id: twcFile.Fields.NAME, label: 'Name', width: 'calc(100% - 433px)', mandatory: true })
-            fieldGroup.fields.push({ id: twcFile.Fields.R_TYPE, label: 'Type', width: '200px', mandatory: true, allowAll: false, dataSource: fileTypes})
+            fieldGroup.fields.push({ id: twcFile.Fields.NAME, label: 'Name', width: '100%', mandatory: true })
+            fieldGroup.fields.push({ id: twcFile.Fields.R_TYPE, label: 'Type', width: 'calc(100% - 233px)', mandatory: true, allowAll: false, dataSource: fileTypes})
             fieldGroup.fields.push({ id: twcFile.Fields.REVISION, label: 'Revision', readOnly: nonTwcReadOnly, width: '100px'})
             fieldGroup.fields.push({ id: twcFile.Fields.STATUS, label: 'Status', width: '120px', readOnly: nonTwcReadOnly, lineBreak: true })
             fieldGroup.fields.push({ id: twcFile.Fields.DESCRIPTION, label: 'Description', width: '100%', rows: 5 })

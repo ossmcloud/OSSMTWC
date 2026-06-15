@@ -98,7 +98,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
                     line++;
                 });
             } catch (error) {
-                core.logDebug('ERROR in Attaching files', error)
+                core.logDebug('ERROR in Attaching files', error.message)
             }
         }
 

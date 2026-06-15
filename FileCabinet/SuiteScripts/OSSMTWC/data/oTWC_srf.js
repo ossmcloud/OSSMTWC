@@ -17,6 +17,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             Type: twcSrf.Type,
             Fields: twcSrf.Fields,
+            FieldsInfo: twcSrf.FieldsInfo,
             StepType: twcUtils.SrfStepType,
             Status: twcUtils.SrfStatus,
             getSrfStatusName: twcUtils.getSrfStatusName,
@@ -36,7 +37,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             getFields: () => {
                 return twcUtils.getFields(twcSrf.Type);
-            }
+            },
 
+            getField: (name) => {
+                for (var k in twcSrf.FieldsInfo) {
+                    if (twcSrf.FieldsInfo[k].name == name) {
+                        return twcSrf.FieldsInfo[k];
+                    }
+                }
+            }
         }
     });

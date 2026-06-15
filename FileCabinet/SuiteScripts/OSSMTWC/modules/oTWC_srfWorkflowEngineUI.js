@@ -61,7 +61,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             ${twcUi.render({ type: twcUi.CTRL_TYPE.DATE, id: 'actual_date', label: 'Actual', value: this.#item.actual || TODAY, readOnly: this.#readOnly })}
                             ${twcUi.render({ type: twcUi.CTRL_TYPE.DATE, id: 'planned_date', label: 'Planned', value: this.#item.planned, readOnly: this.#readOnly })}
                             <div>
-                                <label style="margin-top: 2px; margin-bottom: 11px;">SRF Status will be set to</label>
+                                <label style="margin-top: 2px; margin-bottom: 11px;">SRF Status Transition</label>
                                 ${statusLabel}
                             </div>
                         </div>
@@ -87,7 +87,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         nextStepContainerOuter.append(nextStepContainer);
                         core.array.each(nextSteps, next => {
                             var assignToDropDOwn = '';
-                            if (next.is_review == 'T') {
+                            if (next.is_review == 'T' || next.can_assign == 'T') {
                                 assignToDropDOwn = `<div>${twcUi.render({ type: twcUi.CTRL_TYPE.DROPDOWN, id: `assigned_to_${next.id}`, value: next.assigned_to, dataSource: this.#workflowForm.data.assignToList, hint: 'Assign to' })}</div>`;
                             }
 
@@ -123,8 +123,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         </div>
                     `);
                     for (var k in formData.fields) {
-                        formData.fields[k].value = this.#item[formData.fields[k].id];
+                        formData.fields[k].value = this.#item[formData.fields[k].id] || this.#workflow[formData.fields[k].id];
                         formData.fields[k].readOnly = this.#readOnly;
+
+                        if (formData.fields[k].dataSourceConfig) {
+                            formData.fields[k].dataSource = this.#workflowForm.data[formData.fields[k].dataSourceConfig] || [];
+                        }
+
                         formDataContainer.append(twcUi.render(formData.fields[k]))
                     }
                     this.#ui.append(formDataContainer);
@@ -152,9 +157,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             var i = {
                                 id: item.id,
                                 stage: item.stage,
+                                last: item.is_last_stage == 'T',
                                 [twcSrfWorkflowItem.Fields.PLANNED]: item.planned,
                                 [twcSrfWorkflowItem.Fields.STATUS]: item.status,
                                 [twcSrfWorkflowItem.Fields.ASSIGNED_TO]: item.assigned_to,
+                                [twcSrfWorkflowItem.Fields.PROFILE]: item.profile,
                             };
                             if (item.actual) { i[twcSrfWorkflowItem.Fields.ACTUAL] = item.actual; }
                             if (form) {
@@ -169,7 +176,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.#item.actual = values.actual_date;
                         this.#item.planned = values.planned_date;
                         this.#item.status = twcSrfWorkflowEngine.WorkflowStatus.COMPLETED;
-                        this.#item.status_name = 'In Progress';
+                        this.#item.status_name = 'Completed';
+                        this.#item.profile = this.#workflowForm.data.userInfo.profile;
+                        this.#item.profile_name = this.#workflowForm.data.userInfo.profileInfo.name;
                         if (formData) {
                             for (var k in formData.fields) {
                                 this.#item[formData.fields[k].id] = values[formData.fields[k].id];
@@ -194,7 +203,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                         this.#workflowForm.post('update-workflow', { setStatus: this.#readOnly ? null : setStatus, items: items })
                             .then(res => {
-                                callback(this.#item);
+                                callback(res);
                                 dlg.close();
                             }).catch(err => {
                                 dialog.savingError(dlg, err);
@@ -222,10 +231,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #ui = null;
             #uiTable = null;
             #container = null;
+            #readOnly = false;
             constructor(page, options) {
                 this.#page = page;
                 this.#options = options;
-                //this.#workflow = page.postSync({ action: 'get-workflow' }, options);
+
+                dialog.CONFIGS.Buttons.Ok.text = 'Confirm';
+                dialog.CONFIGS.Buttons.Close.text = 'Close';
+                dialog.CONFIGS.Buttons.Close.textWithOk = 'Cancel';
             }
 
             get workflow() { return this.#workflow; }
@@ -233,8 +246,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             async post(action, payload) {
                 if (action == 'update-workflow') {
-                    payload.wkf = this.#workflow.id;
-                    payload.srf = this.#workflow.srf;
+                    if (!payload.wkf) { payload.wkf = this.#workflow.id; }
+                    if (!payload.srf) { payload.srf = this.#workflow.srf };
                 }
                 return this.#page.post({ action: action }, payload);
             }
@@ -258,7 +271,50 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 });
             }
 
+            async updateValue(e, payload) {
+                var value = '';
+                var input = jQuery(e.currentTarget);
+                var display = input.css('display');
+                var waitIcon = jQuery(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 16)}</span>`);
+                try {
+                    input.css('display', 'none');
+                    input.parent().append(waitIcon);
+
+                    value = input.val();
+
+                    await this.post('update-workflow', payload);
+
+                    if (input.attr('type') == 'date') {
+                        if (value && value < TODAY) {
+                            input.parent().addClass('ktl-highlight-red');
+                        } else {
+                            input.parent().removeClass('ktl-highlight-red');
+                        }
+                    }
+
+                } catch (error) {
+                    input.val('');
+                    dialog.error(error);
+                } finally {
+                    input.css('display', display);
+                    waitIcon.remove();
+                }
+                return value;
+            }
+
             renderWorkflow() {
+                this.#readOnly = this.#workflow.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || this.#workflow.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED;
+
+                var customerPlannedDate = this.#workflow.customer_planned_date ? twcUtils.fromJsToNs(this.#workflow.customer_planned_date) : 'NA';
+                var worksPermittedDate = this.#workflow.works_permitted_date ? twcUtils.fromJsToNs(this.#workflow.works_permitted_date) : 'NA';
+                if (!this.#readOnly) {
+                    customerPlannedDate = `<input id="customer-planned-date" type="date" style="text-align: center; border: none; background-color: transparent; color: inherit;" value="${this.#workflow.customer_planned_date}" />`;
+                }
+
+                if (this.#workflow.srf_status == twcUtils.SrfStatus.SRFApproved || this.#workflow.srf_status == twcUtils.SrfStatus.LicenceRequested || this.#workflow.srf_status == twcUtils.SrfStatus.LicenceIssued || this.#workflow.srf_status == twcUtils.SrfStatus.LicenceExecuted) {
+                    worksPermittedDate = `<input id="works-permitted-date" type="date" style="text-align: center; border: none; background-color: transparent; color: inherit;" value="${this.#workflow.works_permitted_date}" />`;
+                }
+
                 this.#ui = jQuery(`
                     <div>
                         <div id="srf-workflow-header" style="display: flex; ">
@@ -278,24 +334,42 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             </div>
                             <div style="width: 20%; text-align: center; display: flex; flex-direction: column; align-items: center;">
                                 <span>SRF Workflow</span>
-                                
                                 <span class="twc-record-status" style="width: auto; ${getStatusStyles(this.#workflow.status)}">${this.#workflow.status_name}</span>
                             </div>
                             <div class="twc-div-table-r" style="width: 40%; text-align: right;">
                                 <div>
                                     <div><label style="margin: 0px;">Customer Planned Date</label></div>
-                                    <div style="width: 120px">${this.#workflow.customer_planned_date || 'NA'}</div>
+                                    <div class="${!this.#readOnly && this.#workflow.customer_planned_date && this.#workflow.customer_planned_date < TODAY ? 'ktl-highlight-red' : ''}" style="text-align: center; width: 120px">${customerPlannedDate}</div>
                                 </div>
-                                
+                                <div>
+                                    <div><label style="margin: 0px;">Works Permitted Date</label></div>
+                                    <div class="${!this.#readOnly && this.#workflow.works_permitted_date && this.#workflow.works_permitted_date < TODAY ? 'ktl-highlight-red' : ''}" style="text-align: center; width: 120px">${worksPermittedDate}</div>
+                                </div>
                             </div>
                         </div>
                         <div id="srf-workflow-table">
                         </div>
                         <div id="srf-workflow-notes">
-                            ${twcUi.render({ type: twcUi.CTRL_TYPE.TEXTAREA, id: 'srf-workflow-notes', label: 'Notes', value: this.#workflow.notes || '', width: '100%', rows: 7 })}
+                            ${twcUi.render({ type: twcUi.CTRL_TYPE.TEXTAREA, id: 'srf-workflow-notes', label: 'Notes', value: this.#workflow.notes || '', width: '100%', rows: 7, readOnly: this.#readOnly })}
                         </div>
                     </div>
                 `)
+
+                this.#ui.find('#customer-planned-date').change(async e => {
+                    var payload = { srf: { id: this.#workflow.srf, [twcSrf.Fields.CUSTOMER_PLANNED_INSTALL_DATE]: jQuery(e.currentTarget).val() } }
+                    this.#workflow.customer_planned_date = await this.updateValue(e, payload);
+                })
+
+                this.#ui.find('#works-permitted-date').change(async e => {
+                    var payload = { srf: { id: this.#workflow.srf, [twcSrf.Fields.WORKS_PERMITTED_DATE]: jQuery(e.currentTarget).val() } }
+                    this.#workflow.works_permitted_date = await this.updateValue(e, payload);
+                })
+
+                this.#ui.find('#srf-workflow-notes').change(async e => {
+                    var payload = { wkf: { id: this.#workflow.id, [twcSrfWorkflow.Fields.NOTES]: jQuery(e.currentTarget).val() } }
+                    this.#workflow.notes = await this.updateValue(e, payload);
+                })
+
 
                 this.#uiTable = jQuery(`
                     <table class="twc-table-b">
@@ -306,6 +380,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 <th>Description</th>
                                 <th style="width: 120px; text-align: center;">Planned</th>
                                 <th style="width: 120px; text-align: center;">Actual</th>
+                                <th style="width: 150px; text-align: center;">Profile</th>
                                 <th style="width: 24px;"></th>
                             </tr>
                         </thead>
@@ -320,20 +395,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (item.stage_hidden == 'T') {
                         loopStart = true;
                         loopCellAdded = false;
-                        tblBody.append(`<tr><td cellspan="6"></td></tr>`);
+                        tblBody.append(`<tr><td cellspan="7"></td></tr>`);
                         return;
                     }
-
-                    if (item.stage_loop != 'T') {
-                        loopStart = false;
-                        loopCellAdded = false;
-                    }
-
-
-                    // if (item.set_status == twcUtils.SrfStatus.Resubmitted) {
-                    //     tblBody.append(`<tr><td cellspan="6"></td></tr>`);
-                    // }
-
+                    if (item.stage_loop != 'T') { loopStart = false; loopCellAdded = false; }
 
                     var editIcon = '';
                     if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {
@@ -362,7 +427,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (loopCellAdded) {
                             loopTCell = '';
                         } else {
-                            loopTCell = `<td rowspan="6" style="vertical-align: middle; max-width: 25px;"><div style="-webkit-transform: rotate(-90deg); white-space: nowrap; margin-top: 75px;">Feedback Loop (${++loopCount})</div></td>`;
+                            loopTCell = `<td rowspan="6" style="vertical-align: middle; max-width: 25px;"><div style="-webkit-transform: rotate(-90deg); white-space: nowrap; margin-top: 100px;">Feedback Loop (${++loopCount})</div></td>`;
                             loopCellAdded = true;
                         }
                     }
@@ -376,6 +441,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 ${plannedDateInput}
                             </td>
                             <td style="text-align: center;">${item.actual ? twcUtils.fromJsToNs(item.actual) : '-'}</td>
+                            <td style="text-align: center;">${item.profile_name || ''}</td>
                             <td style="text-align: center;">${editIcon}</td>
                         </tr>
                     `);
@@ -383,31 +449,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
                     tableRow.find('input').change(async e => {
-                        var dateInput = jQuery(e.currentTarget);
-                        var waitIcon = jQuery(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 16)}</span>`);
-                        try {
-                            dateInput.css('display', 'none');
-                            dateInput.parent().append(waitIcon);
-
-                            var date = dateInput.val();
-                            await this.post('update-workflow', { item: { id: item.id, [twcSrfWorkflowItem.Fields.PLANNED]: date } });
-                            item.planned = date;
-                            if (date && date < TODAY) {
-                                dateInput.addClass('ktl-highlight-red');
-                            } else {
-                                dateInput.removeClass('ktl-highlight-red');
-                            }
-
-                        } catch (error) {
-                            dateInput.val('');
-                            dialog.error(error);
-                        } finally {
-                            dateInput.css('display', 'inline-block');
-                            waitIcon.remove();
-                        }
+                        var payload = { item: { id: item.id, [twcSrfWorkflowItem.Fields.PLANNED]: jQuery(e.currentTarget).val() } }
+                        item.planned = await this.updateValue(e, payload);
                     })
                     tableRow.find('.edit-item').click(async e => {
-                        WorkflowFormItem.open(this, item, () => { this.renderWorkflow(); })
+                        WorkflowFormItem.open(this, item, (resp) => {
+                            if (resp.wkfStatus) {
+                                this.#workflow.status = resp.wkfStatus;
+                                this.#workflow.status_name = resp.wkfStatusName;
+                            }
+                            if (resp.srfStatus) {
+                                jQuery('#srf-record-status').html(twcSrf.getSrfStatusHtml(resp.srfStatus));
+                                this.#workflow.srf_status = resp.srfStatus;
+                            }
+                            this.renderWorkflow();
+                        })
                     })
 
                     prevItem = item;
@@ -420,7 +476,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             popUp() {
                 this.render(jQuery('<div></div>'));
-                dialog.open({ title: 'manage item', content: this.#container, size: { width: '750px', height: '90vh' } });
+                dialog.open({ title: 'manage item', content: this.#container, size: { width: '1000px', height: '90vh' } });
             }
         }
 

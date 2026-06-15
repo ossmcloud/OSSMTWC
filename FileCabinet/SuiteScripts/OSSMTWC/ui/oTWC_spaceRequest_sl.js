@@ -3,8 +3,8 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_srf.js', '../data/oTWC_equipmentLibCfg.js', '../data/oTWC_equipmentLib.js', '../data/oTWC_equipment.js', '../data/oTWC_icons.js', '../modules/oTWC_srfWorkflowEngine.js'],
-    function (render, nsFile, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcSrf, twcEqLibCfg, twcEqLib, twcEquipment, twcIcons, twcSrfWorkflowEngine) {
+define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_equipmentLibCfg.js', '../data/oTWC_equipmentLib.js', '../data/oTWC_equipment.js', '../data/oTWC_icons.js', '../modules/oTWC_srfWorkflowEngine.js'],
+    function (render, nsFile, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcUtils, twcSrf, twcEqLibCfg, twcEqLib, twcEquipment, twcIcons, twcSrfWorkflowEngine) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -19,7 +19,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteRequestInfo.siteId || context.request.parameters.siteId);
 
                 //
-                pageData.recordStatus = `<div class="twc-div-span-table">${twcSrf.getSrfStatusHtml(pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS])}</div>`;
+                pageData.recordStatus = `<div class="twc-div-span-table" id="srf-record-status">${twcSrf.getSrfStatusHtml(pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS])}</div>`;
                 if (context.request.parameters.recId) {
                     var srfCode = pageData.siteRequestInfo.name;
                     s.form.f.title += ` - ${srfCode}`;
@@ -34,12 +34,16 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                             </div>
                         </div>
                     `;
+
+                    pageData.assignToList = twcSiteRequestUtils.getAssignToEmployees();
+                    pageData.twcProfiles = twcUtils.getProfiles({ company: twcUtils.TWC_COMPANY });
+                    pageData.companyProfiles = twcUtils.getProfiles({ company: pageData.siteRequestInfo[twcSrf.Fields.CUSTOMER] });
                 }
 
                 if (context.request.parameters.wkf == 'T') {
                     if (!pageData.userInfo.isEmployee) { throw new Error("You do not have permissions to see this page"); }
                     pageData.isWorkflowView = true;
-                    pageData.assignToList = twcSiteRequestUtils.getAssignToEmployees();
+
 
                     html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_spaceRequest');
                     html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
@@ -53,7 +57,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     if (context.request.parameters.recId) {
                         var canSubmit = pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued;
                         pageData.forceViewOnly = !(canSubmit ? true : (pageData.userInfo.isEmployee && pageData.userInfo.permission.lvl == twcConfig.PERMISSION_LEVEL.FULL));
-                        if (!pageData.forceViewOnly && pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.SRFCancelled) {
+                        if (!pageData.forceViewOnly && (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.SRFCancelled || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted)) {
                             pageData.forceViewOnly = true;
                         }
                     } else {
@@ -79,12 +83,8 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     }
 
                     var printSDSButton = '';
-                    if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceRequested) {
-                        printSDSButton = `
-                            <div style="margin-left: 10px;">
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Print SDS', id: 'print-sds' })}
-                            </div>
-                        `;
+                    if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceRequested || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceIssued || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted) {
+                        printSDSButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Print SDS', id: 'print-sds' });
                     }
 
                     var fieldGroups = twcSiteRequestUtils.getSRFInfoPanels(pageData.siteRequestInfo, pageData.userInfo);

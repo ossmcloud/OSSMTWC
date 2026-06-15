@@ -56,7 +56,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 recu.submit(twcSrfWorkflowItem.Type, feedbackIssuedStage[0].id, twcSrfWorkflowItem.Fields.STATUS, WORKFLOW_STATUS.COMPLETED);
 
                 // increase feed back count
-                recu.submit(twcSrf.Type, options.srf, [twcSrf.Fields.STATUS, twcSrf.Fields.FEEDBACK_LOOP_ITERATIONS], [twcUtils.SrfStatus.Resubmitted, (srf.feedbackLoopIterations || 1) + 1]);
+                recu.submit(twcSrf.Type, options.srf, [twcSrf.Fields.SRF_STATUS, twcSrf.Fields.FEEDBACK_LOOP_ITERATIONS], [twcUtils.SrfStatus.Resubmitted, (srf.feedbackLoopIterations || 0) + 1]);
 
                 return;
             } else {
@@ -76,13 +76,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             core.array.each(srfWorkflowStages, (stage, idx) => {
                 // @@NOTE: this stage is only used if the SRF is re-submitted
-                if (stage[twcSrfWorkflowStage.Fields.DO_NOT_CREATE] == 'T' ) { return; }
+                if (stage[twcSrfWorkflowStage.Fields.DO_NOT_CREATE] == 'T') { return; }
                 var srfWorkflowItem = twcSrfWorkflowItem.get();
                 //srfWorkflowItem.name = `W${srf.name}_S${stage.stepnumber}/${stage.sequencenumber}`;
                 srfWorkflowItem.workflow = srfWorkflow.id;
                 srfWorkflowItem.workflowStage = stage.id;
                 if (idx == 0) {
-                    srfWorkflowItem.customerProfile = options.profile;
+                    srfWorkflowItem.profile = options.profile;
                     srfWorkflowItem.actual = new Date();
                     srfWorkflowItem.status = WORKFLOW_STATUS.COMPLETED;
                 } else {
@@ -112,6 +112,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `)
         }
         function updateWorkflow(userInfo, options) {
+            var response = { status: 'success' };
 
             var items = null;
             if (options.item) {
@@ -121,9 +122,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             if (items) {
+                var isLastStage = false;
                 core.array.each(items, item => {
-                    var fields = [];
-                    var values = [];
+                    var fields = []; var values = [];
+                    fields.push(twcSrfWorkflowItem.Fields.PROFILE);
+                    values.push(userInfo.profile)
                     for (var k in item) {
                         if (!k.startsWith('cust')) { continue; }
                         fields.push(k);
@@ -135,57 +138,116 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                     recu.submit(twcSrfWorkflowItem.Type, item.id, fields, values);
 
+                    isLastStage = item.last;
+
                     if (item.formData) {
-                        var parentReview = getParentReviewRecord(options.wkf, item);
-                        var reviewRecord = twcSrfReview.get(parentReview.review);
-                        reviewRecord.name = `R${parentReview.srf_name}_${parentReview.feedback_loop_count}`;
-                        if (!parentReview.review) {
-                            reviewRecord.sRF = parentReview.srf;
-                            reviewRecord.reviewIteration = parentReview.feedback_loop_count;
-                        }
-                        for (var k in item.formData) {
-                            if (!reviewRecord.hasField(k)) { continue; }
-                            reviewRecord.set(k, item.formData[k]);
-                        }
-                        reviewRecord.save();
-                        if (!parentReview.review) {
-                            recu.submit(twcSrfWorkflowItem.Type, parentReview.id, twcSrfWorkflowItem.Fields.REVIEW, reviewRecord.id);
+                        if (item.formData.record == twcSrfReview.Type) {
+                            var parentReview = getParentReviewRecord(options.wkf, item);
+                            var reviewRecord = twcSrfReview.get(parentReview.review);
+                            reviewRecord.name = `R${parentReview.srf_name}_${parentReview.feedback_loop_count}`;
+                            if (!parentReview.review) {
+                                reviewRecord.sRF = parentReview.srf;
+                                reviewRecord.reviewIteration = parentReview.feedback_loop_count;
+                                // reviewRecord.submissionDate = new Date();
+                            }
+                            for (var k in item.formData) {
+                                if (!reviewRecord.hasField(k)) { continue; }
+                                reviewRecord.set(k, item.formData[k]);
+                            }
+
+                            if (options.setStatus == twcUtils.SrfStatus.FeedbackIssued) {
+                                // set latest feed
+                                reviewRecord.tLReviewResult = twcUtils.SrfReviewStatus.FeedbackIssued;
+                            } else if (options.setStatus == twcUtils.SrfStatus.SRFApproved) {
+                                reviewRecord.tLReviewResult = twcUtils.SrfReviewStatus.Approved;
+                            }
+
+                            reviewRecord.save();
+                            if (!parentReview.review) {
+                                recu.submit(twcSrfWorkflowItem.Type, parentReview.id, twcSrfWorkflowItem.Fields.REVIEW, reviewRecord.id);
+                            }
+                            recu.submit(twcSrfWorkflowItem.Type, item.id, [twcSrfWorkflowItem.Fields.REVIEW, twcSrfWorkflowItem.Fields.REVIEW_PASSED], [reviewRecord.id, item.formData[item.formData.passField]]);
+                        } else {
+                            var fields = []; var values = [];
+                            for (var k in item.formData) {
+                                if (!k.startsWith('cust')) { continue; }
+                                fields.push(k);
+                                var val = item.formData[k];
+                                if (val.length == 10 && val.indexOf('-') == 4) { val = twcUtils.fromJsToNs(val); }
+                                values.push(val);
+                            }
+                            var recordId = null;
+                            if (item.formData.record == twcSrf.Type) { recordId = options.srf; }
+                            if (item.formData.record == twcSrfWorkflow.Type) { recordId = options.wkf; }
+                            recu.submit(item.formData.record, recordId, fields, values)
                         }
 
-                        var passed = item.formData[item.formData.passField];
-
-                        recu.submit(twcSrfWorkflowItem.Type, item.id, [twcSrfWorkflowItem.Fields.REVIEW, twcSrfWorkflowItem.Fields.REVIEW_PASSED], [reviewRecord.id, passed]);
                     }
-
-
 
                 })
 
                 if (options.setStatus) {
                     recu.submit(twcSrf.Type, options.srf, twcSrf.Fields.SRF_STATUS, options.setStatus);
                     recu.submit(twcSrfWorkflow.Type, options.wkf, twcSrfWorkflow.Fields.STATUS, WORKFLOW_STATUS.IN_PROGRESS);
+
+                    response.srfStatus = options.setStatus;
+                    response.wkfStatus = WORKFLOW_STATUS.IN_PROGRESS;
+                    response.wkfStatusName = 'In Progress';
+
+                    
+                }
+                if (isLastStage) {
+                    recu.submit(twcSrfWorkflow.Type, options.wkf, twcSrfWorkflow.Fields.STATUS, WORKFLOW_STATUS.COMPLETED);
+
+                    response.wkfStatus = WORKFLOW_STATUS.COMPLETED;
+                    response.wkfStatusName = 'Completed';
                 }
 
+            } else if (core.utils.isObj(options.srf)) {
+                var fields = []; var values = [];
+                for (var k in options.srf) {
+                    if (!k.startsWith('cust')) { continue; }
+                    fields.push(k);
+                    if (twcSrf.getField(k)?.type == 'date') {
+
+                        values.push(twcUtils.fromJsToNs(options.srf[k]));
+                    } else {
+                        values.push(options.srf[k]);
+                    }
+                }
+                recu.submit(twcSrf.Type, options.srf.id, fields, values);
+
+            } else if (options.wkf) {
+                var fields = []; var values = [];
+                for (var k in options.wkf) {
+                    if (!k.startsWith('cust')) { continue; }
+                    fields.push(k);
+                    if (twcSrfWorkflow.getField(k)?.type == 'date') {
+                        values.push(twcUtils.fromJsToNs(options.wkf[k]));
+                    } else {
+                        values.push(options.wkf[k]);
+                    }
+                }
+                recu.submit(twcSrfWorkflow.Type, options.wkf.id, fields, values);
             }
 
-
-
-            return { status: 'success' };
-
+            return response;
         }
 
         function deleteWorkflow(options) {
             if (!options) { throw new Error('no parameters passed'); }
             if (!options.srf) { throw new Error('invalid parameters passed'); }
 
-            options.id = coreSql.first(`select id from ${twcSrfWorkflow.Type} where ${twcSrfWorkflow.Fields.SRF} = ${options.srf}`).id;
+            options.id = coreSql.first(`select id from ${twcSrfWorkflow.Type} where ${twcSrfWorkflow.Fields.SRF} = ${options.srf}`)?.id;
 
-            coreSql.each(`select id from ${twcSrfWorkflowItem.Type} where ${twcSrfWorkflowItem.Fields.WORKFLOW} = ${options.id}`, wi => {
-                recu.del(twcSrfWorkflowItem.Type, wi.id);
-            });
-            recu.del(twcSrfWorkflow.Type, options.id);
+            if (options.id) {
+                coreSql.each(`select id from ${twcSrfWorkflowItem.Type} where ${twcSrfWorkflowItem.Fields.WORKFLOW} = ${options.id}`, wi => {
+                    recu.del(twcSrfWorkflowItem.Type, wi.id);
+                });
+                recu.del(twcSrfWorkflow.Type, options.id);
+            }
 
-            recu.submit(twcSrf.Type, options.srf, twcSrf.Fields.SRF_STATUS, twcUtils.SrfStatus.Draft);
+            recu.submit(twcSrf.Type, options.srf, [twcSrf.Fields.SRF_STATUS, twcSrf.Fields.FEEDBACK_LOOP_ITERATIONS], [twcUtils.SrfStatus.Draft, 0]);
         }
 
 
@@ -196,9 +258,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var workflow = coreSql.first(`
                 select  w.id, custrecord_twc_srf_wkf_status as status, BUILTIN.DF(custrecord_twc_srf_wkf_status) as status_name, custrecord_twc_srf_wkf_notes as notes,
                         custrecord_twc_srf_wkf_parent as srf, srf.name as srf_name,
-                        srf.custrecord_twc_srf_site as site, BUILTIN.DF(custrecord_twc_srf_site) as site_name,
+                        srf.custrecord_twc_srf_site as site, BUILTIN.DF(custrecord_twc_srf_site) as site_name, 
+                        srf.custrecord_twc_srf_status as srf_status, BUILTIN.DF(srf.custrecord_twc_srf_status) as srf_status_name,
                         srf.custrecord_twc_srf_cust as customer, BUILTIN.DF(srf.custrecord_twc_srf_cust) as customer_name,
-                        srf.custrecord_twc_srf_cust_plan_ins_date as customer_planned_date
+                        TO_CHAR(srf.custrecord_twc_srf_cust_plan_ins_date, 'YYYY-MM-DD') as customer_planned_date,
+                        TO_CHAR(srf.custrecord_twc_srf_permit_date, 'YYYY-MM-DD') as works_permitted_date,
+                        TO_CHAR(srf.custrecord_twc_srf_tl_drg_draft, 'YYYY-MM-DD') as custrecord_twc_srf_tl_drg_draft,
+                        TO_CHAR(srf.custrecord_twc_srf_tl_drg_rev, 'YYYY-MM-DD') as custrecord_twc_srf_tl_drg_rev,
+                        TO_CHAR(srf.custrecord_twc_srf_tl_drg_upl, 'YYYY-MM-DD') as custrecord_twc_srf_tl_drg_upl,
                     
                 from    ${twcSrfWorkflow.Type} w
                 join    customrecord_twc_srf srf on srf.id = w.custrecord_twc_srf_wkf_parent
@@ -222,9 +289,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         ws.custrecord_twc_srf_wks_next as next_stage, ws.custrecord_twc_srf_wks_next_pick as next_stage_pick,
                         ws.custrecord_twc_srf_wks_status_to as set_status, BUILTIN.DF(ws.custrecord_twc_srf_wks_status_to) as set_status_name,
                         ws.custrecord_twc_srf_wks_form as form_data, ws.custrecord_twc_srf_wks_is_review as is_review, ws.custrecord_twc_srf_wks_is_review_passf review_pass_field,
+                        ws.custrecord_twc_srf_wks_assign as can_assign, 
                         ws.custrecord_twc_srf_wks_hide as stage_hidden, ws.custrecord_twc_srf_wks_loop as stage_loop, 
                         ws.custrecord_twc_srf_wks_is_last as is_last_stage,
 
+                        
                         wi.custrecord_twc_srf_wkfi_review_passed as review_passed,
                         wr.id as review_id, ${srfReviewFieldSql}
 

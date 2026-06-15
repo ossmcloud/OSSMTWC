@@ -2,7 +2,7 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js'],
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js' ],
     (core, coreSQL, recu, customRec) => {
         var _recordType = 'customrecord_twc_srf';
         var _recordFields = {
@@ -10,13 +10,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SRF_TYPE: 'custrecord_twc_srf_type',
             PHOTO_ASSESSMENT_CATEGORY: 'custrecord_twc_srf_photo_asses_cat',
             OPERATOR_SITE_ID: 'custrecord_twc_srf_op_site_id',
-            COMPLETION_PHOTOS_REQUESTED: 'custrecord_twc_srf_completion_photo_req',
-            COMPLETION_PHOTOS_RECEIVED: 'custrecord_twc_srf_completion_photo_rec',
             SITE: 'custrecord_twc_srf_site',
-            COMPLETION_PHOTOS_REVIEWED: 'custrecord_twc_srf_completion_photo_rev',
             CUSTOMER: 'custrecord_twc_srf_cust',
+            COMPLETION_PHOTOS_REQUESTED: 'custrecord_twc_srf_completion_photo_req',
             SRF_SUBMITTED_BY: 'custrecord_twc_srf_sub_by',
+            COMPLETION_PHOTOS_RECEIVED: 'custrecord_twc_srf_completion_photo_rec',
             RELATED_EQUIPMENT_ACTIONS: 'custrecord_twc_srf_related_eqip_actions',
+            COMPLETION_PHOTOS_REVIEWED: 'custrecord_twc_srf_completion_photo_rev',
             APPLICATION_DATE: 'custrecord_twc_srf_app_date',
             SRF_DRAWINGS: 'custrecord_twc_srf_drg',
             APPLICATION_REFERENCE: 'custrecord_twc_srf_app_reference',
@@ -50,19 +50,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LICENCE_PACK_SIGNED_BY: 'custrecord_twc_srf_lic_pack_sign_by',
             LICENCE_PACK_EXECUTED: 'custrecord_twc_srf_lic_pack_exec',
             LICENCE_PACK_EXECUTED_BY: 'custrecord_twc_srf_lic_pack_exec_by',
+            CREATED: 'created',
+            MODIFIED: 'lastmodified',
+            OWNER: 'owner',
+            MODIFIED_BY: 'lastmodifiedby',
         }
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             SRF_TYPE: { name: 'custrecord_twc_srf_type', type: 'select', alias: 'sRFType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_type' },
             PHOTO_ASSESSMENT_CATEGORY: { name: 'custrecord_twc_srf_photo_asses_cat', type: 'select', alias: 'photoAssessmentCategory', display: 'normal', mandatory: false, recordType: 'customrecord_twc_photo_assessment_cat' },
             OPERATOR_SITE_ID: { name: 'custrecord_twc_srf_op_site_id', type: 'text', alias: 'operatorSiteID', display: 'normal', mandatory: false },
-            COMPLETION_PHOTOS_REQUESTED: { name: 'custrecord_twc_srf_completion_photo_req', type: 'date', alias: 'completionPhotosRequested', display: 'normal', mandatory: false },
-            COMPLETION_PHOTOS_RECEIVED: { name: 'custrecord_twc_srf_completion_photo_rec', type: 'date', alias: 'completionPhotosReceived', display: 'normal', mandatory: false },
             SITE: { name: 'custrecord_twc_srf_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
-            COMPLETION_PHOTOS_REVIEWED: { name: 'custrecord_twc_srf_completion_photo_rev', type: 'date', alias: 'completionPhotosReviewed', display: 'normal', mandatory: false },
-            CUSTOMER: { name: 'custrecord_twc_srf_cust', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: '-2' },
+            CUSTOMER: { name: 'custrecord_twc_srf_cust', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
+            COMPLETION_PHOTOS_REQUESTED: { name: 'custrecord_twc_srf_completion_photo_req', type: 'date', alias: 'completionPhotosRequested', display: 'normal', mandatory: false },
             SRF_SUBMITTED_BY: { name: 'custrecord_twc_srf_sub_by', type: 'select', alias: 'sRFSubmittedBy', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
+            COMPLETION_PHOTOS_RECEIVED: { name: 'custrecord_twc_srf_completion_photo_rec', type: 'date', alias: 'completionPhotosReceived', display: 'normal', mandatory: false },
             RELATED_EQUIPMENT_ACTIONS: { name: 'custrecord_twc_srf_related_eqip_actions', type: 'select', alias: 'relatedEquipmentActions', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action' },
+            COMPLETION_PHOTOS_REVIEWED: { name: 'custrecord_twc_srf_completion_photo_rev', type: 'date', alias: 'completionPhotosReviewed', display: 'normal', mandatory: false },
             APPLICATION_DATE: { name: 'custrecord_twc_srf_app_date', type: 'date', alias: 'applicationDate', display: 'normal', mandatory: false },
             SRF_DRAWINGS: { name: 'custrecord_twc_srf_drg', type: 'document', alias: 'sRFDrawings', display: 'normal', mandatory: false },
             APPLICATION_REFERENCE: { name: 'custrecord_twc_srf_app_reference', type: 'text', alias: 'applicationReference', display: 'normal', mandatory: false },
@@ -90,12 +94,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LICENCE_REQUESTED: { name: 'custrecord_twc_srf_lic_req', type: 'date', alias: 'licenceRequested', display: 'normal', mandatory: false },
             LICENCE_PACK_PRODUCED: { name: 'custrecord_twc_srf_lic_pack_prod', type: 'date', alias: 'licencePackProduced', display: 'normal', mandatory: false },
             LICENCE_PACK_REVIEWER: { name: 'custrecord_twc_srf_lic_pack_rev', type: 'select', alias: 'licencePackReviewer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
-            LICENCE_PACK_REVIEWED: { name: 'custrecord_twc_srf_lic_pack_revd', type: 'text', alias: 'licencePackReviewed', display: 'normal', mandatory: false },
+            LICENCE_PACK_REVIEWED: { name: 'custrecord_twc_srf_lic_pack_revd', type: 'date', alias: 'licencePackReviewed', display: 'normal', mandatory: false },
             LICENCE_PACK_ISSUED: { name: 'custrecord_twc_srf_lic_pack_issued', type: 'date', alias: 'licencePackIssued', display: 'normal', mandatory: false },
             LICENCE_PACK_SIGNED: { name: 'custrecord_twc_srf_lic_pack_signed', type: 'date', alias: 'licencePackSigned', display: 'normal', mandatory: false },
             LICENCE_PACK_SIGNED_BY: { name: 'custrecord_twc_srf_lic_pack_sign_by', type: 'select', alias: 'licencePackSignedBy', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             LICENCE_PACK_EXECUTED: { name: 'custrecord_twc_srf_lic_pack_exec', type: 'date', alias: 'licencePackExecuted', display: 'normal', mandatory: false },
             LICENCE_PACK_EXECUTED_BY: { name: 'custrecord_twc_srf_lic_pack_exec_by', type: 'select', alias: 'licencePackExecutedBy', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
+            CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
+            MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
+            OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
+            MODIFIED_BY: { name: 'lastmodifiedby', type: 'select', alias: 'last_modified_by', display: 'inline', recordType: 'employee'}, 
         }
 
         class OSSMTWC_SRF extends customRec.RecordBase {
@@ -128,30 +136,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.OPERATOR_SITE_ID, value)
             }
             
-            get completionPhotosRequested() {
-                return this.get(_recordFields.COMPLETION_PHOTOS_REQUESTED);
-            } set completionPhotosRequested(value) {
-                this.set(_recordFields.COMPLETION_PHOTOS_REQUESTED, value)
-            }
-            
-            get completionPhotosReceived() {
-                return this.get(_recordFields.COMPLETION_PHOTOS_RECEIVED);
-            } set completionPhotosReceived(value) {
-                this.set(_recordFields.COMPLETION_PHOTOS_RECEIVED, value)
-            }
-            
             get site() {
                 return this.get(_recordFields.SITE);
             } set site(value) {
                 this.set(_recordFields.SITE, value)
             }
             get siteName() { return this.getText(_recordFields.SITE); }
-            
-            get completionPhotosReviewed() {
-                return this.get(_recordFields.COMPLETION_PHOTOS_REVIEWED);
-            } set completionPhotosReviewed(value) {
-                this.set(_recordFields.COMPLETION_PHOTOS_REVIEWED, value)
-            }
             
             get customer() {
                 return this.get(_recordFields.CUSTOMER);
@@ -160,19 +150,37 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get customerName() { return this.getText(_recordFields.CUSTOMER); }
             
+            get completionPhotosRequested() {
+                return this.get(_recordFields.COMPLETION_PHOTOS_REQUESTED);
+            } set completionPhotosRequested(value) {
+                this.set(_recordFields.COMPLETION_PHOTOS_REQUESTED, value)
+            }
+            
             get sRFSubmittedBy() {
                 return this.get(_recordFields.SRF_SUBMITTED_BY);
             } set sRFSubmittedBy(value) {
                 this.set(_recordFields.SRF_SUBMITTED_BY, value)
             }
             get sRFSubmittedByName() { return this.getText(_recordFields.SRF_SUBMITTED_BY); }
-       
+            
+            get completionPhotosReceived() {
+                return this.get(_recordFields.COMPLETION_PHOTOS_RECEIVED);
+            } set completionPhotosReceived(value) {
+                this.set(_recordFields.COMPLETION_PHOTOS_RECEIVED, value)
+            }
+            
             get relatedEquipmentActions() {
                 return this.get(_recordFields.RELATED_EQUIPMENT_ACTIONS);
             } set relatedEquipmentActions(value) {
                 this.set(_recordFields.RELATED_EQUIPMENT_ACTIONS, value)
             }
             get relatedEquipmentActionsName() { return this.getText(_recordFields.RELATED_EQUIPMENT_ACTIONS); }
+            
+            get completionPhotosReviewed() {
+                return this.get(_recordFields.COMPLETION_PHOTOS_REVIEWED);
+            } set completionPhotosReviewed(value) {
+                this.set(_recordFields.COMPLETION_PHOTOS_REVIEWED, value)
+            }
             
             get applicationDate() {
                 return this.get(_recordFields.APPLICATION_DATE);
@@ -377,11 +385,36 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get licencePackExecutedByName() { return this.getText(_recordFields.LICENCE_PACK_EXECUTED_BY); }
             
+            get created() {
+                return this.get(_recordFields.CREATED);
+            } set created(value) {
+                this.set(_recordFields.CREATED, value)
+            }
+            
+            get last_modified() {
+                return this.get(_recordFields.MODIFIED);
+            } set last_modified(value) {
+                this.set(_recordFields.MODIFIED, value)
+            }
+            
+            get created_by() {
+                return this.get(_recordFields.OWNER);
+            } set created_by(value) {
+                this.set(_recordFields.OWNER, value)
+            }
+            
+            get last_modified_by() {
+                return this.get(_recordFields.MODIFIED_BY);
+            } set last_modified_by(value) {
+                this.set(_recordFields.MODIFIED_BY, value)
+            }
+            
         }
 
         return {
             Type: _recordType,
             Fields: _recordFields,
+            FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_SRF,
 
             get: function (id) {

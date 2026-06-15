@@ -13,7 +13,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ALIAS: 'custrecord_twc_site_alias',
             SITE_STATUS: 'custrecord_twc_site_status',
             SITE_TYPE: 'custrecord_twc_site_type',
-            MULTI_MAST_SITES: 'custrecord_twc_site_multi_mast_sites',
             SITE_OLD_ID: 'custrecord_twc_site_old_id',
             HEIGHT_ASL_M: 'custrecord_twc_site_height_asl',
             SITE_LEVEL: 'custrecord_twc_site_level',
@@ -73,6 +72,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SITE_LOCATION: 'custrecord_twc_site_location',
             SITE_SRF_STATUS: 'custrecord_twc_site_srf_status',
             LAND: 'custrecord_twc_land',
+            SITE_FIBRE_SERVICE_PROVIDERS: 'custrecord_twc_site_fiber_svc_providers',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -86,7 +86,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ALIAS: { name: 'custrecord_twc_site_alias', type: 'text', alias: 'alias', display: 'normal', mandatory: false },
             SITE_STATUS: { name: 'custrecord_twc_site_status', type: 'select', alias: 'siteStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_sts' },
             SITE_TYPE: { name: 'custrecord_twc_site_type', type: 'select', alias: 'siteType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_type' },
-            MULTI_MAST_SITES: { name: 'custrecord_twc_site_multi_mast_sites', type: 'checkbox', alias: 'multiMastSites', display: 'normal', mandatory: false },
             SITE_OLD_ID: { name: 'custrecord_twc_site_old_id', type: 'text', alias: 'siteOldID', display: 'normal', mandatory: false },
             HEIGHT_ASL_M: { name: 'custrecord_twc_site_height_asl', type: 'float', alias: 'heightASLm', display: 'normal', mandatory: false },
             SITE_LEVEL: { name: 'custrecord_twc_site_level', type: 'select', alias: 'siteLevel', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_level' },
@@ -146,6 +145,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SITE_LOCATION: { name: 'custrecord_twc_site_location', type: 'select', alias: 'siteLocation', display: 'normal', mandatory: false, recordType: '-103' },
             SITE_SRF_STATUS: { name: 'custrecord_twc_site_srf_status', type: 'select', alias: 'siteSRFStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_srf_status' },
             LAND: { name: 'custrecord_twc_land', type: 'select', alias: 'land', display: 'normal', mandatory: false, recordType: 'customrecord_twc_land_type' },
+            SITE_FIBRE_SERVICE_PROVIDERS: { name: 'custrecord_twc_site_fiber_svc_providers', type: 'multiselect', alias: 'siteFibreServiceProviders', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_svc_provide' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -199,12 +199,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.SITE_TYPE, value)
             }
             get siteTypeName() { return this.getText(_recordFields.SITE_TYPE); }
-            
-            get multiMastSites() {
-                return this.get(_recordFields.MULTI_MAST_SITES);
-            } set multiMastSites(value) {
-                this.set(_recordFields.MULTI_MAST_SITES, value)
-            }
             
             get siteOldID() {
                 return this.get(_recordFields.SITE_OLD_ID);
@@ -579,6 +573,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.LAND, value)
             }
             get landName() { return this.getText(_recordFields.LAND); }
+            
+            get siteFibreServiceProviders() {
+                return this.get(_recordFields.SITE_FIBRE_SERVICE_PROVIDERS);
+            } set siteFibreServiceProviders(value) {
+                this.set(_recordFields.SITE_FIBRE_SERVICE_PROVIDERS, value)
+            }
+            get siteFibreServiceProvidersName() { return this.getText(_recordFields.SITE_FIBRE_SERVICE_PROVIDERS); }
             
             get created() {
                 return this.get(_recordFields.CREATED);

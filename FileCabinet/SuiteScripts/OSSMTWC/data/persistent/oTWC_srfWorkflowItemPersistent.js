@@ -13,7 +13,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             PLANNED: 'custrecord_twc_srf_wkfi_planned',
             ACTUAL: 'custrecord_twc_srf_wkfi_actual',
             REVIEW: 'custrecord_twc_srf_wkfi_review',
-            CUSTOMER_PROFILE: 'custrecord_twc_srf_wkfi_cprofile',
+            PROFILE: 'custrecord_twc_srf_wkfi_cprofile',
             ASSIGNED_TO: 'custrecord_twc_srf_wkfi_assigned_to',
             REVIEW_PASSED: 'custrecord_twc_srf_wkfi_review_passed',
             CREATED: 'created',
@@ -29,7 +29,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             PLANNED: { name: 'custrecord_twc_srf_wkfi_planned', type: 'date', alias: 'planned', display: 'normal', mandatory: false },
             ACTUAL: { name: 'custrecord_twc_srf_wkfi_actual', type: 'date', alias: 'actual', display: 'normal', mandatory: false },
             REVIEW: { name: 'custrecord_twc_srf_wkfi_review', type: 'select', alias: 'review', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_rev' },
-            CUSTOMER_PROFILE: { name: 'custrecord_twc_srf_wkfi_cprofile', type: 'select', alias: 'customerProfile', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
+            PROFILE: { name: 'custrecord_twc_srf_wkfi_cprofile', type: 'select', alias: 'profile', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             ASSIGNED_TO: { name: 'custrecord_twc_srf_wkfi_assigned_to', type: 'select', alias: 'assignedto', display: 'normal', mandatory: false, recordType: '-4' },
             REVIEW_PASSED: { name: 'custrecord_twc_srf_wkfi_review_passed', type: 'checkbox', alias: 'reviewPassed', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
@@ -88,12 +88,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get reviewName() { return this.getText(_recordFields.REVIEW); }
             
-            get customerProfile() {
-                return this.get(_recordFields.CUSTOMER_PROFILE);
-            } set customerProfile(value) {
-                this.set(_recordFields.CUSTOMER_PROFILE, value)
+            get profile() {
+                return this.get(_recordFields.PROFILE);
+            } set profile(value) {
+                this.set(_recordFields.PROFILE, value)
             }
-            get customerProfileName() { return this.getText(_recordFields.CUSTOMER_PROFILE); }
+            get profileName() { return this.getText(_recordFields.PROFILE); }
             
             get assignedto() {
                 return this.get(_recordFields.ASSIGNED_TO);

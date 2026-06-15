@@ -734,15 +734,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var res = this.postSync({ action: 'child-record' }, { srf: this.data.siteRequestInfo, file: srfFile })
                     var form = twcUIPanel.ui(res);
                     form.on('change', e => {
-                        if (e.id == 'name') {
+                        if (e.id == 'upload-file') {
                             e.target.readFile(file => {
                                 srfFile.fileObject = file;
                                 srfFile.name = file.name;
+                                form.getControl('name').value = srfFile.name;
                             })
                         }
                     });
 
-                    dialog.confirm({ title: 'manage file', message: form.ui, width: '600px', height: '400px' }, () => {
+                    dialog.confirm({ title: 'manage file', message: form.ui, width: '600px', height: '410px' }, () => {
                         try {
                             var obj = form.getValues(true);
                             for (var k in obj) {

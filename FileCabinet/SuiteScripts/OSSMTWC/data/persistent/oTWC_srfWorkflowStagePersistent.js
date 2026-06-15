@@ -16,6 +16,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SET_STATUS: 'custrecord_twc_srf_wks_status_to',
             FORM_DATA: 'custrecord_twc_srf_wks_form',
             IS_REVIEW: 'custrecord_twc_srf_wks_is_review',
+            CAN_ASSIGN: 'custrecord_twc_srf_wks_assign',
             IS_LAST_STAGE: 'custrecord_twc_srf_wks_is_last',
             HIDDEN: 'custrecord_twc_srf_wks_hide',
             IS_LOOP: 'custrecord_twc_srf_wks_loop',
@@ -37,6 +38,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SET_STATUS: { name: 'custrecord_twc_srf_wks_status_to', type: 'select', alias: 'setStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_status' },
             FORM_DATA: { name: 'custrecord_twc_srf_wks_form', type: 'clobtext', alias: 'formData', display: 'normal', mandatory: false },
             IS_REVIEW: { name: 'custrecord_twc_srf_wks_is_review', type: 'checkbox', alias: 'isReview', display: 'normal', mandatory: false },
+            CAN_ASSIGN: { name: 'custrecord_twc_srf_wks_assign', type: 'checkbox', alias: 'canAssign', display: 'normal', mandatory: false },
             IS_LAST_STAGE: { name: 'custrecord_twc_srf_wks_is_last', type: 'checkbox', alias: 'isLastStage', display: 'normal', mandatory: false },
             HIDDEN: { name: 'custrecord_twc_srf_wks_hide', type: 'checkbox', alias: 'hidden', display: 'normal', mandatory: false },
             IS_LOOP: { name: 'custrecord_twc_srf_wks_loop', type: 'checkbox', alias: 'isLoop', display: 'normal', mandatory: false },
@@ -112,6 +114,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.IS_REVIEW);
             } set isReview(value) {
                 this.set(_recordFields.IS_REVIEW, value)
+            }
+            
+            get canAssign() {
+                return this.get(_recordFields.CAN_ASSIGN);
+            } set canAssign(value) {
+                this.set(_recordFields.CAN_ASSIGN, value)
             }
             
             get isLastStage() {

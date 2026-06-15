@@ -26,6 +26,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function submitSiteSrf(userInfo, payload) {
+            
             payload.profile = userInfo.profile;
             twcSrfWorkflowEngine.initWorkFlow(payload);
         }
