@@ -361,6 +361,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             submitSiteSrf: submitSiteSrf,
 
             getAssignToEmployees: getAssignToEmployees,
+
+            
         }
 
     });

@@ -321,11 +321,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
         function getSrfStatusStyle(srfStatusNumber) {
             if (!srfStatusNumber) { srfStatusNumber = 11; }
+            var style = null;
             if (isNaN(parseInt(srfStatusNumber))) {
-                return SRF_STATUS_STYLE[srfStatusNumber.replaceAll(' ', '')];
+                style = SRF_STATUS_STYLE[srfStatusNumber.replaceAll(' ', '')];
             } else {
-                return SRF_STATUS_STYLE[getSrfStatusName(srfStatusNumber)];
+                style = SRF_STATUS_STYLE[getSrfStatusName(srfStatusNumber)];
             }
+            if (!style) {
+                style = { color: 'red', backgroundColor: 'silver' };
+            }
+            return style;
         }
         function getSrfStatusHtml(srfStatusNumber, spanClass) {
             if (!srfStatusNumber) { srfStatusNumber = 11; }
@@ -760,6 +765,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 options.vendor = options.companyProfile.id;
             }
 
+            if (!options.isEmployee) {
+                var agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${options.profile}`)?.agent_passes;
+                if (!agentPasses) {
+                    throw new Error('You cannot enter SRF/SAF');
+                }
+                additionalFilters += ` and c.id in (${agentPasses}) `;
+            }
+
             var sql = '';
             if (options.vendor) {
                 if (options.type == 'C') {
@@ -913,6 +926,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         TO_CHAR(${PROFILE_CERT_FIELD.ELECTRICAL.fieldEx}, 'yyyy-MM-dd') as elec_exp,
                         TO_CHAR(${PROFILE_CERT_FIELD.RF.fieldEx}, 'yyyy-MM-dd') as rf_exp,
                         TO_CHAR(${PROFILE_CERT_FIELD.DRONE.fieldEx}, 'yyyy-MM-dd') as drone_exp,
+                        custrecord_twc_prof_co_desig_cont as designated_contact
                 from    customrecord_twc_prof
                 ${filters}
                 and     isinactive = 'F'
@@ -929,6 +943,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             sql += ' order by name';
 
+            var designatedContactList = coreSQL.run(`select id, name, custrecord_twc_comp_des_contact_sign as can_sign from customrecord_twc_comp_des_contact`);
+
             var profiles = [];
             coreSQL.each(sql, p => {
                 var attendAs = getAttendAs(p, options.date);
@@ -940,6 +956,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     attendAsText += `${a.text} [${a.exp}]`;
                 })
 
+                var designatedContacts = p.designated_contact;
+                if (designatedContacts) {
+                    designatedContacts = designatedContacts.split(',').map(i => { return parseInt(i.trim()) });
+                    designatedContacts = designatedContactList.filter(i => { return designatedContacts.indexOf(i.id) >= 0; })
+                } else {
+                    designatedContacts = [];
+                }
+                
+
                 profiles.push({
                     value: p.value,
                     text: p.text,
@@ -947,7 +972,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     phone: p.phone,
                     email: p.email,
                     attendAs: attendAs,
-                    attendAsText: attendAsText
+                    attendAsText: attendAsText,
+                    designatedContacts: designatedContacts,
+                    // designatedContacts: designatedContacts,
+                    // designated_contact: p.designated_contact
                 })
             })
             return profiles;
@@ -1088,7 +1116,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 where  	i.custrecord_twc_infra_site = ${options.siteId}
                 and     i.id = ${options.id || 0}
             `, r => {
-               
+
                 if (r.height > info.height) { info.height = r.height; }
 
                 // @@NOTE: these are required all the time

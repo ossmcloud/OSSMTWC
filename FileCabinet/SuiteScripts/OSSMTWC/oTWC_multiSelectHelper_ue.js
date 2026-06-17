@@ -182,6 +182,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     sql = sql.replace('${' + ph + '}', record.getValue(ph));
                 });
 
+                core.logDebug('TEMP', sql)
+
                 dataSource = coreSql.runPaged(sql);
             } else {
                 dataSource = coreSql.runPaged(`select id, name from ${fieldConfig.source} where isinactive = 'F' order by name`);
@@ -249,6 +251,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getFieldsConfigs(recordType) {
 
+            /*
+
+            {
+                "name": "custrecord_omt_wi_type_activities",
+                "source": "customrecord_omt_activity_type",
+            }
+
+            {
+                "name": "custrecord_omt_wi_type_activities",
+                "sql": "select id, name from customrecord_omt_activity_type where isinactive = 'F' and parent is null order by name"
+            }
+            
+            */
+            
 
             var configs = runtime.getCurrentScript().getParameter({ name: 'custscript_otwc_multiselecthelper_ue_p1' });
             if (!configs) { return []; }

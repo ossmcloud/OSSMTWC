@@ -194,7 +194,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     response.wkfStatus = WORKFLOW_STATUS.IN_PROGRESS;
                     response.wkfStatusName = 'In Progress';
 
-                    
+
                 }
                 if (isLastStage) {
                     recu.submit(twcSrfWorkflow.Type, options.wkf, twcSrfWorkflow.Fields.STATUS, WORKFLOW_STATUS.COMPLETED);
@@ -311,12 +311,53 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
+        function isWaitingForSignature(userInfo, options) {
+            var sql = `
+                select  wi.id, wi.custrecord_twc_srf_wkfi_cprofile as profile
+                from    customrecord_twc_srf_wkf w
+                join    customrecord_twc_srf srf on srf.id = w.custrecord_twc_srf_wkf_parent
+                join    customrecord_twc_srf_wkfi wi on wi.custrecord_twc_srf_wkfi_parent = w.id
+                join    customrecord_twc_srf_wks ws on ws.id = wi.custrecord_twc_srf_wkfi_stage
+                
+                where   custrecord_twc_srf_wkf_parent = ${options.srf || options.id}
+                and     ws.custrecord_twc_srf_wks_to_sign = 'T'
+                and     wi.custrecord_twc_srf_wkfi_status = ${WORKFLOW_STATUS.IN_PROGRESS}
+            `;
+            return coreSql.first(sql);
+        }
+        function postSignature(userInfo, options) {
+            if (!userInfo.canSign) { throw new Error(`You do not have permissions to sign the document`); }
+            var signatureRecord = isWaitingForSignature(userInfo, options);
+            if (!signatureRecord) { throw new Error(`Could not find a pending signature workflow item for srf: ${options.srf}`); }
+
+            updateWorkflow(userInfo, {
+                srf: options.srf,
+                item: {
+
+                    id: signatureRecord.id,
+                    [twcSrfWorkflowItem.Fields.STATUS]: WORKFLOW_STATUS.COMPLETED,
+
+                    formData: {
+                        record: twcSrf.Type,
+                        [twcSrf.Fields.LICENCE_PACK_SIGNED]: new Date(),
+                        [twcSrf.Fields.LICENCE_PACK_SIGNED_BY]: userInfo.profile,
+                    }
+                }
+            })
+
+            return { status: 'success' }
+        }
+
+
         return {
             WorkflowStatus: WORKFLOW_STATUS,
             initWorkFlow: initWorkFlow,
             getWorkFlow: getWorkFlow,
             updateWorkflow: updateWorkflow,
             deleteWorkflow: deleteWorkflow,
+
+            isWaitingForSignature: isWaitingForSignature,
+            postSignature: postSignature
 
         }
     });

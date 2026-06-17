@@ -38,6 +38,9 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     pageData.assignToList = twcSiteRequestUtils.getAssignToEmployees();
                     pageData.twcProfiles = twcUtils.getProfiles({ company: twcUtils.TWC_COMPANY });
                     pageData.companyProfiles = twcUtils.getProfiles({ company: pageData.siteRequestInfo[twcSrf.Fields.CUSTOMER] });
+                    pageData.companyProfilesSignatories = pageData.companyProfiles.filter(i => {
+                        return i.designatedContacts.find(c => { return c.can_sign; })
+                    })
                 }
 
                 if (context.request.parameters.wkf == 'T') {
@@ -87,11 +90,19 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                         printSDSButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Print SDS', id: 'print-sds' });
                     }
 
-                    var fieldGroups = twcSiteRequestUtils.getSRFInfoPanels(pageData.siteRequestInfo, pageData.userInfo);
+                    var signSrfButton = '';
+                    if (twcSrfWorkflowEngine.isWaitingForSignature(pageData.userInfo, pageData.siteRequestInfo)) {
+                        if (pageData.userInfo.canSign) {
+                            signSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Sign SDS', id: 'sign-sds' });
+                        }
+                    }
+
+                    var fieldGroups = twcSiteRequestUtils.getSRFInfoPanels(pageData.siteRequestInfo, pageData.userInfo, readOnly);
                     html = html.replaceAll('{SITE_REQUEST_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
                     if (canSubmit) {
                         html = html.replaceAll('<div id="custom-actions"></div>', `
                             <div id="custom-actions">
+                                ${signSrfButton}
                                 ${printSDSButton}
                                 ${viewWorkFlowButton}
                                 ${openWorkFlowButton}
@@ -102,6 +113,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     } else if (viewWorkFlowButton) {
                         html = html.replaceAll('<div id="custom-actions"></div>', `
                             <div id="custom-actions">
+                                ${signSrfButton}    
                                 ${printSDSButton}
                                 ${viewWorkFlowButton}
                                 ${openWorkFlowButton}
@@ -153,6 +165,9 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
 
             } else if (context.request.parameters.action == 'update-workflow') {
                 return twcSrfWorkflowEngine.updateWorkflow(userInfo, JSON.parse(context.request.body))
+
+            } else if (context.request.parameters.action == 'sign-sds') {
+                return twcSrfWorkflowEngine.postSignature(userInfo, JSON.parse(context.request.body))
 
             } else if (context.request.parameters.action == 'print-pdf') {
 

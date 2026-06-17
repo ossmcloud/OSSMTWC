@@ -399,9 +399,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                         });
 
-                        this.ui.getControl('print-sds')?.on('click', e => {
-                            this.openPrintSDS(e);
-                        })
+                        this.ui.getControl('print-sds')?.on('click', e => { this.openPrintSDS(e); })
+
+                        this.ui.getControl('sign-sds')?.on('click', e => { this.signSDS(e); })
 
                         this.ui.on('change', e => {
                             if (e.target.type != 'table') {
@@ -709,6 +709,42 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 } catch (error) {
                     await dialog.errorAsync(error);
                 }
+            }
+
+            signSDS() {
+                var html = jQuery(`
+                    <div>
+                        <label>Disclaimer</label>
+                        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966, when designers at Letraset and James Mosley, the librarian at St Bride Printing Library in London, took a 1914 Cicero translation and scrambled it to make dummy text for Letraset's Body Type sheets. It has survived not only many decades, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised thanks to these sheets and more recently with desktop publishing software including versions of Lorem Ipsum.
+                    </div>
+                    <div>
+                        <label>Check this box to agree to the terms and conditions</label>
+                        ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'terms-and-cond-agreed' })}
+                        
+                    </div>
+                `);
+
+                var form = twcUI.init({}, html);
+
+                dialog.confirm({ title: 'Sign SDS', message: html, size: { width: '750px', height: '400px' } }, dlg => {
+                    try {
+
+                        if (!form.getControl('terms-and-cond-agreed').value) { throw new Error('You need to agree to the terms and conditions'); }
+
+                        dialog.saving(dlg, 'signing document...<br />do not close the pop-up or refresh the page.');
+                        this.post({ action: 'sign-sds' }, { srf: this.data.siteRequestInfo.id })
+                            .then(res => {
+                                location.reload();
+                            }).catch(err => {
+                                dialog.savingError(dlg, err);
+                            });
+
+                        return false;
+                    } catch (error) {
+                        dialog.error(error);
+                        return false;
+                    }
+                })
             }
 
             deleteRecord(srfRecord, table) {
