@@ -121,16 +121,16 @@
                 Usher House, Main Street, Dundrum, Dublin 14
             </td>
             <td colspan="2" style="line-height: 16px;">
-                Name: Vodafone Ireland Limited
+                Name: ${requestJSON.srfDetails[0].operator_name}
                 <br />
-                Company Number: 326967
+                Company Number: ${requestJSON.srfDetails[0].company_number}
                 <br />
-                Registered Office: Mountainview, Leopardstown, Dublin 18
+                Registered Office: ${requestJSON.srfDetails[0].customer_address}
                 <br />
                 <br />
                 Whose address for correspondence is:
                 <br />
-                Mountainview, Leopardstown, Dublin 18
+                ${requestJSON.srfDetails[0].customer_address}
             </td>
         </tr>
         <tr>

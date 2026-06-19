@@ -274,9 +274,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSrfInfo(recId) {
             var srfInfo = {}
             if (recId) {
-                srfInfo.srfDetails = coreSQL.run(`
-                    select srf.custrecord_twc_srf_op_site_id, srf.custrecord_twc_srf_site, company.custrecordtwc_entity 
-                    from ${twcSrf.Type} srf INNER JOIN customrecord_twc_company company ON srf.custrecord_twc_srf_cust = company.id where srf.id = ${recId}`);
+                srfInfo.srfDetails = coreSQL.run(
+                    `SELECT srf.custrecord_twc_srf_op_site_id, srf.custrecord_twc_srf_site, company.custrecordtwc_entity, cae.addrtext AS customer_address, c.altname as operator_name, custrecord_twc_co_number as company_number
+                        FROM ${twcSrf.Type} srf INNER JOIN customrecord_twc_company company ON srf.custrecord_twc_srf_cust = company.id
+                        INNER JOIN Customer c ON company.custrecordtwc_entity = c.id
+                        INNER JOIN CustomerAddressBook cab ON cab.entity = c.id
+                        INNER JOIN CustomerAddressBookEntityAddress cae ON cae.nkey = cab.addressbookaddress
+                    WHERE srf.id = ${recId} AND cab.defaultbilling = 'T';`);
                 const siteID = srfInfo.srfDetails[0].custrecord_twc_srf_site;
                 srfInfo.siteDetails = coreSQL.run(`
                     select custrecord_twc_site_old_id as site_id, custrecord_twc_site_name as site_name, custrecord_twc_site_address as address, custrecord_twc_site_address_zip as add_zipCode, 
