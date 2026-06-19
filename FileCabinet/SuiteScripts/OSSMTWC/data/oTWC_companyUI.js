@@ -288,9 +288,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     // Modified the Name Column and add "Not Valid"
                     if (col.id == 'name'){
                         col.formatValue = (v, fv, d) => {
-                                log.debug("NAMEEEE", d.name);
                                 if (d.accreditation_status_id != 2) {
-                                    return `${d.name}` + ` - (Not Valid)`;
+                                    return `${d.name}` + ` - (Not currently valid for SAF)`;
                                 } else {
                                     return d.name;
                                 }
