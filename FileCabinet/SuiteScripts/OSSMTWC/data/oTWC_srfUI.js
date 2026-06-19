@@ -25,12 +25,23 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getFeedbackReviewRecords(fieldGroup, srf) {
-
+            if (!srf.id) { return; }
             var srfReview = twcSrfReview.select({ where: { [twcSrfReview.Fields.SRF]: srf.id }, orderBy: { [twcSrfReview.Fields.CREATED]: 'DESC' }, noAlias: true });
-            if (srfReview.length > 0 && srfReview[0][twcSrfReview.Fields.TL_REVIEW_RESULT] == twcUtils.SrfReviewStatus.FeedbackIssued) {
-                var srfReviewInfo = { id: 'site-req-review', title: 'Towercom Feedback Info', fields: [] };
-                //
+            //if (srfReview.length > 0 && srfReview[0][twcSrfReview.Fields.TL_REVIEW_RESULT] == twcUtils.SrfReviewStatus.FeedbackIssued) {
+            if (srfReview.length > 0) {
+                var title = ''; var bkgdColor = '';
+                if (srfReview[0][twcSrfReview.Fields.TL_REVIEW_RESULT] == twcUtils.SrfReviewStatus.Approved) {
+                    title = 'Towercom Approval Info';
+                    bkgdColor = 'rgba(0,255,0, 0.15)';
+                } else if (srfReview[0][twcSrfReview.Fields.TL_REVIEW_RESULT] == twcUtils.SrfReviewStatus.FeedbackIssued) {
+                    title = 'Towercom Feedback Info';
+                    bkgdColor = 'rgba(255,0,0, 0.15)';
+                } else {
+                    return;
+                }
 
+                var srfReviewInfo = { id: 'site-req-review', title: title, fields: [] };
+                //
                 const renderCheckResponsePanel = function (checkName, passed, comments) {
                     return `
                         <div style="margin-left: 11px;">
@@ -52,14 +63,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                                 <label>Review Comments</label>
                                 ${srfReview[0][twcSrfReview.Fields.TL_REVIEW_COMMENTS]}
                             </div>
-                            ${renderCheckResponsePanel('Space Check', srfReview[0][twcSrfReview.Fields.SPACE_CHECK_PASSED], srfReview[0][twcSrfReview.Fields.SPACE_CHECK_COMMENTS])}
-                            ${renderCheckResponsePanel('Facilities Check', srfReview[0][twcSrfReview.Fields.FACILITIES_CHECK_PASSED], srfReview[0][twcSrfReview.Fields.FACILITIES_CHECK_COMMENTS])}
-                            ${renderCheckResponsePanel('Estates Check', srfReview[0][twcSrfReview.Fields.ESTATES_CHECK_PASSED], srfReview[0][twcSrfReview.Fields.ESTATES_CHECK_COMMENTS])}
+                            
                             ${renderCheckResponsePanel('Accounts Check', srfReview[0][twcSrfReview.Fields.CUSTOMER_ACCOUNTS_CHECK_PASSED], srfReview[0][twcSrfReview.Fields.CUSTOMER_ACCOUNTS_CHECK_COMMENTS])}
                         </div>    
                     `,
-                    styles: { 'width': '100%'},
-                    contentStyles: { 'background-color': 'rgba(255,0,0, 0.15)' }
+                    styles: { 'width': '100%' },
+                    contentStyles: { 'background-color': bkgdColor }
                 })
                 fieldGroup.controls.push(srfReviewInfo);
             }
@@ -75,11 +84,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push(basicInfo);
 
             var customers = null;
-            if (userInfo.isVendor) { customers = twcUtils.getCustomers(userInfo); }
+            if (userInfo.isVendor) { customers = twcUtils.getCustomers(userInfo, { srf: true }); }
             basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: userInfo.isCustomer, dataSource: customers, allowAll: false })
-            basicInfo.fields.push({ id: twcSrf.Fields.OPERATOR_SITE_ID, label: 'Operator Site ID' })
+            basicInfo.fields.push({ id: twcSrf.Fields.OPERATOR_SITE_ID, label: 'Operator Site ID', mandatory: true })
             if (userInfo.isEmployee) { basicInfo.fields.push({ id: twcSrf.Fields.SRF_TYPE, label: 'SRF Type', dataSource: twcUtils.getSrfTypes(), allowAll: false }) }
-            
+
             fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 6 (TME)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.TME)] });
             fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 6 (ATME)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.ATME)] });
             fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 3 of 6 (GIE)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.GIE)] });

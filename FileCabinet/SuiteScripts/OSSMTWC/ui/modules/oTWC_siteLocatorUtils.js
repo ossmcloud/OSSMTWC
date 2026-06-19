@@ -14,10 +14,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 uf.type = twcUI.nsTypeToTableColumnType(nsField.field_type);
                 if (nsField.field_type == 'Date') {
                     sqlFields += `, TO_CHAR(s.${sqlField}, 'yyyy-MM-dd') as ${sqlField}`;
-                    
+
                 } else if (nsField.field_type == 'DateTimeZ' || nsField.field_type == 'Date/Time') {
                     sqlFields += `, TO_CHAR(s.${sqlField}, 'yyyy-MM-dd HH24:mm') as ${sqlField}`;
-                    
+
                 } else {
                     if (nsField.field_type == 'List/Record') {
                         uf.listRecord = true;
@@ -42,16 +42,36 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSrf.Fields.SRF_REQUESTED_DATE} desc`;
 
-            if (userInfo.companyProfile?.isBoth) {
-                whereClause += `and (
-                       ${twcSrf.Fields.CUSTOMER} = ${userInfo.companyProfile.id || 0}
-                    or ${twcSrf.Fields.CUSTOMER} in (select custrecord_twc_acl_cust from customrecord_twc_acl where custrecord_twc_acl_cont = ${userInfo.companyProfile.id})
-                )`;
-            } else if (userInfo.companyProfile?.isVendor) {
-                whereClause += `and ${twcSrf.Fields.CUSTOMER} in (select custrecord_twc_acl_cust from customrecord_twc_acl where custrecord_twc_acl_cont = ${userInfo.companyProfile.id})`;
-            } else if (userInfo.companyProfile?.isCustomer) {
-                whereClause += `and ${twcSrf.Fields.CUSTOMER} = ${userInfo.companyProfile.id || 0}`;
+            // @@NOTE: TWC Employees can see everything
+            if (!userInfo.isEmployee) {
+                var allowedCustomers = [];
+
+                if (userInfo.companyProfile?.isVendor || userInfo.companyProfile?.isBoth) {
+                    // @@NOTE the agent passes specifies what customers can be seen 
+                    var agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${userInfo.profile}`)?.agent_passes || '0';
+                    agentPasses = agentPasses.split(',').map(i => { return parseInt(i.trim()); })
+
+                    // @@NOTE: this filter will ensure that even if a customer was not removed from the agent passes field for a profile but was removed from the ACL list the profile will still not see it
+                    var aclList = coreSQL.run(`select custrecord_twc_acl_cust as cust from customrecord_twc_acl where custrecord_twc_acl_cont = ${userInfo.companyProfile.id}`)
+                    allowedCustomers = agentPasses.filter(ap => { return aclList.find(acl => { return acl.cust == ap; }) })
+                }
+
+                if (userInfo.companyProfile?.isCustomer || userInfo.companyProfile?.isBoth) {
+                    // in case we have a customer or a vendor that is also a customer we include the customer into the customer list
+                    allowedCustomers.push(userInfo.companyProfile.id || 0)
+                }
+
+                // @@NOTE: this is to ensure nothing is shown if no customers on the agent passes field
+                if (allowedCustomers.length == 0) { allowedCustomers.push('0'); }
+
+                whereClause += `and ${twcSrf.Fields.CUSTOMER} in (${allowedCustomers.join(',')})`;
+
+                if (userInfo.companyProfile?.isVendor && !userInfo.companyProfile?.isCustomer) {
+                    // @@NOTE: in addition vendors can only see what was created by their organization
+                    whereClause += `and ${twcSrf.Fields.SRF_SUBMITTED_BY} in (select id from customrecord_twc_prof where custrecord_twc_prof_company = ${userInfo.companyProfile.id})`;
+                }
             }
+
 
             var srfs = coreSQL.run(`
                 select  ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO}
@@ -72,7 +92,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         // @@TODO:  this should really be on siteAccessUtils module
         function getSiteSaf(options, userInfo) {
-            
+
             var safFields = twcUtils.getFields(twcSaf.Type);
             var userFields = twcSafUI.getSafTableFields();
 
@@ -110,7 +130,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getSites(options, userInfo) {
-            
+
             var siteFields = twcUtils.getFields(twcSite.Type);
             var userFields = twcSiteUI.getSiteTableFields();
 

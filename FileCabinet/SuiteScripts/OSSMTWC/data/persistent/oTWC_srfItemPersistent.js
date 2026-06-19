@@ -14,6 +14,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EQUIPMENT_LIBRARY: 'custrecord_twc_srf_itm_eq_lib',
             EQUIPMENT_ID: 'custrecord_twc_srf_itm_equip_id',
             TME_ID: 'custrecord_twc_srf_itm_tme_id',
+            TMI_ID_SRF: 'custrecord_twc_srf_itm_tme_srf',
             STRUCTURE: 'custrecord_twc_srf_itm_structure',
             DESCRIPTION: 'custrecord_twc_srf_itm_desc',
             MAKE: 'custrecord_twc_srf_itm_make',
@@ -55,6 +56,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EQUIPMENT_LIBRARY: { name: 'custrecord_twc_srf_itm_eq_lib', type: 'select', alias: 'equipmentLibrary', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_lib' },
             EQUIPMENT_ID: { name: 'custrecord_twc_srf_itm_equip_id', type: 'select', alias: 'equipmentID', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip' },
             TME_ID: { name: 'custrecord_twc_srf_itm_tme_id', type: 'select', alias: 'tMEID', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip' },
+            TMI_ID_SRF: { name: 'custrecord_twc_srf_itm_tme_srf', type: 'select', alias: 'tMIIDSRF', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm' },
             STRUCTURE: { name: 'custrecord_twc_srf_itm_structure', type: 'select', alias: 'structure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
             DESCRIPTION: { name: 'custrecord_twc_srf_itm_desc', type: 'text', alias: 'description', display: 'normal', mandatory: false },
             MAKE: { name: 'custrecord_twc_srf_itm_make', type: 'text', alias: 'make', display: 'normal', mandatory: false },
@@ -66,7 +68,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WEIGHT_KG: { name: 'custrecord_twc_srf_itm_weight_kg', type: 'text', alias: 'weightkg', display: 'normal', mandatory: false },
             VOLTAGE_TYPE: { name: 'custrecord_twc_srf_itm_volt_type', type: 'select', alias: 'voltageType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_v_type' },
             VOLTAGE_RANGE: { name: 'custrecord_twc_srf_itm_volt_range', type: 'select', alias: 'voltageRange', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_v_range' },
-            AZIMUTH: { name: 'custrecord_twc_srf_itm_azimuth', type: 'text', alias: 'azimuth', display: 'normal', mandatory: false },
+            AZIMUTH: { name: 'custrecord_twc_srf_itm_azimuth', type: 'integer', alias: 'azimuth', display: 'normal', mandatory: false },
             B_END: { name: 'custrecord_twc_srf_itm_b_end', type: 'text', alias: 'b_End', display: 'normal', mandatory: false },
             CUSTOMER_REF: { name: 'custrecord_twc_srf_itm_cust_ref', type: 'text', alias: 'customerRef', display: 'normal', mandatory: false },
             INVENTORY_FLAG: { name: 'custrecord_twc_srf_itm_invent_flag', type: 'select', alias: 'inventoryFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_inv_flag' },
@@ -146,6 +148,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.TME_ID, value)
             }
             get tMEIDName() { return this.getText(_recordFields.TME_ID); }
+            
+            get tMIIDSRF() {
+                return this.get(_recordFields.TMI_ID_SRF);
+            } set tMIIDSRF(value) {
+                this.set(_recordFields.TMI_ID_SRF, value)
+            }
+            get tMIIDSRFName() { return this.getText(_recordFields.TMI_ID_SRF); }
             
             get structure() {
                 return this.get(_recordFields.STRUCTURE);

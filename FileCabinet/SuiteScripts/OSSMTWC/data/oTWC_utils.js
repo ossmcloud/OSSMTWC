@@ -303,15 +303,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         const SRF_STATUS_STYLE = {
             Draft: { color: 'white', backgroundColor: 'silver' },
             Submitted: { color: 'white', backgroundColor: 'olive' },
-            UnderReview: { color: 'white', backgroundColor: 'orange' },
-            FeedbackIssued: { color: 'white', backgroundColor: 'magenta' },
-            Resubmitted: { color: 'white', backgroundColor: 'olive' },
-            SRFApproved: { color: 'blue', backgroundColor: 'lime' },
-            LicenceRequested: { color: 'white', backgroundColor: 'steelblue' },
+            UnderReview: { color: 'white', backgroundColor: 'orange', name: 'Under Review' },
+            FeedbackIssued: { color: 'white', backgroundColor: 'magenta', name: 'Feedback Issued' },
+            Resubmitted: { color: 'white', backgroundColor: 'olive', name: 'Re-Submitted' },
+            SRFApproved: { color: 'blue', backgroundColor: 'lime', name: 'SRF Approved' },
+            LicenceRequested: { color: 'white', backgroundColor: 'steelblue', name: 'License Requested' },
             // WorksPermitted: { color: 'white', backgroundColor: 'mediumblue' },
-            LicenceIssued: { color: 'white', backgroundColor: 'blue' },
-            LicenceExecuted: { color: 'white', backgroundColor: 'green' },
-            SRFCancelled: { color: 'white', backgroundColor: 'red' }
+            LicenceIssued: { color: 'white', backgroundColor: 'blue', name: 'License Issued' },
+            LicenceExecuted: { color: 'white', backgroundColor: 'green', name: 'License Executed' },
+            SRFCancelled: { color: 'white', backgroundColor: 'red', name: 'SRF Cancelled' }
         }
         function getSrfStatusName(srfStatusNumber) {
             if (!srfStatusNumber) { srfStatusNumber = 11; }
@@ -341,7 +341,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var statusStyle = getSrfStatusStyle(statusName);
             return `
                 <span class="${spanClass ? spanClass : 'twc-record-status'}" style="color: ${statusStyle.color}; background-color: ${statusStyle.backgroundColor};" >
-                    ${statusName}
+                    ${statusStyle.name || statusName}
                 </span>
             `
         }
@@ -765,12 +765,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 options.vendor = options.companyProfile.id;
             }
 
-            if (!options.isEmployee) {
-                var agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${options.profile}`)?.agent_passes;
-                if (!agentPasses) {
-                    throw new Error('You cannot enter SRF/SAF');
+            if (options.srf) {
+                if (options.isVendor) {
+                    var agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${options.profile}`)?.agent_passes;
+                    if (!agentPasses) {
+                        throw new Error('You cannot enter SRF/SAF');
+                    }
+                    additionalFilters += ` and c.id in (${agentPasses}) `;
                 }
-                additionalFilters += ` and c.id in (${agentPasses}) `;
             }
 
             var sql = '';
@@ -881,16 +883,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
-        function getCustomers(options) {
-            if (!options) { options = {}; }
-            options.type = 'C';
-            return getCompanies(options);
+        function getCustomers(userInfo, options) {
+            var o = JSON.parse(JSON.stringify(userInfo));
+            if (options) { for (var k in options) { o[k] = options[k]; } }
+            o.type = 'C';
+            return getCompanies(o);
         }
 
-        function getVendors(options) {
-            if (!options) { options = {}; }
-            options.type = 'V';
-            return getCompanies(options);
+        function getVendors(userInfo, options) {
+            var o = JSON.parse(JSON.stringify(userInfo));
+            if (options) { for (var k in options) { o[k] = options[k]; } }
+            o.type = 'V';
+            return getCompanies(o);
         }
 
 
@@ -963,7 +967,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 } else {
                     designatedContacts = [];
                 }
-                
+
 
                 profiles.push({
                     value: p.value,

@@ -386,17 +386,31 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                         location.reload();
                                     }).catch(err => {
                                         dialog.error(err);
+                                        this.waitClose();
                                     });
                             });
 
                         });
+                        this.ui.getControl('accept-srf-approval')?.on('click', e => {
+                            dialog.confirmAsync('Are you sure you want to accept this request?').then(() => {
+                                this.wait();
+                                this.post({ action: 'accept-srf-approval' }, { srf: this.data.siteRequestInfo.id })
+                                    .then(res => {
+                                        location.reload();
+                                    }).catch(err => {
+                                        dialog.error(err);
+                                        this.waitClose();
+                                    });
+                            });
+
+                        });
+
                         this.ui.getControl('cancel-srf-button')?.on('click', e => {
                             dialog.confirmAsync('Are you sure you wish to cancel this SRF?').then(() => {
                                 this.data.siteRequestInfo[twcSrf.Fields.SRF_STATUS] = twcUtils.SrfStatus.SRFCancelled;
                                 this.data.siteRequestInfo.dirty = true;
                                 this.onSave(e);
                             });
-
                         });
 
                         this.ui.getControl('print-sds')?.on('click', e => { this.openPrintSDS(e); })

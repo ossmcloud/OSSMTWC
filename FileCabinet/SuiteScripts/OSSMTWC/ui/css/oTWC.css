@@ -12,6 +12,10 @@
     overflow: hidden !important;
 }
 
+
+/* TRUNCATE */
+
+
 h1.uir-record-type {
     color: var(--title-color) !important;
 }
@@ -2522,6 +2526,11 @@ div.twc_toggle_inner_selected {
     background-color: var(--accent-fore-color) !important;
 }
 
+div.twc_toggle_inner_null {
+    background-color: transparent !important;
+    border: 1px solid var(--grid-color)!important;
+    /* background-color: silver !important; */
+}
 
 
 tr.twc_tr_flash_yellow>td {
@@ -2681,6 +2690,7 @@ div.twc-table-toolbar-button:hover {
 div.omt-ui-flex-panel {
     display: flex;
 }
+
 div.omt-ui-flex-panel>ossm {
     margin-right: 3px;
 }

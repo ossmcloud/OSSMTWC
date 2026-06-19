@@ -47,8 +47,33 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             testFunction() {
                 try {
 
+                    var toggle = jQuery(`
+                        <div>
+                            ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'null_state', mandatory: true })}
+                            ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'true_state', value: true, mandatory: false })}
+                            ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'false_state', value: false, mandatory: true })}
+                        </div>`
+                    );
+                    // var toggle = jQuery(`
+                    //     <div>
+                    //         ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'null_state', mandatory: true })}
+                    //     </div>`
+                    // );
+                    var form = twcUI.init({}, toggle);
+                    dialog.confirm({ message: form.ui }, dlg => {
+                        try {
+
+                            var val = form.getValues();
+                            console.log(val);
+                            
+                        } catch (error) {
+                            dialog.error(error)
+                            return false;
+                        } 
+                    });
+
                     //twcSrfWorkflowEngineUI.getForm({ srf: 22 }).popUp();
-                    twcSrfWorkflowEngine.deleteWorkflow({ srf: 22 })
+                    // twcSrfWorkflowEngine.deleteWorkflow({ srf: 22 })
                     //twcSrfWorkflowEngine.initWorkFlow({ srf: 22 });
 
                     //var eqAction = twcEquipAction.get();

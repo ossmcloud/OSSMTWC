@@ -36,6 +36,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     `;
 
                     pageData.assignToList = twcSiteRequestUtils.getAssignToEmployees();
+                    pageData.employeeSignatories = pageData.assignToList.filter(e => { return e.can_execute_pack == 'T'; })
                     pageData.twcProfiles = twcUtils.getProfiles({ company: twcUtils.TWC_COMPANY });
                     pageData.companyProfiles = twcUtils.getProfiles({ company: pageData.siteRequestInfo[twcSrf.Fields.CUSTOMER] });
                     pageData.companyProfilesSignatories = pageData.companyProfiles.filter(i => {
@@ -79,13 +80,14 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
 
                     var viewWorkFlowButton = ''; var openWorkFlowButton = '';
                     if (pageData.userInfo.isEmployee) {
-                        if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] != twcSrf.Status.Draft) {
+                        if (context.request.parameters.recId && pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] != twcSrf.Status.Draft) {
                             viewWorkFlowButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'View Workflow', id: 'view-workflow-button' });
                             openWorkFlowButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Open Workflow', id: 'open-workflow-button' });
                         }
                     }
 
                     var printSDSButton = '';
+
                     if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceRequested || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceIssued || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted) {
                         printSDSButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Print SDS', id: 'print-sds' });
                     }
@@ -97,29 +99,32 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                         }
                     }
 
+                    var submitSrfButton = ''; var cancelSrfButton = '';
+                    if (canSubmit) {
+                        cancelSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SRF', id: 'cancel-srf-button' });
+                        submitSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued ? 'Re-Submit' : 'Submit', id: 'submit-button' });
+                    }
+                    var acceptApprovalButton = '';
+                    if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.SRFApproved) {
+                        acceptApprovalButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Accept Approval', id: 'accept-srf-approval' });
+                        cancelSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SRF', id: 'cancel-srf-button' });
+                    }
+
+
                     var fieldGroups = twcSiteRequestUtils.getSRFInfoPanels(pageData.siteRequestInfo, pageData.userInfo, readOnly);
                     html = html.replaceAll('{SITE_REQUEST_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
-                    if (canSubmit) {
-                        html = html.replaceAll('<div id="custom-actions"></div>', `
-                            <div id="custom-actions">
-                                ${signSrfButton}
-                                ${printSDSButton}
-                                ${viewWorkFlowButton}
-                                ${openWorkFlowButton}
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued ? 'Re-Submit' : 'Submit', id: 'submit-button' })}
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SRF', id: 'cancel-srf-button' })}
-                            </div>
-                        `);
-                    } else if (viewWorkFlowButton) {
-                        html = html.replaceAll('<div id="custom-actions"></div>', `
-                            <div id="custom-actions">
-                                ${signSrfButton}    
-                                ${printSDSButton}
-                                ${viewWorkFlowButton}
-                                ${openWorkFlowButton}
-                            </div>
-                        `);
-                    }
+
+                    html = html.replaceAll('<div id="custom-actions"></div>', `
+                        <div id="custom-actions">
+                            ${signSrfButton}
+                            ${printSDSButton}
+                            ${viewWorkFlowButton}
+                            ${openWorkFlowButton}
+                            ${acceptApprovalButton}
+                            ${submitSrfButton}
+                            ${cancelSrfButton}
+                        </div>
+                    `);
                 }
 
             } else {
@@ -148,6 +153,10 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
             } else if (context.request.parameters.action == 'submit') {
                 var payload = JSON.parse(context.request.body);
                 return { id: twcSiteRequestUtils.submitSiteSrf(userInfo, payload) };
+
+            } else if (context.request.parameters.action == 'accept-srf-approval') {
+                var payload = JSON.parse(context.request.body);
+                return twcSrfWorkflowEngine.acceptSrf(userInfo, payload);
 
             } else if (context.request.parameters.action == 'get-file') {
                 var srfFle = twcSiteRequestUtils.getFile(JSON.parse(context.request.body).file);

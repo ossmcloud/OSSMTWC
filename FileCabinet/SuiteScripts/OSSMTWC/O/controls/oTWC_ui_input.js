@@ -196,7 +196,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     htmlInput += '</select>';
                 } else {
                     var v = (this.#options.value == undefined || this.#options.value == null) ? '' : this.#options.value;
-                    htmlInput = `<input id="${this.#options.id}" type="${this.#options.type}" class="twc" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${v}" ${accept} ${disabled} ${readOnly} ${checked}/>`;
+                    var minMax = '';
+                    if (this.#options.min !== undefined) { minMax = ` min="${this.#options.min}"`; }
+                    if (this.#options.max !== undefined) { minMax = ` max="${this.#options.max}"`; }
+                    htmlInput = `<input id="${this.#options.id}" type="${this.#options.type}" class="twc" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${v}" ${accept} ${minMax} ${disabled} ${readOnly} ${checked}/>`;
                 }
 
 

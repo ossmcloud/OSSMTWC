@@ -353,5 +353,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 dlg.dialog.find('#o-dialog_content').find('.twc-overlay').remove();
             }
 
+            
+
         }
     })

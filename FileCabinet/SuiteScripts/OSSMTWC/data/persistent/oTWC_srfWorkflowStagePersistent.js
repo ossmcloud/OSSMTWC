@@ -8,19 +8,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFields = {
             NAME: 'name',
             OUTER_SEQUENCE: 'custrecord_twc_srf_wks_seq_outer',
-            STEP_NUMBER: 'custrecord_twc_srf_wks_step_no',
             SEQUENCE_NUMBER: 'custrecord_twc_srf_wks_seq_no',
+            STEP_NUMBER: 'custrecord_twc_srf_wks_step_no',
             DESCRIPTION: 'custrecord_twc_srf_wks_description',
             NEXT_STAGE: 'custrecord_twc_srf_wks_next',
             PICK_NEXT_STAGE: 'custrecord_twc_srf_wks_next_pick',
             SET_STATUS: 'custrecord_twc_srf_wks_status_to',
             FORM_DATA: 'custrecord_twc_srf_wks_form',
-            IS_REVIEW: 'custrecord_twc_srf_wks_is_review',
-            CAN_ASSIGN: 'custrecord_twc_srf_wks_assign',
-            IS_LAST_STAGE: 'custrecord_twc_srf_wks_is_last',
             HIDDEN: 'custrecord_twc_srf_wks_hide',
             IS_LOOP: 'custrecord_twc_srf_wks_loop',
+            IS_REVIEW: 'custrecord_twc_srf_wks_is_review',
+            CAN_SKIP: 'custrecord_twc_srf_wks_can_skip',
+            CAN_ASSIGN: 'custrecord_twc_srf_wks_assign',
+            IS_LAST_STAGE: 'custrecord_twc_srf_wks_is_last',
             DO_NOT_CREATE: 'custrecord_twc_srf_wks_no_create',
+            REQUIRES_CLIENT_SIGNATURE: 'custrecord_twc_srf_wks_to_sign',
+            PLANNED_DATE_DELTA: 'custrecord_twc_srf_wks_plan_delta_days',
             REVIEW_PASSED_FIELD: 'custrecord_twc_srf_wks_is_review_passf',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
@@ -30,19 +33,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             OUTER_SEQUENCE: { name: 'custrecord_twc_srf_wks_seq_outer', type: 'integer', alias: 'outerSequence', display: 'normal', mandatory: false },
-            STEP_NUMBER: { name: 'custrecord_twc_srf_wks_step_no', type: 'text', alias: 'stepNumber', display: 'normal', mandatory: false },
             SEQUENCE_NUMBER: { name: 'custrecord_twc_srf_wks_seq_no', type: 'integer', alias: 'sequenceNumber', display: 'normal', mandatory: false },
+            STEP_NUMBER: { name: 'custrecord_twc_srf_wks_step_no', type: 'text', alias: 'stepNumber', display: 'normal', mandatory: false },
             DESCRIPTION: { name: 'custrecord_twc_srf_wks_description', type: 'text', alias: 'description', display: 'normal', mandatory: false },
             NEXT_STAGE: { name: 'custrecord_twc_srf_wks_next', type: 'multiselect', alias: 'nextStage', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_wks' },
             PICK_NEXT_STAGE: { name: 'custrecord_twc_srf_wks_next_pick', type: 'checkbox', alias: 'pickNextStage', display: 'normal', mandatory: false },
             SET_STATUS: { name: 'custrecord_twc_srf_wks_status_to', type: 'select', alias: 'setStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_status' },
             FORM_DATA: { name: 'custrecord_twc_srf_wks_form', type: 'clobtext', alias: 'formData', display: 'normal', mandatory: false },
-            IS_REVIEW: { name: 'custrecord_twc_srf_wks_is_review', type: 'checkbox', alias: 'isReview', display: 'normal', mandatory: false },
-            CAN_ASSIGN: { name: 'custrecord_twc_srf_wks_assign', type: 'checkbox', alias: 'canAssign', display: 'normal', mandatory: false },
-            IS_LAST_STAGE: { name: 'custrecord_twc_srf_wks_is_last', type: 'checkbox', alias: 'isLastStage', display: 'normal', mandatory: false },
             HIDDEN: { name: 'custrecord_twc_srf_wks_hide', type: 'checkbox', alias: 'hidden', display: 'normal', mandatory: false },
             IS_LOOP: { name: 'custrecord_twc_srf_wks_loop', type: 'checkbox', alias: 'isLoop', display: 'normal', mandatory: false },
+            IS_REVIEW: { name: 'custrecord_twc_srf_wks_is_review', type: 'checkbox', alias: 'isReview', display: 'normal', mandatory: false },
+            CAN_SKIP: { name: 'custrecord_twc_srf_wks_can_skip', type: 'checkbox', alias: 'canSkip', display: 'normal', mandatory: false },
+            CAN_ASSIGN: { name: 'custrecord_twc_srf_wks_assign', type: 'checkbox', alias: 'canAssign', display: 'normal', mandatory: false },
+            IS_LAST_STAGE: { name: 'custrecord_twc_srf_wks_is_last', type: 'checkbox', alias: 'isLastStage', display: 'normal', mandatory: false },
             DO_NOT_CREATE: { name: 'custrecord_twc_srf_wks_no_create', type: 'checkbox', alias: 'doNotCreate', display: 'normal', mandatory: false },
+            REQUIRES_CLIENT_SIGNATURE: { name: 'custrecord_twc_srf_wks_to_sign', type: 'checkbox', alias: 'requiresClientSignature', display: 'normal', mandatory: false },
+            PLANNED_DATE_DELTA: { name: 'custrecord_twc_srf_wks_plan_delta_days', type: 'integer', alias: 'plannedDateDelta', display: 'normal', mandatory: false },
             REVIEW_PASSED_FIELD: { name: 'custrecord_twc_srf_wks_is_review_passf', type: 'text', alias: 'reviewPassedField', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
@@ -66,16 +72,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.OUTER_SEQUENCE, value)
             }
             
-            get stepNumber() {
-                return this.get(_recordFields.STEP_NUMBER);
-            } set stepNumber(value) {
-                this.set(_recordFields.STEP_NUMBER, value)
-            }
-            
             get sequenceNumber() {
                 return this.get(_recordFields.SEQUENCE_NUMBER);
             } set sequenceNumber(value) {
                 this.set(_recordFields.SEQUENCE_NUMBER, value)
+            }
+            
+            get stepNumber() {
+                return this.get(_recordFields.STEP_NUMBER);
+            } set stepNumber(value) {
+                this.set(_recordFields.STEP_NUMBER, value)
             }
             
             get description() {
@@ -110,10 +116,28 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.FORM_DATA, value)
             }
             
+            get hidden() {
+                return this.get(_recordFields.HIDDEN);
+            } set hidden(value) {
+                this.set(_recordFields.HIDDEN, value)
+            }
+            
+            get isLoop() {
+                return this.get(_recordFields.IS_LOOP);
+            } set isLoop(value) {
+                this.set(_recordFields.IS_LOOP, value)
+            }
+            
             get isReview() {
                 return this.get(_recordFields.IS_REVIEW);
             } set isReview(value) {
                 this.set(_recordFields.IS_REVIEW, value)
+            }
+            
+            get canSkip() {
+                return this.get(_recordFields.CAN_SKIP);
+            } set canSkip(value) {
+                this.set(_recordFields.CAN_SKIP, value)
             }
             
             get canAssign() {
@@ -128,22 +152,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.IS_LAST_STAGE, value)
             }
             
-            get hidden() {
-                return this.get(_recordFields.HIDDEN);
-            } set hidden(value) {
-                this.set(_recordFields.HIDDEN, value)
-            }
-            
-            get isLoop() {
-                return this.get(_recordFields.IS_LOOP);
-            } set isLoop(value) {
-                this.set(_recordFields.IS_LOOP, value)
-            }
-            
             get doNotCreate() {
                 return this.get(_recordFields.DO_NOT_CREATE);
             } set doNotCreate(value) {
                 this.set(_recordFields.DO_NOT_CREATE, value)
+            }
+            
+            get requiresClientSignature() {
+                return this.get(_recordFields.REQUIRES_CLIENT_SIGNATURE);
+            } set requiresClientSignature(value) {
+                this.set(_recordFields.REQUIRES_CLIENT_SIGNATURE, value)
+            }
+            
+            get plannedDateDelta() {
+                return this.get(_recordFields.PLANNED_DATE_DELTA);
+            } set plannedDateDelta(value) {
+                this.set(_recordFields.PLANNED_DATE_DELTA, value)
             }
             
             get reviewPassedField() {

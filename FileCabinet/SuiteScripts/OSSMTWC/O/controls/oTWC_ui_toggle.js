@@ -20,14 +20,26 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     this.#options = JSON.parse(this.#ui.find(`#${id}_options`).html() || '{}');
                     if (!this.#options.id) { this.#options.id = id; }
                     if (!this.#options.type) { this.#options.id = this.#ui.data('type'); }
-                    this.#options.value = this.#ui.attr('data-value') == 'true';
+                    var val = this.#ui.attr('data-value');
+                    if (val == 'true') {
+                        this.#options.value = true;
+                    } else if (val == 'false') {
+                        this.#options.value = false;
+                    } else {
+                        this.#options.value = this.#options.mandatory ? null : false;
+                    }
 
                     this.initEvents();
 
                 } else {
                     this.#options = options || {};
+
                     if (this.#options.value == 'F' || this.#options.value == 'T') {
                         this.#options.value = this.#options.value == 'T'
+                    } else if (this.#options.value === true || this.#options.value === false) {
+                        this.#options.value = this.#options.value
+                    } else {
+                        this.#options.value = this.#options.mandatory ? null : false;
                     }
                 }
             }
@@ -41,7 +53,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#ui.find('label').html(`${this.#options.label}${this.mandatory ? ' *' : ''}`);
             }
 
-            get mandatory() { return this.#options.mandatory; }
+            get mandatory() {
+                return this.#options.mandatory;
+            } set mandatory(val) {
+                this.#options.mandatory = val;
+                this.#ui.find('label').html(`${this.#options.label}${val ? ' *' : ''}`);
+            }
 
             get hide() {
                 return this.#ui.closest('ossm').css('display') == 'none';
@@ -77,8 +94,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             render(container) {
                 var label = '';
                 if (this.#options.label) {
-
-                    label = `<label class="inline" ${this.#options.labelNoWrap ? ' style="white-space: nowrap"' : ''}>${this.#options.label}</label>`;
+                    var mandatory = (this.#options.mandatory) ? ' *' : '';
+                    label = `<label class="inline" ${this.#options.labelNoWrap ? ' style="white-space: nowrap"' : ''}>${this.#options.label}${mandatory}</label>`;
                 }
 
                 var defaultWidth = this.#options.small ? '35px' : '60px';
@@ -89,11 +106,15 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 var marginLeft = parseInt(defaultWidth.replace('px', '')) - (this.#options.value ? (this.#options.small ? 20 : 32) : 30);
                 var checked = this.#options.value ? ` twc_toggle_inner_selected" style="margin-left: ${marginLeft}px;"` : '"';
+                if (this.#options.value == null) {
+                    checked = ` twc_toggle_inner_null"`;
+                }
                 var checkedOuter = this.#options.value ? ' twc_toggle_outer_selected' : '';
                 var small = this.#options.small ? ' twc_toggle_inner_small' : '';
 
+                var value = this.#options.value === null ? '' : this.#options.value.toString();
                 var html = `
-                    <div class="twc_ctrl" data-id="${this.#options.id}" data-type="${this.#options.type}" data-type="${this.#options.type}" data-value="${this.#options.value || 'false'}" style="width: ${defaultWidth}; text-align: center;">
+                    <div class="twc_ctrl" data-id="${this.#options.id}" data-type="${this.#options.type}" data-type="${this.#options.type}" data-value="${value}" style="width: ${defaultWidth}; text-align: center;">
                         ${label}
                         <div class="twc_ctrl_table" style="border: 1px solid var(--grid-color); border-radius: 7px; margin-top: 3px">
                             <div class="twc_toggle_outer${checkedOuter}">
@@ -128,9 +149,23 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#toggleOuter = this.#ui.find('.twc_toggle_outer');
                 this.#toggleOuter.click(e => {
                     if (this.#options.disabled || this.#options.readOnly) { return; }
-                    this.#options.value = !this.#options.value;
+                    if (this.mandatory) {
+                        if (this.#options.value === true) {
+                            this.#options.value = false
+                        } else if (this.#options.value === false) {
+                            this.#options.value = null
+                        } else {
+                            this.#options.value = true
+                        }
+
+                    } else {
+                        this.#options.value = !this.#options.value;
+                    }
+
+                    var value = this.#options.value === null ? '' : this.#options.value.toString();
+
                     this.toggle(this.#options.value);
-                    this.#ui.attr('data-value', this.#options.value?.toString());
+                    this.#ui.attr('data-value', value);
                     this.on('change', e);
 
                 })
@@ -138,13 +173,20 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             toggle(value) {
-                if (value) {
+                if (value === null || value === undefined) {
+                    this.#toggle.animate({ marginLeft: '3px' }, 150);
+                    this.#toggle.removeClass('twc_toggle_inner_selected')
+                    this.#toggleOuter.removeClass('twc_toggle_outer_selected')
+                    this.#toggle.addClass('twc_toggle_inner_null')
+                } else if (value) {
                     this.#toggle.animate({ marginLeft: (this.#toggleOuter.width() - this.#toggle.outerWidth() - 3) + 'px' }, 150);
                     this.#toggle.addClass('twc_toggle_inner_selected')
+                    this.#toggle.removeClass('twc_toggle_inner_null')
                     this.#toggleOuter.addClass('twc_toggle_outer_selected')
                 } else {
                     this.#toggle.animate({ marginLeft: '3px' }, 150);
                     this.#toggle.removeClass('twc_toggle_inner_selected')
+                    this.#toggle.removeClass('twc_toggle_inner_null')
                     this.#toggleOuter.removeClass('twc_toggle_outer_selected')
                 }
             }

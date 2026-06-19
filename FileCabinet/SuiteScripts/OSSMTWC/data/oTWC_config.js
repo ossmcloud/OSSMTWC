@@ -5,6 +5,12 @@
 define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './oTWC_permissions.js'],
     (runtime, core, coreSQL, recu, permissions) => {
 
+        const CUSTOM_FIELDS = {
+            EMP: {
+                TWC_POWER_USER: 'custentity_twc_prj_power_user'
+            }
+        }
+
         // @@HARDCODED: 
         const TOWERCOM_ENTITY = 822;
 
@@ -23,6 +29,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             No: 3
         }
 
+        function isPowerUser(id) {
+            return recu.lookUp('employee', id || core.env.user(), CUSTOM_FIELDS.EMP.TWC_POWER_USER);
+        }
 
         function getNsTable(tableId) {
             if (tableId == -242 || tableId == 'bin') {
@@ -138,13 +147,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var userInfo = coreSQL.first({
                 query: `
-                    select  id, type, email, entitytitle as name, NVL(mobilephone, phone) as phone
-                    from    entity
-                    where   id = ?
+                    select  e.id, e.type, e.email, e.entitytitle as name, NVL(e.mobilephone, e.phone) as phone, emp.custentity_twc_prj_power_user as power_user
+                    from    entity e
+                    left join employee emp on emp.id = e.id
+                    where   e.id = ?
                 `,
                 params: [core.env.user()]
             })
 
+            userInfo.powerUser = userInfo.power_user == 'T';
+            delete userInfo.power_user;
 
             userInfo.permission = permissions.get(context);
 
@@ -175,6 +187,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (userInfo.type == 'Employee') {
                 userInfo.isEmployee = true;
                 userInfo.recordType = 'employee';
+
+
             } else if (userInfo.companyProfile?.isVendor) {
                 userInfo.isVendor = true;
                 userInfo.recordType = 'vendor';
@@ -230,7 +244,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (userInfo.isEmployee) {
                 userInfo.canSign = true;    // @@TODO: remove
             } else {
-                userInfo.canSign = userInfo.profileInfo.designatedContacts.find(i => { return i.can_sign; });
+                userInfo.canSign = userInfo.profileInfo.designatedContacts.find(i => { return i.can_sign; })?.can_sign == 'T';
             }
 
             if (!userInfo.profile) { throw new Error('Your user is not associated to any profile, please contact TL administrator to set you up.') }
@@ -319,6 +333,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             isUserAllowedCustomers: isUserAllowedCustomers,
             cfg: getConfig,
             getNsTable: getNsTable,
-            getFields: getCustomTableFields
+            getFields: getCustomTableFields,
+
+            isPowerUser: isPowerUser
         }
     });

@@ -23,7 +23,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } else if (status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED) {
                 styles.bkgd = 'green';
             } else if (status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {
-                styles.bkgd = 'red';
+                styles.bkgd = 'indianred';
+                styles.color = 'silver';
+            } else if (status == twcSrfWorkflowEngine.WorkflowStatus.NOT_REQUIRED) {
+                styles.bkgd = 'silver';
+                styles.color = 'darkgray';
             }
             return `color: ${styles.color}; background-color: ${styles.bkgd}`;
         }
@@ -69,50 +73,52 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     </div>
                 `);
 
-                var nextSteps = [];
-                if (!this.#readOnly) {
 
-                    nextSteps = this.#workflow.items.filter(i => {
+                var nextSteps = this.#workflow.items.filter(i => {
+                    if (this.#item.next_stage_pick == 'T') {
+                        return (this.#item.next_stage.indexOf(i.stage) >= 0 && (i.status == twcSrfWorkflowEngine.WorkflowStatus.NEW || i.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS)
+                        );
+                    } else {
+                        return this.#item.next_stage.indexOf(i.stage) >= 0 && this.#item.id < i.id;
+                    }
+                })
+                if (nextSteps.length > 0) {
+                    var nextStepContainerOuter = jQuery(`<div style="margin-top: 7px; padding: 3px; border: 1px solid var(--grid-color);"><h3 style="margin-bottom: 7px; border-bottom: 1px solid var(--grid-color);">Next Steps Planned Dates</h3></div>`);
+                    var nextStepContainer = jQuery(`<div class="twc-div-table-r" style="table-layout: auto;"></div>`);
+                    nextStepContainerOuter.append(nextStepContainer);
+                    core.array.each(nextSteps, next => {
+                        var radioButton = '';
                         if (this.#item.next_stage_pick == 'T') {
-                            return this.#item.next_stage.indexOf(i.stage) >= 0 && i.status == twcSrfWorkflowEngine.WorkflowStatus.NEW;
-                        } else {
-                            return this.#item.next_stage.indexOf(i.stage) >= 0 && this.#item.id < i.id;
+                            radioButton = `<div style="width: 30px;"><input type="radio" style="transform: scale(2);" name="pick_next_stage" data-id="${next.id}" ${this.#readOnly ? 'readonly' : ''} /></div>`;
                         }
 
-                    })
-                    if (nextSteps.length > 0) {
+                        var assignToDropDOwn = '';
+                        if (next.is_review == 'T' || next.can_assign == 'T') {
+                            assignToDropDOwn = `<div>${twcUi.render({ type: twcUi.CTRL_TYPE.DROPDOWN, id: `assigned_to_${next.id}`, value: next.assigned_to, dataSource: this.#workflowForm.data.assignToList, hint: 'Assign to', readOnly: this.#readOnly })}</div>`;
+                        }
 
-                        var nextStepContainerOuter = jQuery(`<div style="margin-top: 7px; padding: 3px; border: 1px solid var(--grid-color);"><h3 style="margin-bottom: 7px; border-bottom: 1px solid var(--grid-color);">Next Steps Planned Dates</h3></div>`);
-                        var nextStepContainer = jQuery(`<div class="twc-div-table-r" style="table-layout: fixed;"></div>`);
-                        nextStepContainerOuter.append(nextStepContainer);
-                        core.array.each(nextSteps, next => {
-                            var assignToDropDOwn = '';
-                            if (next.is_review == 'T' || next.can_assign == 'T') {
-                                assignToDropDOwn = `<div>${twcUi.render({ type: twcUi.CTRL_TYPE.DROPDOWN, id: `assigned_to_${next.id}`, value: next.assigned_to, dataSource: this.#workflowForm.data.assignToList, hint: 'Assign to' })}</div>`;
-                            }
+                        var requiredToggle = '<div></div>';
+                        if (next.can_skip == 'T') {
+                            requiredToggle = `<div style="width: 50px;">${twcUi.render({ type: twcUi.CTRL_TYPE.TOGGLE, id: `required_${next.id}`, value: next.status != twcSrfWorkflowEngine.WorkflowStatus.NOT_REQUIRED, readOnly: this.#readOnly })}</div>`;
+                        }
 
-                            var radioButton = '';
-                            if (this.#item.next_stage_pick == 'T') {
-                                radioButton = `<div style="width: 30px;"><input type="radio" style="transform: scale(2);" name="pick_next_stage" data-id="${next.id}" /></div>`;
-                            }
-
-                            nextStepContainer.append(`
+                        nextStepContainer.append(`
                                 <div>
                                     ${radioButton}
                                     <div style="width: 150px; padding: 0px 3px;">
                                         ${next.stage_name}
                                     </div>
+                                    ${requiredToggle}
                                     <div style="padding: 0px 3px;">
-                                        ${twcUi.render({ type: twcUi.CTRL_TYPE.DATE, id: `planned_date_${next.id}`, value: next.planned })}
+                                        ${twcUi.render({ type: twcUi.CTRL_TYPE.DATE, id: `planned_date_${next.id}`, value: next.planned, readOnly: this.#readOnly })}
                                     </div>
                                     ${assignToDropDOwn}
+                                    
                                 </div>
                             `)
-                        })
-                        this.#ui.append(nextStepContainerOuter);
-                    }
+                    })
+                    this.#ui.append(nextStepContainerOuter);
                 }
-
 
                 var formData = null;
                 if (this.#item.form_data) {
@@ -135,15 +141,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#ui.append(formDataContainer);
                 }
 
-
-
                 this.#form = twcUi.init({}, this.#ui);
 
                 var method = this.#readOnly ? 'open' : 'confirm';
-
                 dialog[method]({ title: 'manage item', content: this.#ui, size: { width: '700px', height: '550px' } }, dlg => {
                     try {
-                        var values = this.#form.getValues();
+                        var values = this.#form.getValues(true);
 
                         var pickedNextStage = null;
                         if (this.#item.next_stage_pick == 'T') {
@@ -161,12 +164,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 [twcSrfWorkflowItem.Fields.PLANNED]: item.planned,
                                 [twcSrfWorkflowItem.Fields.STATUS]: item.status,
                                 [twcSrfWorkflowItem.Fields.ASSIGNED_TO]: item.assigned_to,
-                                [twcSrfWorkflowItem.Fields.PROFILE]: item.profile,
+                                //[twcSrfWorkflowItem.Fields.PROFILE]: item.profile,
                             };
                             if (item.actual) { i[twcSrfWorkflowItem.Fields.ACTUAL] = item.actual; }
                             if (form) {
                                 i.formData = { record: form.record, passField: item.review_pass_field };
-                                for (var k in form.fields) { i.formData[form.fields[k].id] = values[form.fields[k].id]; }
+                                for (var k in form.fields) {
+                                    var v = values[form.fields[k].id];
+                                    i.formData[form.fields[k].id] = v?.value || v;
+                                }
                                 item.review_passed = values[item.review_pass_field] ? 'T' : 'F';
                             }
                             items.push(i);
@@ -189,13 +195,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         var setStatus = this.#item.set_status;
                         core.array.each(nextSteps, next => {
                             if (pickedNextStage && pickedNextStage != next.id) { return; }
-                            next.planned = values[`planned_date_${next.id}`];
-                            next.assigned_to = values[`assigned_to_${next.id}`];
-                            next.status = (next.is_last_stage == 'T') ? twcSrfWorkflowEngine.WorkflowStatus.COMPLETED : twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS;
-                            next.status_name = 'In Progress';
 
-                            setStatus = next.set_status;
-
+                            var required = values[`required_${next.id}`];
+                            if (required === undefined) { required = true; }
+                            if (required) {
+                                next.planned = values[`planned_date_${next.id}`];
+                                next.assigned_to = values[`assigned_to_${next.id}`]?.value;
+                                next.assigned_to_name = values[`assigned_to_${next.id}`]?.text;
+                                next.status = (next.is_last_stage == 'T') ? twcSrfWorkflowEngine.WorkflowStatus.COMPLETED : twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS;
+                            } else {
+                                next.planned = '';
+                                next.assigned_to = '';
+                                next.assigned_to_name = '';
+                                next.status = twcSrfWorkflowEngine.WorkflowStatus.NOT_REQUIRED;
+                            }
+                            //next.status_name = 'In Progress';
+                            if (next.set_status) { setStatus = next.set_status; }
                             appendItem(next);
                         })
 
@@ -378,6 +393,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 <th style="width: 25px;"></th>
                                 <th style="width: 75px; text-align: center;">Step</th>
                                 <th>Description</th>
+                                <th style="width: 150px; text-align: center;">Assigned To</th>
                                 <th style="width: 120px; text-align: center;">Planned</th>
                                 <th style="width: 120px; text-align: center;">Actual</th>
                                 <th style="width: 150px; text-align: center;">Profile</th>
@@ -437,6 +453,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             ${loopTCell}
                             <td style="text-align: center;">${item.step_no}</td>
                             <td>${item.stage_name}</td>
+                            <td style="text-align: center;">${item.assigned_to_name || ''}</td>
                             <td class="${(item.planned && item.planned < TODAY) ? 'ktl-highlight-red' : ''}" style="text-align: center;">
                                 ${plannedDateInput}
                             </td>

@@ -37,6 +37,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             // @@TODO: run validations on srf and srfItems records
 
             // @@TODO: error handling????
+
+            var srfCancelled = false;
+
             var submitInfo = {};
             submitInfo[twcSrf.Type] = { id: payload.id, fields: [], values: [] };
             for (var k in payload) {
@@ -46,11 +49,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (fieldPath.length == 1) {
                     submitInfo[twcSrf.Type].fields.push(k);
                     submitInfo[twcSrf.Type].values.push(payload[k])
+
+                    if (k == twcSrf.Fields.SRF_STATUS) {
+                        if (payload[k] == twcSrf.Status.SRFCancelled) {
+                            srfCancelled = true;
+                        }
+                    }
                 }
             }
 
             if (payload.id) {
                 recu.submit(twcSrf.Type, payload.id, submitInfo[twcSrf.Type].fields, submitInfo[twcSrf.Type].values);
+
             } else {
                 var newSrf = twcSrf.get();
                 newSrf.sRFStatus = twcSrf.Status.Draft;
@@ -73,6 +83,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             saveSiteSrfItem(payload, twcSrfItem.StepType.GIE);
             saveSiteSrfItem(payload, twcSrfItem.StepType.FEEDER);
             saveSiteSrfFile(payload);
+
+            if (srfCancelled) {
+                twcSrfWorkflowEngine.cancelWorkflow({ srf: payload.id });
+            }
 
             return payload.id;
 
@@ -297,7 +311,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getAssignToEmployees(options) {
             return coreSQL.run(`
-                select  id as value, entityid as text
+                select  id as value, entityid as text, custentity_twc_can_execute_pack as can_execute_pack
                 from    employee
                 where   isinactive = 'F'
                 order by entityid

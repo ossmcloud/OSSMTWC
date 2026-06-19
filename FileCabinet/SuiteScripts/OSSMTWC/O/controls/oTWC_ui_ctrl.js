@@ -39,8 +39,16 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     }
 
                     if (!skipValidations) {
-                        if (!obj[c.id] && c.mandatory && !c.disabled && !c.hide) {
-                            errors += `field: <b>${c.label || c.id}</b> cannot be empty<br />`;
+                        if (!c.disabled && !c.hide) {
+                            if (c.type == ctrlBase.CTRL_TYPE.TOGGLE) {
+                                if (c.mandatory && obj[c.id] === null) {
+                                    errors += `field: <b>${c.label || c.id}</b> cannot be empty<br />`;
+                                }
+                            } else {
+                                if (c.mandatory && !obj[c.id]) {
+                                    errors += `field: <b>${c.label || c.id}</b> cannot be empty<br />`;
+                                }
+                            }
                         }
                     }
                 });

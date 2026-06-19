@@ -118,6 +118,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (!this.#r) { this.load(this.id); }
                 return this.#r
             }
+            get isNew() { return this.#state == RECORD_STATE.NEW; }
 
             load(id) {
                 if (!id) { id = this.#id; }
