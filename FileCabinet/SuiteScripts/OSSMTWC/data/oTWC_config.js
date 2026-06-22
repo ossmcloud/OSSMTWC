@@ -232,19 +232,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             userInfo.profileInfo = profileInfo;
 
             var designatedContactList = coreSQL.run(`select id, name, custrecord_twc_comp_des_contact_sign as can_sign from customrecord_twc_comp_des_contact`);
-            var designatedContacts = profileInfo.designated_contact;
+            var designatedContacts = profileInfo?.designated_contact;
             if (designatedContacts) {
                 designatedContacts = designatedContacts.split(',').map(i => { return parseInt(i.trim()) });
                 designatedContacts = designatedContactList.filter(i => { return designatedContacts.indexOf(i.id) >= 0; })
             } else {
                 designatedContacts = [];
             }
-            userInfo.profileInfo.designatedContacts = designatedContacts;
+            if (userInfo.profileInfo) { userInfo.profileInfo.designatedContacts = designatedContacts; }
 
             if (userInfo.isEmployee) {
                 userInfo.canSign = true;    // @@TODO: remove
             } else {
-                userInfo.canSign = userInfo.profileInfo.designatedContacts.find(i => { return i.can_sign; })?.can_sign == 'T';
+                if (userInfo.profileInfo) { userInfo.canSign = userInfo.profileInfo.designatedContacts.find(i => { return i.can_sign; })?.can_sign == 'T'; }
             }
 
             if (!userInfo.profile) { throw new Error('Your user is not associated to any profile, please contact TL administrator to set you up.') }
