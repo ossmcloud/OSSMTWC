@@ -7,12 +7,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordType = 'customrecord_twc_file_type';
         var _recordFields = {
             NAME: 'name',
+            ALLOWED_STATUSES: 'custrecord_twc_file_type_statuses',
+            USE_IN_SAF: 'custrecord_twc_file_type_use_in_saf',
             HEALTH__AND__SAFETY: 'custrecord_twc_file_type_hs',
             METHOD_STATEMENTS: 'custrecord_twc_file_type_method',
             INSURANCE: 'custrecord_twc_file_type_insurance',
             IMAGE: 'custrecord_twc_file_type_image',
             COMPLETIONRESOLUTION_IMAGE: 'custrecord_twc_file_type_completion_img',
-            ALLOWED_STATUSES: 'custrecord_twc_file_type_statuses',
+            CERTIFICATE: 'custrecord_twc_file_type_cert',
+            USE_IN_SRF: 'custrecord_twc_file_type_use_in_srf',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -20,12 +23,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
+            ALLOWED_STATUSES: { name: 'custrecord_twc_file_type_statuses', type: 'multiselect', alias: 'allowedStatuses', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file_status' },
+            USE_IN_SAF: { name: 'custrecord_twc_file_type_use_in_saf', type: 'checkbox', alias: 'useinSAF', display: 'normal', mandatory: false },
             HEALTH__AND__SAFETY: { name: 'custrecord_twc_file_type_hs', type: 'checkbox', alias: 'health_and_Safety', display: 'normal', mandatory: false },
             METHOD_STATEMENTS: { name: 'custrecord_twc_file_type_method', type: 'checkbox', alias: 'methodStatements', display: 'normal', mandatory: false },
             INSURANCE: { name: 'custrecord_twc_file_type_insurance', type: 'checkbox', alias: 'insurance', display: 'normal', mandatory: false },
             IMAGE: { name: 'custrecord_twc_file_type_image', type: 'checkbox', alias: 'image', display: 'normal', mandatory: false },
             COMPLETIONRESOLUTION_IMAGE: { name: 'custrecord_twc_file_type_completion_img', type: 'checkbox', alias: 'completionResolutionImage', display: 'normal', mandatory: false },
-            ALLOWED_STATUSES: { name: 'custrecord_twc_file_type_statuses', type: 'multiselect', alias: 'allowedStatuses', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file_status' },
+            CERTIFICATE: { name: 'custrecord_twc_file_type_cert', type: 'checkbox', alias: 'certificate', display: 'normal', mandatory: false },
+            USE_IN_SRF: { name: 'custrecord_twc_file_type_use_in_srf', type: 'checkbox', alias: 'useinSRF', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -40,6 +46,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get('name');
             } set name(value) {
                 this.set('name', value)
+            }
+            
+            get allowedStatuses() {
+                return this.get(_recordFields.ALLOWED_STATUSES);
+            } set allowedStatuses(value) {
+                this.set(_recordFields.ALLOWED_STATUSES, value)
+            }
+            get allowedStatusesName() { return this.getText(_recordFields.ALLOWED_STATUSES); }
+            
+            get useinSAF() {
+                return this.get(_recordFields.USE_IN_SAF);
+            } set useinSAF(value) {
+                this.set(_recordFields.USE_IN_SAF, value)
             }
             
             get health_and_Safety() {
@@ -72,12 +91,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.COMPLETIONRESOLUTION_IMAGE, value)
             }
             
-            get allowedStatuses() {
-                return this.get(_recordFields.ALLOWED_STATUSES);
-            } set allowedStatuses(value) {
-                this.set(_recordFields.ALLOWED_STATUSES, value)
+            get certificate() {
+                return this.get(_recordFields.CERTIFICATE);
+            } set certificate(value) {
+                this.set(_recordFields.CERTIFICATE, value)
             }
-            get allowedStatusesName() { return this.getText(_recordFields.ALLOWED_STATUSES); }
+            
+            get useinSRF() {
+                return this.get(_recordFields.USE_IN_SRF);
+            } set useinSRF(value) {
+                this.set(_recordFields.USE_IN_SRF, value)
+            }
             
             get created() {
                 return this.get(_recordFields.CREATED);

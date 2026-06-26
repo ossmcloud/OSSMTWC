@@ -10,6 +10,14 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             Height: '600px'
         }
 
+        function base64ToBlob(base64, mimeType) {
+            const base64Data = base64.includes(',') ? base64.split(',')[1] : base64;
+            const byteChars = atob(base64Data);
+            const byteArray = Uint8Array.from(byteChars, c => c.charCodeAt(0));
+            return new Blob([byteArray], { type: mimeType });
+        }
+
+
         class TWCPageBase {
             #options = null;
             #page = null;
@@ -310,11 +318,17 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                     window.open(res.url);
                     return;
                 }
-                var dataType = `data:application/${res.type.toLowerCase()}`;
-                var html = `<object style="width: 100%;height: 100%;" data="${dataType};base64,${res.fileContent}"></object>`;
+
+                var dataType = `application/${res.type.toLowerCase()}`;
+
+                var blob = base64ToBlob(res.fileContent, dataType)
+                var blobUrl = URL.createObjectURL(blob);
+
+                
+                var html = `<object style="width: 100%;height: 100%;" data="${blobUrl}"></object>`;
                 if (res.type.indexOf('IMAGE') > 0) {
                     dataType = `data:image/${res.type.toLowerCase().replace('image', '')}`;
-                    html = `<img style="width: 100%; border: 1px solid var(--grid-color);" src="${dataType};base64,${res.fileContent}" />`;
+                    html = `<img style="width: 100%; border: 1px solid var(--grid-color);" src="${blobUrl}" />`;
                 }
                 
 

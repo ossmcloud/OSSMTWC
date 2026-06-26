@@ -179,7 +179,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 userInfo.companyProfile.isVendor = userInfo.companyProfile.is_vendor == 'T';
                 userInfo.companyProfile.isCustomer = userInfo.companyProfile.is_customer == 'T';
                 userInfo.companyProfile.isBoth = userInfo.companyProfile.isVendor && userInfo.companyProfile.isCustomer;
+                userInfo.isBoth = userInfo.companyProfile.isBoth;
+                
+            }
 
+            if (userInfo.companyProfile) {
                 delete userInfo.companyProfile.is_vendor;
                 delete userInfo.companyProfile.is_customer;
             }

@@ -92,7 +92,7 @@ define(['N/currentRecord', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.
                         ${preview}
                     </div>
                     <div style="width: 500px">
-                        ${twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'insuranceType', label: 'Insurance Type', dataSource: insuranceTypes })}
+                        ${twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'insuranceType', label: 'Insurance Type', dataSource: insuranceTypes, multiSelect: true })}
                         <br />
                         ${twcUI.render({ type: twcUI.CTRL_TYPE.DATE, id: 'insuranceExpiry', label: 'Expiry Date' })}
                         <br />
@@ -130,6 +130,15 @@ define(['N/currentRecord', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.
                         if (!values.insuranceExpiry) { throw new Error('Please specify an insurance expiry date'); }
 
                         if (!confirm('Are you sure you wish tp accept this insurance?')) { return; }
+
+                        // @@TODO: values.insuranceType is now an array of values
+                        //              store values.insuranceType into file meta data as JSON.styringify
+                        //              add fields to company table: (ALSO ON LIVE)
+                        //                  EL Insurance File (type: document)
+                        //                  PL Insurance File (type: document)
+                        //                  PI Insurance File (type: document)
+                        //              populate the relavant field with the file ID (the actual file id not the TWC File record id)
+                        //              after save (either accepted or rejected) forward the user to the comapny page
 
 
                         submitFields.push(values.insuranceType.fields.status)

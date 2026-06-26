@@ -99,7 +99,17 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
             get valueObj() {
                 var val = this.#ui.attr('data-value');
-                return core.array.find(this.#dataSource, 'value', val);
+                if (this.#options.multiSelect) {
+                    var valueObjects = [];
+                    val.split(',').map(v => {
+                        var i = core.array.find(this.#dataSource, 'value', v.trim());
+                        if (i) { valueObjects.push(i) };
+                    })
+                    return valueObjects;
+                    
+                } else {
+                    return core.array.find(this.#dataSource, 'value', val);
+                }
             }
 
             setValue(val) {
