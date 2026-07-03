@@ -165,10 +165,14 @@ define(['N/currentRecord', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.
 
         }
 
+        function openRecord(recordUrl) {
+            window.open(recordUrl, '_blank'); 
+        }
         return {
             pageInit: pageInit,
             approveFile: approveFile,
-            approveInsuranceFile: approveInsuranceFile
+            approveInsuranceFile: approveInsuranceFile,
+            openRecord:openRecord
         }
     });
 

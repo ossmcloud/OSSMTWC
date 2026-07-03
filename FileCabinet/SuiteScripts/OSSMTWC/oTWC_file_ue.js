@@ -4,8 +4,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['N/record', 'N/runtime', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'O/form', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', './O/oTWC_themes.js', './data/oTWC_file.js', './data/oTWC_company.js', './data/oTWC_utils.js'],
-    (record, runtime, file, core, coreSql, oui, recu, htmlStyles, twcThemes, twcFile, twcCompany, twcUtils) => {
+define(['N/record', 'N/runtime', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'O/form', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', './O/oTWC_themes.js', './data/oTWC_file.js', './data/oTWC_company.js', './data/oTWC_utils.js','N/url'],
+    (record, runtime, file, core, coreSql, oui, recu, htmlStyles, twcThemes, twcFile, twcCompany, twcUtils, url) => {
 
         function beforeLoad(context) {
 
@@ -32,6 +32,8 @@ define(['N/record', 'N/runtime', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js
                         }
                     }
 
+                    openRecordButton(form, context.newRecord)
+
                 }
 
 
@@ -41,6 +43,28 @@ define(['N/record', 'N/runtime', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js
             }
             return;
 
+        }
+
+        function openRecordButton(form, newRecord) {
+            try {
+                var recordType = newRecord.getValue(twcFile.Fields.RECORD_TYPE)
+                var recordId = newRecord.getValue(twcFile.Fields.RECORD_ID)
+                if (!recordType || !recordId) {
+                    return;
+                }
+                var recordUrl = url.resolveRecord({
+                    recordType: recordType,
+                    recordId: recordId,
+                    isEditMode: false
+                });
+                log.debug("recordUrl", recordUrl)
+                form.buttonAdd('Open Record', `openRecord('${recordUrl}')`)
+
+            }
+            catch (error) {
+                core.logError('OpenRecordButton', error.message);
+                throw error
+            }
         }
 
 
