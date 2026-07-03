@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../data/oTWC_profile.js', '../../data/oTWC_profileUI.js', '../../data/oTWC_file.js', '../../data/oTWC_utils.js', '../../O/controls/oTWC_ui_ctrl.js'],
-    (core, coreSql, b64, twcPageBase, dialog, twcUIPanel, twcConfig, twcIcons, twcProfile, twcProfileUI, twcFile, twcUtils, twcUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../data/oTWC_profile.js', '../../data/oTWC_profileUI.js', '../../data/oTWC_file.js', '../../data/oTWC_utils.js', '../../O/controls/oTWC_ui_ctrl.js','../../data/oTWC_company.js'],
+    (core, coreSql, b64, twcPageBase, dialog, twcUIPanel, twcConfig, twcIcons, twcProfile, twcProfileUI, twcFile, twcUtils, twcUI, twcCompany) => {
 
 
         class TWCCompanyProfilePage extends twcPageBase.TWCPageBase {
@@ -120,7 +120,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (e.id.startsWith('custrecord_twc_co_el_') || e.id.startsWith('custrecord_twc_co_pl_') || e.id.startsWith('custrecord_twc_co_pi_')) {
                         var statusId = `${e.id.substring(0, 'custrecord_twc_co_el_'.length)}status`;
                         if (e.id == statusId) { return; }
-                        this.ui.getControl(statusId).value = twcUtils.NoActiveExpired.Pending;
+
+                        // this.ui.getControl(statusId).value = twcUtils.NoActiveExpired.Pending;
+                        // New logic for setting expiry status 
+                        if (
+                            e.id === twcCompany.Fields.EL_EXPIRY ||
+                            e.id === twcCompany.Fields.PL_EXPIRY
+                        ) {
+                            var expiryDate = new Date(e.value);
+                            var today = new Date();
+                            console.log("expiryDate", expiryDate)
+                            console.log("today", today)
+
+                            today.setHours(0, 0, 0, 0);
+                            expiryDate.setHours(0, 0, 0, 0);
+
+                            if (expiryDate < today) {
+                                this.ui.getControl(statusId).value = twcUtils.NoActiveExpired.Expired;
+                            } else {
+                                this.ui.getControl(statusId).value = twcUtils.NoActiveExpired.Pending;
+                            }
+                        } else {
+                            this.ui.getControl(statusId).value = twcUtils.NoActiveExpired.Pending;
+                        }
 
                     }
                     console.log(e)
