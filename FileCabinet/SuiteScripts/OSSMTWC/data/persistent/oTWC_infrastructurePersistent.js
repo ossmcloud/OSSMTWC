@@ -61,12 +61,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             TLM: 'custrecord_twc_infra_tlm',
             ACCOMMODATION_DIMENSIONS: 'custrecord_twc_infra_accom_dim',
             RACK_SPACES_AVAILABLE: 'custrecord_twc_infra_rack_space_avail',
-            AC_UNITS: 'custrecord_twc_infra_units',
-            AC_MODEL: 'custrecord_twc_infra_model',
-            AC_INSTALLED: 'custrecord_twc_infra_installed',
-            AC_FEED_PHASE: 'custrecord_twc_infra_ac_feed_phase',
-            LOADINGS: 'custrecord_twc_infra_ldg',
-            NOISE_LEVEL: 'custrecord_twc_infra_noise_lvl',
+            // AC_UNITS: 'custrecord_twc_infra_units',
+            // AC_MODEL: 'custrecord_twc_infra_model',
+            // AC_INSTALLED: 'custrecord_twc_infra_installed',
+            // AC_FEED_PHASE: 'custrecord_twc_infra_ac_feed_phase',
+            // LOADINGS: 'custrecord_twc_infra_ldg',
+            // NOISE_LEVEL: 'custrecord_twc_infra_noise_lvl',
             NEXT_AIRCON_SERVICE: 'custrecord_twc_infra_nxt_aircon_svc',
             INTRUDER_ALARM_PRESENT: 'custrecord_twc_infra_intru_alrm_pres',
             INTRUDER_CODE: 'custrecord_twc_infra_intru_code',
@@ -155,12 +155,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             TLM: { name: 'custrecord_twc_infra_tlm', type: 'select', alias: 'tLM', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_tlm' },
             ACCOMMODATION_DIMENSIONS: { name: 'custrecord_twc_infra_accom_dim', type: 'text', alias: 'accommodationDimensions', display: 'normal', mandatory: false },
             RACK_SPACES_AVAILABLE: { name: 'custrecord_twc_infra_rack_space_avail', type: 'integer', alias: 'rackSpacesAvailable', display: 'normal', mandatory: false },
-            AC_UNITS: { name: 'custrecord_twc_infra_units', type: 'integer', alias: 'aCUnits', display: 'normal', mandatory: false },
-            AC_MODEL: { name: 'custrecord_twc_infra_model', type: 'text', alias: 'aCModel', display: 'normal', mandatory: false },
-            AC_INSTALLED: { name: 'custrecord_twc_infra_installed', type: 'date', alias: 'aCInstalled', display: 'normal', mandatory: false },
-            AC_FEED_PHASE: { name: 'custrecord_twc_infra_ac_feed_phase', type: 'select', alias: 'aCFeedPhase', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_ac_feed_phase' },
-            LOADINGS: { name: 'custrecord_twc_infra_ldg', type: 'integer', alias: 'loadings', display: 'normal', mandatory: false },
-            NOISE_LEVEL: { name: 'custrecord_twc_infra_noise_lvl', type: 'integer', alias: 'noiseLevel', display: 'normal', mandatory: false },
+            // AC_UNITS: { name: 'custrecord_twc_infra_units', type: 'integer', alias: 'aCUnits', display: 'normal', mandatory: false },
+            // AC_MODEL: { name: 'custrecord_twc_infra_model', type: 'text', alias: 'aCModel', display: 'normal', mandatory: false },
+            // AC_INSTALLED: { name: 'custrecord_twc_infra_installed', type: 'date', alias: 'aCInstalled', display: 'normal', mandatory: false },
+            // AC_FEED_PHASE: { name: 'custrecord_twc_infra_ac_feed_phase', type: 'select', alias: 'aCFeedPhase', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_ac_feed_phase' },
+            // LOADINGS: { name: 'custrecord_twc_infra_ldg', type: 'integer', alias: 'loadings', display: 'normal', mandatory: false },
+            // NOISE_LEVEL: { name: 'custrecord_twc_infra_noise_lvl', type: 'integer', alias: 'noiseLevel', display: 'normal', mandatory: false },
             NEXT_AIRCON_SERVICE: { name: 'custrecord_twc_infra_nxt_aircon_svc', type: 'date', alias: 'nextAirconService', display: 'normal', mandatory: false },
             INTRUDER_ALARM_PRESENT: { name: 'custrecord_twc_infra_intru_alrm_pres', type: 'checkbox', alias: 'intruderAlarmPresent', display: 'normal', mandatory: false },
             INTRUDER_CODE: { name: 'custrecord_twc_infra_intru_code', type: 'text', alias: 'intruderCode', display: 'normal', mandatory: false },
@@ -547,42 +547,42 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.RACK_SPACES_AVAILABLE, value)
             }
             
-            get aCUnits() {
-                return this.get(_recordFields.AC_UNITS);
-            } set aCUnits(value) {
-                this.set(_recordFields.AC_UNITS, value)
-            }
+            // get aCUnits() {
+            //     return this.get(_recordFields.AC_UNITS);
+            // } set aCUnits(value) {
+            //     this.set(_recordFields.AC_UNITS, value)
+            // }
             
-            get aCModel() {
-                return this.get(_recordFields.AC_MODEL);
-            } set aCModel(value) {
-                this.set(_recordFields.AC_MODEL, value)
-            }
+            // get aCModel() {
+            //     return this.get(_recordFields.AC_MODEL);
+            // } set aCModel(value) {
+            //     this.set(_recordFields.AC_MODEL, value)
+            // }
             
-            get aCInstalled() {
-                return this.get(_recordFields.AC_INSTALLED);
-            } set aCInstalled(value) {
-                this.set(_recordFields.AC_INSTALLED, value)
-            }
+            // get aCInstalled() {
+            //     return this.get(_recordFields.AC_INSTALLED);
+            // } set aCInstalled(value) {
+            //     this.set(_recordFields.AC_INSTALLED, value)
+            // }
             
-            get aCFeedPhase() {
-                return this.get(_recordFields.AC_FEED_PHASE);
-            } set aCFeedPhase(value) {
-                this.set(_recordFields.AC_FEED_PHASE, value)
-            }
-            get aCFeedPhaseName() { return this.getText(_recordFields.AC_FEED_PHASE); }
+            // get aCFeedPhase() {
+            //     return this.get(_recordFields.AC_FEED_PHASE);
+            // } set aCFeedPhase(value) {
+            //     this.set(_recordFields.AC_FEED_PHASE, value)
+            // }
+            // get aCFeedPhaseName() { return this.getText(_recordFields.AC_FEED_PHASE); }
             
-            get loadings() {
-                return this.get(_recordFields.LOADINGS);
-            } set loadings(value) {
-                this.set(_recordFields.LOADINGS, value)
-            }
+            // get loadings() {
+            //     return this.get(_recordFields.LOADINGS);
+            // } set loadings(value) {
+            //     this.set(_recordFields.LOADINGS, value)
+            // }
             
-            get noiseLevel() {
-                return this.get(_recordFields.NOISE_LEVEL);
-            } set noiseLevel(value) {
-                this.set(_recordFields.NOISE_LEVEL, value)
-            }
+            // get noiseLevel() {
+            //     return this.get(_recordFields.NOISE_LEVEL);
+            // } set noiseLevel(value) {
+            //     this.set(_recordFields.NOISE_LEVEL, value)
+            // }
             
             get nextAirconService() {
                 return this.get(_recordFields.NEXT_AIRCON_SERVICE);
