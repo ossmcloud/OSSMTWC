@@ -148,8 +148,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             var ctrl = this.ui.getControl(f);
                             if (ctrl.type == 'date') {
                                 if (value) { value = value.substring(0, 10); }
+                                var fromDate = filters['custrecord_twc_saf_start_time_block'];
+                                var toDate = filters['custrecord_twc_saf_end_time_block'];
+                                if (fromDate && value < fromDate) {
+                                    match = false;
+                                    break;
+                                }
+                                 if (toDate && value > toDate) {
+                                    match = false;
+                                    break;
+                                }
+                                continue;
                             }
-
+                            if (!filters[f]) continue;
+                            var values = filters[f].split(',').map(i => i.toString());
+                            value = s[f]?.toString();
                             match = values.indexOf(value) >= 0;
 
                             if (!match) { break; }

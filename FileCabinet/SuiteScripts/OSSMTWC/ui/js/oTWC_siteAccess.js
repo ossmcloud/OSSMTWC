@@ -183,6 +183,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     manageVendorDropDown('saf-vendor', e);
                     manageVendorDropDown('saf-picw', e);
                     this.refreshAccessRequirements();
+                    this.#page.post({ action: 'get-vendor-docs' }, { vendor: this.ui.getControl('saf-vendor').value })
+                        .then(res => {
+                            this.refreshVendorDocuments(res.data);
+                        })
+                        .catch(err => { dialog.error(err); });
                 });
                 this.ui.getControl('saf-vendor')?.on('change', e => { this.refreshAccessRequirements(); });
                 this.ui.getControl('saf-structure')?.on('change', e => { this.refreshAccessRequirements(); });

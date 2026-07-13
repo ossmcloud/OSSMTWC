@@ -262,9 +262,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fibreInfo.fields.push({
                 id: `${twcInfra.Type}`, label: 'Site Fibre',
                 fields: {
-                    [twcInfra.Fields.FIBRE_PRIORITY]: 'Fibre Priority',
-                    [twcInfra.Fields.FIBRE_PHASE]: 'Fibre Phase',
-                    [twcInfra.Fields.FIBRE_PARTNER_PRIORITY]: 'Fibre Partner Priority',
+                    // [twcInfra.Fields.FIBRE_PRIORITY]: 'Fibre Priority',
+                    // [twcInfra.Fields.FIBRE_PHASE]: 'Fibre Phase',
+                    // [twcInfra.Fields.FIBRE_PARTNER_PRIORITY]: 'Fibre Partner Priority',
                     [twcInfra.Fields.FIBRE_DUCT_INSTALLED]: 'Fibre Duct Installed',
                     [twcInfra.Fields.FIBRE_COMMENTS]: 'Fibre Comments',
                 },

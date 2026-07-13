@@ -89,9 +89,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FIBRE_DUCT_INSTALLED: 'custrecord_twc_infra_fibre_duct_instal',
             FIBRE_INFRASTRUCTURE_TYPE: 'custrecord_twc_infra_fibre_infra_type',
             FIBRE_SERVICE_PROVIDERS: 'custrecord_twc_infra_fibre_svc_providers',
-            FIBRE_PRIORITY: 'custrecord_twc_infra_fibre_priority',
-            FIBRE_PHASE: 'custrecord_twc_infra_fibre_phase',
-            FIBRE_PARTNER_PRIORITY: 'custrecord_twc_infra_fibre_partner_prior',
+            // FIBRE_PRIORITY: 'custrecord_twc_infra_fibre_priority',
+            // FIBRE_PHASE: 'custrecord_twc_infra_fibre_phase',
+            // FIBRE_PARTNER_PRIORITY: 'custrecord_twc_infra_fibre_partner_prior',
             FIBRE_COMMENTS: 'custrecord_twc_infra_fibre_comm',
             ACCOMMODATION_TYPE: 'custrecord_twc_accom_type',
             CREATED: 'created',
@@ -183,9 +183,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FIBRE_DUCT_INSTALLED: { name: 'custrecord_twc_infra_fibre_duct_instal', type: 'select', alias: 'fibreDuctInstalled', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_duct_inst' },
             FIBRE_INFRASTRUCTURE_TYPE: { name: 'custrecord_twc_infra_fibre_infra_type', type: 'select', alias: 'fibreInfrastructureType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_type' },
             FIBRE_SERVICE_PROVIDERS: { name: 'custrecord_twc_infra_fibre_svc_providers', type: 'multiselect', alias: 'fibreServiceProviders', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_svc_provide' },
-            FIBRE_PRIORITY: { name: 'custrecord_twc_infra_fibre_priority', type: 'text', alias: 'fibrePriority', display: 'normal', mandatory: false },
-            FIBRE_PHASE: { name: 'custrecord_twc_infra_fibre_phase', type: 'text', alias: 'fibrePhase', display: 'normal', mandatory: false },
-            FIBRE_PARTNER_PRIORITY: { name: 'custrecord_twc_infra_fibre_partner_prior', type: 'text', alias: 'fibrePartnerPriority', display: 'normal', mandatory: false },
+            // FIBRE_PRIORITY: { name: 'custrecord_twc_infra_fibre_priority', type: 'text', alias: 'fibrePriority', display: 'normal', mandatory: false },
+            // FIBRE_PHASE: { name: 'custrecord_twc_infra_fibre_phase', type: 'text', alias: 'fibrePhase', display: 'normal', mandatory: false },
+            // FIBRE_PARTNER_PRIORITY: { name: 'custrecord_twc_infra_fibre_partner_prior', type: 'text', alias: 'fibrePartnerPriority', display: 'normal', mandatory: false },
             FIBRE_COMMENTS: { name: 'custrecord_twc_infra_fibre_comm', type: 'text', alias: 'fibreComments', display: 'normal', mandatory: false },
             ACCOMMODATION_TYPE: { name: 'custrecord_twc_accom_type', type: 'select', alias: 'accommodationType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_accom_type' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
@@ -728,23 +728,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get fibreServiceProvidersName() { return this.getText(_recordFields.FIBRE_SERVICE_PROVIDERS); }
             
-            get fibrePriority() {
-                return this.get(_recordFields.FIBRE_PRIORITY);
-            } set fibrePriority(value) {
-                this.set(_recordFields.FIBRE_PRIORITY, value)
-            }
+            // get fibrePriority() {
+            //     return this.get(_recordFields.FIBRE_PRIORITY);
+            // } set fibrePriority(value) {
+            //     this.set(_recordFields.FIBRE_PRIORITY, value)
+            // }
             
-            get fibrePhase() {
-                return this.get(_recordFields.FIBRE_PHASE);
-            } set fibrePhase(value) {
-                this.set(_recordFields.FIBRE_PHASE, value)
-            }
+            // get fibrePhase() {
+            //     return this.get(_recordFields.FIBRE_PHASE);
+            // } set fibrePhase(value) {
+            //     this.set(_recordFields.FIBRE_PHASE, value)
+            // }
             
-            get fibrePartnerPriority() {
-                return this.get(_recordFields.FIBRE_PARTNER_PRIORITY);
-            } set fibrePartnerPriority(value) {
-                this.set(_recordFields.FIBRE_PARTNER_PRIORITY, value)
-            }
+            // get fibrePartnerPriority() {
+            //     return this.get(_recordFields.FIBRE_PARTNER_PRIORITY);
+            // } set fibrePartnerPriority(value) {
+            //     this.set(_recordFields.FIBRE_PARTNER_PRIORITY, value)
+            // }
             
             get fibreComments() {
                 return this.get(_recordFields.FIBRE_COMMENTS);

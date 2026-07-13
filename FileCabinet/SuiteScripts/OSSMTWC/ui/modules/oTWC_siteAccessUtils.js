@@ -187,12 +187,24 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             //     if (autoApprove && options['saf-accommodation']) { if (!recu.lookUp('customrecord_twc_infra', options['saf-accommodation'], 'custrecord_twc_infra_saf_auto_apprv')) { autoApprove = false; } }
             // }
             var autoApprove = false;
+            log.debug("Oprions", options);
+            log.debug("Site ID and Structure", { siteId: options.siteId, 'saf-structure': options['saf-structure'] });
             if (options.siteId && options['saf-structure']) {
-                var custPresSearch = coreSQL.run(`SELECT custrecord_twc_cus_pre_cust_auto_approve FROM customrecord_twc_cust_pres WHERE custrecord_twc_cust_pres_site = ${options.siteId} AND custrecord_twc_cust_pres_infra = ${options['saf-structure']}`);
-                if (custPresSearch.length > 0 && custPresSearch[0].custrecord_twc_cus_pre_cust_auto_approve == 'T') {
-                    autoApprove = true;
+                var custPresSearch = coreSQL.run(`SELECT custrecord_twc_cus_pre_cust_auto_approve, custrecord_twc_cust_pres_cust FROM customrecord_twc_cust_pres WHERE custrecord_twc_cust_pres_site = ${options.siteId} AND custrecord_twc_cust_pres_infra = ${options['saf-structure']}`);
+                log.debug("Customer Presence Search", custPresSearch);
+                var safCustomer = options['saf-customer'];
+                if (custPresSearch.length > 0 && safCustomer) {
+                    for (var i = 0; i < custPresSearch.length; i++) {
+                        var row = custPresSearch[i];
+                        log.debug("Checking Row", { customer: row.custrecord_twc_cust_pres_cust, autoApprove: row.custrecord_twc_cus_pre_cust_auto_approve });
+                        if ( row.custrecord_twc_cus_pre_cust_auto_approve === 'T' && row.custrecord_twc_cust_pres_cust == safCustomer ) {
+                            autoApprove = true;
+                            break; // Stop once a matching record is found
+                        }
+                    }
                 }
             }
+            log.debug("Auto Approve", autoApprove);
             var requiresSrf = recu.lookUp('customrecord_twc_saf_type', options.safType, 'custrecord_twc_saf_type_require_srf');
 
             return {
