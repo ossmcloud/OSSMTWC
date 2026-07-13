@@ -121,6 +121,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 try {
 
                     var accrStatus = null;      //CompanyAccreditationStatus
+                    var insStatus = [] 
 
                     var fields = []; var values = [];
                     for (var ins in twcUtils.Insurances) {
@@ -131,6 +132,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 if (res.value == twcUtils.NoActiveExpired.Expired) {
                                     // @@NOTE: If the status of any insurance is Expired AND the Insurance Mandatory field for that insurance is Yes, then the overall Company Accreditation Status should be set to Certs Expired
                                     accrStatus = twcUtils.CompanyAccreditationStatus.CertsExpired;
+                                    //@@NOTE : If the EL or PL date is expired, change the correspondig status to Expired
+                                    insStatus.push({
+                                        field: twcUtils.Insurances[ins].field,
+                                        value: twcUtils.NoActiveExpired.Expired
+                                    })
+
                                 }
                                 
                             }
@@ -151,6 +158,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         fields.push(twcCompany.Fields.ACCREDITATION_STATUS);
                         values.push(accrStatus);
                     }
+                    insStatus.forEach(({ field, value }) => {
+                        fields.push(field)
+                        values.push(value)
+                    });
 
                     if (values.length > 0) {
                         core.logDebug('validateCompanyAccreditation', `${c.id}: ${JSON.stringify(fields)} - ${JSON.stringify(values)}`);
