@@ -788,6 +788,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 acl.custrecord_twc_acl_cont = ${options.vendor}
                             or c.id = ${options.vendor}
                         )
+                        AND c.id <> ${options.vendor}
                         ${additionalFilters}
                         order by LOWER(c.name)
                     `
