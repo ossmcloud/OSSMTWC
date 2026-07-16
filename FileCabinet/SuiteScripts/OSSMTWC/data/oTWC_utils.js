@@ -669,9 +669,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getSafContractorFiles(options) {
+            log.debug("OPTIONS..",options)
             var fileIds = options['custrecord_twc_saf_method_statement'] || '';
             if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
-            fileIds += options['custrecord_twc_saf_health_safety'];
+            fileIds += options['custrecord_twc_saf_health_safety'] || ''    //@@NOTE : added || '' to fix issue with null value getting appended to fileIds
+            log.debug("fileIds..",fileIds)
+
             return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})` } } })
         }
 
@@ -700,12 +703,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getTktResolutionFiles(options) {
+            log.debug('OPTIONS',options)
             var fileIds = options['custrecord_twc_trbl_tkt_res_files'] || '';
             // if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
             // fileIds += options['custrecord_twc_saf_health_safety'];
             if (!fileIds || !fileIds.trim()) {
                 fileIds = '0';
             }
+            log.debug('fileIds',fileIds)
             return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})`, 'customrecord_twc_file': FILE_STATUS.Approved } } })
         }
 
@@ -725,6 +730,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 join    customrecord_twc_file_type t on t.id = f.${twcFile.Fields.R_TYPE}
                 where   f.isinactive = 'F'
             `
+            log.debug("FILTERS",options.filters)
             if (options.filters) {
                 if (options.filters.constructor.name == 'String') {
                     sql += options.filters;

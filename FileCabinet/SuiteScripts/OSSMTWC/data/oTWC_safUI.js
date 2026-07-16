@@ -494,16 +494,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var fieldGroups = [];
             if (options.editMode) {
-                fieldGroups = getSAFInfoPanels_Builder(dataSource, userInfo, options);
+                fieldGroups = getSAFInfoPanels_Builder(dataSource, userInfo, options); //@@NOTE commented this and added below lien to fix issue with fieldGroups.push() is not function
+                //fieldGroups.push(getSAFInfoPanels_Builder(dataSource, userInfo, options));
+
             } else {
                 var requiresSrf = twcUtils.getSafType(dataSource[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';
-
                 fieldGroups.push(getSAFInfoPanels_Info(dataSource, userInfo, requiresSrf));
+
                 if (requiresSrf) {
                     fieldGroups.push(getSAFInfoPanels_WorkFlowInfo(dataSource, userInfo));
                     fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Images(dataSource, userInfo));
                 }
                 fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Files(dataSource, userInfo));
+
                 fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo));
 
             }
