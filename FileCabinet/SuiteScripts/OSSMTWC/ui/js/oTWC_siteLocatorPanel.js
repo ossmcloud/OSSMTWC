@@ -136,73 +136,39 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (this.#tableData) {
                     this.#tableDataFiltered = this.#tableData.filter(s => {
                         var match = true;
-
                         // Handle the date range filter once
                         var filterStart = filters['custrecord_twc_saf_start_time_block'];
                         var filterEnd = filters['custrecord_twc_saf_end_time_block'];
-
                         if (filterStart || filterEnd) {
                             hasFilters = true;
-
                             var accessStart = s['custrecord_twc_saf_start_time_block']?.substring(0, 10);
                             var accessEnd = s['custrecord_twc_saf_end_time_block']?.substring(0, 10);
-
                             // Only Start Date supplied
                             if (filterStart && !filterEnd) {
-                                if (!accessEnd || accessEnd < filterStart) {
-                                    return false;
-                                }
+                                if (!accessEnd || accessEnd < filterStart) return false; 
                             }
-
                             // Only End Date supplied
                             if (!filterStart && filterEnd) {
-                                if (!accessStart || accessStart > filterEnd) {
-                                    return false;
-                                }
+                                if (!accessStart || accessStart > filterEnd) return false;
                             }
 
                             // Both Start & End supplied
                             if (filterStart && filterEnd) {
-                                if (
-                                    !accessStart ||
-                                    !accessEnd ||
-                                    accessStart > filterEnd ||
-                                    accessEnd < filterStart
-                                ) {
-                                    return false;
-                                }
+                                if ( !accessStart || !accessEnd || accessStart > filterEnd || accessEnd < filterStart ) return false; 
                             }
                         }
 
                         // Process the remaining filters
                         for (var f in filters) {
-
-                            if (!f.startsWith('cust') && f != 'record_id' && f != 'name' && f != 'site_id') {
-                                continue;
-                            }
-
-                            if (!filters[f]) {
-                                continue;
-                            }
-
+                            if (!f.startsWith('cust') && f != 'record_id' && f != 'name' && f != 'site_id') continue;
+                            if (!filters[f]) continue;
                             // Skip date fields because they have already been processed
-                            if (
-                                f == 'custrecord_twc_saf_start_time_block' ||
-                                f == 'custrecord_twc_saf_end_time_block'
-                            ) {
-                                continue;
-                            }
-
+                            if ( f == 'custrecord_twc_saf_start_time_block' || f == 'custrecord_twc_saf_end_time_block' ) continue;
                             hasFilters = true;
-
                             var values = filters[f].split(',').map(i => i.toString());
                             var value = s[f]?.toString();
-
                             match = values.indexOf(value) >= 0;
-
-                            if (!match) {
-                                break;
-                            }
+                            if (!match) break;
                         }
 
                         if (match) {
@@ -210,16 +176,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 siteIds.push(s.site_id);
                             }
                         }
-
                         return match;
                     });
-
                     this.#sitesTable.refresh(this.#tableDataFiltered);
-
                     if (hasFilters) {
-                        this.#dataFiltered = this.#data.filter(s => {
-                            return siteIds.indexOf(s.id) >= 0;
-                        });
+                        this.#dataFiltered = this.#data.filter(s => { return siteIds.indexOf(s.id) >= 0; });
                     } else {
                         this.#dataFiltered = this.#data;
                     }
