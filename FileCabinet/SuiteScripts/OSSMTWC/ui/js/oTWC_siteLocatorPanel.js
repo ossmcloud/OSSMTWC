@@ -137,43 +137,83 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#tableDataFiltered = this.#tableData.filter(s => {
                         var match = true;
 
-                        for (var f in filters) {
-                            if (!f.startsWith('cust') && f != 'record_id' && f != 'name' && f != 'site_id') { continue; }
-                            if (!filters[f]) { continue; }
+                        // Handle the date range filter once
+                        var filterStart = filters['custrecord_twc_saf_start_time_block'];
+                        var filterEnd = filters['custrecord_twc_saf_end_time_block'];
+
+                        if (filterStart || filterEnd) {
                             hasFilters = true;
 
-                            var values = filters[f].split(',').map(i => { return i?.toString() });
-                            var value = s[f]?.toString();
+                            var accessStart = s['custrecord_twc_saf_start_time_block']?.substring(0, 10);
+                            var accessEnd = s['custrecord_twc_saf_end_time_block']?.substring(0, 10);
 
-                            var ctrl = this.ui.getControl(f);
-                            if (ctrl.type == 'date') {
-                                if (value) { value = value.substring(0, 10); }
-                                var fromDate = filters['custrecord_twc_saf_start_time_block'];
-                                var toDate = filters['custrecord_twc_saf_end_time_block'];
-                                if (fromDate && value < fromDate) {
-                                    match = false;
-                                    break;
+                            // Only Start Date supplied
+                            if (filterStart && !filterEnd) {
+                                if (!accessEnd || accessEnd < filterStart) {
+                                    return false;
                                 }
-                                 if (toDate && value > toDate) {
-                                    match = false;
-                                    break;
+                            }
+
+                            // Only End Date supplied
+                            if (!filterStart && filterEnd) {
+                                if (!accessStart || accessStart > filterEnd) {
+                                    return false;
                                 }
+                            }
+
+                            // Both Start & End supplied
+                            if (filterStart && filterEnd) {
+                                if (
+                                    !accessStart ||
+                                    !accessEnd ||
+                                    accessStart > filterEnd ||
+                                    accessEnd < filterStart
+                                ) {
+                                    return false;
+                                }
+                            }
+                        }
+
+                        // Process the remaining filters
+                        for (var f in filters) {
+
+                            if (!f.startsWith('cust') && f != 'record_id' && f != 'name' && f != 'site_id') {
                                 continue;
                             }
-                            if (!filters[f]) continue;
+
+                            if (!filters[f]) {
+                                continue;
+                            }
+
+                            // Skip date fields because they have already been processed
+                            if (
+                                f == 'custrecord_twc_saf_start_time_block' ||
+                                f == 'custrecord_twc_saf_end_time_block'
+                            ) {
+                                continue;
+                            }
+
+                            hasFilters = true;
+
                             var values = filters[f].split(',').map(i => i.toString());
-                            value = s[f]?.toString();
+                            var value = s[f]?.toString();
+
                             match = values.indexOf(value) >= 0;
 
-                            if (!match) { break; }
+                            if (!match) {
+                                break;
+                            }
                         }
-
 
                         if (match) {
-                            if (siteIds.indexOf(s.site_id) < 0) { siteIds.push(s.site_id); }
+                            if (siteIds.indexOf(s.site_id) < 0) {
+                                siteIds.push(s.site_id);
+                            }
                         }
+
                         return match;
                     });
+
                     this.#sitesTable.refresh(this.#tableDataFiltered);
 
                     if (hasFilters) {
@@ -183,8 +223,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     } else {
                         this.#dataFiltered = this.#data;
                     }
-
-
                 } else {
                     this.#dataFiltered = this.#data.filter(s => {
                         var match = true;
