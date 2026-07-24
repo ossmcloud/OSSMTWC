@@ -5,6 +5,45 @@
 define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_srfItem.js', './oTWC_file.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_safAction.js', './oTWC_profile.js', './oTWC_troubleTickets.js', './oTWC_equipment.js'],
     (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSrfItem, twcFile, twcUI, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafTimeBlock, twcSafLog, twcSafAction, twcProfile, twcTroubleTkts, twcEquipment) => {
 
+        const FIELD_ACCESS_TYPE = {
+            TL: 'TL',           // only TL Staff
+            View: 'View',       // onl;y TL Stuff can edit
+        }
+        
+        var _fieldAccessInfo = null; var _userInfo = null;
+        
+        function getFieldAccess(dataSource, fieldId) {
+            if (!_fieldAccessInfo) {
+                _userInfo = twcUtils.userInfo();
+                _fieldAccessInfo = {};
+
+                coreSQL.each(`
+                    select  custrecord_twc_fieldaccess_table as table, custrecord_twc_fieldaccess_field as field, custrecord_twc_fieldaccess_level as level
+                    from    customrecord_twc_fieldaccess
+                    where  isinactive = 'F'
+                    order by custrecord_twc_fieldaccess_table , custrecord_twc_fieldaccess_field
+                `, fa => {
+                    if (!_fieldAccessInfo[fa.table]) { _fieldAccessInfo[fa.table] = []; }
+                    _fieldAccessInfo[fa.table].push({
+                        field: fa.field,
+                        access: fa.level
+                    })
+                })
+
+                // _fieldAccessInfo[twcSite.Type] = [
+                //     { field: twcSite.Fields.SITE_LEVEL, access: FIELD_ACCESS_TYPE.TL }
+                // ]
+            }
+
+            var accessInfo = _fieldAccessInfo[dataSource.Type];
+            if (!accessInfo) { return; }
+
+            return accessInfo.find(f => { return f.field == fieldId; })
+
+        }
+
+
+
         // @@TODO: need to find a way to make this as handy as possible
         function getDataObject(recordType, callback) {
             if (recordType == twcLock.Type) { return twcLock; }
@@ -49,6 +88,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
             return _fieldDefinitions[tableName];
         }
+
+        
 
         function formatPanelFields(dataSource, panelFields) {
             if (!dataSource.Type) {
@@ -119,6 +160,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                                 if (tbl.data[0][`${col.id}_name`] !== undefined) { return false; }
                             }
 
+                            // @@TODO: implement getFieldAccess for columns visibility
+
                             if (field.onColumnInit) { return field.onColumnInit(tbl, col); }
                         }
                     }
@@ -170,19 +213,22 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     id: field.id.replaceAll('.', '___') // @@IMPORTANT: the 3 underscore are needed to be compatible with jQuery and we use split('___') to get to the field path again, so do not change or if we do change the split('___') too
                 };
 
-                
+                var accessType = getFieldAccess(dataSource, control.id);
+                if (accessType) {
+                    if (accessType.access == FIELD_ACCESS_TYPE.TL && !_userInfo.isEmployee) { return; }
+                    if (accessType.access == FIELD_ACCESS_TYPE.View && !_userInfo.isEmployee) { control.readOnly = true; }
+                }
+
+
                 // @@TODO: @@REVIEW: if the dataSource is a loaded object it would have property names determined by the alias
                 //                   but the field id could the the netsuite field id in which case we would not have got the vale with dataSource[fieldId]
                 //                   so we get the value using the .get method (NOTE: if the .get method is not there this may be a different object)
-
                 if (control.value === undefined && dataSource.get) {
                     if (dataField?.field_type == 'Document') {
                         control.value = dataSource.getText(fieldId);
                     } else {
                         control.value = dataSource.get(fieldId);
                     }
-                    //if (fieldId == 'custrecord_twc_prof_climber_cert_exp') { throw new Error('x: ' + control.value) }
-
                 }
 
                 for (var k in field) {

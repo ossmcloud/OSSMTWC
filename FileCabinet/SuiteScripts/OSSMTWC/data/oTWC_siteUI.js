@@ -349,21 +349,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             powerInfo.fields.push({
                 id: `${twcPowerSupply.Type}`, label: 'Power',
                 fields: {
-                    //[twcPowerSupply.Fields.MPRN]: 'Independent Supply',
                     [twcPowerSupply.Fields.MPRN]: 'MPRN Number',
-                    [twcPowerSupply.Fields.METER_NUMBER]: 'Meter Number',
-                    // [twcPowerSupply.Fields.INTRUDER_ALARM_PRESENT]: 'Check Meter',
-                    //  [twcPowerSupply.Fields.INTRUDER_ALARM_PRESENT]: 'Temp Available',
-                    // [twcPowerSupply.Fields.INTRUDER_ALARM_PRESENT]: 'Multi Metering',
-                    // [twcPowerSupply.Fields.INTRUDER_ALARM_PRESENT]: 'Meters On Panel',
                     [twcPowerSupply.Fields.AVAILABLE_METER_SLOTS]: 'Available Meters On Panel',
                     [twcPowerSupply.Fields.POWER_PHASE]: 'Power Phase',
-                    //  [twcPowerSupply.Fields.INTRUDER_ALARM_PRESENT]: 'Power Load',
-                    // [twcPowerSupply.Fields.INTRUDER_ALARM_PRESENT]: 'Kva Info Site',
-                    [twcPowerSupply.Fields.POWER_SUPPLER]: 'Supplier',
-                    // [twcPowerSupply.Fields.INTRUDER_ALARM_PRESENT]: 'Esb For Meter',
-                    [twcPowerSupply.Fields.NEXT_METER_READING_DATE]: 'Next Reading Date',
-
+                    
                 },
                 where: { [twcPowerSupply.Fields.SITE]: dataSource.id },
                 FieldsInfo: twcPowerSupply.FieldsInfo,

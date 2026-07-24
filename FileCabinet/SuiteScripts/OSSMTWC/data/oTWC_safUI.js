@@ -121,7 +121,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var safActions = [];
             if (dataSource.id && !dataSource.reUse) {
                 coreSQL.each(`
-                    select  sa.id, ea.name as sa_eq_action_id, ea.custrecord_twc_eq_action_eq as saf_equipment, e.custrecord_twc_equip_id as saf_equipment_name,
+                    select  sa.id, ea.name as sa_eq_action_id, ea.custrecord_twc_eq_action_eq as saf_equipment, e.name as saf_equipment_name,
                             sa.custrecord_twc_saf_a_status as saf_status, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as saf_status_name,
                             ea.id as ea_id, ea.custrecord_twc_eq_action_type as saf_type, BUILTIN.DF(ea.custrecord_twc_eq_action_type) as saf_type_name
                     from    customrecord_twc_saf_action sa

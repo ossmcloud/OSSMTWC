@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItem.js', './oTWC_equipmentType.js', './oTWC_file.js', './oTWC_equipment.js'],
-    (runtime, core, coreSQL, twcUI, twcUtils, twcSrf, twcSrfItem, twcEquipmentType, twcFile, twcEquipment) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_icons.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItem.js', './oTWC_equipmentType.js', './oTWC_file.js', './oTWC_equipment.js'],
+    (runtime, core, coreSQL, twcUI, twcIcons, twcUtils, twcSrf, twcSrfItem, twcEquipmentType, twcFile, twcEquipment) => {
 
         function getUIFields(srf, srfItem, userInfo) {
             //throw new Error(JSON.stringify(core.utils.classToObject(srf)))
@@ -23,8 +23,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-equipment', label: '', value: '...', hide: true });
 
             if (srfItem.stepType == twcSrfItem.StepType.ATME) {
-                basicInfo.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'srf-tme-equipment', label: 'TME', mandatory: true, readOnly: true })
-                basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-tme-equipment', label: '', value: '...' });
+                if (srfItem.parent) {
+
+                    // @@NOTE: if we have a parent is because this ATME is being added with a new TME
+                } else {
+                    basicInfo.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'srf-tme-equipment', label: 'TME', mandatory: true, readOnly: true })
+                    basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-tme-equipment', label: '', value: '...' });
+                }
             }
 
             basicInfo.fields.push({ id: twcSrfItem.Fields.ITEM_TYPE, label: 'Item Type', mandatory: true, hide: true, dataSource: twcEquipmentType.lookUp(srfItem.stepType) })
@@ -59,17 +64,64 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             }
 
-            if (userInfo.isEmployee) {
+            if (userInfo.isEmployee && srfItem.stepType != twcSrfItem.StepType.FEEDER) {
                 specInfo.fields.push({ id: twcSrfItem.Fields.INVENTORY_FLAG, label: 'Equipment Flag' })
             }
 
             if (specInfo.fields.length > 0) { fieldGroup.controls.push(specInfo); }
 
+            if (srfItem.stepType == twcSrfItem.StepType.TME) {
+                var relatedEqPanel = { id: 'srf-related-eq', title: 'Related Equipment', hide: isNewRecord, fields: [] };
+                fieldGroup.controls.push(relatedEqPanel);
+
+
+                var relatedEqTableControl = {
+                    id: `srf-related-eq-table`,
+                    type: twcUI.CTRL_TYPE.TABLE,
+                    label: 'related equipment (ATME / FEEDERS)',
+                    columns: [
+                        { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
+                        { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Type' },
+                        { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description' },
+                    ],
+                    dataSource: getSrfAdditionalEquipment(srf, srfItem, userInfo),
+                    showToolbar: true,
+                    showEditDelete: true,
+                    newToolBarButton: `
+                        <div class="twc-table-toolbar-button" data-eq-class="${twcSrfItem.StepType.ATME}">
+                            <div style="vertical-align: bottom; padding-bottom: 1px;">
+                                ${twcIcons.get('addNew', 16)}
+                            </div>
+                            <div>
+                                ADD ATME
+                            </div>
+                        </div>
+                        <div class="twc-table-toolbar-button" data-eq-class="${twcSrfItem.StepType.FEEDER}">
+                            <div style="vertical-align: bottom; padding-bottom: 1px;">
+                                ${twcIcons.get('addNew', 16)}
+                            </div>
+                            <div>
+                                ADD FEEDER
+                            </div>
+                        </div>
+                    `
+                }
+                relatedEqPanel.fields.push(relatedEqTableControl);
+
+            }
+
             return fieldGroup;
         }
 
+        function getSrfAdditionalEquipment(srf, srfItem, userInfo) {
 
-        function getStepTableUIControl(srf, stepType) {
+            return srfItem.relatedItems || [];
+
+            return [];
+        }
+
+
+        function getStepTableUIControl(srf, stepType, dataSource) {
             var label = '';
             var fields = {
                 //[twcSrfItem.Fields.STEP_TYPE]: 'Step Type',
@@ -98,13 +150,31 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 throw new Error(`Invalid SRF Item Step Type: ${stepType}`);
             }
 
+            var items = null;
+            if (dataSource) {
+                items = dataSource.filter(i => { return i[twcSrfItem.Fields.STEP_TYPE] == stepType; })
+            } else {
+                items = twcSrfItem.select(
+                    {
+                        fields: fields,
+                        where: {
+                            [twcSrfItem.Fields.SRF]: srf.id || 0,
+                            [twcSrfItem.Fields.STEP_TYPE]: stepType,
+                        },
+                        useNames: true
+                    }
+                );
+            }
+
+
             return {
                 id: `${twcSrfItem.Type}_${stepType}`, recordType: twcSrfItem.Type, label: label,
                 fields: fields,
-                where: {
-                    [twcSrfItem.Fields.SRF]: srf.id || 0,
-                    [twcSrfItem.Fields.STEP_TYPE]: stepType,
-                },
+                // where: {
+                //     [twcSrfItem.Fields.SRF]: srf.id || 0,
+                //     [twcSrfItem.Fields.STEP_TYPE]: stepType,
+                // },
+                dataSource: items,
                 FieldsInfo: twcSrfItem.FieldsInfo
             }
 
@@ -113,25 +183,52 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
         function getFileTableUIControl(srf, stepType) {
-            return {
-                id: `${twcFile.Type}`, label: 'Step 4 of 5: Drawings/GAD & Documents',
-                fields: {
-                    [twcFile.Fields.NAME]: {
-                        title: 'Name',
-                        link: {
-                            url: 'onclick="twc.page.previewFile(${id})"',
-                            valueField: 'id',
-                            target: '_self'
-                        }
-                    },
-                    [twcFile.Fields.DESCRIPTION]: 'Description',
-                    [twcFile.Fields.REVISION]: 'Revision',
-
+            var fields = {
+                [twcFile.Fields.NAME]: {
+                    title: 'Name',
+                    link: {
+                        url: 'onclick="twc.page.previewFile({ twcFile: ${id}} )"',
+                        valueField: 'id',
+                        target: '_self'
+                    }
                 },
+                [twcFile.Fields.DESCRIPTION]: 'Description',
+                [twcFile.Fields.REVISION]: 'Revision',
+
+            };
+
+            var files = twcFile.select({
+                fields: fields,
                 where: {
                     [twcFile.Fields.RECORD_TYPE]: twcSrf.Type,
                     [twcFile.Fields.RECORD_ID]: srf.id || 0,
-                }
+                },
+                useNames: true
+            })
+
+            srf.files = files;
+
+            return {
+                id: `${twcFile.Type}`, label: 'Step 4 of 5: Drawings/GAD & Documents',
+                fields: fields,
+                // fields: {
+                //     [twcFile.Fields.NAME]: {
+                //         title: 'Name',
+                //         link: {
+                //             url: 'onclick="twc.page.previewFile(${id})"',
+                //             valueField: 'id',
+                //             target: '_self'
+                //         }
+                //     },
+                //     [twcFile.Fields.DESCRIPTION]: 'Description',
+                //     [twcFile.Fields.REVISION]: 'Revision',
+
+                // },
+                // where: {
+                //     [twcFile.Fields.RECORD_TYPE]: twcSrf.Type,
+                //     [twcFile.Fields.RECORD_ID]: srf.id || 0,
+                // }
+                dataSource: files
             }
 
         }

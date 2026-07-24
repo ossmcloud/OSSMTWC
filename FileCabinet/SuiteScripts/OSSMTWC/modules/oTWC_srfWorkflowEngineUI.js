@@ -3,8 +3,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_site.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfWorkflowEngine.js', '../data/oTWC_icons.js'],
-    function (core, coreSql, recu, https, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSite, dialog, twcUi, twcSrfWorkflowEngine, twcIcons) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_site.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfWorkflowEngine.js', '../data/oTWC_icons.js', './oTWC_sdsEngineUI.js'],
+    function (core, coreSql, recu, https, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSite, dialog, twcUi, twcSrfWorkflowEngine, twcIcons, twcSdsEngineUI) {
 
         const TODAY = (new Date()).format();
 
@@ -32,7 +32,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return `color: ${styles.color}; background-color: ${styles.bkgd}`;
         }
 
-
+        function canEditWorkflowItem(item, userInfo) {
+            if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {
+                if (item.is_review == 'T' && item.profile == userInfo.profile) {
+                    return true;
+                }
+            } else {
+                if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW || item.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         class WorkflowFormItem {
             #workflowForm = null;
@@ -45,7 +56,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#workflowForm = form;
                 this.#workflow = form.workflow;
                 this.#item = item;
-                this.#readOnly = this.#item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || this.#item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED;
+
+                this.#readOnly = !canEditWorkflowItem(item, form.data.userInfo);
+                //this.#readOnly = this.#item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || this.#item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED;
             }
 
             render(callback) {
@@ -73,11 +86,33 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     </div>
                 `);
 
+                // @@TODO: do not hardcode
+                var isTLResponse = this.#item.next_stage_pick == 'T';   // this.#item.stage == 7;
+                var completedCount = 0; var passedCount = 0;
+
+                if (isTLResponse) {
+                    // @@NOTE: get the last feedback issue step id
+                    var feedbackIssued = this.#workflow.items.filter(i => { return i.set_status == twcUtils.SrfStatus.FeedbackIssued && i.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED; });
+                    feedbackIssued = (feedbackIssued.length > 0) ? feedbackIssued[feedbackIssued.length - 1].id : 0;
+                    // @@NOTE: get all previous steps but AFTER the last feedback
+                    var prevSteps = this.#workflow.items.filter(i => { return i.next_stage.indexOf(this.#item.stage) >= 0 && i.status != twcSrfWorkflowEngine.WorkflowStatus.NOT_REQUIRED && i.id > feedbackIssued; });
+                    // @@NOTE: now loop and count completed and passed
+                    core.array.each(prevSteps, prevStep => {
+                        if (prevStep.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED) {
+                            completedCount++;
+                            if (prevStep.review_passed == 'T') { passedCount++; }
+                        }
+                    })
+
+                    if (completedCount < prevSteps.length) {
+                        this.#readOnly = true;
+                    }
+                }
+
 
                 var nextSteps = this.#workflow.items.filter(i => {
                     if (this.#item.next_stage_pick == 'T') {
-                        return (this.#item.next_stage.indexOf(i.stage) >= 0 && (i.status == twcSrfWorkflowEngine.WorkflowStatus.NEW || i.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS)
-                        );
+                        return (this.#item.next_stage.indexOf(i.stage) >= 0 && (i.status == twcSrfWorkflowEngine.WorkflowStatus.NEW || i.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS));
                     } else {
                         return this.#item.next_stage.indexOf(i.stage) >= 0 && this.#item.id < i.id;
                     }
@@ -88,8 +123,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     nextStepContainerOuter.append(nextStepContainer);
                     core.array.each(nextSteps, next => {
                         var radioButton = '';
-                        if (this.#item.next_stage_pick == 'T') {
-                            radioButton = `<div style="width: 30px;"><input type="radio" style="transform: scale(2);" name="pick_next_stage" data-id="${next.id}" ${this.#readOnly ? 'readonly' : ''} /></div>`;
+
+                        if (isTLResponse) {
+                            // @@NOTE: if we have a TL Response stage then only allow for approve/feedback depending if all required checks have passed
+                            if (next.set_status != twcUtils.SrfStatus.SRFApproved && next.set_status != twcUtils.SrfStatus.FeedbackIssued) { return; }
+                            if (next.set_status == twcUtils.SrfStatus.SRFApproved && passedCount < completedCount) { return; }
+                            if (next.set_status == twcUtils.SrfStatus.FeedbackIssued && passedCount == completedCount) { return; }
+                        // }
+
+                      
+                        // if (this.#item.next_stage_pick == 'T') {
+                            radioButton = `<div style="width: 30px;"><input type="radio" style="transform: scale(2);" name="pick_next_stage" data-id="${next.id}" ${this.#readOnly ? 'readonly' : 'checked'} /></div>`;
                         }
 
                         var assignToDropDOwn = '';
@@ -129,8 +173,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         </div>
                     `);
                     for (var k in formData.fields) {
-                        formData.fields[k].value = this.#item[formData.fields[k].id] || this.#workflow[formData.fields[k].id];
-                        formData.fields[k].readOnly = this.#readOnly;
+                        if (formData.fields[k].type != 'button') {
+                            formData.fields[k].value = this.#item[formData.fields[k].id] || this.#workflow[formData.fields[k].id];
+                        }
+                        if (formData.fields[k].readOnly === undefined) {
+                            formData.fields[k].readOnly = this.#readOnly;
+                        }
 
                         if (formData.fields[k].dataSourceConfig) {
                             formData.fields[k].dataSource = this.#workflowForm.data[formData.fields[k].dataSourceConfig] || [];
@@ -142,6 +190,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
 
                 this.#form = twcUi.init({}, this.#ui);
+
+                // @@NOTE: this is a bit dirty but will do for now
+                this.#form.getControl('generate_sds')?.on('click', e => {
+                    twcSdsEngineUI.openDialog(this.#workflowForm.page, this.#workflowForm.data.siteRequestInfo, () => {
+                        this.#form.getControl('custrecord_twc_srf_lic_pack_prod').value = TODAY;
+                    }) 
+                })
+                // @@NOTE: this is a bit dirty but will do for now
+                this.#form.getControl('print_sds')?.on('click', e => {
+                    twcSdsEngineUI.printSDS(this.#workflowForm.page, this.#workflowForm.data.siteRequestInfo);
+                })
+
 
                 var method = this.#readOnly ? 'open' : 'confirm';
                 dialog[method]({ title: 'manage item', content: this.#ui, size: { width: '700px', height: '550px' } }, dlg => {
@@ -258,6 +318,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             get workflow() { return this.#workflow; }
             get data() { return this.#page.data; }
+            get page() { return this.#page; }
 
             async post(action, payload) {
                 if (action == 'update-workflow') {
@@ -416,17 +477,27 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                     if (item.stage_loop != 'T') { loopStart = false; loopCellAdded = false; }
 
-                    var editIcon = '';
-                    if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {
-                        editIcon = `<span class="edit-item" style="cursor: pointer;">${twcIcons.get('lock', 16)}</span>`;
-                    } else {
-                        if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW || item.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS) {
-                            editIcon = `<span class="edit-item" style="cursor: pointer;">${twcIcons.get('pencil', 16)}</span>`;
-                            if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW && prevItem?.status != twcSrfWorkflowEngine.WorkflowStatus.COMPLETED) {
-                                editIcon = ''
-                            }
-                        }
+
+                    var editIcon = `<span class="edit-item" style="cursor: pointer;">${twcIcons.get(canEditWorkflowItem(item, this.data.userInfo) ? 'pencil' : 'lock', 16)}</span>`;;
+                    if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW && prevItem?.status != twcSrfWorkflowEngine.WorkflowStatus.COMPLETED) {
+                        editIcon = ''
                     }
+
+                    // var editIcon = '';
+                    // if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {
+                    //     if (item.is_review == 'T' && item.profile == this.data.userInfo.profile) {
+                    //         editIcon = `<span class="edit-item" style="cursor: pointer;">${twcIcons.get('pencil', 16)}</span>`;   
+                    //     } else {
+                    //         editIcon = `<span class="edit-item" style="cursor: pointer;">${twcIcons.get('lock', 16)}</span>`;
+                    //     }
+                    // } else {
+                    //     if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW || item.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS) {
+                    //         editIcon = `<span class="edit-item" style="cursor: pointer;">${twcIcons.get('pencil', 16)}</span>`;
+                    //         if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW && prevItem?.status != twcSrfWorkflowEngine.WorkflowStatus.COMPLETED) {
+                    //             editIcon = ''
+                    //         }
+                    //     }
+                    // }
 
                     var plannedDateInput = `<input type="date" style="text-align: center; border: none; background-color: transparent; color: inherit;" id="date-planned-${item.id}" value="${item.planned || ''}" />`;
                     if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || this.#workflow.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || this.#workflow.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {

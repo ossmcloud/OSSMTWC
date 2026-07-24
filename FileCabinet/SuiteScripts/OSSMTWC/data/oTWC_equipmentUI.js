@@ -21,7 +21,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getInventoryTableFields() {
             var inventoryFields = [
-                { field: twcInventory.Fields.EQUIPMENT_ID , title: 'Eq. ID'},
+                { field: twcInventory.Fields.NAME , title: 'Eq. ID'},
                 { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS , title: 'Install Status'},
                 { field: twcInventory.Fields.CUSTOMER , title: 'Customer'},
                 { field: twcInventory.Fields.MAKE , title: 'Make'},
@@ -43,7 +43,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push(tmeInventories);
 
             var tableFields = {
-                [twcInventory.Fields.EQUIPMENT_STATUS]: 'Status',
+                [twcInventory.Fields.EQUIPMENT_INSTALL_STATUS]: 'Install Status',
+                [twcInventory.Fields.EQUIPMENT_LICENCE_STATUS]: 'License Status',
                 [twcInventory.Fields.CUSTOMER]: 'Customer',
                 [twcInventory.Fields.VOLTAGE_TYPE]: { title: 'Type' },
                 [twcInventory.Fields.DESCRIPTION]: 'Desc',
@@ -70,7 +71,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 [twcInventory.Fields.CUSTOMER_REF]: 'Cust. Ref',
                 [twcInventory.Fields.INVENTORY_FLAG]: 'Equipment Flag',
                 [twcInventory.Fields.CREATED]: 'Date',
-                [twcInventory.Fields.FEEDERS]: 'Feeders',
+                // [twcInventory.Fields.FEEDERS]: 'Feeders',
                 [twcInventory.Fields.WIDTH_MM]: { hide: true },
                 [twcInventory.Fields.HEIGHTDEPTH_MM]: { hide: true },
             }

@@ -147,7 +147,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var userInfo = coreSQL.first({
                 query: `
-                    select  e.id, e.type, e.email, e.entitytitle as name, NVL(e.mobilephone, e.phone) as phone, emp.custentity_twc_prj_power_user as power_user
+                    select  e.id, e.type, e.email, e.entitytitle as name, NVL(e.mobilephone, e.phone) as phone, emp.custentity_twc_prj_power_user as power_user, emp.custentity_twc_can_execute_pack as can_execute_pack
                     from    entity e
                     left join employee emp on emp.id = e.id
                     where   e.id = ?
@@ -156,9 +156,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             })
 
             userInfo.powerUser = userInfo.power_user == 'T';
+            userInfo.canExecutePack = userInfo.can_execute_pack == 'T';
             delete userInfo.power_user;
+            delete userInfo.can_execute_pack;
 
-            userInfo.permission = permissions.get(context);
+            if (context) { userInfo.permission = permissions.get(context); }
 
             userInfo.recordId = userInfo.id;
 
@@ -180,7 +182,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 userInfo.companyProfile.isCustomer = userInfo.companyProfile.is_customer == 'T';
                 userInfo.companyProfile.isBoth = userInfo.companyProfile.isVendor && userInfo.companyProfile.isCustomer;
                 userInfo.isBoth = userInfo.companyProfile.isBoth;
-                
+
             }
 
             if (userInfo.companyProfile) {
@@ -246,7 +248,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (userInfo.profileInfo) { userInfo.profileInfo.designatedContacts = designatedContacts; }
 
             if (userInfo.isEmployee) {
-                userInfo.canSign = true;    // @@TODO: remove
+                //userInfo.canSign = true;    // @@TODO: remove
             } else {
                 if (userInfo.profileInfo) { userInfo.canSign = userInfo.profileInfo.designatedContacts.find(i => { return i.can_sign; })?.can_sign == 'T'; }
             }
@@ -327,6 +329,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         return {
+            CONTRACTOR_FLAG: CONTRACTOR_FLAG,
+            CUSTOMER_FLAG: CUSTOMER_FLAG,
             PERMISSION_LEVEL: permissions.LEVEL,
             PERMISSION_FEATURE: permissions.FEATURE,
             userInfo: getUserInfo,

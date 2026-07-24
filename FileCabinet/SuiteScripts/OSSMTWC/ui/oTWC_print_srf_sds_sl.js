@@ -9,27 +9,21 @@ define(['N/render', 'N/file', '../ui/modules/oTWC_siteRequestUtils.js', '../O/oT
     const onRequest = (context) => {
 
         try {
-
-            const recId = context.request.parameters.recid;
-            // Get popup values
-            const sdsData = context.request.parameters || '{}';
-            log.debug("Received Parameters", context.request.parameters);
-            // Fetch data
+            const recId = context.request.parameters.recId;
             const requestJSON = twcSiteRequestUtils.getSrfInfo(recId);
+            if (requestJSON.srfDetails.length == 0) { throw new Error(`No SRF found using id: ${recId}`); }
+
+            // throw new Error(JSON.stringify(requestJSON))
+
+            const sdsData = JSON.parse(requestJSON.srfDetails[0].form_data || '{}');
             requestJSON.sdsData = sdsData;
-            // Load XML template
             const xmlFile = file.load({ id: 'SuiteScripts/OSSMTWC/XML/oTwc_print_SDS.xml' });
             const xmlString = xmlFile.getContents();
-            // Create renderer
             const renderer = render.create();
-            // Set template content
             renderer.templateContent = xmlString;
-            // Add custom data source
             renderer.addCustomDataSource({ format: render.DataSource.OBJECT, alias: 'requestJSON', data: requestJSON });
-            // Render PDF
             const pdfFile = renderer.renderAsPdf();
             pdfFile.name = 'SDS_Report.pdf';
-            // Response
             context.response.writeFile({ file: pdfFile, isInline: true });
         } catch (e) {
 

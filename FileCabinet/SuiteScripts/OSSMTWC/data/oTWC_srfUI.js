@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItemUI.js', './oTWC_fileUI.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfReview.js'],
-    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItemUI, twcFileUI, configUIFields, twcUI, twcSrfReview) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItem.js', './oTWC_srfItemUI.js', './oTWC_fileUI.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfReview.js'],
+    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItem, twcSrfItemUI, twcFileUI, configUIFields, twcUI, twcSrfReview) => {
 
         function getSrfTableFields() {
             // @@TODO: this list of fields to display can be set by user
@@ -75,6 +75,36 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         }
 
+        function getSrfItems(dataSource, userInfo, readOnly) {
+            //throw new Error('ro: '+readOnly)
+            var items = twcSrfItem.select(
+                {
+                    //fields: fields,
+                    where: { [twcSrfItem.Fields.SRF]: dataSource.id || 0, },
+                    useNames: true
+                }
+            );
+
+            if (!readOnly) {
+                var tempItems = [];
+                core.array.each(items, item => {
+                    var parentId = item[twcSrfItem.Fields.TMI_ID_SRF];
+                    if (parentId) {
+                        var parent = items.find(i => { return i.id == parentId; })
+                        parent.parent = true;
+                        if (!parent.relatedItems) { parent.relatedItems = []; }
+                        parent.relatedItems.push(item);
+                    } else {
+                        tempItems.push(item);
+                    }
+                })
+                items = tempItems;
+            }
+
+
+            return items;
+        }
+
         function getSRFInfoPanels(dataSource, userInfo, readOnly) {
             var fieldGroup = { id: 'site-request', title: (dataSource.id) ? `Space Request [${dataSource.name}]` : 'Create New Space Request', collapsed: false, controls: [] };
 
@@ -89,11 +119,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcSrf.Fields.OPERATOR_SITE_ID, label: 'Operator Site ID', mandatory: true })
             if (userInfo.isEmployee) { basicInfo.fields.push({ id: twcSrf.Fields.SRF_TYPE, label: 'SRF Type', dataSource: twcUtils.getSrfTypes(), allowAll: false }) }
 
-            fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 6 (TME)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.TME)] });
-            fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 6 (ATME)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.ATME)] });
-            fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 3 of 6 (GIE)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.GIE)] });
-            fieldGroup.controls.push({ id: 'site-request-step-4', title: 'Step 4 of 6 (Feeders)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.FEEDER)] });
+            var items = getSrfItems(dataSource, userInfo, readOnly);
+
+            fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 6 (TME)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.TME, items)] });
+            fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 6 (ATME)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.ATME, items)] });
+            fieldGroup.controls.push({ id: 'site-request-step-4', title: 'Step 3 of 6 (Feeders)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.FEEDER, items)] });
+            fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 4 of 6 (GIE)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.GIE, items)] });
             fieldGroup.controls.push({ id: 'site-request-step-5', title: 'Step 5 of 6 (Attachments)', fields: [twcSrfItemUI.getFileTableUIControl(dataSource)] });
+
 
             var step5 = {
                 id: 'site-request-step-6', title: 'Step 6 of 6: (Power Supply)', fields: [
@@ -146,7 +179,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 fieldGroup = twcSrfItemUI.getUIFields(srf, childRecord, userInfo);
                 configUIFields.formatPanelFields(childRecord, fieldGroup);
             } else if (childRecord.type == twcFileUI.RecordType) {
-                fieldGroup = twcFileUI.getUIFields(childRecord, userInfo);
+                fieldGroup = twcFileUI.getUIFields(childRecord, userInfo, { srf: true });
             } else {
                 throw new Error(`No Child Record Found in payload (type: ${childRecord.type})`)
             }

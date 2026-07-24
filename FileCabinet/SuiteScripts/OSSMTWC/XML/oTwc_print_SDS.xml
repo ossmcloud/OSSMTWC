@@ -80,7 +80,7 @@
             <td width="20%" class="label" align="right"> Site ID: </td>
             <td width="20%"> ${requestJSON.siteDetails[0].site_id} </td>
             <td width="20%" class="label" align="right"> Operator Site ID: </td>
-            <td width="20%"> ${requestJSON.sdsData.operatorSiteId} </td>
+            <td width="20%"> ${requestJSON.siteDetails[0].operator_site_id} </td>
         </tr>
         <tr>
             <td class="label" align="right">Site Address:</td>
@@ -135,9 +135,9 @@
         </tr>
         <tr>
             <td width="18%" class="label" align="right"> SRF Number: </td>
-            <td width="32%"> S7507 </td>
+            <td width="32%"> ${requestJSON.srfDetails[0].name} </td>
             <td width="18%" class="label" align="right"> SRF Approved: </td>
-            <td width="32%"> 03-12-2025 </td>
+            <td width="32%"> ${requestJSON.srfDetails[0].approval_date} </td>
         </tr>
         <tr>
             <td class="label" align="right"> Drawing ref: </td>
@@ -146,7 +146,7 @@
         </tr>
         <tr>
             <td colspan="2" class="label" align="right"> Site Access Reference Documents </td>
-            <td colspan="2"> TCO16_TKE1019 Site Access Info Dunmurry Hill.pdf </td>
+            <td colspan="2"> ${requestJSON.srfDetails[0].site_access_doc} </td>
         </tr>
 
     </table>
@@ -166,17 +166,17 @@
             <td style="border:1px solid #666; padding:4px;">ID</td>
             <td style="border:1px solid #666; padding:4px;">Type</td>
             <td style="border:1px solid #666; padding:4px;">Description</td>
-            <td style="border:1px solid #666; padding:4px;"> Length<br />(mm) </td>
-            <td style="border:1px solid #666; padding:4px;"> Width<br />(mm) </td>
-            <td style="border:1px solid #666; padding:4px;"> Depth<br />(mm) </td>
-            <td style="border:1px solid #666; padding:4px;"> Equipment<br />Height (m) </td>
-            <td style="border:1px solid #666; padding:4px;"> Weight<br />(kg) </td>
+            <td style="border:1px solid #666; padding:4px;">Length<br />(mm)</td>
+            <td style="border:1px solid #666; padding:4px;">Width<br />(mm)</td>
+            <td style="border:1px solid #666; padding:4px;">Depth<br />(mm)</td>
+            <td style="border:1px solid #666; padding:4px;">Equipment<br />Height (m)</td>
+            <td style="border:1px solid #666; padding:4px;">Weight<br />(kg)</td>
             <td style="border:1px solid #666; padding:4px;">Azimuth</td>
             <td style="border:1px solid #666; padding:4px;">B-End</td>
             <td style="border:1px solid #666; padding:4px;">Location</td>
-            <td style="border:1px solid #666; padding:4px;"> Inventory<br />Flag </td>
-            <td style="border:1px solid #666; padding:4px;"> Atme<br />Count </td>
-            <td style="border:1px solid #666; padding:4px;"> Feeder<br />Count </td>
+            <td style="border:1px solid #666; padding:4px;">Inventory<br />Flag</td>
+            <td style="border:1px solid #666; padding:4px;">Atme<br />Count</td>
+            <td style="border:1px solid #666; padding:4px;">Feeder<br />Count</td>
         </tr>
 
         <#list requestJSON.srfItems as srfItems> 
@@ -187,15 +187,15 @@
                 <td style="border:1px solid #666; padding:4px;">${srfItems.id}</td>
                 <td style="border:1px solid #666; padding:4px;">${srfItems.type}</td>
                 <td style="border:1px solid #666; padding:4px;">${srfItems.description}</td>
-                <td style="border:1px solid #666; padding:4px;">${srfItems.length}</td>
-                <td style="border:1px solid #666; padding:4px;">${srfItems.width}</td>
-                <td style="border:1px solid #666; padding:4px;">${srfItems.depth}</td>
-                <td style="border:1px solid #666; padding:4px;">${srfItems.equip_height}</td>
-                <td style="border:1px solid #666; padding:4px;">${srfItems.weight}</td>
-                <td style="border:1px solid #666; padding:4px;">${srfItems.azimuth}</td>
-                <td style="border:1px solid #666; padding:4px;">${srfItems.b_end}</td>
-                <td style="border:1px solid #666; padding:4px;">${srfItems.location}</td>
-                <td style="border:1px solid #666; padding:4px;">${srfItems.inventory_flag}</td>
+                <td style="border:1px solid #666; padding:4px;">${(srfItems.length!"")?replace("null", "")}</td>
+                <td style="border:1px solid #666; padding:4px;">${(srfItems.width!"")?replace("null", "")}</td>
+                <td style="border:1px solid #666; padding:4px;">${(srfItems.depth!"")?replace("null", "")}</td>
+                <td style="border:1px solid #666; padding:4px;">${(srfItems.equip_height!"")?replace("null", "")}</td>
+                <td style="border:1px solid #666; padding:4px;">${(srfItems.weight!"")?replace("null", "")}</td>
+                <td style="border:1px solid #666; padding:4px;">${(srfItems.azimuth!"")?replace("null", "")}</td>
+                <td style="border:1px solid #666; padding:4px;">${(srfItems.b_end!"")?replace("null", "")}</td>
+                <td style="border:1px solid #666; padding:4px;">${(srfItems.location!"")?replace("null", "")}</td>
+                <td style="border:1px solid #666; padding:4px;">${(srfItems.inventory_flag!"")?replace("null", "")}</td>
                 <td style="border:1px solid #666; padding:4px;">
                 <#if srfItems.step_type == "2" > 
                     1
@@ -203,7 +203,7 @@
                     0
                 </#if>
                 </td>
-                <td style="border:1px solid #666; padding:4px;">${srfItems.feeder_count}</td>
+                <td style="border:1px solid #666; padding:4px;">${(srfItems.feeder_count!"")?replace("null", "")}</td>
             </#if>
         </tr>
         </#list>
@@ -235,11 +235,11 @@
                     <td style="border:1px solid #666; padding:4px;">${srfItems.id}</td>
                     <td style="border:1px solid #666; padding:4px;">${srfItems.type}</td>
                     <td style="border:1px solid #666; padding:4px;">${srfItems.description}</td>
-                    <td style="border:1px solid #666; padding:4px;">${srfItems.length}</td>
-                    <td style="border:1px solid #666; padding:4px;">${srfItems.width}</td>
-                    <td style="border:1px solid #666; padding:4px;">${srfItems.equip_height}</td>
-                    <td style="border:1px solid #666; padding:4px;">${srfItems.location}</td>
-                    <td style="border:1px solid #666; padding:4px;">${srfItems.inventory_flag}</td>
+                    <td style="border:1px solid #666; padding:4px;">${(srfItems.length!"")?replace("null", "")}</td>
+                    <td style="border:1px solid #666; padding:4px;">${(srfItems.width!"")?replace("null", "")}</td>
+                    <td style="border:1px solid #666; padding:4px;">${(srfItems.equip_height!"")?replace("null", "")}</td>
+                    <td style="border:1px solid #666; padding:4px;">${(srfItems.location!"")?replace("null", "")}</td>
+                    <td style="border:1px solid #666; padding:4px;">${(srfItems.inventory_flag!"")?replace("null", "")}</td>
                 </#if>
             </tr>
         </#list>

@@ -233,7 +233,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             var reviewRecordInfo = getReviewRecord(options.wkf);
                             if (reviewRecordInfo.id) {
                                 recu.submit(twcSrfReview.Type, reviewRecordInfo.id, twcSrfReview.Fields.TL_REVIEW_RESULT, twcUtils.SrfReviewStatus.Approved)
-                                
+
                             }
                         }
 
@@ -300,6 +300,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         TO_CHAR(srf.custrecord_twc_srf_tl_drg_draft, 'YYYY-MM-DD') as custrecord_twc_srf_tl_drg_draft,
                         TO_CHAR(srf.custrecord_twc_srf_tl_drg_rev, 'YYYY-MM-DD') as custrecord_twc_srf_tl_drg_rev,
                         TO_CHAR(srf.custrecord_twc_srf_tl_drg_upl, 'YYYY-MM-DD') as custrecord_twc_srf_tl_drg_upl,
+                        TO_CHAR(srf.custrecord_twc_srf_approval_date, 'YYYY-MM-DD') as custrecord_twc_srf_approval_date,
+                        TO_CHAR(srf.custrecord_twc_srf_lic_req, 'YYYY-MM-DD') as custrecord_twc_srf_lic_req,
+                        TO_CHAR(srf.custrecord_twc_srf_lic_pack_prod, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_prod,
+                        srf.custrecord_twc_srf_lic_pack_rev,
+                        TO_CHAR(srf.custrecord_twc_srf_lic_pack_revd, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_revd,
+                        TO_CHAR(srf.custrecord_twc_srf_lic_pack_issued, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_issued,
+                        TO_CHAR(srf.custrecord_twc_srf_lic_pack_signed, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_signed,
+                        srf.custrecord_twc_srf_lic_pack_sign_by
+                        
                     
                 from    ${twcSrfWorkflow.Type} w
                 join    customrecord_twc_srf srf on srf.id = w.custrecord_twc_srf_wkf_parent
@@ -347,8 +356,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function isWaitingForSignature(userInfo, options) {
             if (!options.srf && !options.id) { return null; }
+
+
             var sql = `
-                select  wi.id, wi.custrecord_twc_srf_wkfi_cprofile as profile, custrecord_twc_srf_wks_next as next_stage
+                select  w.id as wkf, wi.id, wi.custrecord_twc_srf_wkfi_cprofile as profile, custrecord_twc_srf_wks_next as next_stage, ws.id as stage, ws.name as stage_name
                 from    customrecord_twc_srf_wkf w
                 join    customrecord_twc_srf srf on srf.id = w.custrecord_twc_srf_wkf_parent
                 join    customrecord_twc_srf_wkfi wi on wi.custrecord_twc_srf_wkfi_parent = w.id
@@ -358,31 +369,49 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 and     ws.custrecord_twc_srf_wks_to_sign = 'T'
                 and     wi.custrecord_twc_srf_wkfi_status = ${WORKFLOW_STATUS.IN_PROGRESS}
             `;
+
             return coreSql.first(sql);
         }
         function postSignature(userInfo, options) {
-            if (!userInfo.canSign) { throw new Error(`You do not have permissions to sign the document`); }
+            if (options.isTLSignature) {
+                if (!userInfo.canExecutePack) { throw new Error(`You do not have permissions to sign the document`); }
+            } else {
+                if (!userInfo.canSign) { throw new Error(`You do not have permissions to sign the document`); }
+            }
             var signatureRecord = isWaitingForSignature(userInfo, options);
             if (!signatureRecord) { throw new Error(`Could not find a pending signature workflow item for srf: ${options.srf}`); }
 
+            var formData = null;
+            if (options.isTLSignature) {
+                formData = {
+                    record: twcSrf.Type,
+                    [twcSrf.Fields.LICENCE_PACK_EXECUTED]: (new Date()).format(),
+                    [twcSrf.Fields.LICENCE_PACK_EXECUTED_BY]: userInfo.recordId,
+                }
+            } else {
+                formData = {
+                    record: twcSrf.Type,
+                    [twcSrf.Fields.LICENCE_PACK_SIGNED]: (new Date()).format(),
+                    [twcSrf.Fields.LICENCE_PACK_SIGNED_BY]: userInfo.profile,
+                }
+            }
+
             var updateOptions = {
                 srf: options.srf,
+                wkf: signatureRecord.wkf,
                 items: [
                     {
                         id: signatureRecord.id,
                         [twcSrfWorkflowItem.Fields.STATUS]: WORKFLOW_STATUS.COMPLETED,
-                        [twcSrfWorkflowItem.Fields.ACTUAL]: new Date(),
-                        formData: {
-                            record: twcSrf.Type,
-                            [twcSrf.Fields.LICENCE_PACK_SIGNED]: new Date(),
-                            [twcSrf.Fields.LICENCE_PACK_SIGNED_BY]: userInfo.profile,
-                        }
+                        [twcSrfWorkflowItem.Fields.ACTUAL]: (new Date()).format(),
+                        formData: formData
                     }
                 ]
             }
 
+
             coreSql.each(`
-                select  wi.id, ws.custrecord_twc_srf_wks_status_to as set_status
+                select  wi.id, ws.custrecord_twc_srf_wks_status_to as set_status, ws.custrecord_twc_srf_wks_is_last as is_last
                 from    customrecord_twc_srf_wkf w
                 join    customrecord_twc_srf srf on srf.id = w.custrecord_twc_srf_wkf_parent
                 join    customrecord_twc_srf_wkfi wi on wi.custrecord_twc_srf_wkfi_parent = w.id
@@ -394,7 +423,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `, nextStage => {
                 updateOptions.items.push({
                     id: nextStage.id,
-                    [twcSrfWorkflowItem.Fields.STATUS]: WORKFLOW_STATUS.IN_PROGRESS,
+                    [twcSrfWorkflowItem.Fields.STATUS]: nextStage.is_last == 'T' ? WORKFLOW_STATUS.COMPLETED : WORKFLOW_STATUS.IN_PROGRESS,
+                    last: nextStage.is_last == 'T'
                 })
 
                 if (nextStage.set_status) {
@@ -406,6 +436,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             return { status: 'success' }
         }
+
+
+
 
 
         function isWaitingForAcceptance(userInfo, options) {
@@ -423,6 +456,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `;
             return coreSql.first(sql);
         }
+
         function acceptSrf(userInfo, options) {
             var approvalRecord = isWaitingForAcceptance(userInfo, options);
             if (!approvalRecord) { throw new Error(`Could not find a pending acceptance workflow item for srf: ${options.srf}`); }
@@ -518,14 +552,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 twcSrf.Fields.TL_DRAWING_UPLOADED,
                 twcSrf.Fields.LICENCE_REQUESTED, twcSrf.Fields.LICENCE_PACK_PRODUCED, twcSrf.Fields.LICENCE_PACK_REVIEWER, twcSrf.Fields.LICENCE_PACK_REVIEWED,
                 twcSrf.Fields.LICENCE_PACK_SIGNED, twcSrf.Fields.LICENCE_PACK_SIGNED_BY,
-                twcSrf.Fields.LICENCE_PACK_EXECUTED, twcSrf.Fields.LICENCE_PACK_EXECUTED_BY
+                twcSrf.Fields.LICENCE_PACK_EXECUTED, twcSrf.Fields.LICENCE_PACK_EXECUTED_BY,
+                twcSrf.Fields.SDS_FORM_DATA
             ]
             var values = [
                 twcUtils.SrfStatus.Draft, 0, null,
                 null,
                 null, null, null, null,
                 null, null,
-                null, null
+                null, null,
+                null
             ]
 
             recu.submit(twcSrf.Type, options.srf, fields, values);

@@ -38,13 +38,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             lookUp: function (options) {
 
                 var o = { fields: { id: 'value' } };
-                o.fields[twcEquipment.Fields.EQUIPMENT_ID] = 'text';
+                o.fields[twcEquipment.Fields.NAME] = 'text';
 
                 o.where = {};
                 o.where[twcEquipment.Fields.CUSTOMER] = options.customer || 0;
                 o.where[twcEquipment.Fields.EQUIPMENT_CLASS] = options.stepType || 0;
 
-                o.orderBy = [twcEquipment.Fields.EQUIPMENT_ID];
+                o.orderBy = [twcEquipment.Fields.NAME];
 
                 return this.select(o)
             },

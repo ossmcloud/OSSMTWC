@@ -17,11 +17,14 @@ define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
                 return { status: 'success' };
             } else if (context.request.parameters.action == 'view-file') {
                 var payload = JSON.parse(context.request.body);
-                var f = file.load(payload.file);
-                if (payload.getUrl) {
-                    return { url: f.url };
+
+                if (payload.file.twcFile) {
+                    payload.file = coreSQL.first(`select custrecord_twc_file_doc as file_id from customrecord_twc_file where id = ${payload.file.twcFile}`)?.file_id;
                 }
 
+                var f = file.load(payload.file);
+
+                if (payload.getUrl) {                    return { url: f.url };                }
                 return { fileContent: f.getContents(), name: f.name, type: f.fileType }
 
             } else {

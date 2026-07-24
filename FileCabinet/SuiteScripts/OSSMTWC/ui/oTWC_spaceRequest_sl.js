@@ -87,14 +87,21 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     }
 
                     var printSDSButton = '';
-                    if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceRequested || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceIssued || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted) {
+                    if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceRequested || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceIssued || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted) {
                         printSDSButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Print SDS', id: 'print-sds' });
                     }
 
                     var signSrfButton = '';
-                    if (twcSrfWorkflowEngine.isWaitingForSignature(pageData.userInfo, pageData.siteRequestInfo)) {
-                        if (pageData.userInfo.canSign) {
-                            signSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Sign SDS', id: 'sign-sds' });
+                    var signatureWorkflowItem = twcSrfWorkflowEngine.isWaitingForSignature(pageData.userInfo, pageData.siteRequestInfo)
+                    if (signatureWorkflowItem) {
+                        if (signatureWorkflowItem.stage_name.toLowerCase().indexOf('pack executed') > 0) {
+                            if (pageData.userInfo.canExecutePack) {
+                                signSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Sign SDS (TL)', id: 'sign-sds-tl' });
+                            }   
+                        } else {
+                            if (pageData.userInfo.canSign) {
+                                signSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Sign SDS', id: 'sign-sds' });
+                            }
                         }
                     }
 
@@ -107,6 +114,11 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.SRFApproved) {
                         acceptApprovalButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Accept Approval', id: 'accept-srf-approval' });
                         cancelSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SRF', id: 'cancel-srf-button' });
+                    }
+
+                    if (!readOnly) {
+                        submitSrfButton = '';
+                        acceptApprovalButton = '';
                     }
 
 
@@ -157,11 +169,11 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 var payload = JSON.parse(context.request.body);
                 return twcSrfWorkflowEngine.acceptSrf(userInfo, payload);
 
-            } else if (context.request.parameters.action == 'get-file') {
-                var srfFle = twcSiteRequestUtils.getFile(JSON.parse(context.request.body).file);
-                if (!srfFle) { throw new Error(`TL File record not found [${JSON.parse(context.request.body).file}]`); }
-                var file = nsFile.load(srfFle.file_id);
-                return { fileContent: file.getContents(), name: file.name, type: file.fileType }
+            // } else if (context.request.parameters.action == 'get-file') {
+            //     var srfFle = twcSiteRequestUtils.getFile(JSON.parse(context.request.body).file);
+            //     if (!srfFle) { throw new Error(`TL File record not found [${JSON.parse(context.request.body).file}]`); }
+            //     var file = nsFile.load(srfFle.file_id);
+            //     return { fileContent: file.getContents(), name: file.name, type: file.fileType }
 
             } else if (context.request.parameters.action == 'get-equipment') {
                 return { data: twcSiteRequestUtils.getEquipment(JSON.parse(context.request.body)) }
@@ -177,30 +189,35 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
             } else if (context.request.parameters.action == 'sign-sds') {
                 return twcSrfWorkflowEngine.postSignature(userInfo, JSON.parse(context.request.body))
 
-            } else if (context.request.parameters.action == 'print-pdf') {
+            } else if (context.request.parameters.action == 'sign-sds-tl') {
+                var payload = JSON.parse(context.request.body);
+                payload.isTLSignature = true;
+                return twcSrfWorkflowEngine.postSignature(userInfo, payload)
 
-                // Load XML file
-                const xmlFile = nsFile.load({
-                    id: 'SuiteScripts/OSSMTWC/XML/oTwc_print_SDS.xml'
-                });
-                var xmlRenderer = render.create();
-                xmlRenderer.templateContent = xmlFile.getContents();
-                // Optional custom data source
-                // xmlRenderer.addCustomDataSource({
-                //     format: render.DataSource.OBJECT,
-                //     alias: 'requestJSON',
-                //     data: requestJSON
-                // });
+            // } else if (context.request.parameters.action == 'print-pdf') {
 
-                var xmlContent = xmlRenderer.renderAsString();
-                log.debug('XML CONTENT', xmlContent);
-                var pdfFile = render.xmlToPdf({
-                    xmlString: xmlContent
-                });
+            //     // Load XML file
+            //     const xmlFile = nsFile.load({
+            //         id: 'SuiteScripts/OSSMTWC/XML/oTwc_print_SDS.xml'
+            //     });
+            //     var xmlRenderer = render.create();
+            //     xmlRenderer.templateContent = xmlFile.getContents();
+            //     // Optional custom data source
+            //     // xmlRenderer.addCustomDataSource({
+            //     //     format: render.DataSource.OBJECT,
+            //     //     alias: 'requestJSON',
+            //     //     data: requestJSON
+            //     // });
 
-                context.response.write(pdfFile);
-                log.debug("Print SDS Clicked");
-                return;
+            //     var xmlContent = xmlRenderer.renderAsString();
+            //     log.debug('XML CONTENT', xmlContent);
+            //     var pdfFile = render.xmlToPdf({
+            //         xmlString: xmlContent
+            //     });
+
+            //     context.response.write(pdfFile);
+            //     log.debug("Print SDS Clicked");
+            //     return;
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);
             }

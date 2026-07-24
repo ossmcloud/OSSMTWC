@@ -170,7 +170,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcProfile.Fields.E_MAIL]: { hide: true },
                     [twcProfile.Fields.PHONE]: { hide: true },
                     [twcProfile.Fields.POSITION]: 'Position',
-                    [twcProfile.Fields.COMPANY_DESIGNATED_CONTACT]: {title: 'Company Designated Contact', nullText: ''},
+                    [twcProfile.Fields.COMPANY_DESIGNATED_CONTACT]: { title: 'Company Designated Contact', nullText: '' },
                     [twcProfile.Fields.ACCREDITATION_STATUS]: 'Accreditation Status',
                     [twcProfile.Fields.USER_ACTION_NEEDED]: { title: 'User Action needed', type: 'bool', nullText: '' },
                     [twcProfile.Fields.PICW_ACCEPTABLE]: { title: 'PICW', type: 'bool' },
@@ -224,32 +224,38 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getCompanyInfoPanels_acl(dataSource, userInfo, editMode) {
+            var companyProfile = {
+                id: dataSource.id,
+                isVendor: (dataSource[twcCompany.Fields.CONTRACTOR_FLAG] == twcUtils.CONTRACTOR_FLAG.Contractor || dataSource[twcCompany.Fields.CONTRACTOR_FLAG] == twcUtils.CONTRACTOR_FLAG.SubContractor),
+                isCustomer: dataSource[twcCompany.Fields.CUSTOMER_FLAG] == twcUtils.CUSTOMER_FLAG.Customer
+            }
+            companyProfile.isBoth = companyProfile.isVendor && companyProfile.isCustomer;
+
             var title = '';
-            if (userInfo.companyProfile.isBoth) {
+            if (companyProfile.isBoth) {
                 title = 'Associated Customers and Accredited Contractors';
-            } else if (userInfo.companyProfile.isVendor) {
+            } else if (companyProfile.isVendor) {
                 title = 'Associated Customers List';
             } else {
                 title = 'Accredited Contractors List';
             }
             var fieldGroup = { id: 'company-acl', title: title, collapsed: true, controls: [] };
 
-            if (userInfo.companyProfile.isVendor || userInfo.companyProfile.isBoth) {
-                var basicInfo = { id: 'company-acl-list', title: userInfo.companyProfile.isBoth ? 'Associated Customers List' : undefined, fields: [] };
+            if (companyProfile.isVendor || companyProfile.isBoth) {
+                var basicInfo = { id: 'company-acl-list', title: companyProfile.isBoth ? 'Associated Customers List' : undefined, fields: [] };
                 fieldGroup.controls.push(basicInfo);
-                basicInfo.fields.push(getCompanyInfoPanels_acl_list(userInfo, 'customer'));
+                basicInfo.fields.push(getCompanyInfoPanels_acl_list(userInfo, companyProfile, 'customer'));
             }
-            log.debug("USER INFO", userInfo.companyProfile);
-            if (userInfo.companyProfile.isCustomer) {
-                var basicInfo = { id: 'company-acl-list', title: userInfo.companyProfile.isBoth ? 'Accredited Contractors List' : undefined, fields: [] };
+            if (companyProfile.isCustomer) {
+                var basicInfo = { id: 'company-acl-list', title: companyProfile.isBoth ? 'Accredited Contractors List' : undefined, fields: [] };
                 fieldGroup.controls.push(basicInfo);
-                basicInfo.fields.push(getCompanyInfoPanels_acl_list(userInfo, 'vendor'));
+                basicInfo.fields.push(getCompanyInfoPanels_acl_list(userInfo, companyProfile, 'vendor'));
             }
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
         }
 
-        function getCompanyInfoPanels_acl_list(userInfo, listType) {
+        function getCompanyInfoPanels_acl_list(userInfo, companyProfile, listType) {
             var aclList = [];
             if (listType == 'customer') {
                 aclList = coreSQL.run(`
@@ -258,7 +264,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             ${twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY} as accredited_contractor_expiry
                     from    customrecord_twc_acl acl
                     join    ${twcCompany.Type} c on c.id = acl.custrecord_twc_acl_cust
-                    where   custrecord_twc_acl_cont = ${userInfo.companyProfile.id}
+                    where   custrecord_twc_acl_cont = ${companyProfile.id}
                     order by c.name
                 `)
             } else {
@@ -268,31 +274,31 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             ${twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY} as accredited_contractor_expiry
                     from    customrecord_twc_acl acl
                     join    ${twcCompany.Type} c on c.id = acl.custrecord_twc_acl_cont
-                    where   custrecord_twc_acl_cust = ${userInfo.companyProfile.id}
+                    where   custrecord_twc_acl_cust = ${companyProfile.id}
                     order by c.name
-                `)  
+                `)
             }
-            log.debug("ACL List", aclList);
+
             return {
                 id: 'no-rec-acl-' + listType,
                 fields: {
                     name: { title: 'Name', styles: { width: '350px' } },
-                    accreditation_status: { hide: true, title: 'Accreditation Status', styles: { width: '200px', 'padding': '3px', 'text-align': 'center' } },
-                    accreditation_status_note: { hide: true, title: 'Accreditation Comments', nullText: '', styles: { 'padding': '3px' } },
-                    accredited_contractor_expiry: { hide: true, title: 'Accredited Contractor Expiry', nullText: '', styles: { width: '250px', 'padding': '3px', 'text-align': 'center' } },
-                    accreditation_status_id: { hide: true, title: 'Accreditation Status ID', styles: { width: '200px', 'padding': '3px', 'text-align': 'center' }, },
+                    accreditation_status: { hide: !userInfo.isEmployee, title: 'Accreditation Status', styles: { width: '200px', 'padding': '3px', 'text-align': 'center' } },
+                    accreditation_status_note: { hide: !userInfo.isEmployee, title: 'Accreditation Comments', nullText: '', styles: { 'padding': '3px' } },
+                    accredited_contractor_expiry: { hide: !userInfo.isEmployee, title: 'Accredited Contractor Expiry', nullText: '', styles: { width: '250px', 'padding': '3px', 'text-align': 'center' } },
+                    // accreditation_status_id: { hide: !userInfo.isEmployee, title: 'Accreditation Status ID', styles: { width: '200px', 'padding': '3px', 'text-align': 'center' }, },
                 },
                 dataSource: aclList,
                 readOnly: true,
                 onColumnInit: (tbl, col) => {
                     // Modified the Name Column and add "Not Valid"
-                    if (col.id == 'name'){
+                    if (col.id == 'name') {
                         col.formatValue = (v, fv, d) => {
-                                if (d.accreditation_status_id != 2) {
-                                    return `${d.name}` + ` - (Not currently valid for SAF)`;
-                                } else {
-                                    return d.name;
-                                }
+                            if (d.accreditation_status_id != twcUtils.CompanyAccreditationStatus.Accredited) {
+                                return `${d.name}` + ` - (Not currently valid for SAF)`;
+                            } else {
+                                return d.name;
+                            }
                         }
                     }
                     if (col.id == 'accreditation_status') {
@@ -304,17 +310,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
         }
 
-
-        // function getCompanyInfoPanels_xxx(dataSource, userInfo) {
-        //     var fieldGroup = { id: 'company-xxx', title: 'XXX', collapsed: false, controls: [] };
-
-        //     var basicInfo = { id: 'company-xxx-a', title: 'Basic Information', fields: [] };
-        //     fieldGroup.controls.push(basicInfo);
-        //     basicInfo.fields.push({ id: twcCompany.Fields.NAME, label: 'Name' })
-
-        //     configUIFields.formatPanelFields(dataSource, fieldGroup);
-        //     return fieldGroup;
-        // }
 
         function getCompanyChildRecord(company, childRecord, userInfo) {
             var fieldGroup = [];

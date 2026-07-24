@@ -2,64 +2,74 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js'],
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../O/data/oTWC_baseRecord.js' ],
     (core, coreSQL, recu, customRec) => {
         var _recordType = 'customrecord_twc_pwr_sply';
         var _recordFields = {
+            NAME: 'name',
             SITE: 'custrecord_twc_pwr_sply_site',
             POWER_SUPPLY_ID: 'custrecord_twc_pwr_sply_id',
-            POWER_SUPPLER: 'custrecord_twc_pwr_sply_pwr_suppler',
+            POWER_SUPPLIER: 'custrecord_twc_pwr_sply_pwr_suppler',
             POWER_SUPPLY_STATUS: 'custrecord_twc_pwr_sply_status',
-            POWER_SUPPLIER_TYPE: 'custrecord_twc_pwr_sply_type',
-            POWER_SUPPLY_CATEGORY: 'custrecord_twc_pwr_sply_category',
+            POWER_SUPPLY_TYPE: 'custrecord_twc_pwr_sply_type',
             GENERATOR_BACKUP: 'custrecord_twc_pwr_sply_gen_bakup',
             MPRN: 'custrecord_twc_pwr_sply_mprn',
-            METER_NUMBER: 'custrecord_twc_pwr_sply_meter_no',
-            METER_LOCATION: 'custrecord_twc_pwr_sply_meter_loc',
-            METER_MULTIPLIER: 'custrecord_twc_pwr_sply_mete_mul',
             AVAILABLE_METER_SLOTS: 'custrecord_twc_pwr_sply_avail_meter_slot',
             POWER_PHASE: 'custrecord_twc_pwr_sply_pwr_phase',
             POWER_CAPACITY_KVA: 'custrecord_twc_pwr_sply_capacity_kva',
             AVAILABLE_POWER_CAPACITY_KVA: 'custrecord_twc_pwr_sply_avail_pwr_cap',
-            POWER_BEING_USED: 'custrecord_twc_pwr_sply_being_used',
             POWER_TLM: 'custrecord_twc_pwr_sply_tlm',
-            POWER_SUPPLIER_MUST_READ_METER: 'custrecord_twc_pwr_sply_must_read_meter',
-            NEXT_METER_READING_DATE: 'custrecord_twc_pwr_sply_nxt_mtr_rdg_date',
-            COMMENT: 'custrecord_twc_pwr_sply_comment',
+            POWER_SUPPLY_COMMENT: 'custrecord_twc_pwr_sply_comment',
             POWER_READINGS: 'custrecord_twc_pwr_sply_pwr_readings',
             POWER_USER_LIST: 'custrecord_twc_pwr_sply_pwr_usr_list',
             POWER_READING_LIST: 'custrecord_twc_pwr_sply_pwr_read_list',
+            POWER_SUPPLIER_REFERENCE: 'custrecord_twc_pwr_sply_supref',
+            POWER_SUPPLY_NAME: 'custrecord_twc_pwr_sply_name',
+            POWER_SUPPLY_ADDRESS: 'custrecord_twc_pwr_sply_addr',
+            POWER_SUPPLY_TARIFF: 'custrecord_twc_pwr_sply_trf',
+            CREATED: 'created',
+            MODIFIED: 'lastmodified',
+            OWNER: 'owner',
+            MODIFIED_BY: 'lastmodifiedby',
         }
         var _recordFieldInfo = {
+            NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             SITE: { name: 'custrecord_twc_pwr_sply_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
             POWER_SUPPLY_ID: { name: 'custrecord_twc_pwr_sply_id', type: 'text', alias: 'powerSupplyID', display: 'normal', mandatory: false },
-            POWER_SUPPLER: { name: 'custrecord_twc_pwr_sply_pwr_suppler', type: 'select', alias: 'powerSuppler', display: 'normal', mandatory: false, recordType: '-2' },
+            POWER_SUPPLIER: { name: 'custrecord_twc_pwr_sply_pwr_suppler', type: 'select', alias: 'powerSupplier', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             POWER_SUPPLY_STATUS: { name: 'custrecord_twc_pwr_sply_status', type: 'select', alias: 'powerSupplyStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_pwr_supply_sts' },
-            POWER_SUPPLIER_TYPE: { name: 'custrecord_twc_pwr_sply_type', type: 'select', alias: 'powerSupplierType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_pwr_sply_type' },
-            POWER_SUPPLY_CATEGORY: { name: 'custrecord_twc_pwr_sply_category', type: 'select', alias: 'powerSupplyCategory', display: 'normal', mandatory: false, recordType: 'customrecord_twc_pwr_sply_category' },
+            POWER_SUPPLY_TYPE: { name: 'custrecord_twc_pwr_sply_type', type: 'select', alias: 'powerSupplyType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_pwr_sply_type' },
             GENERATOR_BACKUP: { name: 'custrecord_twc_pwr_sply_gen_bakup', type: 'select', alias: 'generatorBackup', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
             MPRN: { name: 'custrecord_twc_pwr_sply_mprn', type: 'text', alias: 'mPRN', display: 'normal', mandatory: false },
-            METER_NUMBER: { name: 'custrecord_twc_pwr_sply_meter_no', type: 'text', alias: 'meterNumber', display: 'normal', mandatory: false },
-            METER_LOCATION: { name: 'custrecord_twc_pwr_sply_meter_loc', type: 'text', alias: 'meterLocation', display: 'normal', mandatory: false },
-            METER_MULTIPLIER: { name: 'custrecord_twc_pwr_sply_mete_mul', type: 'integer', alias: 'meterMultiplier', display: 'normal', mandatory: false },
             AVAILABLE_METER_SLOTS: { name: 'custrecord_twc_pwr_sply_avail_meter_slot', type: 'integer', alias: 'availableMeterSlots', display: 'normal', mandatory: false },
             POWER_PHASE: { name: 'custrecord_twc_pwr_sply_pwr_phase', type: 'select', alias: 'powerPhase', display: 'normal', mandatory: false, recordType: 'customrecord_twc_pwr_phase' },
             POWER_CAPACITY_KVA: { name: 'custrecord_twc_pwr_sply_capacity_kva', type: 'integer', alias: 'powerCapacitykVA', display: 'normal', mandatory: false },
             AVAILABLE_POWER_CAPACITY_KVA: { name: 'custrecord_twc_pwr_sply_avail_pwr_cap', type: 'integer', alias: 'availablePowerCapacitykVA', display: 'normal', mandatory: false },
-            POWER_BEING_USED: { name: 'custrecord_twc_pwr_sply_being_used', type: 'integer', alias: 'powerBeingUsed', display: 'normal', mandatory: false },
             POWER_TLM: { name: 'custrecord_twc_pwr_sply_tlm', type: 'select', alias: 'powerTLM', display: 'normal', mandatory: false, recordType: 'customrecord_twc_pwr_tlm' },
-            POWER_SUPPLIER_MUST_READ_METER: { name: 'custrecord_twc_pwr_sply_must_read_meter', type: 'checkbox', alias: 'powerSuppliermustreadmeter', display: 'normal', mandatory: false },
-            NEXT_METER_READING_DATE: { name: 'custrecord_twc_pwr_sply_nxt_mtr_rdg_date', type: 'date', alias: 'nextMeterReadingDate', display: 'normal', mandatory: false },
-            COMMENT: { name: 'custrecord_twc_pwr_sply_comment', type: 'text', alias: 'comment', display: 'normal', mandatory: false },
+            POWER_SUPPLY_COMMENT: { name: 'custrecord_twc_pwr_sply_comment', type: 'textarea', alias: 'powerSupplyComment', display: 'normal', mandatory: false },
             POWER_READINGS: { name: 'custrecord_twc_pwr_sply_pwr_readings', type: 'select', alias: 'powerReadings', display: 'normal', mandatory: false, recordType: 'customrecord_twc_pwr_rdg' },
             POWER_USER_LIST: { name: 'custrecord_twc_pwr_sply_pwr_usr_list', type: 'select', alias: 'powerUserList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_pwr_usr' },
             POWER_READING_LIST: { name: 'custrecord_twc_pwr_sply_pwr_read_list', type: 'select', alias: 'powerReadingList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_pwr_rdg' },
+            POWER_SUPPLIER_REFERENCE: { name: 'custrecord_twc_pwr_sply_supref', type: 'text', alias: 'powerSupplierReference', display: 'normal', mandatory: false },
+            POWER_SUPPLY_NAME: { name: 'custrecord_twc_pwr_sply_name', type: 'text', alias: 'powerSupplyName', display: 'normal', mandatory: false },
+            POWER_SUPPLY_ADDRESS: { name: 'custrecord_twc_pwr_sply_addr', type: 'textarea', alias: 'powerSupplyAddress', display: 'normal', mandatory: false },
+            POWER_SUPPLY_TARIFF: { name: 'custrecord_twc_pwr_sply_trf', type: 'select', alias: 'powerSupplyTariff', display: 'normal', mandatory: false, recordType: 'customrecord_twc_pwr_sply_trf' },
+            CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
+            MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
+            OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
+            MODIFIED_BY: { name: 'lastmodifiedby', type: 'select', alias: 'last_modified_by', display: 'inline', recordType: 'employee'}, 
         }
 
         class OSSMTWC_PowerSupply extends customRec.RecordBase {
             constructor(id, staticLoad) {
                 super(_recordType, _recordFieldInfo, id, staticLoad);
             }
+            get name() {
+                return this.get('name');
+            } set name(value) {
+                this.set('name', value)
+            }
+            
             get site() {
                 return this.get(_recordFields.SITE);
             } set site(value) {
@@ -73,12 +83,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.POWER_SUPPLY_ID, value)
             }
             
-            get powerSuppler() {
-                return this.get(_recordFields.POWER_SUPPLER);
-            } set powerSuppler(value) {
-                this.set(_recordFields.POWER_SUPPLER, value)
+            get powerSupplier() {
+                return this.get(_recordFields.POWER_SUPPLIER);
+            } set powerSupplier(value) {
+                this.set(_recordFields.POWER_SUPPLIER, value)
             }
-            get powerSupplerName() { return this.getText(_recordFields.POWER_SUPPLER); }
+            get powerSupplierName() { return this.getText(_recordFields.POWER_SUPPLIER); }
             
             get powerSupplyStatus() {
                 return this.get(_recordFields.POWER_SUPPLY_STATUS);
@@ -87,19 +97,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get powerSupplyStatusName() { return this.getText(_recordFields.POWER_SUPPLY_STATUS); }
             
-            get powerSupplierType() {
-                return this.get(_recordFields.POWER_SUPPLIER_TYPE);
-            } set powerSupplierType(value) {
-                this.set(_recordFields.POWER_SUPPLIER_TYPE, value)
+            get powerSupplyType() {
+                return this.get(_recordFields.POWER_SUPPLY_TYPE);
+            } set powerSupplyType(value) {
+                this.set(_recordFields.POWER_SUPPLY_TYPE, value)
             }
-            get powerSupplierTypeName() { return this.getText(_recordFields.POWER_SUPPLIER_TYPE); }
-            
-            get powerSupplyCategory() {
-                return this.get(_recordFields.POWER_SUPPLY_CATEGORY);
-            } set powerSupplyCategory(value) {
-                this.set(_recordFields.POWER_SUPPLY_CATEGORY, value)
-            }
-            get powerSupplyCategoryName() { return this.getText(_recordFields.POWER_SUPPLY_CATEGORY); }
+            get powerSupplyTypeName() { return this.getText(_recordFields.POWER_SUPPLY_TYPE); }
             
             get generatorBackup() {
                 return this.get(_recordFields.GENERATOR_BACKUP);
@@ -112,24 +115,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.MPRN);
             } set mPRN(value) {
                 this.set(_recordFields.MPRN, value)
-            }
-            
-            get meterNumber() {
-                return this.get(_recordFields.METER_NUMBER);
-            } set meterNumber(value) {
-                this.set(_recordFields.METER_NUMBER, value)
-            }
-            
-            get meterLocation() {
-                return this.get(_recordFields.METER_LOCATION);
-            } set meterLocation(value) {
-                this.set(_recordFields.METER_LOCATION, value)
-            }
-            
-            get meterMultiplier() {
-                return this.get(_recordFields.METER_MULTIPLIER);
-            } set meterMultiplier(value) {
-                this.set(_recordFields.METER_MULTIPLIER, value)
             }
             
             get availableMeterSlots() {
@@ -157,12 +142,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.AVAILABLE_POWER_CAPACITY_KVA, value)
             }
             
-            get powerBeingUsed() {
-                return this.get(_recordFields.POWER_BEING_USED);
-            } set powerBeingUsed(value) {
-                this.set(_recordFields.POWER_BEING_USED, value)
-            }
-            
             get powerTLM() {
                 return this.get(_recordFields.POWER_TLM);
             } set powerTLM(value) {
@@ -170,22 +149,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get powerTLMName() { return this.getText(_recordFields.POWER_TLM); }
             
-            get powerSuppliermustreadmeter() {
-                return this.get(_recordFields.POWER_SUPPLIER_MUST_READ_METER);
-            } set powerSuppliermustreadmeter(value) {
-                this.set(_recordFields.POWER_SUPPLIER_MUST_READ_METER, value)
-            }
-            
-            get nextMeterReadingDate() {
-                return this.get(_recordFields.NEXT_METER_READING_DATE);
-            } set nextMeterReadingDate(value) {
-                this.set(_recordFields.NEXT_METER_READING_DATE, value)
-            }
-            
-            get comment() {
-                return this.get(_recordFields.COMMENT);
-            } set comment(value) {
-                this.set(_recordFields.COMMENT, value)
+            get powerSupplyComment() {
+                return this.get(_recordFields.POWER_SUPPLY_COMMENT);
+            } set powerSupplyComment(value) {
+                this.set(_recordFields.POWER_SUPPLY_COMMENT, value)
             }
             
             get powerReadings() {
@@ -208,6 +175,55 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.POWER_READING_LIST, value)
             }
             get powerReadingListName() { return this.getText(_recordFields.POWER_READING_LIST); }
+            
+            get powerSupplierReference() {
+                return this.get(_recordFields.POWER_SUPPLIER_REFERENCE);
+            } set powerSupplierReference(value) {
+                this.set(_recordFields.POWER_SUPPLIER_REFERENCE, value)
+            }
+            
+            get powerSupplyName() {
+                return this.get(_recordFields.POWER_SUPPLY_NAME);
+            } set powerSupplyName(value) {
+                this.set(_recordFields.POWER_SUPPLY_NAME, value)
+            }
+            
+            get powerSupplyAddress() {
+                return this.get(_recordFields.POWER_SUPPLY_ADDRESS);
+            } set powerSupplyAddress(value) {
+                this.set(_recordFields.POWER_SUPPLY_ADDRESS, value)
+            }
+            
+            get powerSupplyTariff() {
+                return this.get(_recordFields.POWER_SUPPLY_TARIFF);
+            } set powerSupplyTariff(value) {
+                this.set(_recordFields.POWER_SUPPLY_TARIFF, value)
+            }
+            get powerSupplyTariffName() { return this.getText(_recordFields.POWER_SUPPLY_TARIFF); }
+            
+            get created() {
+                return this.get(_recordFields.CREATED);
+            } set created(value) {
+                this.set(_recordFields.CREATED, value)
+            }
+            
+            get last_modified() {
+                return this.get(_recordFields.MODIFIED);
+            } set last_modified(value) {
+                this.set(_recordFields.MODIFIED, value)
+            }
+            
+            get created_by() {
+                return this.get(_recordFields.OWNER);
+            } set created_by(value) {
+                this.set(_recordFields.OWNER, value)
+            }
+            
+            get last_modified_by() {
+                return this.get(_recordFields.MODIFIED_BY);
+            } set last_modified_by(value) {
+                this.set(_recordFields.MODIFIED_BY, value)
+            }
             
         }
 

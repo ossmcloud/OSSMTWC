@@ -979,7 +979,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         var action = jQuery(e.currentTarget).data('action');
 
                         if (this.onToolbarClick) {
-                            if (this.onToolbarClick({ action: action, table: this }) === false) { return; }
+                            if (this.onToolbarClick({ action: action, evt: e, table: this }) === false) { return; }
                         }
 
                         if (action == 'copy') {

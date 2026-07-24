@@ -48,6 +48,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LICENCE_PACK_SIGNED_BY: 'custrecord_twc_srf_lic_pack_sign_by',
             LICENCE_PACK_EXECUTED: 'custrecord_twc_srf_lic_pack_exec',
             LICENCE_PACK_EXECUTED_BY: 'custrecord_twc_srf_lic_pack_exec_by',
+            SDS_FORM_DATA: 'custrecord_twc_srf_sds_form_data',
             TL_DRAWING_DRAFTED_OBSOLETE: 'custrecord_twc_srf_tl_drg_draft',
             TL_DRAWING_REVIEWED_OBSOLETE: 'custrecord_twc_srf_tl_drg_rev',
             TL_DRAWING_OBSOLETE: 'custrecord_twc_srf_tl_drg',
@@ -99,6 +100,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LICENCE_PACK_SIGNED_BY: { name: 'custrecord_twc_srf_lic_pack_sign_by', type: 'select', alias: 'licencePackSignedBy', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             LICENCE_PACK_EXECUTED: { name: 'custrecord_twc_srf_lic_pack_exec', type: 'date', alias: 'licencePackExecuted', display: 'normal', mandatory: false },
             LICENCE_PACK_EXECUTED_BY: { name: 'custrecord_twc_srf_lic_pack_exec_by', type: 'select', alias: 'licencePackExecutedBy', display: 'normal', mandatory: false, recordType: '-4' },
+            SDS_FORM_DATA: { name: 'custrecord_twc_srf_sds_form_data', type: 'clobtext', alias: 'sDSFormData', display: 'hidden', mandatory: false },
             TL_DRAWING_DRAFTED_OBSOLETE: { name: 'custrecord_twc_srf_tl_drg_draft', type: 'date', alias: 'tLDrawingDraftedOBSOLETE', display: 'normal', mandatory: false },
             TL_DRAWING_REVIEWED_OBSOLETE: { name: 'custrecord_twc_srf_tl_drg_rev', type: 'date', alias: 'tLDrawingReviewedOBSOLETE', display: 'normal', mandatory: false },
             TL_DRAWING_OBSOLETE: { name: 'custrecord_twc_srf_tl_drg', type: 'document', alias: 'tLDrawingOBSOLETE', display: 'normal', mandatory: false },
@@ -375,6 +377,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.LICENCE_PACK_EXECUTED_BY, value)
             }
             get licencePackExecutedByName() { return this.getText(_recordFields.LICENCE_PACK_EXECUTED_BY); }
+            
+            get sDSFormData() {
+                return this.get(_recordFields.SDS_FORM_DATA);
+            } set sDSFormData(value) {
+                this.set(_recordFields.SDS_FORM_DATA, value)
+            }
             
             get tLDrawingDraftedOBSOLETE() {
                 return this.get(_recordFields.TL_DRAWING_DRAFTED_OBSOLETE);

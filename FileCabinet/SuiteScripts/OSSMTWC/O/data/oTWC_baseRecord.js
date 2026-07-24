@@ -180,9 +180,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (!field) { throw new Error(`You are trying to set a field that does not exists: ${fieldName}`); }
 
                 if (field.type == FIELD_TYPE.TEXT) {
-                    value = value?.substring(0, 300);
+                    if (value) {
+                        value = value?.substring(0, 300);
+                    }
                 } else if (field.type == FIELD_TYPE.TEXTAREA) {
-                    value = value?.substring(0, 4000);
+                    if (value) {
+                        value = value?.substring(0, 4000);
+                    }
                 } else if (field.type == FIELD_TYPE.DATE || field.type == FIELD_TYPE.DATE_TIME) {
                     if (value && value.constructor.name != 'Date') {
                         if (value.constructor.name != 'String') { throw new Error(`Invalid value type, expected Date or String got ${value.constructor.name} : value: [${value}]`); }

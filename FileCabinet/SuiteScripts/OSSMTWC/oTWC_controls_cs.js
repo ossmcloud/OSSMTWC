@@ -3,8 +3,16 @@
  *@NScriptType ClientScript
  *@NModuleScope public
  */
-define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js', './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_saf.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js', './O/oTWC_nsFileUtils.js', './O/controls/oTWC_ui_ctrl.js', './oTWC_otop_test.js', './data/oTWC_profileUI.js', './modules/oTWC_certStatusEngine.js', './data/oTWC_equipAction.js', './modules/oTWC_srfWorkflowEngine.js', './modules/oTWC_srfWorkflowEngineUI.js'],
-    function (core, coreSQL, dialog, recu, twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields, siteInfoUtils, twcSaf, twcSrfUI, twcEquipment, nsFileUtils, twcUI, otop, twcProfileUI, twcCertStatusEngine, twcEquipAction, twcSrfWorkflowEngine, twcSrfWorkflowEngineUI) {
+define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js',
+    './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js',
+    './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_saf.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js', './O/oTWC_nsFileUtils.js', './O/controls/oTWC_ui_ctrl.js',
+    './oTWC_otop_test.js', './data/oTWC_profileUI.js', './modules/oTWC_certStatusEngine.js', './data/oTWC_equipAction.js', './modules/oTWC_srfWorkflowEngine.js',
+    './modules/oTWC_srfWorkflowEngineUI.js', './ui/modules/oTWC_siteRequestUtils.js'],
+    function (core, coreSQL, dialog, recu,
+        twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields,
+        siteInfoUtils, twcSaf, twcSrfUI, twcEquipment, nsFileUtils, twcUI,
+        otop, twcProfileUI, twcCertStatusEngine, twcEquipAction, twcSrfWorkflowEngine,
+        twcSrfWorkflowEngineUI, twcSiteRequestUtils) {
         var _ui;
 
         function pageInit(context) {
@@ -46,31 +54,37 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             deleteAllSrf: deleteAllSrf,
             testFunction() {
                 try {
+                    recu.submit('customrecord_twc_srf', 28, 'custrecord_twc_srf_sds_form_data', null);
 
-                    var toggle = jQuery(`
-                        <div>
-                            ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'null_state', mandatory: true })}
-                            ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'true_state', value: true, mandatory: false })}
-                            ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'false_state', value: false, mandatory: true })}
-                        </div>`
-                    );
+                    // console.log(
+                    //     twcSiteRequestUtils.initEquipment({
+                    //         srf: 28
+                    //     })
+                    // );
                     // var toggle = jQuery(`
                     //     <div>
                     //         ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'null_state', mandatory: true })}
+                    //         ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'true_state', value: true, mandatory: false })}
+                    //         ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'false_state', value: false, mandatory: true })}
                     //     </div>`
                     // );
-                    var form = twcUI.init({}, toggle);
-                    dialog.confirm({ message: form.ui }, dlg => {
-                        try {
+                    // // var toggle = jQuery(`
+                    // //     <div>
+                    // //         ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'null_state', mandatory: true })}
+                    // //     </div>`
+                    // // );
+                    // var form = twcUI.init({}, toggle);
+                    // dialog.confirm({ message: form.ui }, dlg => {
+                    //     try {
 
-                            var val = form.getValues();
-                            console.log(val);
+                    //         var val = form.getValues();
+                    //         console.log(val);
                             
-                        } catch (error) {
-                            dialog.error(error)
-                            return false;
-                        } 
-                    });
+                    //     } catch (error) {
+                    //         dialog.error(error)
+                    //         return false;
+                    //     } 
+                    // });
 
                     //twcSrfWorkflowEngineUI.getForm({ srf: 22 }).popUp();
                     // twcSrfWorkflowEngine.deleteWorkflow({ srf: 22 })

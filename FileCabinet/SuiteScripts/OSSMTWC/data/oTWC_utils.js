@@ -16,6 +16,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const EQ_LIB_USE = {
+            Draft: 1,
+            Yes: 2,
+            No: 3
+        }
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const EQ_ACTION_STATUS = {
             Pending: 1,
             Complete: 2,
@@ -24,6 +31,32 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             AlreadyInstalled: 5,
             NeverInstalled: 6,
             AlreadyRemoved: 7
+        }
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const EQ_INSTALL_STATUS = {
+            Draft: 1,
+            NotInstalled: 2,
+            Installed: 3,
+            Removed: 4,
+            Cancelled: 5
+        }
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const EQ_LICENSE_STATUS = {
+            Draft: 1,
+            ReqtoLicence: 2,
+            ProptoLicence: 3,
+            ProptoLicence_LicenceRequested: 4,
+            ProptoLicence_LicenceIssued: 5,
+            Licenced: 6,
+            ReqtoUnlicence: 7,
+            ProptoUnlicence: 8,
+            ProptoUnlicence_LicenceRequested: 9,
+            ProptoUnlicence_LicenceIssued: 10,
+            Unlicenced: 11,
+            Cancelled: 12,
+            LicenceRetained: 13,
+            LicenceSwapped: 14
         }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
@@ -210,6 +243,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             sql += 'order by p.name, t.name'
 
+            var fileStatues = coreSQL.run(`select id as value, name as text from customrecord_twc_file_status where isinactive = 'F' order by name`);
+
             var fileTypes = [];
             coreSQL.each(sql, t => {
                 if (options?.isVendor) {
@@ -223,6 +258,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 t.isImageCompletion = t.is_image_completion == 'T';
                 t.isCert = t.is_cert == 'T';
                 t.statuses = t.allowed_statuses?.split(',').map(i => { return parseInt(i.trim()) });
+
+                t.allowedStatues = fileStatues.filter(fs => { return t.statuses.indexOf(fs.value) >= 0; })
 
                 delete t.is_insurance;
                 delete t.is_hs;
@@ -350,6 +387,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         const SRF_REVIEW_STATUS = {
             Approved: 1,
             FeedbackIssued: 2
+        }
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const SRF_DEFAULT_FILE_TYPE = {
+            id: 12,     // SRF Attachment
+            status: 5   // N/A
         }
 
 
@@ -669,11 +712,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getSafContractorFiles(options) {
-            log.debug("OPTIONS..",options)
+            log.debug("OPTIONS..", options)
             var fileIds = options['custrecord_twc_saf_method_statement'] || '';
             if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
             fileIds += options['custrecord_twc_saf_health_safety'] || ''    //@@NOTE : added || '' to fix issue with null value getting appended to fileIds
-            log.debug("fileIds..",fileIds)
+            log.debug("fileIds..", fileIds)
 
             return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})` } } })
         }
@@ -703,14 +746,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getTktResolutionFiles(options) {
-            log.debug('OPTIONS',options)
+            log.debug('OPTIONS', options)
             var fileIds = options['custrecord_twc_trbl_tkt_res_files'] || '';
             // if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
             // fileIds += options['custrecord_twc_saf_health_safety'];
             if (!fileIds || !fileIds.trim()) {
                 fileIds = '0';
             }
-            log.debug('fileIds',fileIds)
+            log.debug('fileIds', fileIds)
             return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})`, 'customrecord_twc_file': FILE_STATUS.Approved } } })
         }
 
@@ -729,8 +772,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 from    ${twcFile.Type} f
                 join    customrecord_twc_file_type t on t.id = f.${twcFile.Fields.R_TYPE}
                 where   f.isinactive = 'F'
-            `
-            log.debug("FILTERS",options.filters)
+            `;
+
             if (options.filters) {
                 if (options.filters.constructor.name == 'String') {
                     sql += options.filters;
@@ -1005,7 +1048,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getEquipmentIds() {
-            return coreSQL.run(`select id as value, custrecord_twc_equip_id as text from customrecord_twc_equip where 1 = 1 order by id`)
+            return coreSQL.run(`select id as value, name as text from customrecord_twc_equip where 1 = 1 order by id`)
         }
         function getEquipmentStatus() {
             return getLookUpTableValues('customrecord_twc_equip_install_status');
@@ -1071,7 +1114,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var safFilter = (options.saf) ? `and custrecord_twc_eq_action_saf = ${options.saf}` : 'and custrecord_twc_eq_action_saf is null';
             return coreSQL.run(`
-                select  a.id as value, a.name as text, custrecord_twc_equip_id as equipment, BUILTIN.DF(custrecord_twc_eq_action_srf) as srf, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
+                select  a.id as value, a.name as text, e.name as equipment, BUILTIN.DF(custrecord_twc_eq_action_srf) as srf, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
                         BUILTIN.DF(custrecord_twc_eq_action_type) as action_type, BUILTIN.DF(custrecord_twc_eq_real_ea) as related_action, 
                         custrecord_twc_eq_action_sts as status, BUILTIN.DF(custrecord_twc_eq_action_sts) as status_name
                 from    customrecord_twc_eq_action a
@@ -1226,8 +1269,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ROOT_FILE_FOLDER: 'TL Files',
             HEIGH_LIMIT_FOR_1_CLIMBER: HEIGH_LIMIT_FOR_1_CLIMBER,
 
+            CUSTOMER_FLAG: twcConfig.CUSTOMER_FLAG,
+            CONTRACTOR_FLAG: twcConfig.CONTRACTOR_FLAG,
+
             EqLibStatus: EQ_LIB_STATUS,
+            EqLibUse: EQ_LIB_USE,
             EqActionStatus: EQ_ACTION_STATUS,
+            EqInstallStatus: EQ_INSTALL_STATUS,
+            EqLicenseStatus: EQ_LICENSE_STATUS,
 
             CustomerFlag: CUSTOMER_FLAG,
             ContractorFlag: CONTRACTOR_FLAG,
@@ -1254,6 +1303,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SrfRequestType: SRF_ITEM_REQUEST_TYPE,
             SrfStatus: SRF_STATUS,
             SrfReviewStatus: SRF_REVIEW_STATUS,
+            SrfDeafultFileType: SRF_DEFAULT_FILE_TYPE,
 
             getFileStatusName: getFileStatusName,
             getFileStatusHtml: getFileStatusHtml,
@@ -1340,6 +1390,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var date = new Date(d);
                 date = date.addHours(-8);
                 return date;
+            },
+
+            userInfo: (context) => {
+                return twcConfig.userInfo(context);
             }
         }
     });
