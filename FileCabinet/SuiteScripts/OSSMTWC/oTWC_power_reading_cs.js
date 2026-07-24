@@ -9,10 +9,10 @@ define(['SuiteBundles/Bundle 548734/O/core.sql.js', './O/oTWC_dialogEx.js', 'N/u
 
         const rec = context.currentRecord;
 
-        rec.getField({
-            fieldId: 'custrecord_twc_pwr_rdg_pwr_supply' // replace with your field
-        }).isDisabled = true;
-
+        // The customer has diabled the field Power Supply field so added the condition.
+        if(rec.getField({fieldId: 'custrecord_twc_pwr_rdg_pwr_supply'})){
+            rec.getField({fieldId: 'custrecord_twc_pwr_rdg_pwr_supply' }).isDisabled = true;
+        }
         const siteId = rec.getValue({
             fieldId: 'custrecord_twc_pwr_rdg_site'
         });
