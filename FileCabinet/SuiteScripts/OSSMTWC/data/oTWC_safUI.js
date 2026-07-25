@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_icons.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safAction.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_file.js'],
-    (runtime, core, coreSQL, twcIcons, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_icons.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safAction.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_file.js', './oTWC_srfItem.js', './oTWC_equipAction.js'],
+    (runtime, core, coreSQL, twcIcons, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile, twcSrfItem, twcEqAct) => {
         var _safUrl = null;
         var _allowedSafTypes = null;
         function getSafUrl() {
@@ -120,30 +120,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSafEqAction(dataSource) {
             var safActions = [];
             if (dataSource.id && !dataSource.reUse) {
-                coreSQL.each(`
-                    select  sa.id, ea.name as sa_eq_action_id, ea.custrecord_twc_eq_action_eq as saf_equipment, e.name as saf_equipment_name,
-                            sa.custrecord_twc_saf_a_status as saf_status, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as saf_status_name,
-                            ea.id as ea_id, ea.custrecord_twc_eq_action_type as saf_type, BUILTIN.DF(ea.custrecord_twc_eq_action_type) as saf_type_name
-                    from    customrecord_twc_saf_action sa
-                    join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea
-                    join    customrecord_twc_equip e on e.id = ea.custrecord_twc_eq_action_eq
-                    where   sa.custrecord_twc_saf_a_saf = ${dataSource.id}
-                    order by sa.created desc
-                `, action => {
-                    var safAction = {};
-                    safAction.id = action.id;
-                    safAction.eaId = action.ea_id;
-                    safAction['saf-eq-action'] = action.ea_id;
-                    safAction['saf-eq-action-id'] = action.sa_eq_action_id;
-                    safAction['saf-equipment'] = action.saf_equipment;
-                    safAction['saf-equipment_name'] = action.saf_equipment_name;
-                    safAction['saf-eq-action-type'] = action.saf_type;
-                    safAction['saf-eq-action-type_name'] = action.saf_type_name;
-                    safAction['saf-eq-action-status'] = action.saf_status;
-                    safAction['saf-eq-action-status_name'] = action.saf_status_name;
-                    safAction['saf-detach'] = (action.saf_status == twcUtils.SafActionStatus.Pending) ? '<span class="o-table-action twc-clickable" data-action="detach">detach</span>' : '';
-                    safActions.push(safAction);
-                })
+                safActions = twcUtils.getSafActions(dataSource);
             }
             return safActions;
         }
@@ -328,12 +305,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var crewTableControl = {
                 id: `saf-eq-action-table`,
                 type: twcUI.CTRL_TYPE.TABLE,
-                label: 'equipment actions',
+                label: 'Equipment Actions',
                 columns: [
-                    { id: 'saf-eq-action-id', title: 'Eq. Action ID' },
-                    { id: 'saf-equipment_name', title: 'Equipment' },
-                    { id: 'saf-eq-action-type_name', title: 'Type' },
-                    { id: 'saf-eq-action-status_name', title: 'Status' },
+                    { id: 'ea_id', title: 'ID', styles: { width: '50px' } },
+                    { id: twcEqAct.Fields.EA_EQUIPMENT + '_name', title: 'Equipment' },
+                    { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
+                    { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Item' },
+                    { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description' },
+                    { id: twcEqAct.Fields.EA_TYPE + '_name', title: 'Type' },
+                    { id: twcEqAct.Fields.EA_STATUS + '_name', title: 'Status' },
                     { id: 'saf-detach', title: '', styles: { 'width': '50px' }, noFilter: true },
                 ],
                 dataSource: getSafEqAction(dataSource),
@@ -369,7 +349,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     text: userInfo.companyProfile.name
                 })
             }
-          
+
             var isExistingSaf = dataSource.id !== undefined;
 
             var picwInfo = null; var picwContractorStaff = [];
@@ -416,7 +396,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var step4Info = { id: 'site-access-step-4a', fields: [] };
 
             step4Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw', label: 'PICW', allowAll: false, value: picwInfo?.contractor, dataSource: primaryContractors, noAutoSelect: true });
-            step4Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw-staff', label: 'Staff', hide: picwInfo==null, value: picwInfo?.id, dataSource: picwContractorStaff, allowAll: false });
+            step4Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw-staff', label: 'Staff', hide: picwInfo == null, value: picwInfo?.id, dataSource: picwContractorStaff, allowAll: false });
             step4Info.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'saf-picw-staff-phone', label: 'Phone', hide: picwInfo == null, value: picwInfo?.phone });
             step4Info.fields.push(crewTableControl);
 
@@ -540,8 +520,32 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getSafActionRecord(saf, childRecord, userInfo) {
             var fieldGroup = { id: 'saf-action', collapsed: false, fields: [] };
-            fieldGroup.fields.push({ id: 'saf-action-srf', label: 'S.R.F', type: twcUI.CTRL_TYPE.DROPDOWN, allowAll: false, dataSource: twcUtils.getSrfDropDown(saf), mandatory: true, lineBreak: true });
-            fieldGroup.fields.push({ id: 'saf-action-eq', label: 'Equipment Action', type: twcUI.CTRL_TYPE.DROPDOWN, allowAll: false, dataSource: [], mandatory: true });
+            fieldGroup.fields.push({ id: 'saf-action-srf', label: 'S.R.F', type: twcUI.CTRL_TYPE.DROPDOWN, allowAll: false, noAutoSelect: true, dataSource: twcUtils.getSrfDropDown(saf), mandatory: true, width: '350px', lineBreak: true });
+            //fieldGroup.fields.push({ id: 'saf-action-eq', label: 'Equipment Action', type: twcUI.CTRL_TYPE.DROPDOWN, allowAll: false, dataSource: [], mandatory: true });
+
+            var eqActions = {
+                id: `srf-actions`,
+                type: twcUI.CTRL_TYPE.TABLE,
+                label: 'Equipment Actions',
+                columns: [
+                    { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
+                    { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Eq. Type' },
+                    { id: twcSrfItem.Fields.REQUEST_TYPE + '_name', title: 'Type' },
+                    { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description', nullText: '' },
+                    { id: twcSrfItem.Fields.LENGTH_MM, title: 'Length', nullText: '' },
+                    { id: twcSrfItem.Fields.WIDTH_MM, title: 'Width', nullText: '' },
+                    { id: twcSrfItem.Fields.DEPTH_MM, title: 'Depth', nullText: '' },
+                    { id: twcSrfItem.Fields.HEIGHT_ON_TOWER, title: 'HtC', nullText: '' },
+                    { id: twcSrfItem.Fields.AZIMUTH, title: 'Az', nullText: '' },
+                    { id: twcSrfItem.Fields.B_END, title: 'B-End', nullText: '' },
+                ],
+                dataSource: [],
+                showToolbar: true,
+                showEditDelete: false,
+                readOnly: true,
+            }
+            fieldGroup.fields.push(eqActions);
+
             configUIFields.formatPanelFields(childRecord, fieldGroup);
             return fieldGroup;
         }
@@ -614,25 +618,33 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
             });
 
-            
-            if (requiresSrf) {
-                // @@TODO: use constant
-                var eaActionLink = core.url.record('customrecord_twc_eq_action');
-                var equipLink = core.url.record('customrecord_twc_equip');
 
-                infoLists.fields.push({
-                    id: `${twcSafAction.Type}`, label: 'Eq. Actions',
+            if (requiresSrf) {
+                var eqActionsLists = { id: 'site-access-eq-actions', collapsed: false, renderAsTable: { width: '100%' }, fields: [] };
+                fieldGroup.controls.push(eqActionsLists);
+
+
+                // @@TODO: use constant
+                var eaActionLink = (userInfo.isEmployee) ? { url: core.url.record('customrecord_twc_eq_action') + '&id=${ea_id}', valueField: 'ea_id' } : null;
+                var equipLink = (userInfo.isEmployee) ? { url: core.url.record('customrecord_twc_equip') + '&id=${' + twcEqAct.Fields.EA_EQUIPMENT + '}', valueField: twcEqAct.Fields.EA_EQUIPMENT } : null;
+
+                eqActionsLists.fields.push({
+                    id: `${twcSafAction.Type}`,
+                    label: 'Equipment Actions',
                     fields: {
-                        ['saf-eq-action-id']: { title: 'Eq. Action ID', link: { url: eaActionLink + '&id=${eaId}', valueField: 'eaId' } },
-                        ['saf-equipment_name']: { title: 'Equipment', link: { url: equipLink + '&id=${saf-equipment}', valueField: 'saf-equipment' } },
-                        ['saf-eq-action-type_name']: 'Type',
-                        ['saf-eq-action-status_name']: 'Status',
+                        ['ea_id']: { title: 'ID', styles: { width: '50px' }, link: eaActionLink },
+                        [twcEqAct.Fields.EA_EQUIPMENT + '_name']: { title: 'Equipment', link: equipLink },
+                        [twcSrfItem.Fields.STEP_TYPE + '_name']: { title: 'Class' },
+                        [twcSrfItem.Fields.ITEM_TYPE + '_name']: { title: 'Item' },
+                        [twcSrfItem.Fields.DESCRIPTION]: { title: 'Description' },
+                        [twcEqAct.Fields.EA_TYPE + '_name']: { title: 'Type' },
+                        [twcEqAct.Fields.EA_STATUS + '_name']: { title: 'Status', styles: { width: '120px', 'text-align': 'center' } },
                     },
                     dataSource: getSafEqAction(dataSource),
                     FieldsInfo: twcSafAction.FieldsInfo,
-                    styles: { width: '100%', 'padding-left': '7px' },
+                    styles: { width: '100%', 'padding-left': '0px' },
                     onColumnInit: (tbl, col) => {
-                        if (col.id == 'saf-eq-action-status_name') {
+                        if (col.id == twcEqAct.Fields.EA_STATUS + '_name') {
                             col.formatValue = (v) => {
                                 return twcSafAction.getStatusHtml(v);
                             }
@@ -719,7 +731,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcSafLog.Fields.LOG_TYPE]: { title: 'Type', styles: { width: '100px' } },
                     [twcSafLog.Fields.CREATED]: { title: 'Date/Time', styles: { width: '120px' } },
                     [twcSafLog.Fields.PROFILE]: { title: 'Profile', styles: { width: '100px' } },
-                    [twcSafLog.Fields.MESSAGE]: { title: 'Message', styles: { width: '100px' } } ,
+                    [twcSafLog.Fields.MESSAGE]: { title: 'Message', styles: { width: '100px' } },
                     [twcSafLog.Fields.ADDITIONAL_INFO]: { title: 'Info', nullText: '' },
 
                 },

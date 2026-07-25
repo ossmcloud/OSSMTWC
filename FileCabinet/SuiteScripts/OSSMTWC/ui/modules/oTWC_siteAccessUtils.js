@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_safCrew.js', '../../data/oTWC_safAction.js', '../../data/oTWC_safTimeBlock.js', '../../data/oTWC_safLog.js', '../../data/oTWC_file.js', '../../data/oTWC_fileType.js', '../../O/oTWC_nsFileUtils.js'],
-    (record, core, coreSQL, b64, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile, twcFileType, nsFileUtils) => {
+define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_safCrew.js', '../../data/oTWC_safAction.js', '../../data/oTWC_equipAction.js', '../../data/oTWC_safTimeBlock.js', '../../data/oTWC_safLog.js', '../../data/oTWC_file.js', '../../data/oTWC_fileType.js', '../../O/oTWC_nsFileUtils.js'],
+    (record, core, coreSQL, b64, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew, twcSafAction, twcEqAct, twcSafTimeBlock, twcSafLog, twcFile, twcFileType, nsFileUtils) => {
 
         function renderSiteAccessPanel(userInfo, featureId) {
             // @@TODO: featureId will determine some change on fields in the criteria
@@ -493,17 +493,21 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     try {
                         var action = twcSafAction.get(payload.reUse ? null : a.id);
                         action.sAF = safId;
-                        action.sAF_ACTIONEA = a['saf-eq-action'];
-                        action.sAF_ACTIONStatus = a['saf-eq-action-status'];
+                        action.sAF_ACTIONEA = a.ea_id;
+                        if (a[twcSafAction.Fields.STATUS]){
+                            action.sAF_ACTIONStatus = a[twcSafAction.Fields.STATUS];    
+                        } else {
+                            action.sAF_ACTIONStatus = twcUtils.SafActionStatus.Pending;
+                        }
                         action.save();
 
-                        if (a['saf-eq-action-status'] == twcUtils.SafActionStatus.Detached) {
-                            if (recu.lookUp('customrecord_twc_eq_action', a['saf-eq-action'], 'custrecord_twc_eq_action_saf')?.value == safId) {
-                                recu.submit('customrecord_twc_eq_action', a['saf-eq-action'], 'custrecord_twc_eq_action_saf', null);
+                        if (a[twcSafAction.Fields.STATUS] == twcUtils.SafActionStatus.Detached) {
+                            if (recu.lookUp(twcEqAct.Type, a.ea_id, twcEqAct.Fields.EA_SAF)?.value == safId) {
+                                recu.submit(twcEqAct.Type, a.ea_id, twcEqAct.Fields.EA_SAF, null);
                             }
                             //
                         } else {
-                            recu.submit('customrecord_twc_eq_action', a['saf-eq-action'], 'custrecord_twc_eq_action_saf', safId);
+                            recu.submit(twcEqAct.Type, a.ea_id, twcEqAct.Fields.EA_SAF, safId);
                         }
                     } catch (error) {
                         saf.logEx('Error while saving action record', error);
@@ -595,7 +599,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             core.array.each(safActions, sa => {
                 recu.submit(twcSafAction.Type, sa.saf_action_id, twcSafAction.Fields.SAF_ACTION_STATUS, twcUtils.SafActionStatus.Detached);
                 // @@TODO: build twcEaAction object and use constants here
-                recu.submit('customrecord_twc_eq_action', sa.ea_action_id, 'custrecord_twc_eq_action_saf', null);
+                recu.submit(twcEqAct.Type, sa.ea_action_id, twcEqAct.Fields.EA_SAF, null);
             })
         }
 
@@ -613,7 +617,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 if (sa.saf_status != twcUtils.SafActionStatus.Detached) {
                     recu.submit(twcSafAction.Type, sa.saf_action_id, [twcSafAction.Fields.SAF_ACTION_STATUS, twcSafAction.Fields.SAF_ACTION_COMPLETE], [twcUtils.SafActionStatus.Complete, true]);
                     // @@TODO: build twcEaAction object and use constants here
-                    recu.submit('customrecord_twc_eq_action', sa.ea_action_id, 'custrecord_twc_eq_action_sts', twcUtils.EaActionStatus.Complete);
+                    recu.submit(twcEqAct.Type, sa.ea_action_id, twcEqAct.Fields.EA_STATUS, twcUtils.EaActionStatus.Complete);
                 }
             })
         }
@@ -670,6 +674,31 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             `)
         }
 
+
+
+        function deleteSaf(safId) {
+
+            coreSQL.each(`select id from customrecord_twc_saf_log where custrecord_twc_saf_log_saf = ${safId}`, r => {
+                recu.del('customrecord_twc_saf_log', r.id);
+            })
+
+            coreSQL.each(`select id from customrecord_twc_saf_crew where custrecord_twc_saf_crew_saf = ${safId}`, r => {
+                recu.del('customrecord_twc_saf_crew', r.id);
+            })
+
+            coreSQL.each(`select id from customrecord_twc_saf_tm_blk where custrecord_twc_saf_tm_blk_saf = ${safId}`, r => {
+                recu.del('customrecord_twc_saf_tm_blk', r.id);
+            })
+
+            coreSQL.each(`select id from customrecord_twc_saf_action where custrecord_twc_saf_a_saf = ${safId}`, r => {
+                recu.del('customrecord_twc_saf_action', r.id);
+            })
+
+            recu.del('customrecord_twc_saf', safId)
+        }
+
+     
+
         return {
             getSAFInfoPanels: twcSafUI.getSAFInfoPanels,
 
@@ -712,8 +741,10 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             saveSafImage: saveSafImage,
             setSafReviewer: setSafReviewer,
             setSafReviewed: setSafReviewed,
-            getSafTimeBlocks: getSafTimeBlocks
+            getSafTimeBlocks: getSafTimeBlocks,
 
+            deleteSaf: deleteSaf
+           
 
         }
 

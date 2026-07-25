@@ -106,11 +106,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
 
                 this.#form.getControl('srf-pick-equipment').on('click', e => {
-                    this.pickEquipment(this.#srfItem[twcSrfItem.Fields.STEP_TYPE], (pickedEq) => { this.setFormEqState(pickedEq.e.rowsData[0]); })
+                    this.pickEquipment(this.#srfItem[twcSrfItem.Fields.STEP_TYPE], (pickedEq) => { this.setFormEqState(pickedEq); })
                 })
 
                 this.#form.getControl('srf-pick-tme-equipment')?.on('click', e => {
-                    this.pickEquipment(twcEqUI.EqClass.TME, (pickedEq) => { this.setFormTmeEqState(pickedEq.e.rowsData[0]); })
+                    this.pickEquipment(twcEqUI.EqClass.TME, (pickedEq) => { this.setFormTmeEqState(pickedEq); })
                 })
 
                 var relatedEqTable = this.#form.getControl('srf-related-eq-table');
@@ -121,7 +121,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             var eqClass = jQuery(e.evt.target).parent().data('eq-class');
                             srfNewRelatedItem = {};
                             srfNewRelatedItem.dirty = true;
-                            srfNewRelatedItem.parent = true;
+                            srfNewRelatedItem.child = true;
+                            srfNewRelatedItem[twcSrfItem.Fields.REQUEST_TYPE] = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
                             srfNewRelatedItem[twcSrfItem.Fields.STEP_TYPE] = eqClass;
                             srfNewRelatedItem[twcSrfItem.Fields.STEP_TYPE + '_name'] = (eqClass == twcEqUI.EqClass.ATME) ? 'ATME' : 'FEEDER';
                             TWCSpaceRequestItemForm.open(this.#page, srfNewRelatedItem, (srfRelatedItem) => {
@@ -215,7 +216,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#form.getControl('srf-pick-from-library').disabled = !pickFromLb;
                     this.#form.ui.find('#srf-item-dimension').css('display', showPanels ? 'block' : 'none');
                     this.#form.ui.find('#srf-item-spec').css('display', showPanels ? 'block' : 'none');
+
+                    //if (reqType == twcSrfItem.RequestType.REMOVE && this.#srfItem[twcSrfItem.Fields.EQUIPMENT_ID]) { showPanels = true; }
                     this.#form.ui.find('#srf-related-eq').css('display', showPanels ? 'block' : 'none');
+                 
                 }
 
                 if (e === undefined) {
@@ -269,6 +273,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#srfItem[twcSrfItem.Fields.EQUIPMENT_ID + '_name'] = pickedEq[twcEquipment.Fields.NAME];
                 }
                 this.#form.getControl('srf-equipment').value = this.#srfItem[twcSrfItem.Fields.EQUIPMENT_ID + '_name'] || '';
+                this.setFormEqChildren(pickedEq);
             }
 
             setFormTmeEqState(pickedEq) {
@@ -277,8 +282,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#srfItem[twcSrfItem.Fields.TME_ID + '_name'] = pickedEq[twcEquipment.Fields.NAME];
                 }
                 var ctrl = this.#form.getControl('srf-tme-equipment');
-                if (ctrl) {
-                    ctrl.value = this.#srfItem[twcSrfItem.Fields.TME_ID + '_name'] || '';
+                if (ctrl) { ctrl.value = this.#srfItem[twcSrfItem.Fields.TME_ID + '_name'] || ''; }
+                this.setFormEqChildren(pickedEq);
+            }
+
+            setFormEqChildren(pickedEq) {
+                // if (!pickedEq) { return; }
+                
+                var reqType = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
+                if (reqType != twcSrfItem.RequestType.REMOVE) { return; }
+                
+                var relatedEqTable = this.#form.getControl('srf-related-eq-table');
+                if (relatedEqTable) {
+                    relatedEqTable.render(pickedEq?.relatedItems || this.#srfItem.relatedItems, true);
+                    relatedEqTable.ui.find('#srf-related-eq-table_toolBar').css('display', 'none')
+                    this.#form.ui.find('#srf-related-eq').css('display', 'block');
                 }
             }
 
@@ -357,9 +375,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var eqTable = new uiTable.TableControl(tblContainer, onColumnInit, { id: 'twc_equipment', fitContainer: false, fitScreen: false })
                     //eqTable.init(this.data.eqLib.filter(el => { return el[twcEqLibUI.Fields.EQUIPMENT_CLASS] == eqClass  }))
                     eqTable.init(res.data);
-                    eqTable.table.on('dblclick', e => {
+                    eqTable.table.on('dblclick', async e => {
                         try {
-                            callback(e);
+                            var pickedEq = e.e.rowsData[0];
+                            if (eqClass == twcEqUI.EqClass.TME) {
+                                var res = await this.#page.post({ action: 'get-equipment-children' }, { eq: pickedEq.id })
+                                pickedEq.relatedItems = res.data;
+                            }
+
+                            callback(pickedEq);
                             dlg.close();
                         } catch (error) {
                             dialog.error(error);
@@ -498,307 +522,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
 
-            /*
-                        async openPrintSDS(e) {
-            
-                            try {
-                                var payload = this.data.siteRequestInfo;
-                                const content = jQuery(`
-                                    <div style="padding:15px;">
-                                        <div style=" display:flex; align-items:flex-start;">
-                                            <!-- LEFT COLUMN -->
-                                            <div style="flex:1;">
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Drawing Reference</label>
-                                                    <input id="drawingReference" type="text" class="twc" style="width:100%;" />
-                                                </div>
-            
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Operator Site ID</label>
-                                                    <input id="operatorSiteId" type="text" class="twc" style="width:100%;" />
-                                                </div>
-            
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Include Licence Map</label>
-                                                    <div>
-                                                        <span><input type="radio" name="includeLicenceMap" value="T" checked /> Yes </span>
-                                                        <sapn style="margin-left:15px;"> <input type="radio" name="includeLicenceMap" value="F" /> No </sapn>
-                                                    </div>
-                                                </div>
-            
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Commencement Date</label>
-                                                    <input id="commencementDate" type="date" class="twc" style="width:100%;" />
-                                                </div>
-            
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Additional SRF Conditions</label>
-                                                    <textarea id="additionalSrfConditions" style="width:100%;height:80px;"></textarea>
-                                                </div>
-            
-                                                <div>
-                                                    <label>Power Supply Comments</label>
-                                                    <textarea id="powerSupplyComments" style="width:100%;height:80px;"></textarea>
-                                                </div>
-                                            </div>
-                                            <!-- VERTICAL DIVIDER -->
-                                            <div style=" width:1px; background:#d0d0d0; min-height:475px; margin:0 20px;"></div>
-            
-                                            <!-- RIGHT COLUMN -->
-                                            <div style="flex:1;">
-            
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Fibre Rights</label>
-                                                    <div>
-                                                        <sapn><input type="radio" name="fibreRights" value="T" checked /> Yes </sapn>
-                                                        <sapn style="margin-left:15px;"><input type="radio" name="fibreRights" value="F" /> No </sapn>
-                                                    </div>
-                                                </div>
-            
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Fibre Provider</label>
-                                                    <select id="fibreProvider" class="twc" style="width:100%;">
-                                                        <option value="">-</option>
-                                                        <option value="ABC">ABC</option>
-                                                        <option value="XYZ">XYZ</option>
-                                                        <option value="LMN">LMN</option>
-                                                        <option value="PQR">PQR</option>
-                                                    </select>
-                                                </div>
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Other Provider</label>
-                                                    <input id="otherProvider" type="text" class="twc" style="width:100%;" />
-                                                </div>
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Fibre Duct Route</label>
-                                                    <input id="fibreDuctRoute" type="text" class="twc" style="width:100%;" />
-                                                </div>
-                                                <div>
-                                                    <label>Notes / Conditions</label>
-                                                    <textarea id="notesConditions" style="width:100%;height:170px;"></textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <hr style="margin:25px 0;" />
-                                        <div style="display:flex; align-items:flex-start;">
-                                            <!-- LEFT COLUMN -->
-                                            <div style="flex:1;">
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Previous Licence Fee</label>
-                                                    <div style="display:flex; align-items:center;">
-                                                        <input id="previousLicenceFee" type="number" class="twc" style="flex:1; border-top-right-radius:0; border-bottom-right-radius:0;" />
-                                                        <input type="text" value="€" disabled style=" width:30px; height:34px;  text-align:center; border-radius:3px" />
-                                                    </div>
-                                                </div>
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Fee Reduction</label>
-                                                    <div style="display:flex; align-items:center;">
-                                                        <input id="feeReduction" type="number" class="twc" style="width:100%;" />
-                                                        <input type="text" value="€" disabled style=" width:30px; height:34px;  text-align:center; border-radius:3px" />
-                                                    </div>
-                                                </div>
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Fee Uplift</label>
-                                                    <div style="display:flex; align-items:center;">
-                                                        <input id="feeUplift" type="number" class="twc" style="width:100%;" />
-                                                        <input type="text" value="€" disabled style=" width:30px; height:34px;  text-align:center; border-radius:3px" />
-                                                    </div>
-                                                </div>
-                                                <div style="margin-bottom:12px;">
-                                                    <label>New Licence Fee</label>
-                                                    <div style="display:flex; align-items:center;">
-                                                        <input id="newLicenceFee" type="number" class="twc" style="width:100%;" />
-                                                        <input type="text" value="€" disabled style=" width:30px; height:34px;  text-align:center; border-radius:3px" />
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <label>Fee Change Breakdown</label>
-                                                    <textarea id="feeChangeBreakdown" style="width:100%;height:80px;"></textarea>
-                                                </div>
-                                            </div>
-                                            <!-- DIVIDER -->
-                                            <div style=" width:1px; background:#d0d0d0; min-height:320px; margin:0 20px;"></div>
-                                            <!-- RIGHT COLUMN -->
-                                            <div style="flex:1;">
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Agreement Template</label>
-                                                    <select id="agreementTemplate" class="twc" style="width:100%;">
-                                                        <option value="VF MSLA">VF MSLA</option>
-                                                        <option value="VF SDS">VF SDS</option>
-                                                        <option value="Tower Lease">Tower Lease</option>
-                                                    </select>
-                                                </div>
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Site Type</label>
-                                                    <select id="siteType" class="twc" multiple style="width:100%;height:100px;">
-                                                        <option>AirSpeed Schools</option>
-                                                        <option>AirFibre Hub</option>
-                                                        <option>AirFibre Yr1 Discount</option>
-                                                        <option>Imagine (LTE upgrade)</option>
-                                                        <option>VF SDS</option>
-                                                    </select>
-                                                </div>
-            
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Access Drawing</label>
-                                                    <input id="accessDrawing" type="text" class="twc" style="width:100%;" />
-                                                </div>
-                                                <div style="margin-bottom:12px;">
-                                                    <label>Fibre Drawing</label>
-                                                    <input id="fibreDrawing" type="text" class="twc" style="width:100%;" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div style="margin-top:20px; text-align:center; width:100%;">
-                                            <a href="#" id="previewSds" style="text-decoration:none;"> Preview SDS</a>
-                                        </div>
-                                    </div>
-                               `);
-            
-                                const getValue = selector =>
-                                    content.find(selector).val()?.toString().trim() || '';
-            
-                                const getRadioValue = name =>
-                                    content.find(`input[name="${name}"]:checked`).val() || '';
-            
-                                const getValues = () => ({
-                                    drawingReference: getValue('#drawingReference'),
-                                    operatorSiteId: getValue('#operatorSiteId'),
-                                    includeLicenceMap: getRadioValue('includeLicenceMap'),
-                                    commencementDate: getValue('#commencementDate'),
-                                    additionalSrfConditions: getValue('#additionalSrfConditions'),
-                                    powerSupplyComments: getValue('#powerSupplyComments'),
-            
-                                    fibreRights: getRadioValue('fibreRights'),
-                                    fibreProvider: getValue('#fibreProvider'),
-                                    otherProvider: getValue('#otherProvider'),
-                                    fibreDuctRoute: getValue('#fibreDuctRoute'),
-                                    notesConditions: getValue('#notesConditions'),
-            
-                                    previousLicenceFee: Number(getValue('#previousLicenceFee')) || 0,
-                                    feeReduction: Number(getValue('#feeReduction')) || 0,
-                                    feeUplift: Number(getValue('#feeUplift')) || 0,
-                                    newLicenceFee: Number(getValue('#newLicenceFee')) || 0,
-                                    feeChangeBreakdown: getValue('#feeChangeBreakdown'),
-            
-                                    agreementTemplate: getValue('#agreementTemplate'),
-                                    siteType: content.find('#siteType').val() || [],
-            
-                                    accessDrawing: getValue('#accessDrawing'),
-                                    fibreDrawing: getValue('#fibreDrawing')
-                                });
-            
-                                content.on('click', '#previewSds', e => {
-                                    e.preventDefault();
-                                    const values = getValues();
-                                    const previewContent = jQuery(`
-                                        <div style="padding:15px;">
-                                            <table style="width:100%; border-collapse:collapse;">
-                                                ${Object.entries(values).map(([key, value]) => `
-                                                    <tr>
-                                                        <td style="border:1px solid #ccc;padding:8px;font-weight:bold;width:35%;"> ${key} </td>
-                                                        <td style="border:1px solid #ccc;padding:8px;"> ${Array.isArray(value) ? value.join(', ') : (value || '-')} </td>
-                                                    </tr>
-                                                `).join('')}
-                                            </table>
-                                        </div>
-                                    `);
-            
-                                    // Hide original popup
-                                    const mainDialogEl = jQuery('.o-dialog:visible').last();
-                                    mainDialogEl.hide();
-            
-                                    dialog.confirm({ title: 'Preview SDS', message: previewContent, width: '75%', height: '70hv' }, () => {
-                                        // Show original popup again
-                                        jQuery('.ui-dialog:hidden').last().show();
-                                        // Remove preview link
-                                        // content.find('#previewSds').hide();
-                                        mainDialogEl.show();
-                                        return true;
-                                    });
-                                });
-            
-                                dialog.confirm({ title: 'SDS/SRF Pack Produced Check', message: content, width: '75%', height: '70hv', }, (dlg) => {
-                                    const getValue = selector => content.find(selector).val()?.trim() || '';
-                                    const getRadioValue = name => content.find(`input[name="${name}"]:checked`).val() || '';
-                                    const values = {
-                                        drawingReference: getValue('#drawingReference'),
-                                        operatorSiteId: getValue('#operatorSiteId'),
-                                        includeLicenceMap: getRadioValue('includeLicenceMap'),
-                                        commencementDate: getValue('#commencementDate'),
-                                        additionalSrfConditions: getValue('#additionalSrfConditions'),
-                                        powerSupplyComments: getValue('#powerSupplyComments'),
-            
-                                        fibreRights: getRadioValue('fibreRights'),
-                                        fibreProvider: getValue('#fibreProvider'),
-                                        otherProvider: getValue('#otherProvider'),
-                                        fibreDuctRoute: getValue('#fibreDuctRoute'),
-                                        notesConditions: getValue('#notesConditions'),
-            
-                                        previousLicenceFee: Number(getValue('#previousLicenceFee')) || 0,
-                                        feeReduction: Number(getValue('#feeReduction')) || 0,
-                                        feeUplift: Number(getValue('#feeUplift')) || 0,
-                                        newLicenceFee: Number(getValue('#newLicenceFee')) || 0,
-                                        feeChangeBreakdown: getValue('#feeChangeBreakdown'),
-            
-                                        agreementTemplate: getValue('#agreementTemplate'),
-                                        siteType: content.find('#siteType').val() || [],
-                                        accessDrawing: getValue('#accessDrawing'),
-                                        fibreDrawing: getValue('#fibreDrawing')
-                                    };
-                                    console.log('SDS Values', values);
-                                    const params = new URLSearchParams({ recid: payload.id, ...values });
-                                    window.open(
-                                        `/app/site/hosting/scriptlet.nl?script=customscript_otwc_print_srf_sds_sl&deploy=1&${params.toString()}`,
-                                        '_blank'
-                                    );
-                                    return true;
-                                });
-            
-                            } catch (error) {
-                                await dialog.errorAsync(error);
-                            }
-                        }
-            
-
-            signSDS() {
-                var html = jQuery(`
-                    <div>
-                        <label>Disclaimer</label>
-                        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966, when designers at Letraset and James Mosley, the librarian at St Bride Printing Library in London, took a 1914 Cicero translation and scrambled it to make dummy text for Letraset's Body Type sheets. It has survived not only many decades, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised thanks to these sheets and more recently with desktop publishing software including versions of Lorem Ipsum.
-                    </div>
-                    <div>
-                        <label>Check this box to agree to the terms and conditions</label>
-                        ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'terms-and-cond-agreed' })}
-                        
-                    </div>
-                `);
-
-                var form = twcUI.init({}, html);
-
-                dialog.confirm({ title: 'Sign SDS', message: html, size: { width: '750px', height: '400px' } }, dlg => {
-                    try {
-
-                        if (!form.getControl('terms-and-cond-agreed').value) { throw new Error('You need to agree to the terms and conditions'); }
-
-                        dialog.saving(dlg, 'signing document...<br />do not close the pop-up or refresh the page.');
-                        this.post({ action: 'sign-sds' }, { srf: this.data.siteRequestInfo.id })
-                            .then(res => {
-                                location.reload();
-                            }).catch(err => {
-                                dialog.savingError(dlg, err);
-                            });
-
-                        return false;
-                    } catch (error) {
-                        dialog.error(error);
-                        return false;
-                    }
-                })
-            }
-            */
-            
-
             deleteRecord(srfRecord, table) {
                 var deleteRecordCollectionName = table.id == twcFile.Type ? 'files_deleted' : 'items_deleted';
                 if (srfRecord.delete) {
@@ -887,16 +610,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
-
-            // async previewFile(id) {
-            //     var res = await this.post({ action: 'get-file' }, { file: id });
-            //     var html = `<object style="width: 100%;height: 100%;" data="data:application/${res.type.toLowerCase()};base64,${res.fileContent}">`;
-            //     dialog.message({
-            //         title: res.name,
-            //         message: html,
-            //         size: { width: '1000px', height: '95vh' }
-            //     })
-            // }
 
             async onSave(e) {
                 const targetId = e.id || e.target.id;

@@ -7,12 +7,12 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
     './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js',
     './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_saf.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js', './O/oTWC_nsFileUtils.js', './O/controls/oTWC_ui_ctrl.js',
     './oTWC_otop_test.js', './data/oTWC_profileUI.js', './modules/oTWC_certStatusEngine.js', './data/oTWC_equipAction.js', './modules/oTWC_srfWorkflowEngine.js',
-    './modules/oTWC_srfWorkflowEngineUI.js', './ui/modules/oTWC_siteRequestUtils.js'],
+    './modules/oTWC_srfWorkflowEngineUI.js', './ui/modules/oTWC_siteRequestUtils.js', './ui/modules/oTWC_siteAccessUtils.js'],
     function (core, coreSQL, dialog, recu,
         twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields,
         siteInfoUtils, twcSaf, twcSrfUI, twcEquipment, nsFileUtils, twcUI,
         otop, twcProfileUI, twcCertStatusEngine, twcEquipAction, twcSrfWorkflowEngine,
-        twcSrfWorkflowEngineUI, twcSiteRequestUtils) {
+        twcSrfWorkflowEngineUI, twcSiteRequestUtils, twcSiteAccessUtils) {
         var _ui;
 
         function pageInit(context) {
@@ -54,7 +54,9 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
             deleteAllSrf: deleteAllSrf,
             testFunction() {
                 try {
-                    recu.submit('customrecord_twc_srf', 28, 'custrecord_twc_srf_sds_form_data', null);
+                    //recu.submit('customrecord_twc_srf', 28, 'custrecord_twc_srf_sds_form_data', null);
+
+                    twcSiteAccessUtils.deleteSaf(145);
 
                     // console.log(
                     //     twcSiteRequestUtils.initEquipment({

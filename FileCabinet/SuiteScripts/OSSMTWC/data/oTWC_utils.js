@@ -34,6 +34,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const EQ_ACTION_TYPE = {
+            Install: 1,
+            Remove: 2,
+            Licence: 3,
+            Unlicence: 4,
+            SwapLicence: 5,
+            SwapUnlicence: 6
+        }
+
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const EQ_INSTALL_STATUS = {
             Draft: 1,
             NotInstalled: 2,
@@ -331,10 +342,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Resubmitted: 4,
             SRFApproved: 5,
             LicenceRequested: 6,
-            // WorksPermitted: 7,
             LicenceIssued: 8,
+            LicenseSigned: 12,
             LicenceExecuted: 9,
             SRFCancelled: 10
+
         }
         // @@TODO: these could be on the status table since we have one
         const SRF_STATUS_STYLE = {
@@ -345,8 +357,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Resubmitted: { color: 'white', backgroundColor: 'olive', name: 'Re-Submitted' },
             SRFApproved: { color: 'blue', backgroundColor: 'lime', name: 'SRF Approved' },
             LicenceRequested: { color: 'white', backgroundColor: 'steelblue', name: 'License Requested' },
-            // WorksPermitted: { color: 'white', backgroundColor: 'mediumblue' },
             LicenceIssued: { color: 'white', backgroundColor: 'blue', name: 'License Issued' },
+            LicenseSigned: { color: 'blue', backgroundColor: 'lime', name: 'License Signed' },
             LicenceExecuted: { color: 'white', backgroundColor: 'green', name: 'License Executed' },
             SRFCancelled: { color: 'white', backgroundColor: 'red', name: 'SRF Cancelled' }
         }
@@ -712,12 +724,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getSafContractorFiles(options) {
-            log.debug("OPTIONS..", options)
             var fileIds = options['custrecord_twc_saf_method_statement'] || '';
             if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
             fileIds += options['custrecord_twc_saf_health_safety'] || ''    //@@NOTE : added || '' to fix issue with null value getting appended to fileIds
-            log.debug("fileIds..", fileIds)
-
+            if (!fileIds) { return []; }
             return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})` } } })
         }
 
@@ -828,18 +838,38 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (options.vendor) {
                 if (options.type == 'C') {
                     // @@NOTE: here we want to select customers the given vendor can work on behalf of
+                    
+                    var sqlUnion = '';
+                    if (options.isBoth) {
+                        sqlUnion = `
+                            UNION
+
+                            select  distinct c.id as value, c.name as text
+                            from    customrecord_twc_company c
+                            where   c.isinactive = 'F'
+                            and     c.id = ${options.companyProfile.id}
+                            ${additionalFilters}
+
+                        `
+                    }
+
                     sql = `
-                        select  distinct c.id as value, c.name as text
-                        from    customrecord_twc_company c 
-                        left join customrecord_twc_acl acl on c.id = acl.custrecord_twc_acl_cust and c.custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer}
-                        where   c.isinactive = 'F'
-                        and     (
-                                acl.custrecord_twc_acl_cont = ${options.vendor}
-                            or c.id = ${options.vendor}
+                        select  *
+                        from    (
+                            select  distinct c.id as value, c.name as text
+                            from    customrecord_twc_company c 
+                            left join customrecord_twc_acl acl on c.id = acl.custrecord_twc_acl_cust and c.custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer}
+                            where   c.isinactive = 'F'
+                            and     (
+                                    acl.custrecord_twc_acl_cont = ${options.vendor}
+                                or c.id = ${options.vendor}
+                            )
+                            AND c.id <> ${options.vendor}
+                            ${additionalFilters}
+
+                            ${sqlUnion}
                         )
-                        AND c.id <> ${options.vendor}
-                        ${additionalFilters}
-                        order by LOWER(c.name)
+                        order by LOWER(text)
                     `
                 } else {
                     // @@NOTE: here we want to select sub-contractors the given vendor can use
@@ -1091,14 +1121,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getSrfDropDown(options) {
+            //throw new Error(JSON.stringify(core.utils.classToObject( options)))
             var siteSrfs = [];
             coreSQL.each(`
                 select  srf.id as value, srf.name, BUILTIN.DF(srf.custrecord_twc_srf_type) as type, srf.custrecord_twc_srf_app_date as date, c.name as customer,
-                        BUILTIN.DF(srf.custrecord_twc_srf_site) as site
+                        BUILTIN.DF(srf.custrecord_twc_srf_site) as site, TO_CHAR(srf.custrecord_twc_srf_permit_date, 'DD/MM/YYYY') as work_permitted_date
                 from    customrecord_twc_srf srf
                 join    customrecord_twc_company c on c.id = srf.custrecord_twc_srf_cust
                 where   srf.custrecord_twc_srf_site = ${options.siteId}
-                and     srf.custrecord_twc_srf_permit_date <= CURRENT_DATE
+                and     srf.custrecord_twc_srf_cust = ${options.customer}
+                and     srf.custrecord_twc_srf_permit_date is not null
                 order by srf.custrecord_twc_srf_app_date desc
             `, srf => {
                 siteSrfs.push({
@@ -1114,15 +1146,51 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var safFilter = (options.saf) ? `and custrecord_twc_eq_action_saf = ${options.saf}` : 'and custrecord_twc_eq_action_saf is null';
             return coreSQL.run(`
-                select  a.id as value, a.name as text, e.name as equipment, BUILTIN.DF(custrecord_twc_eq_action_srf) as srf, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
-                        BUILTIN.DF(custrecord_twc_eq_action_type) as action_type, BUILTIN.DF(custrecord_twc_eq_real_ea) as related_action, 
-                        custrecord_twc_eq_action_sts as status, BUILTIN.DF(custrecord_twc_eq_action_sts) as status_name
+                select  a.id as ea_id, BUILTIN.DF(custrecord_twc_eq_action_srf) as srf, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
+                        a.custrecord_twc_eq_action_eq, BUILTIN.DF(a.custrecord_twc_eq_action_eq) as custrecord_twc_eq_action_eq_name,
+                        a.custrecord_twc_eq_action_type, BUILTIN.DF(custrecord_twc_eq_action_type) as custrecord_twc_eq_action_type_name,
+
+                        a.custrecord_twc_eq_action_sts, BUILTIN.DF(a.custrecord_twc_eq_action_sts) as custrecord_twc_eq_action_sts_name,
+                        
+                        srfi.custrecord_twc_srf_itm_stype, BUILTIN.DF(srfi.custrecord_twc_srf_itm_stype) as custrecord_twc_srf_itm_stype_name,
+                        srfi.custrecord_twc_srf_itm_type, BUILTIN.DF(srfi.custrecord_twc_srf_itm_type) as custrecord_twc_srf_itm_type_name,
+                        srfi.custrecord_twc_srf_itm_req_type, BUILTIN.DF(srfi.custrecord_twc_srf_itm_req_type) as custrecord_twc_srf_itm_req_type_name,
+                        srfi.custrecord_twc_srf_itm_desc, srfi.custrecord_twc_srf_itm_length_mm, srfi.custrecord_twc_srf_itm_width_mm, srfi.custrecord_twc_srf_itm_depth_mm,
+                        srfi.custrecord_twc_srf_itm_ht_on_twr, srfi.custrecord_twc_srf_itm_azimuth, srfi.custrecord_twc_srf_itm_b_end, 
                 from    customrecord_twc_eq_action a
+                join 	customrecord_twc_srf_itm srfi on srfi.id = a.custrecord_twc_eq_action_srf_item
                 join    customrecord_twc_equip e on e.id = a.custrecord_twc_eq_action_eq
                 where   custrecord_twc_eq_action_srf = ${options.srf}
                 ${safFilter}
                 order by a.id
             `)
+        }
+        function getSafActions(saf) {
+            var safActions = [];
+            coreSQL.each(`
+                select  sa.id, sa.custrecord_twc_saf_a_status, 
+                        a.id as ea_id, BUILTIN.DF(custrecord_twc_eq_action_srf) as srf, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
+                        a.custrecord_twc_eq_action_eq, BUILTIN.DF(a.custrecord_twc_eq_action_eq) as custrecord_twc_eq_action_eq_name,
+                        a.custrecord_twc_eq_action_type, BUILTIN.DF(custrecord_twc_eq_action_type) as custrecord_twc_eq_action_type_name,
+
+                        a.custrecord_twc_eq_action_sts, BUILTIN.DF(a.custrecord_twc_eq_action_sts) as custrecord_twc_eq_action_sts_name,
+                        
+                        srfi.custrecord_twc_srf_itm_stype, BUILTIN.DF(srfi.custrecord_twc_srf_itm_stype) as custrecord_twc_srf_itm_stype_name,
+                        srfi.custrecord_twc_srf_itm_type, BUILTIN.DF(srfi.custrecord_twc_srf_itm_type) as custrecord_twc_srf_itm_type_name,
+                        srfi.custrecord_twc_srf_itm_req_type, BUILTIN.DF(srfi.custrecord_twc_srf_itm_req_type) as custrecord_twc_srf_itm_req_type_name,
+                        srfi.custrecord_twc_srf_itm_desc, srfi.custrecord_twc_srf_itm_length_mm, srfi.custrecord_twc_srf_itm_width_mm, srfi.custrecord_twc_srf_itm_depth_mm,
+                        srfi.custrecord_twc_srf_itm_ht_on_twr, srfi.custrecord_twc_srf_itm_azimuth, srfi.custrecord_twc_srf_itm_b_end, 
+                from    customrecord_twc_saf_action sa
+                join    customrecord_twc_eq_action a on a.id = sa.custrecord_twc_saf_a_ea
+                join 	customrecord_twc_srf_itm srfi on srfi.id = a.custrecord_twc_eq_action_srf_item
+                join    customrecord_twc_equip e on e.id = a.custrecord_twc_eq_action_eq
+                where   sa.custrecord_twc_saf_a_saf = ${saf.id}
+                order by sa.created
+            `, action => {
+                action['saf-detach'] = (action['custrecord_twc_saf_a_status'] == SAF_ACTION_STATUS.Pending) ? '<span class="o-table-action twc-clickable" data-action="detach">detach</span>' : '';
+                safActions.push(action);
+            })
+            return safActions;
         }
 
         function getInfraStructures(options, includeTLOnly) {
@@ -1275,6 +1343,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EqLibStatus: EQ_LIB_STATUS,
             EqLibUse: EQ_LIB_USE,
             EqActionStatus: EQ_ACTION_STATUS,
+            EqActionType: EQ_ACTION_TYPE,
             EqInstallStatus: EQ_INSTALL_STATUS,
             EqLicenseStatus: EQ_LICENSE_STATUS,
 
@@ -1338,6 +1407,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafDropDown: getSafDropDown,
             getSafTimeBlocks: getSafTimeBlocks,
             getSafReviewers: getSafReviewers,
+            getSafActions: getSafActions,
             getSrfDropDown: getSrfDropDown,
             getSrfActions: getSrfActions,
             getSrfTypes: getSrfTypes,

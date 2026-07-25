@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_file.js'],
-    (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, uiTable, twcSite, twcUtils, twcSaf, twcSafUI, twcIcons, twcUIPanel, twcUI, twcFile) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safAction.js', '../../data/oTWC_safUI.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_file.js'],
+    (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, uiTable, twcSite, twcUtils, twcSaf, twcSafAction, twcSafUI, twcIcons, twcUIPanel, twcUI, twcFile) => {
 
         var _safLink = null;
         function safReuseLink(id) {
@@ -619,8 +619,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             detachEqAction(safActions, table) {
                 try {
-                    safActions['saf-eq-action-status'] = twcUtils.SafActionStatus.Detached;
-                    safActions['saf-eq-action-status_name'] = 'Detached';
+                    safActions[twcSafAction.Fields.STATUS] = twcUtils.SafActionStatus.Detached;
+                    safActions[twcSafAction.Fields.STATUS + '_name'] = 'Detached';
                     safActions['saf-detach'] = '';
                     table.render(table.data, true)
 
@@ -635,6 +635,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (this.deleteRecord(safActions, table)) { return; }
 
                     if (!safActions.ui) {
+
+                        this.data.siteAccessInfo[twcSaf.Fields.CUSTOMER] = this.ui.getControl('saf-customer').value;
+                        if (!this.data.siteAccessInfo[twcSaf.Fields.CUSTOMER]) { throw new Error('Please, specify a customer'); }
+
                         safActions.ui = this.#page.postSync({ action: 'saf-action-record' }, { saf: this.data.siteAccessInfo, action: safActions })
                         safActions.ui.getControl = function (id) {
                             return this.controls.find(c => { return c.id == id })
@@ -644,33 +648,45 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var form = twcUIPanel.ui(safActions.ui);
                     form.getControl('saf-action-srf').on('change', e => {
                         // @@TODO: gte SAF Equip action
+                        var waitPanel = form.getControl('srf-actions').ui.parent().find('#wait-panel');
+                        if (waitPanel.length == 0) {
+                            waitPanel = jQuery(`
+                                <div id="wait-panel" style="margin-top: 17px;">
+                                    <div>loading...</div>
+                                    <span class="twc-wait-cursor">
+                                        ${twcIcons.ICONS.waitWheel}
+                                    </span>
+                                </div>
+                            `);
+                            form.getControl('srf-actions').ui.parent().append(waitPanel);
+                        }
+                        waitPanel.css('display', 'block');
+                        form.getControl('srf-actions').ui.css('display', 'none');
+
                         this.#page.post({ action: 'get-srf-actions' }, { srf: e.value })
                             .then(res => {
-                                form.getControl('saf-action-eq').setDataSource(res.data);
-                                safActions.ui.getControl('saf-action-eq').dataSource = res.data;
+                                form.getControl('srf-actions').render(res.data, true);
+                                safActions.ui.getControl('srf-actions').data = res.data;
+                                form.getControl('srf-actions').ui.css('display', 'block');
+                                waitPanel.css('display', 'none');
                             })
-                            .catch(err => { dialog.error(err); });
+                            .catch(err => {
+                                dialog.error(err);
+                                waitPanel.css('display', 'none');
+                            });
                     })
                     if (form.getControl('saf-action-srf').value) { form.getControl('saf-action-srf').on('change'); }
 
-                    dialog.confirm({ title: 'manage action', message: form.ui, width: '300px', height: '300px' }, () => {
+                    dialog.confirm({ title: 'manage action', message: form.ui, width: '1250px', height: '750px' }, () => {
                         try {
-                            var obj = form.getValues(true);
 
-                            safActions['saf-eq-action'] = obj['saf-action-eq'].value;
-                            safActions['saf-eq-action-id'] = obj['saf-action-eq'].text;
-                            safActions['saf-equipment_name'] = obj['saf-action-eq'].equipment;
-                            safActions['saf-eq-action-type_name'] = obj['saf-action-eq'].action_type;
-                            safActions['saf-eq-action-status'] = obj['saf-action-eq'].status;
-                            safActions['saf-eq-action-status_name'] = obj['saf-action-eq'].status_name;
 
-                            safActions.dirty = true;
+                            //if (!this.data.siteAccessInfo.actions) {
+                            this.data.siteAccessInfo.actions = safActions.ui.getControl('srf-actions').data;
+                            //}
 
-                            safActions.ui.getControl('saf-action-srf').value = safActions['saf-action-srf'];
-                            safActions.ui.getControl('saf-action-eq').value = safActions['saf-action-eq'];
+                            //if (this.data.siteAccessInfo.actions.indexOf(safActions) < 0) { this.data.siteAccessInfo.actions.push(safActions); }
 
-                            if (!this.data.siteAccessInfo.actions) { this.data.siteAccessInfo.actions = table.data; }
-                            if (this.data.siteAccessInfo.actions.indexOf(safActions) < 0) { this.data.siteAccessInfo.actions.push(safActions); }
                             table.render(this.data.siteAccessInfo.actions, true)
 
                             this.dirty = true

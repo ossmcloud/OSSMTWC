@@ -6,10 +6,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
     (runtime, core, coreSQL, twcUI, twcIcons, twcUtils, twcSrf, twcSrfItem, twcEquipmentType, twcFile, twcEquipment) => {
 
         function getUIFields(srf, srfItem, userInfo) {
-            //throw new Error(JSON.stringify(core.utils.classToObject(srf)))
+            //throw new Error(JSON.stringify(core.utils.classToObject(srfItem)))
             var fieldGroup = { id: 'srf-item', title: 'Main', collapsed: false, controls: [] };
 
             var isNewRecord = !srfItem.id;
+            // @@NOTE: if we have a parent is because this ATME is being added with a new TME
+            var isNewRecordAtme = (srfItem.stepType == twcSrfItem.StepType.ATME || srfItem.stepType == twcSrfItem.StepType.FEEDER) && srfItem.child;
 
             var siteInfraStructures = twcUtils.getInfraStructures({ siteId: srf.site }, userInfo.isEmployee);
             var siteStructures = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Structure })
@@ -18,14 +20,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var basicInfo = { id: 'srf-item-info', title: 'Basic Info', fields: [] };
             fieldGroup.controls.push(basicInfo);
 
-            basicInfo.fields.push({ id: twcSrfItem.Fields.REQUEST_TYPE, label: 'Request Type', mandatory: true, readOnly: !isNewRecord })
+            basicInfo.fields.push({ id: twcSrfItem.Fields.REQUEST_TYPE, label: 'Request Type', mandatory: true, readOnly: (!isNewRecord || isNewRecordAtme) })
             basicInfo.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'srf-equipment', label: 'Equipment', mandatory: true, hide: true, readOnly: true })
             basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-equipment', label: '', value: '...', hide: true });
 
-            if (srfItem.stepType == twcSrfItem.StepType.ATME) {
-                if (srfItem.parent) {
-
+            if (srfItem.stepType == twcSrfItem.StepType.ATME || srfItem.stepType == twcSrfItem.StepType.FEEDER) {
+                if (srfItem.child) {
                     // @@NOTE: if we have a parent is because this ATME is being added with a new TME
+
                 } else {
                     basicInfo.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'srf-tme-equipment', label: 'TME', mandatory: true, readOnly: true })
                     basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-tme-equipment', label: '', value: '...' });
@@ -46,8 +48,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.LENGTH_MM, label: 'Length (mm)', mandatory: true })
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.WIDTH_MM, label: 'Width (mm)', mandatory: true })
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.DEPTH_MM, label: 'Depth (mm)', mandatory: true })
-                dimensionInfo.fields.push({ id: twcSrfItem.Fields.WEIGHT_KG, label: 'Weight (kg)', mandatory: true })
-                dimensionInfo.fields.push({ id: twcSrfItem.Fields.HEIGHT_ON_TOWER, label: 'Height on Tower', mandatory: true })
+                if (srfItem.stepType != twcSrfItem.StepType.GIE) {
+                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.WEIGHT_KG, label: 'Weight (kg)', mandatory: true })
+                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.HEIGHT_ON_TOWER, label: 'Height on Tower', mandatory: true })
+                }
                 dimensionInfo.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: twcSrfItem.Fields.EQUIPMENT_LIBRARY, label: 'Eq. Lib', hide: true })
             }
 
@@ -71,9 +75,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (specInfo.fields.length > 0) { fieldGroup.controls.push(specInfo); }
 
             if (srfItem.stepType == twcSrfItem.StepType.TME) {
+
                 var relatedEqPanel = { id: 'srf-related-eq', title: 'Related Equipment', hide: isNewRecord, fields: [] };
                 fieldGroup.controls.push(relatedEqPanel);
-
 
                 var relatedEqTableControl = {
                     id: `srf-related-eq-table`,
@@ -108,6 +112,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
                 relatedEqPanel.fields.push(relatedEqTableControl);
 
+                
+
             }
 
             return fieldGroup;
@@ -121,23 +127,37 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
-        function getStepTableUIControl(srf, stepType, dataSource) {
-            var label = '';
+        function getStepTableUIControl(userInfo, srf, stepType, dataSource) {
+
+
             var fields = {
-                //[twcSrfItem.Fields.STEP_TYPE]: 'Step Type',
-                [twcSrfItem.Fields.REQUEST_TYPE]: 'Request Type',
-                [twcSrfItem.Fields.EQUIPMENT_ID]: { title: 'Equipment', nullText: '' },
-                [twcSrfItem.Fields.ITEM_TYPE]: { title: 'Type', nullText: '' },
-                [twcSrfItem.Fields.MAKE]: 'Make',
-                [twcSrfItem.Fields.MODEL]: 'Model',
-                [twcSrfItem.Fields.DESCRIPTION]: 'Description',
-                [twcSrfItem.Fields.HEIGHT_ON_TOWER]: 'Height on Tower',
-                [twcSrfItem.Fields.LENGTH_MM]: 'Length (mm)',
-                [twcSrfItem.Fields.WIDTH_MM]: 'Width (mm)',
-                [twcSrfItem.Fields.DEPTH_MM]: 'Depth (mm)',
-                [twcSrfItem.Fields.WEIGHT_KG]: 'Weight (kg)',
+                [twcSrfItem.Fields.REQUEST_TYPE]: { title: 'Request Type', styles: { width: '150px' } },
+                [twcSrfItem.Fields.EQUIPMENT_ID]: { title: 'Equipment', nullText: '', styles: { width: '200px' } },
+                [twcSrfItem.Fields.ITEM_TYPE]: { title: 'Type', nullText: '', styles: { width: '150px' } },
+                [twcSrfItem.Fields.DESCRIPTION]: 'Description'
             }
 
+            if (stepType == twcSrfItem.StepType.FEEDER) {
+                fields[twcSrfItem.Fields.TYPE_OPT] = 'Type Opt';
+                //fields[twcSrfItem.Fields.DESCRIPTION] = 'Description';
+            } else {
+                fields[twcSrfItem.Fields.MAKE] = 'Make';
+                fields[twcSrfItem.Fields.MODEL] = 'Model';
+                //fields[twcSrfItem.Fields.DESCRIPTION] = 'Description';
+                if (stepType == twcSrfItem.StepType.TME || stepType == twcSrfItem.StepType.ATME) { fields[twcSrfItem.Fields.HEIGHT_ON_TOWER] = 'Height on Tower'; }
+                fields[twcSrfItem.Fields.LENGTH_MM] = 'Length (mm)';
+                fields[twcSrfItem.Fields.WIDTH_MM] = 'Width (mm)';
+                fields[twcSrfItem.Fields.DEPTH_MM] = 'Depth (mm)';
+                if (stepType == twcSrfItem.StepType.TME || stepType == twcSrfItem.StepType.ATME) { fields[twcSrfItem.Fields.WEIGHT_KG] = 'Weight (kg)'; }
+
+                if (userInfo.isEmployee) {
+                    fields[twcSrfItem.Fields.INVENTORY_FLAG] = { title: 'Flag', styles: { width: '75px' } };
+                }
+
+            }
+
+            
+            var label = '';
             if (stepType == twcSrfItem.StepType.TME) {
                 label = 'Request Tower Mounted Equipment (TME) Installation / Removal';
             } else if (stepType == twcSrfItem.StepType.ATME) {
@@ -166,14 +186,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 );
             }
 
-
             return {
                 id: `${twcSrfItem.Type}_${stepType}`, recordType: twcSrfItem.Type, label: label,
                 fields: fields,
-                // where: {
-                //     [twcSrfItem.Fields.SRF]: srf.id || 0,
-                //     [twcSrfItem.Fields.STEP_TYPE]: stepType,
-                // },
                 dataSource: items,
                 FieldsInfo: twcSrfItem.FieldsInfo
             }

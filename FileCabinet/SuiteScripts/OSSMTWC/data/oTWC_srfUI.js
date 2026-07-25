@@ -90,8 +90,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 core.array.each(items, item => {
                     var parentId = item[twcSrfItem.Fields.TMI_ID_SRF];
                     if (parentId) {
+                        item.child = true;
                         var parent = items.find(i => { return i.id == parentId; })
-                        parent.parent = true;
                         if (!parent.relatedItems) { parent.relatedItems = []; }
                         parent.relatedItems.push(item);
                     } else {
@@ -121,11 +121,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var items = getSrfItems(dataSource, userInfo, readOnly);
 
-            fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 6 (TME)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.TME, items)] });
-            fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 6 (ATME)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.ATME, items)] });
-            fieldGroup.controls.push({ id: 'site-request-step-4', title: 'Step 3 of 6 (Feeders)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.FEEDER, items)] });
-            fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 4 of 6 (GIE)', fields: [twcSrfItemUI.getStepTableUIControl(dataSource, twcSrf.StepType.GIE, items)] });
-            fieldGroup.controls.push({ id: 'site-request-step-5', title: 'Step 5 of 6 (Attachments)', fields: [twcSrfItemUI.getFileTableUIControl(dataSource)] });
+            // dataSource[`items_${twcSrf.StepType.TME}`] = items.filter(i => { return i[twcSrfItem.Fields.STEP_TYPE] == twcSrf.StepType.TME; })
+            // dataSource[`items_${twcSrf.StepType.ATME}`] = items.filter(i => { return i[twcSrfItem.Fields.STEP_TYPE] == twcSrf.StepType.ATME; })
+            // dataSource[`items_${twcSrf.StepType.GIE}`] = items.filter(i => { return i[twcSrfItem.Fields.STEP_TYPE] == twcSrf.StepType.GIE; })
+            // dataSource[`items_${twcSrf.StepType.FEEDER}`] = items.filter(i => { return i[twcSrfItem.Fields.STEP_TYPE] == twcSrf.StepType.FEEDER; })
+
+            fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 6 (TME)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.TME, items)] });
+            fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 6 (ATME)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.ATME, items)] });
+            fieldGroup.controls.push({ id: 'site-request-step-4', title: 'Step 3 of 6 (Feeders)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.FEEDER, items)] });
+            fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 4 of 6 (GIE)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.GIE, items)] });
+            fieldGroup.controls.push({ id: 'site-request-step-5', title: 'Step 5 of 6 (Attachments)', fields: [twcSrfItemUI.getFileTableUIControl(userInfo, dataSource)] });
 
 
             var step5 = {

@@ -7,11 +7,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, coreSQL, recu, twcUtils, twcSite, twcSrf, twcSrfItem, twcSrfUI, twcFile, nsFileUtils, twcConfig, twcUI, twcEqLib, twcEqAct, twcEquipmentUI, twcEquipment, twcSrfWorkflowEngine) => {
 
         function getEquipment(options) {
-
             var fields = twcEquipmentUI.getInventoryTableFields();
             var fieldsSql = '';
             fields.map(f => { fieldsSql += `eq.${f.field}, ` });
-
             var sql = `
                     select  eq.id, ${fieldsSql}
                     from    ${twcEquipment.Type} eq
@@ -19,97 +17,30 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     where  eq.custrecord_twc_equip_customer = ${options.customer}
                     and    eq.custrecord_twc_equip_class = ${options.eqClass}
                     and    infra.custrecord_twc_infra_site = ${options.site}
-                    and    eq.custrecordtwc_eq_install_status > ${twcUtils.EqInstallStatus.Draft}
+                    --and    eq.custrecordtwc_eq_install_status > ${twcUtils.EqInstallStatus.Draft}
                     order by eq.name
                 `
-
             return coreSQL.run(sql);
-
         }
-
-        function initEquipment(options) {
-            if (!options) { throw new Error('no parameters passed'); }
-            if (!options.srf) { throw new Error('invalid parameters passed'); }
-
-            var actions = coreSQL.run(`
-                select  act.id as act_id, act.custrecord_twc_eq_action_eq as eq_id, 
-                        srf.custrecord_twc_srf_site, srf.custrecord_twc_srf_cust, 
-                        srfi.*
-                from    customrecord_twc_eq_action as act
-                join    customrecord_twc_srf_itm as srfi on srfi.id = act.custrecord_twc_eq_action_srf_item
-                join    customrecord_twc_srf as srf on srf.id = srfi.custrecord_twc_srf_itm_srf
-                where   act.custrecord_twc_eq_action_srf = ${options.srf}
-                order by custrecord_twc_srf_itm_tme_srf desc
-            `)
-            core.array.each(actions, action => {
-                var eq = twcEquipment.get(action.eq_id);
-                // @@TODO: SRF: equipmentID should go
-                eq.equipmentID = 'TBA';
-                eq.site = action[twcSrf.Fields.SITE];
-                eq.equipmentClass = action[twcSrfItem.Fields.STEP_TYPE];
-                eq.equipmentType = action[twcSrfItem.Fields.ITEM_TYPE];
-                eq.infrastructure = action[twcSrfItem.Fields.STRUCTURE];
-                // @@TODO: SRF: review fields to populate
-                // eq.locationNotes
-                eq.equipmentInstallStatus = twcUtils.EqInstallStatus.Draft;
-                eq.equipmentLicenceStatus = twcUtils.EqLicenseStatus.Draft;
-                eq.customer = action[twcSrf.Fields.CUSTOMER];
-                
-                // @@TODO: SRF: get the parent equipment
-                if (action[twcSrfItem.Fields.TMI_ID_SRF]) {
-                    var parent = actions.find(a => { return a.id == action[twcSrfItem.Fields.TMI_ID_SRF]; })
-                    eq.parentTMEID = parent?.eq_id;
-                }
-
-
-                // eq.parentTMEID 
-                // @@TODO: SRF: get the lib entry used if we have one set useLib = yes, otherwqise set no
-                // eq.useLibrary = twcEqLib.EqLibUse.Draft;    
-                // eq.equipmentLibraryEntry
-                // eq.activePassive
-                eq.make = action[twcSrfItem.Fields.MAKE];
-                eq.model = action[twcSrfItem.Fields.MODEL];
-                eq.description = action[twcSrfItem.Fields.DESCRIPTION];
-                eq.lengthmm = action[twcSrfItem.Fields.LENGTH_MM];
-                eq.widthmm = action[twcSrfItem.Fields.WIDTH_MM];
-                eq.heightDepthmm = action[twcSrfItem.Fields.DEPTH_MM];
-                eq.weightkg = action[twcSrfItem.Fields.WEIGHT_KG];
-                eq.heightonTowerm = action[twcSrfItem.Fields.HEIGHT_ON_TOWER];
-                eq.azimuth = action[twcSrfItem.Fields.AZIMUTH];
-                eq.b_End = action[twcSrfItem.Fields.B_END];
-                eq.customerRef = action[twcSrfItem.Fields.CUSTOMER_REF];
-                eq.inventoryFlag = action[twcSrfItem.Fields.INVENTORY_FLAG];
-
-                // eq.windLoadingNm2Front
-                // eq.windLoadingNm2Side
-                // eq.windLoadingNm2Rear
-                // eq.windLoadingNm2Max
-                // eq.windRegime
-                eq.voltageType = action[twcSrfItem.Fields.VOLTAGE_TYPE];
-                eq.voltageRange = action[twcSrfItem.Fields.VOLTAGE_RANGE];
-                // eq.customerNote
-                // eq.tLNote
-                eq.associatedEQUIP_ACTIONs = action.act_id;
-
-                eq.save();
-                action.eq_id = eq.id;
-
-
-
-                recu.submit(twcEqAct.Type, action.act_id, twcEqAct.Fields.EA_EQUIPMENT, eq.id);
-                recu.submit(twcSrfItem.Type, action.id, twcSrfItem.Fields.EQUIPMENT_ID, eq.id);
-            })
-
-            return actions;
-
+        function getEquipmentChildren(options) {
+            var fields = twcEquipmentUI.getInventoryTableFields();
+            var fieldsSql = '';
+            fields.map(f => { fieldsSql += `eq.${f.field}, ` });
+            var sql = `
+                    select  eq.id, ${fieldsSql}, 
+                            BUILTIN.DF(eq.${twcEquipment.Fields.EQUIPMENT_CLASS}) as ${twcSrfItem.Fields.STEP_TYPE}_name,
+                            BUILTIN.DF(eq.${twcEquipment.Fields.EQUIPMENT_TYPE}) as ${twcSrfItem.Fields.ITEM_TYPE}_name,
+                            eq.${twcEquipment.Fields.DESCRIPTION} as ${twcSrfItem.Fields.DESCRIPTION},
+                    from    ${twcEquipment.Type} eq
+                    left join   customrecord_twc_infra infra on infra.id = eq.custrecord_twc_equip_str
+                    where  eq.custrecord_twc_equip_parent_tme_id = ${options.eq}
+                    order by eq.name
+                `
+            return coreSQL.run(sql);
         }
 
         function submitSiteSrf(userInfo, payload) {
-
             payload.profile = userInfo.profile;
-
-            initEquipment(payload);
-
             twcSrfWorkflowEngine.initWorkFlow(payload);
         }
 
@@ -443,7 +374,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // @@NOTE: fields itemType has a dependency with field stepType, copyFromObject sets itemType before it sets stepType as a result itemType is "lost"
                     childRecord.set(twcSrfItem.Fields.ITEM_TYPE, options.item[twcSrfItem.Fields.ITEM_TYPE]);
                     // @@NOTE: the "relatedItems" property exists if an ATME is being added to a new TME
-                    childRecord.parent = options.item.parent;
+                    childRecord.child = options.item.child;
                     childRecord.relatedItems = options.item.relatedItems;
 
                 } else if (options.file) {
@@ -487,12 +418,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             renderSiteLocatorPanel: renderSiteLocatorPanel,
             getSrfInfo: getSrfInfo,
             getEquipment: getEquipment,
+            getEquipmentChildren: getEquipmentChildren,
             submitSiteSrf: submitSiteSrf,
 
 
             getAssignToEmployees: getAssignToEmployees,
 
-            initEquipment: initEquipment
+
 
         }
 
