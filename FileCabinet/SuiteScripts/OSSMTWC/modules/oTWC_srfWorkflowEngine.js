@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_srfReview.js', '../data/oTWC_equipment.js', '../data/oTWC_equipAction.js', '../data/oTWC_srfItem.js'],
-    function (core, coreSql, recu, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSrfReview, twcEquipment, twcEqAct, twcSrfItem) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_srfReview.js', '../data/oTWC_equipment.js', '../data/oTWC_equipAction.js', '../data/oTWC_srfItem.js', '../data/oTWC_sds.js'],
+    function (core, coreSql, recu, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSrfReview, twcEquipment, twcEqAct, twcSrfItem, twcSds) {
 
         // @@HARDCODED
         const WORKFLOW_STATUS = {
@@ -72,7 +72,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var parent = actions.find(a => { return a.id == action[twcSrfItem.Fields.TMI_ID_SRF]; })
                     eq.parentTMEID = parent?.eq_id;
                 }
-                
+
                 // @@TODO: SRF: get the lib entry used if we have one set useLib = yes, otherwqise set no
                 // eq.useLibrary = twcEqLib.EqLibUse.Draft;    
                 // eq.equipmentLibraryEntry
@@ -123,13 +123,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (licenseStatus == twcUtils.EqLicenseStatus.ProptoLicence) {
                         s = twcUtils.EqLicenseStatus.ProptoUnlicence;
                     } else if (licenseStatus == twcUtils.EqLicenseStatus.ReqtoLicence) {
-                        s = twcUtils.EqLicenseStatus.ProptoUnlicence;
-                    } else if (licenseStatus == twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceRequested) {
-                        s = twcUtils.EqLicenseStatus.ProptoUnlicence;
-                    } else if (licenseStatus == twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceIssued) {
-                        s = twcUtils.EqLicenseStatus.ProptoUnlicence;
-                    } else if (licenseStatus == twcUtils.EqLicenseStatus.Unlicenced) {
-                        s = twcUtils.EqLicenseStatus.ProptoUnlicence;
+                        s = twcUtils.EqLicenseStatus.ReqtoUnlicence;
+                    } else if (licenseStatus == twcUtils.EqLicenseStatus.ProptoLicence_LicenceRequested) {
+                        s = twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceRequested;
+                    } else if (licenseStatus == twcUtils.EqLicenseStatus.ProptoLicence_LicenceIssued) {
+                        s = twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceIssued;
+                    } else if (licenseStatus == twcUtils.EqLicenseStatus.Licenced) {
+                        s = twcUtils.EqLicenseStatus.Unlicenced;
                     }
 
                 }
@@ -670,8 +670,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 twcSrf.Fields.TL_DRAWING_UPLOADED,
                 twcSrf.Fields.LICENCE_REQUESTED, twcSrf.Fields.LICENCE_PACK_PRODUCED, twcSrf.Fields.LICENCE_PACK_REVIEWER, twcSrf.Fields.LICENCE_PACK_REVIEWED,
                 twcSrf.Fields.LICENCE_PACK_SIGNED, twcSrf.Fields.LICENCE_PACK_SIGNED_BY,
-                twcSrf.Fields.LICENCE_PACK_EXECUTED, twcSrf.Fields.LICENCE_PACK_EXECUTED_BY,
-                twcSrf.Fields.SDS_FORM_DATA
+                twcSrf.Fields.LICENCE_PACK_EXECUTED, twcSrf.Fields.LICENCE_PACK_EXECUTED_BY
             ]
             var values = [
                 twcUtils.SrfStatus.Draft, 0, null,
@@ -679,10 +678,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 null, null, null, null,
                 null, null,
                 null, null,
-                null
             ]
 
             recu.submit(twcSrf.Type, options.srf, fields, values);
+
+            var sdsId = coreSql.first(`select id from ${twcSds.Type} where ${twcSds.Fields.SRF} = ${options.srf}`)?.id;
+            if (sdsId) { recu.del(twcSds.Type, sdsId); }
         }
 
 

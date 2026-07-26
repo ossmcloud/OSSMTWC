@@ -4,8 +4,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redirect', 'O/form', './data/oTWC_saf.js', './O/oTWC_themes.js'],
-    (file, runtime, core, redirect, oui, twcSaf, twcThemes) => {
+define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redirect', 'O/form', './data/oTWC_saf.js', './O/oTWC_themes.js', './data/oTWC_config.js'],
+    (file, runtime, core, redirect, oui, twcSaf, twcThemes, twcConfig) => {
 
         function beforeLoad(context) {
             try {
@@ -32,7 +32,11 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
                     form.f.insertField({ field: condOfAccess.f, nextfield: twcSaf.Fields.CONDITIONS_OF_ACCESS });
                     form.fieldHide(twcSaf.Fields.CONDITIONS_OF_ACCESS);
 
-                    form.buttonAdd('Open SAF', 'openSaf')
+                    form.buttonAdd('Open SAF', 'openSaf');
+
+                    if (twcConfig.isPowerUser()) {
+                        form.buttonAdd('Delete SAF', 'deleteSaf');
+                    }
                 }
             } catch (error) {
                 core.logDebug('BEFORE-LOAD', error.message);

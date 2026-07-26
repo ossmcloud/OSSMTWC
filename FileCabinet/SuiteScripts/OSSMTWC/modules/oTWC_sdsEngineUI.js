@@ -2,148 +2,105 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js'],
-    function (core, coreSql, recu, dialog, twcUI, twcUtils, twcSrf) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_sds.js', './oTWC_sdsEngine.js'],
+    function (core, coreSql, recu, dialog, twcUI, twcUtils, twcSrf, twcSds, twcSdsEngine) {
 
         function getDialogContent() {
 
             var fibreProviders = coreSql.run(`select id as value, name as text from customrecord_twc_infra_fibre_svc_provide where isinactive ='F' order by name`);
+            var agreementTemplates = coreSql.run(`select id as value, name as text from customrecord_twc_sds_agr_tmpl where isinactive ='F' order by name`);
+            var agreementSiteTypes = coreSql.run(`select id as value, name as text from customrecord_twc_sds_site_type where isinactive ='F' order by name`);
+
+            // @@TODO: SDS:
+            var drawingFiles = [];
+            var accessDrawingFiles = [];
+            var fibreDrawingFiles = [];
 
             return jQuery(`
-                <div style="padding:15px;">
+                <div>
                     <div style=" display:flex; align-items:flex-start;">
                         <!-- LEFT COLUMN -->
                         <div style="flex:1;">
-                            <div style="margin-bottom:12px;">
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, label: 'Drawing Reference', id: 'drawingReference', width: '100%'})}
-                            </div>
-
-                            <div style="margin-bottom:12px;">
-                                <label>Include Licence Map</label>
+                            <div class="twc-div-table">
+                                <div style="width: 150px;">
+                                    ${twcUI.render({ type: twcUI.CTRL_TYPE.DATE, label: 'Commencement Date', id: twcSds.Fields.COMMENCMENT_DATE, mandatory: true })}
+                                </div>
                                 <div>
-                                    <span><input type="radio" name="includeLicenceMap" value="T" checked /> Yes </span>
-                                    <sapn style="margin-left:15px;"> <input type="radio" name="includeLicenceMap" value="F" /> No </sapn>
+                                    ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Drawing Reference', dataSource: drawingFiles, id: twcSds.Fields.DRAWING_REFERENCE, width: '100%' })}
+                                </div>
+                                <div style="width: 130px;">
+                                    <label>Include Licence Map</label>
+                                    ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, label: '', id: 'includeLicenceMap' })}
                                 </div>
                             </div>
-
-                            
-                            <div style="margin-bottom:12px;">
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.DATE, label: 'Commencement Date', id: 'commencementDate', mandatory: true })}
-                            </div>
-
-                            <div style="margin-bottom:12px;">
-                                <label>Additional SRF Conditions</label>
-                                <textarea id="additionalSrfConditions" style="width:100%;height:80px;"></textarea>
-                            </div>
-
                             <div>
-                                <label>Power Supply Comments</label>
-                                <textarea id="powerSupplyComments" style="width:100%;height:80px;"></textarea>
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Additional SRF Conditions', id: twcSds.Fields.ADDITIONAL_SRF_CONIDITONS, width: '100%', rows: 4 })}
+                            </div>
+                            <div>
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Power Supply Comments', id: twcSds.Fields.POWER_SUPPLY_COMMENTS, mandatory: true, width: '100%', rows: 4 })}
                             </div>
                         </div>
+
                         <!-- VERTICAL DIVIDER -->
-                        <div style=" width:1px; background:#d0d0d0; min-height:475px; margin:0 20px;"></div>
+                        <div style=" width:1px; background:#d0d0d0; min-height:295px; margin:0 20px;"></div>
 
                         <!-- RIGHT COLUMN -->
                         <div style="flex:1;">
-
-                            <div style="margin-bottom:12px;">
-                                <label>Fibre Rights</label>
+                            <div class="twc-div-table">
+                                <div style="width: 100px;">
+                                    <label>Fibre Rights</label>
+                                    ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, label: '', id: twcSds.Fields.FIBRE_RIGHTS })}
+                                </div>
+                                <div style="width: 200px;">
+                                    ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Fibre Provider', id: twcSds.Fields.FIBRE_PROVIDER, dataSource: fibreProviders, width: '100%' })}
+                                </div>
                                 <div>
-                                    <sapn><input type="radio" name="fibreRights" value="T" checked /> Yes </sapn>
-                                    <sapn style="margin-left:15px;"><input type="radio" name="fibreRights" value="F" /> No </sapn>
+                                    ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, label: 'Other Provider', id: twcSds.Fields.FIBRE_OTHER_PROVIDER, width: '100%', mandatory: true, hide: true })}
                                 </div>
                             </div>
-
-                            <div style="margin-bottom:12px;">
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Fibre Provider', id: 'fibreProvider', dataSource: fibreProviders })}
-                            </div>
-                            <div style="margin-bottom:12px;">
-                                <label>Other Provider</label>
-                                <input id="otherProvider" type="text" class="twc" style="width:100%;" />
-                            </div>
-                            <div style="margin-bottom:12px;">
-                                <label>Fibre Duct Route</label>
-                                <input id="fibreDuctRoute" type="text" class="twc" style="width:100%;" />
+                            <div>
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, label: 'Fibre Duct Route', id: twcSds.Fields.FIBRE_DUCT_ROUTE, width: '100%' })}
                             </div>
                             <div>
-                                <label>Notes / Conditions</label>
-                                <textarea id="notesConditions" style="width:100%;height:170px;"></textarea>
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Notes / Conditions', id: twcSds.Fields.FIBRE_NOTES, width: '100%', rows: 4 })}
                             </div>
                         </div>
                     </div>
+
                     <hr style="margin:25px 0;" />
                     <div style="display:flex; align-items:flex-start;">
                         <!-- LEFT COLUMN -->
                         <div style="flex:1;">
-                            <div style="margin-bottom:12px;">
-                                <label>Previous Licence Fee</label>
-                                <div style="display:flex; align-items:center;">
-                                    <input id="previousLicenceFee" type="number" class="twc" style="flex:1; border-top-right-radius:0; border-bottom-right-radius:0;" />
-                                    <input type="text" value="€" disabled style=" width:30px; height:34px;  text-align:center; border-radius:3px" />
-                                </div>
-                            </div>
-                            <div style="margin-bottom:12px;">
-                                <label>Fee Reduction</label>
-                                <div style="display:flex; align-items:center;">
-                                    <input id="feeReduction" type="number" class="twc" style="width:100%;" />
-                                    <input type="text" value="€" disabled style=" width:30px; height:34px;  text-align:center; border-radius:3px" />
-                                </div>
-                            </div>
-                            <div style="margin-bottom:12px;">
-                                <label>Fee Uplift</label>
-                                <div style="display:flex; align-items:center;">
-                                    <input id="feeUplift" type="number" class="twc" style="width:100%;" />
-                                    <input type="text" value="€" disabled style=" width:30px; height:34px;  text-align:center; border-radius:3px" />
-                                </div>
-                            </div>
-                            <div style="margin-bottom:12px;">
-                                <label>New Licence Fee</label>
-                                <div style="display:flex; align-items:center;">
-                                    <input id="newLicenceFee" type="number" class="twc" style="width:100%;" />
-                                    <input type="text" value="€" disabled style=" width:30px; height:34px;  text-align:center; border-radius:3px" />
-                                </div>
+                            <div>
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Previous Fee', id: twcSds.Fields.PREVIOUS_LICENSE_FEE })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Fee Reduction', id: twcSds.Fields.FEE_REDUCTION })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Fee Uplift', id: twcSds.Fields.FEE_UPLIFT })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'New Fee', id: twcSds.Fields.NEW_LICENSE_FEE })}
                             </div>
                             <div>
-                                <label>Fee Change Breakdown</label>
-                                <textarea id="feeChangeBreakdown" style="width:100%;height:80px;"></textarea>
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Fee Change Breakdown', id: twcSds.Fields.FEE_CHARGE_BREAK_DOWN, width: '100%', rows: 4 })}
                             </div>
                         </div>
+
                         <!-- DIVIDER -->
-                        <div style=" width:1px; background:#d0d0d0; min-height:320px; margin:0 20px;"></div>
+                        <div style=" width:1px; background:#d0d0d0; min-height:150px; margin:0 10px;"></div>
+                        
                         <!-- RIGHT COLUMN -->
                         <div style="flex:1;">
-                            <div style="margin-bottom:12px;">
-                                <label>Agreement Template</label>
-                                <select id="agreementTemplate" class="twc" style="width:100%;">
-                                    <option value="VF MSLA">VF MSLA</option>
-                                    <option value="VF SDS">VF SDS</option>
-                                    <option value="Tower Lease">Tower Lease</option>
-                                </select>
+                            <div>
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Agreement Template', id: twcSds.Fields.AGREEMENT_TEMPLATE, dataSource: agreementTemplates, width: '100%' })}
                             </div>
-                            <div style="margin-bottom:12px;">
-                                <label>Site Type</label>
-                                <select id="siteType" class="twc" multiple style="width:100%;height:100px;">
-                                    <option>AirSpeed Schools</option>
-                                    <option>AirFibre Hub</option>
-                                    <option>AirFibre Yr1 Discount</option>
-                                    <option>Imagine (LTE upgrade)</option>
-                                    <option>VF SDS</option>
-                                </select>
+                            <div>
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Site Type', id: twcSds.Fields.SITE_TYPE, dataSource: agreementSiteTypes, width: '100%' })}
                             </div>
 
-                            <div style="margin-bottom:12px;">
-                                <label>Access Drawing</label>
-                                <input id="accessDrawing" type="text" class="twc" style="width:100%;" />
+                            <div>
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Access Drawing', dataSource: accessDrawingFiles, id: twcSds.Fields.ACCESS_DRAWING, width: '100%' })}
                             </div>
-                            <div style="margin-bottom:12px;">
-                                <label>Fibre Drawing</label>
-                                <input id="fibreDrawing" type="text" class="twc" style="width:100%;" />
+                            <div>
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Fibre Drawing', dataSource: fibreDrawingFiles, id: twcSds.Fields.FIBRE_DRAWING, width: '100%' })}
                             </div>
                         </div>
-                    </div>
-                    <div style="margin-top:20px; text-align:center; width:100%;">
-                        <a href="#" id="previewSds" style="text-decoration:none;"> Preview SDS</a>
                     </div>
                 </div>
             `);
@@ -151,57 +108,41 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         function openDialog(page, srf, callback) {
+            var formData = twcSdsEngine.getSds(srf);
+            var form = twcUI.init({}, getDialogContent(srf));
+            form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).visible = formData.fibreProviderName.toLowerCase().indexOf('other') >= 0;
+            form.getControl(twcSds.Fields.FIBRE_PROVIDER).on('change', e => {
+                form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).visible = e.target.valueObj?.text.toLowerCase().indexOf('other') >= 0;
+            })
 
-            const srfInfo = coreSql.first(`
-                select  ${twcSrf.Fields.SDS_FORM_DATA} as form_data
-                from    ${twcSrf.Type}
-                where   id = ${srf.id}
-            `);
+            dialog.confirm({ title: 'SDS/SRF Pack Produced Check', message: form.ui, width: '1265px', height: '675px', }, (dlg) => {
+                try {
+                    // @@NOTE: just to run manadatory validations
+                    form.getValues();
+                    for (var k in formData.fields) {
+                        var ctrl = form.getControl(formData.fields[k].name);
+                        if (ctrl) { formData.set(formData.fields[k].name, ctrl.value) }
+                    }
+                    formData.save();
+                    printSDS(page, srf);
+                    if (callback) { callback(); }
+                    return true;
+                } catch (error) {
+                    dialog.error(error);
+                    return false;
+                }
+            });
 
-            var formData = JSON.parse(srfInfo?.form_data || '{}');
-            
-
-            const content = getDialogContent(srf);
-
-            for (var k in formData) {
-                content.find(`#${k}`).val(formData[k]);
+            for (var k in formData.fields) {
+                var ctrl = form.getControl(formData.fields[k].name);
+                if (!ctrl) { continue; }
+                var v = formData.get(formData.fields[k].name)
+                if (formData.fields[k].type == 'date') { v = v.format(); }
+                ctrl.setValue(v);
             }
 
-            dialog.confirm({ title: 'SDS/SRF Pack Produced Check', message: content, width: '75%', height: '70hv', }, (dlg) => {
-                const getValue = selector => content.find(selector).val()?.trim() || '';
-                const getRadioValue = name => content.find(`input[name="${name}"]:checked`).val() || '';
-                const values = {
-                    drawingReference: getValue('#drawingReference'),
-                    includeLicenceMap: getRadioValue('includeLicenceMap'),
-                    commencementDate: getValue('#commencementDate'),
-                    additionalSrfConditions: getValue('#additionalSrfConditions'),
-                    powerSupplyComments: getValue('#powerSupplyComments'),
 
-                    fibreRights: getRadioValue('fibreRights'),
-                    fibreProvider: getValue('#fibreProvider'),
-                    otherProvider: getValue('#otherProvider'),
-                    fibreDuctRoute: getValue('#fibreDuctRoute'),
-                    notesConditions: getValue('#notesConditions'),
 
-                    previousLicenceFee: Number(getValue('#previousLicenceFee')) || 0,
-                    feeReduction: Number(getValue('#feeReduction')) || 0,
-                    feeUplift: Number(getValue('#feeUplift')) || 0,
-                    newLicenceFee: Number(getValue('#newLicenceFee')) || 0,
-                    feeChangeBreakdown: getValue('#feeChangeBreakdown'),
-
-                    agreementTemplate: getValue('#agreementTemplate'),
-                    siteType: content.find('#siteType').val() || [],
-                    accessDrawing: getValue('#accessDrawing'),
-                    fibreDrawing: getValue('#fibreDrawing')
-                };
-
-                recu.submit(twcSrf.Type, srf.id, twcSrf.Fields.SDS_FORM_DATA, JSON.stringify(values));
-
-                printSDS(page, srf);
-
-                if (callback) { callback(); }
-
-            });
         }
 
 

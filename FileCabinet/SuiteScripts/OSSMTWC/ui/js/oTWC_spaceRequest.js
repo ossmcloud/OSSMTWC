@@ -85,6 +85,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         class TWCSpaceRequestItemForm {
             #page = null;
             #srfItem = null;
+
             #form = null;
 
             constructor(page, srfItem) {
@@ -98,7 +99,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var res = this.#page.postSync({ action: 'child-record' }, { srf: this.data.siteRequestInfo, item: this.#srfItem })
                 this.#form = twcUIPanel.ui(res);
                 this.#form.on('change', e => { this.setFormState(e); })
-                if (this.#srfItem.dirty) { this.setFormState(); }
+                //if (this.#srfItem.dirty) {
+                    this.setFormState();
+                //}
 
                 this.#form.getControl('srf-pick-from-library').on('click', e => {
                     var itemType = this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).value;
@@ -158,15 +161,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             if (!this.#srfItem[twcSrfItem.Fields.EQUIPMENT_ID]) {
                                 throw new Error(`field: <b>Equipment</b> cannot be empty<br />`)
                             }
-                        }
+                        } else {
 
-                        for (var k in obj) {
-                            if (obj[k]?.value !== undefined) {
-                                this.#srfItem[k] = obj[k].value;
-                                this.#srfItem[k + '_name'] = obj[k].text;
-                            } else {
-                                this.#srfItem[k] = obj[k];
+                            for (var k in obj) {
+                                if (obj[k]?.value !== undefined) {
+                                    this.#srfItem[k] = obj[k].value;
+                                    this.#srfItem[k + '_name'] = obj[k].text;
+                                } else {
+                                    this.#srfItem[k] = obj[k];
+                                }
                             }
+
                         }
                         this.#srfItem.dirty = true;
                         this.#page.dirty = true
@@ -214,12 +219,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     jQuery('#srf-pick-from-library-msg').parent().css('display', cfg?.user_notes ? 'block' : '');
 
                     this.#form.getControl('srf-pick-from-library').disabled = !pickFromLb;
+                    this.#form.getControl('srf-pick-from-library').hide = (reqType == twcSrfItem.RequestType.REMOVE);
+
                     this.#form.ui.find('#srf-item-dimension').css('display', showPanels ? 'block' : 'none');
                     this.#form.ui.find('#srf-item-spec').css('display', showPanels ? 'block' : 'none');
-
-                    //if (reqType == twcSrfItem.RequestType.REMOVE && this.#srfItem[twcSrfItem.Fields.EQUIPMENT_ID]) { showPanels = true; }
                     this.#form.ui.find('#srf-related-eq').css('display', showPanels ? 'block' : 'none');
-                 
+
                 }
 
                 if (e === undefined) {
@@ -232,6 +237,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             setFormEqLibState(pickedEqLib) {
                 if (pickedEqLib) { this.#form.getControl(twcSrfItem.Fields.EQUIPMENT_LIBRARY).value = pickedEqLib.id; }
+
+                var reqType = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
+                if (reqType == twcSrfItem.RequestType.REMOVE) { return; }
 
                 var itemType = this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).value;
                 var cfg = this.getLLibCfg(this.#srfItem[twcSrfItem.Fields.STEP_TYPE], itemType);
@@ -269,8 +277,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             setFormEqState(pickedEq) {
                 if (pickedEq) {
+                    this.#srfItem.relatedItems = pickedEq.relatedItems;
+                    this.#srfItem[twcSrfItem.Fields.REQUEST_TYPE] = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
+                    this.#srfItem[twcSrfItem.Fields.REQUEST_TYPE + '_name'] = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).valueObj.text;
                     this.#srfItem[twcSrfItem.Fields.EQUIPMENT_ID] = pickedEq.id;
                     this.#srfItem[twcSrfItem.Fields.EQUIPMENT_ID + '_name'] = pickedEq[twcEquipment.Fields.NAME];
+                    this.#srfItem[twcSrfItem.Fields.ITEM_TYPE] = pickedEq[twcEquipment.Fields.EQUIPMENT_TYPE];
+                    this.#srfItem[twcSrfItem.Fields.ITEM_TYPE + '_name'] = pickedEq[twcEquipment.Fields.EQUIPMENT_TYPE + '_name'];
+                    this.#srfItem[twcSrfItem.Fields.DESCRIPTION] = pickedEq[twcEquipment.Fields.DESCRIPTION];
+                    this.#srfItem[twcSrfItem.Fields.MAKE] = pickedEq[twcEquipment.Fields.MAKE];
+                    this.#srfItem[twcSrfItem.Fields.MODEL] = pickedEq[twcEquipment.Fields.MODEL];
+                    this.#srfItem[twcSrfItem.Fields.HEIGHT_ON_TOWER] = pickedEq[twcEquipment.Fields.HEIGHT_ON_TOWER_M];
+                    this.#srfItem[twcSrfItem.Fields.LENGTH_MM] = pickedEq[twcEquipment.Fields.LENGTH_MM];
+                    this.#srfItem[twcSrfItem.Fields.WIDTH_MM] = pickedEq[twcEquipment.Fields.WIDTH_MM];
+                    this.#srfItem[twcSrfItem.Fields.DEPTH_MM] = pickedEq[twcEquipment.Fields.HEIGHTDEPTH_MM];
+                    this.#srfItem[twcSrfItem.Fields.WEIGHT_KG] = pickedEq[twcEquipment.Fields.WEIGHT_KG];
+
+                    core.array.each(pickedEq.relatedItems, i => {
+                        i[twcSrfItem.Fields.REQUEST_TYPE] = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
+                        
+                        //i[twcSrfItem.Fields.STEP_TYPE] = eqClass;
+                        i.dirty = true;
+                    })
+
                 }
                 this.#form.getControl('srf-equipment').value = this.#srfItem[twcSrfItem.Fields.EQUIPMENT_ID + '_name'] || '';
                 this.setFormEqChildren(pickedEq);
@@ -283,15 +312,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
                 var ctrl = this.#form.getControl('srf-tme-equipment');
                 if (ctrl) { ctrl.value = this.#srfItem[twcSrfItem.Fields.TME_ID + '_name'] || ''; }
-                this.setFormEqChildren(pickedEq);
+                // this.setFormEqChildren(pickedEq);
             }
 
             setFormEqChildren(pickedEq) {
                 // if (!pickedEq) { return; }
-                
+
                 var reqType = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
                 if (reqType != twcSrfItem.RequestType.REMOVE) { return; }
-                
+
                 var relatedEqTable = this.#form.getControl('srf-related-eq-table');
                 if (relatedEqTable) {
                     relatedEqTable.render(pickedEq?.relatedItems || this.#srfItem.relatedItems, true);
@@ -381,6 +410,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             if (eqClass == twcEqUI.EqClass.TME) {
                                 var res = await this.#page.post({ action: 'get-equipment-children' }, { eq: pickedEq.id })
                                 pickedEq.relatedItems = res.data;
+                                
                             }
 
                             callback(pickedEq);

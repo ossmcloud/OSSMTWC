@@ -11,7 +11,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var fieldsSql = '';
             fields.map(f => { fieldsSql += `eq.${f.field}, ` });
             var sql = `
-                    select  eq.id, ${fieldsSql}
+                    select  eq.id, ${fieldsSql}, 
+                            ${twcEquipment.Fields.DESCRIPTION},  
+                            ${twcEquipment.Fields.EQUIPMENT_TYPE}, BUILTIN.DF(${twcEquipment.Fields.EQUIPMENT_TYPE}) as ${twcEquipment.Fields.EQUIPMENT_TYPE}_name,
+
+                            
                     from    ${twcEquipment.Type} eq
                     join   customrecord_twc_infra infra on infra.id = eq.custrecord_twc_equip_str
                     where  eq.custrecord_twc_equip_customer = ${options.customer}
@@ -27,10 +31,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var fieldsSql = '';
             fields.map(f => { fieldsSql += `eq.${f.field}, ` });
             var sql = `
-                    select  eq.id, ${fieldsSql}, 
-                            BUILTIN.DF(eq.${twcEquipment.Fields.EQUIPMENT_CLASS}) as ${twcSrfItem.Fields.STEP_TYPE}_name,
-                            BUILTIN.DF(eq.${twcEquipment.Fields.EQUIPMENT_TYPE}) as ${twcSrfItem.Fields.ITEM_TYPE}_name,
+                    select  eq.id as ${twcSrfItem.Fields.EQUIPMENT_ID}, eq.custrecord_twc_equip_parent_tme_id as ${twcSrfItem.Fields.TME_ID}, ${fieldsSql}, 
+                            eq.${twcEquipment.Fields.EQUIPMENT_CLASS} as ${twcSrfItem.Fields.STEP_TYPE}, BUILTIN.DF(eq.${twcEquipment.Fields.EQUIPMENT_CLASS}) as ${twcSrfItem.Fields.STEP_TYPE}_name,
+                            eq.${twcEquipment.Fields.EQUIPMENT_TYPE} as ${twcSrfItem.Fields.ITEM_TYPE},BUILTIN.DF(eq.${twcEquipment.Fields.EQUIPMENT_TYPE}) as ${twcSrfItem.Fields.ITEM_TYPE}_name,
+                            eq.${twcEquipment.Fields.MAKE} ${twcSrfItem.Fields.MAKE},
+                            eq.${twcEquipment.Fields.MODEL} as ${twcSrfItem.Fields.MODEL},
                             eq.${twcEquipment.Fields.DESCRIPTION} as ${twcSrfItem.Fields.DESCRIPTION},
+                            eq.${twcEquipment.Fields.HEIGHT_ON_TOWER_M} as ${twcSrfItem.Fields.HEIGHT_ON_TOWER},
+                            eq.${twcEquipment.Fields.LENGTH_MM} as ${twcSrfItem.Fields.LENGTH_MM},
+                            eq.${twcEquipment.Fields.WIDTH_MM} as ${twcSrfItem.Fields.WIDTH_MM},
+                            eq.${twcEquipment.Fields.HEIGHTDEPTH_MM} as ${twcSrfItem.Fields.DEPTH_MM},
+                            eq.${twcEquipment.Fields.WEIGHT_KG} as ${twcSrfItem.Fields.WEIGHT_KG},
+                            eq.${twcEquipment.Fields.INVENTORY_FLAG} as ${twcSrfItem.Fields.INVENTORY_FLAG},
+
                     from    ${twcEquipment.Type} eq
                     left join   customrecord_twc_infra infra on infra.id = eq.custrecord_twc_equip_str
                     where  eq.custrecord_twc_equip_parent_tme_id = ${options.eq}
@@ -324,7 +337,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (recId) {
                 srfInfo.srfDetails = coreSQL.run(`
                     SELECT      srf.custrecord_twc_srf_op_site_id, srf.custrecord_twc_srf_site, srf.name, TO_CHAR(srf.custrecord_twc_srf_approval_date, 'DD-MM-YYYY') as approval_date,
-                                srf.custrecord_twc_srf_sds_form_data as form_data, srf.custrecord_twc_srf_op_site_id as operator_site_id,
+                                srf.custrecord_twc_srf_op_site_id as operator_site_id, srf.custrecord_twc_srf_power_notes,
                                 company.custrecordtwc_entity, cae.addrtext AS customer_address, c.altname as operator_name, custrecord_twc_co_number as company_number
                     FROM        ${twcSrf.Type} srf INNER JOIN customrecord_twc_company company ON srf.custrecord_twc_srf_cust = company.id
                     INNER JOIN  Customer c ON company.custrecordtwc_entity = c.id
@@ -361,6 +374,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `);
         }
 
+
+        function deleteSrf(srfId) {
+
+            coreSQL.each(`select id from customrecord_twc_eq_action where custrecord_twc_eq_action_srf = ${srfId}`, r => {
+                recu.del('customrecord_twc_eq_action', r.id);
+            })
+
+            coreSQL.each(`select id from customrecord_twc_srf_itm where custrecord_twc_srf_itm_srf = ${srfId} order by id desc`, r => {
+                recu.del('customrecord_twc_srf_itm', r.id);
+            })
+
+            // coreSQL.each(`select id from customrecord_twc_eq_action where custrecord_twc_eq_action_saf = ${safId}`, r => {
+            //     recu.submit('customrecord_twc_eq_action', r.id, ['custrecord_twc_eq_action_saf', 'custrecord_twc_eq_action_sts'], [null, twcUtils.EqActionStatus.Pending]);
+            // })
+
+
+            recu.del('customrecord_twc_srf', srfId)
+        }
+
         return {
 
             getSRFInfoPanels: twcSrfUI.getSRFInfoPanels,
@@ -392,6 +424,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var srf = {};
                 if (pageData.recId) {
                     srf = coreSQL.first(`select * from ${twcSrf.Type} where id = ${pageData.recId}`);
+                    if (!srf) { throw new Error(`No SRF found using id ${pageData.recId}`) }
                     srf.siteId = srf[twcSrf.Fields.SITE];
 
                     if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, srf[twcSrf.Fields.CUSTOMER])) {
@@ -424,7 +457,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             getAssignToEmployees: getAssignToEmployees,
 
-
+            deleteSrf: deleteSrf
 
         }
 

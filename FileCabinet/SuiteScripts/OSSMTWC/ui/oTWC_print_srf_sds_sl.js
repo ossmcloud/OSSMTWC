@@ -3,8 +3,8 @@
  * @NScriptType Suitelet
  */
 
-define(['N/render', 'N/file', '../ui/modules/oTWC_siteRequestUtils.js', '../O/oTWC_dialogEx.js'],
-    (render, file, twcSiteRequestUtils, dialog) => {
+define(['N/render', 'N/file', '../ui/modules/oTWC_siteRequestUtils.js', '../modules/oTWC_sdsEngine.js'],
+    (render, file, twcSiteRequestUtils, twcSdsEngine) => {
 
     const onRequest = (context) => {
 
@@ -13,10 +13,8 @@ define(['N/render', 'N/file', '../ui/modules/oTWC_siteRequestUtils.js', '../O/oT
             const requestJSON = twcSiteRequestUtils.getSrfInfo(recId);
             if (requestJSON.srfDetails.length == 0) { throw new Error(`No SRF found using id: ${recId}`); }
 
-            // throw new Error(JSON.stringify(requestJSON))
+            requestJSON.sdsData = twcSdsEngine.getFormData({ id: recId });
 
-            const sdsData = JSON.parse(requestJSON.srfDetails[0].form_data || '{}');
-            requestJSON.sdsData = sdsData;
             const xmlFile = file.load({ id: 'SuiteScripts/OSSMTWC/XML/oTwc_print_SDS.xml' });
             const xmlString = xmlFile.getContents();
             const renderer = render.create();
@@ -25,6 +23,9 @@ define(['N/render', 'N/file', '../ui/modules/oTWC_siteRequestUtils.js', '../O/oT
             const pdfFile = renderer.renderAsPdf();
             pdfFile.name = 'SDS_Report.pdf';
             context.response.writeFile({ file: pdfFile, isInline: true });
+
+            
+
         } catch (e) {
 
             log.error({ title: 'PDF Generation Error', details: e });

@@ -26,6 +26,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 
                 pageData.timeBlocks = twcUtils.getSafTimeBlocks();
                 pageData.siteTimeBlocks = twcSiteAccessUtils.getAllSafTimeBlocks(pageData.siteAccessInfo, pageData.userInfo);
+                pageData.safActionDetachReason = twcUtils.getSafActionDetachReason();
                 pageData.recordStatus = `<div class="twc-div-span-table">${twcSaf.getSafStatusHtml(safStatus)}</div>`;
                 if (context.request.parameters.recId) {
                     var safCode = pageData.siteAccessInfo.name;
@@ -176,6 +177,11 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
             } else if (context.request.parameters.action == 'saf-set-reviewed') {
                 var payload = JSON.parse(context.request.body);
                 twcSiteAccessUtils.setSafReviewed(payload);
+                return { status: 'success' };
+
+            } else if (context.request.parameters.action == 'detach-saf-action') {
+                var payload = JSON.parse(context.request.body);
+                twcSiteAccessUtils.detachSafAction(payload);
                 return { status: 'success' };
 
             } else {

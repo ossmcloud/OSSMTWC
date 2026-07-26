@@ -395,6 +395,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `
         }
 
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const SDS_STATUS = {
+            Draft: 1,
+            Current: 2,
+            Superceded: 3
+        }
+
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SRF_REVIEW_STATUS = {
             Approved: 1,
@@ -1143,15 +1151,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getSrfActions(options) {
-
-            var safFilter = (options.saf) ? `and custrecord_twc_eq_action_saf = ${options.saf}` : 'and custrecord_twc_eq_action_saf is null';
-            return coreSQL.run(`
-                select  a.id as ea_id, BUILTIN.DF(custrecord_twc_eq_action_srf) as srf, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
+            //var safFilter = (options.saf) ? `and custrecord_twc_eq_action_saf = ${options.saf}` : 'and custrecord_twc_eq_action_saf is null';
+            var safFilter = (options.saf) ? `and custrecord_twc_eq_action_saf = ${options.saf}` : '';
+            var srfActions = [];
+            coreSQL.each(`
+                select  a.id as ea_id, a.custrecord_twc_eq_action_sts as custrecord_twc_saf_a_status, BUILTIN.DF(a.custrecord_twc_eq_action_sts) as custrecord_twc_saf_a_status_name,
+                        custrecord_twc_srf_itm_srf, BUILTIN.DF(custrecord_twc_srf_itm_srf) as custrecord_twc_srf_itm_srf_name, 
+                        custrecord_twc_eq_action_saf, BUILTIN.DF(custrecord_twc_eq_action_saf) as custrecord_twc_eq_action_saf_name,
                         a.custrecord_twc_eq_action_eq, BUILTIN.DF(a.custrecord_twc_eq_action_eq) as custrecord_twc_eq_action_eq_name,
                         a.custrecord_twc_eq_action_type, BUILTIN.DF(custrecord_twc_eq_action_type) as custrecord_twc_eq_action_type_name,
 
-                        a.custrecord_twc_eq_action_sts, BUILTIN.DF(a.custrecord_twc_eq_action_sts) as custrecord_twc_eq_action_sts_name,
-                        
                         srfi.custrecord_twc_srf_itm_stype, BUILTIN.DF(srfi.custrecord_twc_srf_itm_stype) as custrecord_twc_srf_itm_stype_name,
                         srfi.custrecord_twc_srf_itm_type, BUILTIN.DF(srfi.custrecord_twc_srf_itm_type) as custrecord_twc_srf_itm_type_name,
                         srfi.custrecord_twc_srf_itm_req_type, BUILTIN.DF(srfi.custrecord_twc_srf_itm_req_type) as custrecord_twc_srf_itm_req_type_name,
@@ -1163,17 +1172,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 where   custrecord_twc_eq_action_srf = ${options.srf}
                 ${safFilter}
                 order by a.id
-            `)
+            `, action => {
+                if (action['custrecord_twc_eq_action_saf']) {
+                    action.select = `<span data-id="${action.ea_id}" data-saf="${action['custrecord_twc_eq_action_saf']}" class="o-table-action twc-clickable" data-action="detach">detach from<br />${action['custrecord_twc_eq_action_saf_name']}</span>`;   
+                } else {
+                    action.select = `<input data-id="${action.ea_id}" type="checkbox" />`;
+                }
+                action['saf-detach'] = `<span class="o-table-action twc-clickable" data-action="delete">${twcIcons.get('trash', 16, 'red')}</span>`
+                srfActions.push(action);
+            })
+            return srfActions;
         }
         function getSafActions(saf) {
             var safActions = [];
             coreSQL.each(`
-                select  sa.id, sa.custrecord_twc_saf_a_status, 
-                        a.id as ea_id, BUILTIN.DF(custrecord_twc_eq_action_srf) as srf, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
+                select  sa.id, 
+                        sa.custrecord_twc_saf_a_status, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as custrecord_twc_saf_a_status_name,
+                        a.id as ea_id, BUILTIN.DF(custrecord_twc_srf_itm_srf) as custrecord_twc_srf_itm_srf_name, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
                         a.custrecord_twc_eq_action_eq, BUILTIN.DF(a.custrecord_twc_eq_action_eq) as custrecord_twc_eq_action_eq_name,
                         a.custrecord_twc_eq_action_type, BUILTIN.DF(custrecord_twc_eq_action_type) as custrecord_twc_eq_action_type_name,
-
-                        a.custrecord_twc_eq_action_sts, BUILTIN.DF(a.custrecord_twc_eq_action_sts) as custrecord_twc_eq_action_sts_name,
                         
                         srfi.custrecord_twc_srf_itm_stype, BUILTIN.DF(srfi.custrecord_twc_srf_itm_stype) as custrecord_twc_srf_itm_stype_name,
                         srfi.custrecord_twc_srf_itm_type, BUILTIN.DF(srfi.custrecord_twc_srf_itm_type) as custrecord_twc_srf_itm_type_name,
@@ -1191,6 +1208,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 safActions.push(action);
             })
             return safActions;
+        }
+
+        function getSafActionDetachReason() {
+            return coreSQL.run(`select id as value, name as text, custrecord_twc_saf_detach_reason_comm as force_comm from customrecord_twc_saf_detach_reason where isinactive = 'F' order by custrecord_twc_saf_detach_sort`)
         }
 
         function getInfraStructures(options, includeTLOnly) {
@@ -1374,6 +1395,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SrfReviewStatus: SRF_REVIEW_STATUS,
             SrfDeafultFileType: SRF_DEFAULT_FILE_TYPE,
 
+            SdsStatus: SDS_STATUS,
+
             getFileStatusName: getFileStatusName,
             getFileStatusHtml: getFileStatusHtml,
             getFileTypes: getFileTypes,
@@ -1408,6 +1431,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafTimeBlocks: getSafTimeBlocks,
             getSafReviewers: getSafReviewers,
             getSafActions: getSafActions,
+            getSafActionDetachReason: getSafActionDetachReason,
             getSrfDropDown: getSrfDropDown,
             getSrfActions: getSrfActions,
             getSrfTypes: getSrfTypes,

@@ -28,7 +28,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 { field: twcInventory.Fields.MODEL , title: 'Model'},
                 { field: twcInventory.Fields.LENGTH_MM , title: 'Length (mm)'},
                 { field: twcInventory.Fields.WIDTH_MM , title: 'Width (mm)'},
-                { field: twcInventory.Fields.HEIGHTDEPTH_MM, title: 'Depth<br />(mm)'},
+                { field: twcInventory.Fields.HEIGHTDEPTH_MM, title: 'Depth<br />(mm)' },
+                { field: twcInventory.Fields.HEIGHT_ON_TOWER_M, title: 'Height on<br />Tower' },
 
             ];
             return inventoryFields;

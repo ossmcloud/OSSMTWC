@@ -1009,7 +1009,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
 
                 this.#j.find('.o-row').click(e => {
-                    if (e.target.tagName != 'A') {
+                    if (e.target.tagName != 'A' && e.target.tagName != 'INPUT') {
                         e.preventDefault();
                         e.stopPropagation();
                     }

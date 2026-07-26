@@ -11,6 +11,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SAF_ACTION_EA: 'custrecord_twc_saf_a_ea',
             SAF_ACTION_STATUS: 'custrecord_twc_saf_a_status',
             SAF_ACTION_COMPLETE: 'custrecord_twc_saf_a_complete',
+            DETACH_REASON: 'custrecord_twc_saf_a_detach_reason',
+            DETACH_COMMENT: 'custrecord_twc_saf_a_detach_comment',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -22,6 +24,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SAF_ACTION_EA: { name: 'custrecord_twc_saf_a_ea', type: 'select', alias: 'sAF_ACTIONEA', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action' },
             SAF_ACTION_STATUS: { name: 'custrecord_twc_saf_a_status', type: 'select', alias: 'sAF_ACTIONStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf_action_status' },
             SAF_ACTION_COMPLETE: { name: 'custrecord_twc_saf_a_complete', type: 'checkbox', alias: 'sAF_ACTIONComplete', display: 'normal', mandatory: false },
+            DETACH_REASON: { name: 'custrecord_twc_saf_a_detach_reason', type: 'select', alias: 'detachReason', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf_detach_reason' },
+            DETACH_COMMENT: { name: 'custrecord_twc_saf_a_detach_comment', type: 'clobtext', alias: 'detachComment', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -65,12 +69,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.SAF_ACTION_COMPLETE, value)
             }
             
-            get siteDELETE() {
-                return this.get(_recordFields.SITE_DELETE);
-            } set siteDELETE(value) {
-                this.set(_recordFields.SITE_DELETE, value)
+            get detachReason() {
+                return this.get(_recordFields.DETACH_REASON);
+            } set detachReason(value) {
+                this.set(_recordFields.DETACH_REASON, value)
             }
-            get siteDELETEName() { return this.getText(_recordFields.SITE_DELETE); }
+            get detachReasonName() { return this.getText(_recordFields.DETACH_REASON); }
+            
+            get detachComment() {
+                return this.get(_recordFields.DETACH_COMMENT);
+            } set detachComment(value) {
+                this.set(_recordFields.DETACH_COMMENT, value)
+            }
             
             get created() {
                 return this.get(_recordFields.CREATED);

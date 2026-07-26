@@ -117,6 +117,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.init();
             }
 
+            get page() { return this.#page; }
             get ui() { return this.#page.ui; }
             get data() { return this.#page.data; }
 
@@ -236,17 +237,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         c.onToolbarClick = e => {
                             if (e.action == 'add-new') {
                                 this.manageEqAction(null, e.table);
-                            } else if (e.action == 'edit') {
-                                this.manageEqAction(e.rowData, e.table);
+                                // } else if (e.action == 'edit') {
+                                //     this.manageEqAction(e.rowData, e.table);
                             } else if (e.action == 'delete') {
                                 dialog.confirm('Are you sure you wish to remove this action', () => {
                                     e.rowData.delete = true;
                                     this.manageEqAction(e.rowData, e.table);
                                 })
                             } else if (e.action == 'detach') {
-                                dialog.confirm('Are you sure you wish to detach this action', () => {
-                                    this.detachEqAction(e.rowData, e.table);
-                                })
+                                this.detachEqAction(e.rowData, e.table);
                             }
                         }
                     }
@@ -619,10 +618,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             detachEqAction(safActions, table) {
                 try {
-                    safActions[twcSafAction.Fields.STATUS] = twcUtils.SafActionStatus.Detached;
-                    safActions[twcSafAction.Fields.STATUS + '_name'] = 'Detached';
-                    safActions['saf-detach'] = '';
-                    table.render(table.data, true)
+                    TWCDetachActionForm.open(this.page, values => {
+
+                        safActions[twcSafAction.Fields.SAF_ACTION_STATUS] = twcUtils.SafActionStatus.Detached;
+                        safActions[twcSafAction.Fields.SAF_ACTION_STATUS + '_name'] = 'Detached';
+                        safActions[twcSafAction.Fields.DETACH_REASON] = values.reason;
+                        safActions[twcSafAction.Fields.DETACH_COMMENT] = values.comment;
+                        safActions['saf-detach'] = '';
+                        table.render(table.data, true)
+
+                        return true;
+
+                    })
+                    
 
                 } catch (error) {
                     dialog.error(error);
@@ -630,75 +638,87 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             manageEqAction(safActions, table) {
-                try {
-                    if (!safActions) { safActions = {}; }
-                    if (this.deleteRecord(safActions, table)) { return; }
+                TWCEqActionForm.open(this, safActions, table);
+                // try {
+                //     if (!safActions) { safActions = {}; }
+                //     if (this.deleteRecord(safActions, table)) { return; }
 
-                    if (!safActions.ui) {
+                //     if (!safActions.ui) {
 
-                        this.data.siteAccessInfo[twcSaf.Fields.CUSTOMER] = this.ui.getControl('saf-customer').value;
-                        if (!this.data.siteAccessInfo[twcSaf.Fields.CUSTOMER]) { throw new Error('Please, specify a customer'); }
+                //         this.data.siteAccessInfo[twcSaf.Fields.CUSTOMER] = this.ui.getControl('saf-customer').value;
+                //         if (!this.data.siteAccessInfo[twcSaf.Fields.CUSTOMER]) { throw new Error('Please, specify a customer'); }
 
-                        safActions.ui = this.#page.postSync({ action: 'saf-action-record' }, { saf: this.data.siteAccessInfo, action: safActions })
-                        safActions.ui.getControl = function (id) {
-                            return this.controls.find(c => { return c.id == id })
-                        }
-                    }
+                //         safActions.ui = this.#page.postSync({ action: 'saf-action-record' }, { saf: this.data.siteAccessInfo, action: safActions })
+                //         safActions.ui.getControl = function (id) {
+                //             return this.controls.find(c => { return c.id == id })
+                //         }
+                //     }
 
-                    var form = twcUIPanel.ui(safActions.ui);
-                    form.getControl('saf-action-srf').on('change', e => {
-                        // @@TODO: gte SAF Equip action
-                        var waitPanel = form.getControl('srf-actions').ui.parent().find('#wait-panel');
-                        if (waitPanel.length == 0) {
-                            waitPanel = jQuery(`
-                                <div id="wait-panel" style="margin-top: 17px;">
-                                    <div>loading...</div>
-                                    <span class="twc-wait-cursor">
-                                        ${twcIcons.ICONS.waitWheel}
-                                    </span>
-                                </div>
-                            `);
-                            form.getControl('srf-actions').ui.parent().append(waitPanel);
-                        }
-                        waitPanel.css('display', 'block');
-                        form.getControl('srf-actions').ui.css('display', 'none');
+                //     var form = twcUIPanel.ui(safActions.ui);
+                //     var safActionsTable = form.getControl('srf-actions');
+                //     form.getControl('saf-action-srf').on('change', e => {
+                //         // @@TODO: gte SAF Equip action
+                //         var waitPanel = safActionsTable.ui.parent().find('#wait-panel');
+                //         if (waitPanel.length == 0) {
+                //             waitPanel = jQuery(`
+                //                 <div id="wait-panel" style="margin-top: 17px;">
+                //                     <div>loading...</div>
+                //                     <span class="twc-wait-cursor">
+                //                         ${twcIcons.ICONS.waitWheel}
+                //                     </span>
+                //                 </div>
+                //             `);
+                //             safActionsTable.ui.parent().append(waitPanel);
+                //         }
+                //         waitPanel.css('display', 'block');
+                //         safActionsTable.ui.css('display', 'none');
 
-                        this.#page.post({ action: 'get-srf-actions' }, { srf: e.value })
-                            .then(res => {
-                                form.getControl('srf-actions').render(res.data, true);
-                                safActions.ui.getControl('srf-actions').data = res.data;
-                                form.getControl('srf-actions').ui.css('display', 'block');
-                                waitPanel.css('display', 'none');
-                            })
-                            .catch(err => {
-                                dialog.error(err);
-                                waitPanel.css('display', 'none');
-                            });
-                    })
-                    if (form.getControl('saf-action-srf').value) { form.getControl('saf-action-srf').on('change'); }
+                //         this.#page.post({ action: 'get-srf-actions' }, { srf: e.value })
+                //             .then(res => {
+                //                 safActionsTable.render(res.data, true);
+                //                 safActionsTable.ui.css('display', 'block');
+                //                 safActionsTable.ui.find('#srf-actions-check-all').on('click', e => {
+                //                     var checked = jQuery(e.currentTarget).is(':checked') ? 'checked' : '';
+                //                     safActionsTable.ui.find('input[type="checkbox"]').prop('checked', checked);
+                //                 })
+                //                 waitPanel.css('display', 'none');
+                //             })
+                //             .catch(err => {
+                //                 dialog.error(err);
+                //                 waitPanel.css('display', 'none');
+                //             });
+                //     })
+                //     if (form.getControl('saf-action-srf').value) { form.getControl('saf-action-srf').on('change'); }
 
-                    dialog.confirm({ title: 'manage action', message: form.ui, width: '1250px', height: '750px' }, () => {
-                        try {
+                //     dialog.confirm({ title: 'manage action', message: form.ui, width: '1250px', height: '750px' }, () => {
+                //         try {
+                //             if (safActionsTable.ui.find('input[data-id]:checked').length == 0) { throw new Error('No actions selected'); }
 
+                //             var tableActions = safActionsTable.ui.find('input[data-id]').toArray();
+                //             if (!this.data.siteAccessInfo.actions) { this.data.siteAccessInfo.actions = []; }
+                //             core.array.each(tableActions, tableAction => {
+                //                 var eaId = jQuery(tableAction).data('id')
+                //                 var srfAction = safActionsTable.data.find(a => { return a.ea_id == eaId; })
+                //                 var safAction = this.data.siteAccessInfo.actions.find(a => { return a.ea_id == eaId; })
+                //                 if (jQuery(tableAction).is(':checked')) {
+                //                     if (!safAction) { this.data.siteAccessInfo.actions.push(srfAction); }
+                //                 } else {
+                //                     if (safAction) { this.data.siteAccessInfo.actions.splice(this.data.siteAccessInfo.actions.indexOf(safAction), 1); }
+                //                 }
+                //             })
 
-                            //if (!this.data.siteAccessInfo.actions) {
-                            this.data.siteAccessInfo.actions = safActions.ui.getControl('srf-actions').data;
-                            //}
+                //             table.render(this.data.siteAccessInfo.actions, true)
 
-                            //if (this.data.siteAccessInfo.actions.indexOf(safActions) < 0) { this.data.siteAccessInfo.actions.push(safActions); }
+                //             this.dirty = true
+                //         } catch (error) {
+                //             dialog.error(error);
+                //             return false;
+                //         }
+                //     })
 
-                            table.render(this.data.siteAccessInfo.actions, true)
-
-                            this.dirty = true
-                        } catch (error) {
-                            dialog.error(error);
-                            return false;
-                        }
-                    })
-
-                } catch (error) {
-                    dialog.error(error);
-                }
+                // } catch (error) {
+                //     dialog.error(error);
+                // }
             }
 
             deleteRecord(safRecord, table) {
@@ -756,6 +776,208 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+        class TWCDetachActionForm {
+            #page = null;
+            constructor(page) {
+                this.#page = page;
+            }
+
+            render(callback) {
+                var formConfig = { controls: [] };
+                formConfig.controls.push({ type: twcUI.CTRL_TYPE.SELECT, id: 'reason', label: 'Detach Reason', dataSource: this.#page.data.safActionDetachReason, width: '250px', mandatory: true });
+                formConfig.controls.push({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Detach Comment', width: '100%', rows: 7, mandatory: true });
+
+                var form = twcUI.init(formConfig);
+                form.getControl('reason').on('change', e => {
+                    form.getControl('comment').mandatory = form.getControl('reason').valueObj?.force_comm == 'T';
+                })
+
+                dialog.confirm({ title: 'detach action from SAF', message: form.ui, width: '600px', height: '350px' }, dlg => {
+                    try {
+                        var values = form.getValues();
+
+                        return callback(values, dlg);
+                        
+                    } catch (error) {
+                        dialog.error(error);
+                        return false;
+                    }
+                })
+
+            }
+
+            static open(page, callback) {
+                var form = new TWCDetachActionForm(page);
+                form.render(callback);
+            }
+        }
+
+
+        class TWCEqActionForm {
+            #safBuilder = null;
+            #form = null;
+            #safActionsTable = null;
+            #waitPanel = null;
+            constructor(safBuilder) {
+                this.#safBuilder = safBuilder;
+            }
+
+            get page() { return this.#safBuilder.page; }
+            get data() { return this.#safBuilder.data; }
+            get ui() { return this.#safBuilder.ui; }
+
+            waitShow() {
+                this.#waitPanel = this.#safActionsTable.ui.parent().find('#wait-panel');
+                if (this.#waitPanel.length == 0) {
+                    this.#waitPanel = jQuery(`
+                            <div id="wait-panel" style="margin-top: 17px;">
+                                <div>loading...</div>
+                                <span class="twc-wait-cursor">
+                                    ${twcIcons.ICONS.waitWheel}
+                                </span>
+                            </div>
+                        `);
+                    this.#safActionsTable.ui.parent().append(this.#waitPanel);
+                }
+                this.#waitPanel.css('display', 'block');
+                this.#safActionsTable.ui.css('display', 'none');
+            }
+            waitClose() {
+                this.#waitPanel.css('display', 'none');
+                this.#safActionsTable.ui.css('display', 'block');
+            }
+
+            selectSrf() {
+                this.waitShow();
+                this.page.post({ action: 'get-srf-actions' }, { srf: this.#form.getControl('saf-action-srf').value }).then(res => {
+                    this.#safActionsTable.render(res.data, true);
+                    this.#safActionsTable.ui.find('#srf-actions-check-all').on('click', e => {
+                        var checked = jQuery(e.currentTarget).is(':checked') ? 'checked' : '';
+                        this.#safActionsTable.ui.find('input[type="checkbox"]').prop('checked', checked);
+                    })
+                    this.#safActionsTable.ui.find('span[data-action="detach"]').on('click', e => {
+                        this.detachOtherSaf(e);
+                    })
+                    this.waitClose();
+                }).catch(err => {
+                    dialog.error(err);
+                    this.waitClose();
+                })
+            }
+
+            detachOtherSaf(e) {
+                var eaId = jQuery(e.currentTarget).data('id');
+                var safId = jQuery(e.currentTarget).data('saf');
+
+                TWCDetachActionForm.open(this.page, (values, dlg) => {
+                    values.saf = safId;
+                    values.id = eaId;
+
+                    dialog.saving(dlg);
+
+                    this.page.post({ action: 'detach-saf-action' }, values).then(res => {
+                        // @@TODO: change the cell content to check box (checked)
+                        this.selectSrf();
+                        dlg.close();
+                    }).catch(err => {
+                        dialog.savingError(dlg, err);
+                    })
+
+                    return false;
+                })
+                
+                // var formConfig = { controls: [] };
+                // formConfig.controls.push({ type: twcUI.CTRL_TYPE.SELECT, id: 'reason', label: 'Detach Reason', dataSource: this.data.safActionDetachReason, width: '250px', mandatory: true });
+                // formConfig.controls.push({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Detach Comment', width: '100%', rows: 7, mandatory: true });
+
+                // var form = twcUI.init(formConfig);
+                // form.getControl('reason').on('change', e => {
+                //     form.getControl('comment').mandatory = form.getControl('reason').valueObj?.force_comm == 'T';
+                // })
+
+                // dialog.confirm({ title: 'detach action from SAF', message: form.ui, width: '600px', height: '350px' }, dlg => {
+                //     try {
+                //         var values = form.getValues();
+                //         values.saf = safId;
+                //         values.id = eaId;
+
+                //         dialog.saving(dlg);
+
+                //         this.page.post({ action: 'detach-saf-action' }, values).then(res => {
+                //             // @@TODO: change the cell content to check box (checked)
+                //             this.selectSrf();
+                //             dlg.close();
+                //         }).catch(err => {
+                //             dialog.savingError(dlg, err);
+                //         })
+
+                //         return false;
+                        
+                //     } catch (error) {
+                //         dialog.error(error);
+                //         return false;
+                //     }
+                // })
+
+                
+            }
+
+            render(safActions, table) {
+                try {
+                    if (!safActions) { safActions = {}; }
+                    if (this.#safBuilder.deleteRecord(safActions, table)) { return; }
+
+                    if (!safActions.ui) {
+                        this.data.siteAccessInfo[twcSaf.Fields.CUSTOMER] = this.ui.getControl('saf-customer').value;
+                        if (!this.data.siteAccessInfo[twcSaf.Fields.CUSTOMER]) { throw new Error('Please, specify a customer'); }
+
+                        safActions.ui = this.page.postSync({ action: 'saf-action-record' }, { saf: this.data.siteAccessInfo, action: safActions })
+                        safActions.ui.getControl = function (id) {
+                            return this.controls.find(c => { return c.id == id })
+                        }
+                    }
+
+                    this.#form = twcUIPanel.ui(safActions.ui);
+                    this.#safActionsTable = this.#form.getControl('srf-actions');
+                    this.#form.getControl('saf-action-srf').on('change', e => { this.selectSrf(); })
+                    //if (form.getControl('saf-action-srf').value) { form.getControl('saf-action-srf').on('change'); }
+
+                    dialog.confirm({ title: 'manage action', message: this.#form.ui, width: '1250px', height: '750px' }, () => {
+                        try {
+                            if (this.#safActionsTable.ui.find('input[data-id]:checked').length == 0) { throw new Error('No actions selected'); }
+
+                            var tableActions = this.#safActionsTable.ui.find('input[data-id]').toArray();
+                            if (!this.data.siteAccessInfo.actions) { this.data.siteAccessInfo.actions = []; }
+                            core.array.each(tableActions, tableAction => {
+                                var eaId = jQuery(tableAction).data('id')
+                                var srfAction = this.#safActionsTable.data.find(a => { return a.ea_id == eaId; })
+                                var safAction = this.data.siteAccessInfo.actions.find(a => { return a.ea_id == eaId; })
+                                if (jQuery(tableAction).is(':checked')) {
+                                    if (!safAction) { this.data.siteAccessInfo.actions.push(srfAction); }
+                                } else {
+                                    if (safAction) { this.data.siteAccessInfo.actions.splice(this.data.siteAccessInfo.actions.indexOf(safAction), 1); }
+                                }
+                            })
+
+                            table.render(this.data.siteAccessInfo.actions, true)
+
+                            this.#safBuilder.dirty = true
+                        } catch (error) {
+                            dialog.error(error);
+                            return false;
+                        }
+                    })
+
+                } catch (error) {
+                    dialog.error(error);
+                }
+            }
+
+            static open(safBuilder, safActions, table) {
+                var form = new TWCEqActionForm(safBuilder)
+                form.render(safActions, table);
+            }
+        }
 
         class TWCSiteAccessPage extends twcPageBase.TWCPageBase {
             #sitesTable = null;

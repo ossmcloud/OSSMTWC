@@ -141,7 +141,7 @@
         </tr>
         <tr>
             <td class="label" align="right"> Drawing ref: </td>
-            <td> ${requestJSON.sdsData.drawingReference} </td>
+            <td> ${requestJSON.sdsData.custrecord_twc_sds_drawing} </td>
             <td colspan="2"> The drawing referenced forms an integral part of the SDS and illustrates the equipment licenced and/or proposed for removal. </td>
         </tr>
         <tr>
@@ -256,7 +256,7 @@
         </tr>
         <tr>
             <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Other (please specify): </td>
-            <td style="border:1px solid #666; padding:7px;"> Temporary power connection from Towercom. <br/> ${requestJSON.sdsData.powerSupplyComments}</td>
+            <td style="border:1px solid #666; padding:7px;"> Temporary power connection from Towercom. <br/> ${requestJSON.srfDetails[0].custrecord_twc_srf_power_notes}</td>
         </tr>
     </table>
 
@@ -267,19 +267,19 @@
         </tr>
         <tr>
             <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Rights: </td>
-            <td style="width:25%; border:1px solid #666; padding:7px;"> <#if requestJSON.sdsData.fibreRights == "T"> Yes <#elseif requestJSON.sdsData.fibreRights == "F"> No </#if> </td>
+            <td style="width:25%; border:1px solid #666; padding:7px;"> <#if requestJSON.sdsData.custrecord_twc_sds_fibre_rights == "T"> Yes <#elseif requestJSON.sdsData.custrecord_twc_sds_fibre_rights == "F"> No </#if> </td>
             <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Duct Route: </td>
-            <td style="width:25%; border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.fibreDuctRoute} </td>
+            <td style="width:25%; border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.custrecord_twc_sds_fibre_duct_route} </td>
         </tr>
         <tr>
             <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Provider: </td>
-            <td style="border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.fibreProvider} </td>
+            <td style="border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.custrecord_twc_sds_fibre_provider_name} </td>
             <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Other Provider: </td>
-            <td style="border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.otherProvider} </td>
+            <td style="border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.custrecord_twc_sds_fibre_provider_other} </td>
         </tr>
         <tr>
             <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Conditions: </td>
-            <td colspan="3" style="border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.notesConditions} </td>
+            <td colspan="3" style="border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.custrecord_twc_sds_fibre_notes} </td>
         </tr>
 
     </table>
@@ -297,25 +297,25 @@
                 Previous Licence Fee:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${requestJSON.sdsData.previousLicenceFee}
+                €${requestJSON.sdsData.custrecord_twc_sds_fee_prev}
             </td>
             <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
                 Fee Reduction:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${requestJSON.sdsData.feeReduction}
+                €${requestJSON.sdsData.custrecord_twc_sds_fee_reduction}
             </td>
             <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
                 Fee Uplift:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${requestJSON.sdsData.feeUplift}
+                €${requestJSON.sdsData.custrecord_twc_sds_fee_uplift}
             </td>
             <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
                 Licence Fee:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${requestJSON.sdsData.newLicenceFee}
+                €${requestJSON.sdsData.custrecord_twc_sds_fee_new}
             </td>
         </tr>
         <tr>
@@ -324,14 +324,14 @@
                 SDS Commencement Date:
             </td>
             <td colspan="7" style="border:1px solid #666; padding:7px;">
-                ${requestJSON.sdsData.commencementDate}
+                ${requestJSON.sdsData.custrecord_twc_sds_comm_date}
             </td>
         </tr>
 
         <tr>
             <td colspan="8"
                 style="border:1px solid #666; padding:10px 12px; background-color:gainsboro;">
-                    ${requestJSON.sdsData.feeChangeBreakdown}
+                    ${requestJSON.sdsData.custrecord_twc_sds_fee_charge_breackdown}
             </td>
         </tr>
     </table>

@@ -194,7 +194,8 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                             return 'cancel';
                         }
                     }
-                    jQuery('dialog')[0]?.close();
+                    //jQuery('dialog')[0]?.close();
+                    jQuery('dialog').each((i, d) => { d.close(); })
                     jQuery('body').append(`
                         <div class="twc-overlay">
                             <span class="twc-wait-cursor">
@@ -313,7 +314,7 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
 
                 var url = core.url.script('otwc_microsvc_sl', { action: 'view-file' });
 
-                
+
                 var res = await https.promise.post({ url: url, body: { file: file, getUrl: e?.ctrlKey } });
                 if (e?.ctrlKey) {
                     jQuery(e.currentTarget).html(icon);
@@ -325,13 +326,13 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
 
                 var blob = base64ToBlob(res.fileContent, dataType)
                 var blobUrl = URL.createObjectURL(blob);
-                
+
                 var html = `<object style="width: 100%;height: 100%;" data="${blobUrl}"></object>`;
                 if (res.type.indexOf('IMAGE') > 0) {
                     dataType = `data:image/${res.type.toLowerCase().replace('image', '')}`;
                     html = `<img style="width: 100%; border: 1px solid var(--grid-color);" src="${blobUrl}" />`;
                 }
-                
+
 
                 if (e) {
                     jQuery(e.currentTarget).html(icon);

@@ -307,18 +307,30 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 type: twcUI.CTRL_TYPE.TABLE,
                 label: 'Equipment Actions',
                 columns: [
-                    { id: 'ea_id', title: 'ID', styles: { width: '50px' } },
+                    { id: 'ea_id', title: 'ID', styles: { width: '50px' }, noFilter: true, noSort: true },
+                    { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF', styles: { width: '125px' } },
                     { id: twcEqAct.Fields.EA_EQUIPMENT + '_name', title: 'Equipment' },
                     { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
                     { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Item' },
                     { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description' },
                     { id: twcEqAct.Fields.EA_TYPE + '_name', title: 'Type' },
-                    { id: twcEqAct.Fields.EA_STATUS + '_name', title: 'Status' },
-                    { id: 'saf-detach', title: '', styles: { 'width': '50px' }, noFilter: true },
+                    { id: twcSafAction.Fields.SAF_ACTION_STATUS + '_name', title: 'Status' },
+                    { id: 'saf-detach', title: '', styles: { 'width': '50px', 'text-align': 'center', 'padding': '0px' }, noSort: true, noFilter: true },
                 ],
                 dataSource: getSafEqAction(dataSource),
                 showToolbar: true,
-                showEditDelete: !isExistingSaf,
+                showEditDelete: false,
+                newToolBarButton: `
+                    <div class="twc-table-toolbar-button">
+                        <div style="vertical-align: bottom; padding-bottom: 1px;">
+                            ${twcIcons.get('addNew', 16)}
+                        </div>
+                        <div>
+                            ADD EQUIPMENT ACTIONS
+                        </div>
+                    </div>
+                `
+                // showEditDelete: !isExistingSaf,
 
             }
             step3CInfo.fields.push(crewTableControl);
@@ -523,11 +535,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.fields.push({ id: 'saf-action-srf', label: 'S.R.F', type: twcUI.CTRL_TYPE.DROPDOWN, allowAll: false, noAutoSelect: true, dataSource: twcUtils.getSrfDropDown(saf), mandatory: true, width: '350px', lineBreak: true });
             //fieldGroup.fields.push({ id: 'saf-action-eq', label: 'Equipment Action', type: twcUI.CTRL_TYPE.DROPDOWN, allowAll: false, dataSource: [], mandatory: true });
 
+            var checkAllInput = `<input id="srf-actions-check-all" type="checkbox" />`;
+
             var eqActions = {
                 id: `srf-actions`,
                 type: twcUI.CTRL_TYPE.TABLE,
                 label: 'Equipment Actions',
                 columns: [
+                    { id: 'select', title: checkAllInput, noSort: true, noFilter: true, styles: { width: '50px', 'text-align': 'center', 'padding': '0px' } },
+                    { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF' },
                     { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
                     { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Eq. Type' },
                     { id: twcSrfItem.Fields.REQUEST_TYPE + '_name', title: 'Type' },
@@ -632,19 +648,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     id: `${twcSafAction.Type}`,
                     label: 'Equipment Actions',
                     fields: {
-                        ['ea_id']: { title: 'ID', styles: { width: '50px' }, link: eaActionLink },
+                        ['ea_id']: { title: 'ID', styles: { width: '50px' }, link: eaActionLink, noFilter: true, noSort: true },
+                        [twcSrfItem.Fields.SRF + '_name']: { title: 'SRF', styles: { width: '125px' } },
                         [twcEqAct.Fields.EA_EQUIPMENT + '_name']: { title: 'Equipment', link: equipLink },
                         [twcSrfItem.Fields.STEP_TYPE + '_name']: { title: 'Class' },
                         [twcSrfItem.Fields.ITEM_TYPE + '_name']: { title: 'Item' },
                         [twcSrfItem.Fields.DESCRIPTION]: { title: 'Description' },
                         [twcEqAct.Fields.EA_TYPE + '_name']: { title: 'Type' },
-                        [twcEqAct.Fields.EA_STATUS + '_name']: { title: 'Status', styles: { width: '120px', 'text-align': 'center' } },
+                        [twcSafAction.Fields.SAF_ACTION_STATUS + '_name']: { title: 'Status', styles: { width: '120px', 'text-align': 'center' } },
                     },
                     dataSource: getSafEqAction(dataSource),
                     FieldsInfo: twcSafAction.FieldsInfo,
                     styles: { width: '100%', 'padding-left': '0px' },
                     onColumnInit: (tbl, col) => {
-                        if (col.id == twcEqAct.Fields.EA_STATUS + '_name') {
+                        if (col.id == twcSafAction.Fields.SAF_ACTION_STATUS + '_name') {
                             col.formatValue = (v) => {
                                 return twcSafAction.getStatusHtml(v);
                             }

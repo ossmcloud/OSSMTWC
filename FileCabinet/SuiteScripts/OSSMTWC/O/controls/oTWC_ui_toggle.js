@@ -88,6 +88,14 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             } set value(v) {
                 this.#options.value = v;
                 this.toggle(this.#options.value);
+                // @@TODO: we should call the change event
+            }
+
+
+            setValue(v) {
+                if (this.disabled) { return; }
+                this.#options.value = v;
+                this.toggle(this.#options.value);
             }
 
 
