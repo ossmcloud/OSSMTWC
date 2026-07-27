@@ -400,7 +400,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         const SDS_STATUS = {
             Draft: 1,
             Current: 2,
-            Superceded: 3
+            Superseded: 3
         }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
@@ -846,7 +846,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (options.vendor) {
                 if (options.type == 'C') {
                     // @@NOTE: here we want to select customers the given vendor can work on behalf of
-                    
+
                     var sqlUnion = '';
                     if (options.isBoth) {
                         sqlUnion = `
@@ -1174,7 +1174,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 order by a.id
             `, action => {
                 if (action['custrecord_twc_eq_action_saf']) {
-                    action.select = `<span data-id="${action.ea_id}" data-saf="${action['custrecord_twc_eq_action_saf']}" class="o-table-action twc-clickable" data-action="detach">detach from<br />${action['custrecord_twc_eq_action_saf_name']}</span>`;   
+                    action.select = `<span data-id="${action.ea_id}" data-saf="${action['custrecord_twc_eq_action_saf']}" class="o-table-action twc-clickable" data-action="detach">detach from<br />${action['custrecord_twc_eq_action_saf_name']}</span>`;
                 } else {
                     action.select = `<input data-id="${action.ea_id}" type="checkbox" />`;
                 }
@@ -1212,6 +1212,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getSafActionDetachReason() {
             return coreSQL.run(`select id as value, name as text, custrecord_twc_saf_detach_reason_comm as force_comm from customrecord_twc_saf_detach_reason where isinactive = 'F' order by custrecord_twc_saf_detach_sort`)
+        }
+
+
+        function getSrfReviewRecord(options) {
+            if (!options) { throw new Error('no parameters passed'); }
+
+            var where = '';
+            if (options.wkf) {
+                where = `where   w.id = ${options.wkf}`
+            } else if (options.srf) {
+                where = `where   srf.id = ${options.srf}`
+            } else {
+                throw new Error('invalid parameters passed');
+            }
+
+            return coreSQL.first(`
+                select  sr.id, w.custrecord_twc_srf_wkf_parent as srf, BUILTIN.DF(w.custrecord_twc_srf_wkf_parent) as srf_name, srf.custrecord_twc_srf_fdbk_loop_iter as feedback_loop_count
+                from    customrecord_twc_srf_wkf w
+                left join    customrecord_twc_srf srf on srf.id = w.custrecord_twc_srf_wkf_parent
+                left join    customrecord_twc_srf_rev sr on sr.custrecord_twc_srf_rev_srf = srf.id and sr.custrecord_twc_srf_rev_iter = srf.custrecord_twc_srf_fdbk_loop_iter
+                ${where}
+                order by sr.created desc
+            `)
         }
 
         function getInfraStructures(options, includeTLOnly) {
@@ -1436,6 +1459,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSrfActions: getSrfActions,
             getSrfTypes: getSrfTypes,
             getSrfItemTypeOpts: getSrfItemTypeOpts,
+            getSrfReviewRecord: getSrfReviewRecord,
 
             getFields: getCustomTableFields,
             getSiteNames: getSiteNames,

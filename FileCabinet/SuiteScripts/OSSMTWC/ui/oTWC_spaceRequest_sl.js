@@ -3,8 +3,8 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_equipmentLibCfg.js', '../data/oTWC_equipmentLib.js', '../data/oTWC_equipment.js', '../data/oTWC_icons.js', '../modules/oTWC_srfWorkflowEngine.js'],
-    function (render, nsFile, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcUtils, twcSrf, twcEqLibCfg, twcEqLib, twcEquipment, twcIcons, twcSrfWorkflowEngine) {
+define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_equipmentLibCfg.js', '../data/oTWC_equipmentLib.js', '../data/oTWC_equipment.js', '../data/oTWC_icons.js', '../modules/oTWC_srfWorkflowEngine.js', '../modules/oTWC_sdsRender.js'],
+    function (render, nsFile, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcUtils, twcSrf, twcEqLibCfg, twcEqLib, twcEquipment, twcIcons, twcSrfWorkflowEngine, twcSdsRender) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -182,12 +182,16 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 return twcSrfWorkflowEngine.updateWorkflow(userInfo, JSON.parse(context.request.body))
 
             } else if (context.request.parameters.action == 'sign-sds') {
-                return twcSrfWorkflowEngine.postSignature(userInfo, JSON.parse(context.request.body))
-
+                var resp = twcSrfWorkflowEngine.postSignature(userInfo, JSON.parse(context.request.body));
+                twcSdsRender.renderSDS(context, resp.srf, true);
+                return resp;
+                
             } else if (context.request.parameters.action == 'sign-sds-tl') {
                 var payload = JSON.parse(context.request.body);
                 payload.isTLSignature = true;
-                return twcSrfWorkflowEngine.postSignature(userInfo, payload)
+                var resp = twcSrfWorkflowEngine.postSignature(userInfo, payload)
+                twcSdsRender.renderSDS(context, resp.srf, true);    // @@NOTE: this will force the PDF to be recreated and saved
+                return resp;
            
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);

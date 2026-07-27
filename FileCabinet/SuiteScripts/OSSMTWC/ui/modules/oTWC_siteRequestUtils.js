@@ -332,39 +332,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return html;
         }
 
-        function getSrfInfo(recId) {
-            var srfInfo = {}
-            if (recId) {
-                srfInfo.srfDetails = coreSQL.run(`
-                    SELECT      srf.custrecord_twc_srf_op_site_id, srf.custrecord_twc_srf_site, srf.name, TO_CHAR(srf.custrecord_twc_srf_approval_date, 'DD-MM-YYYY') as approval_date,
-                                srf.custrecord_twc_srf_op_site_id as operator_site_id, srf.custrecord_twc_srf_power_notes,
-                                company.custrecordtwc_entity, cae.addrtext AS customer_address, c.altname as operator_name, custrecord_twc_co_number as company_number
-                    FROM        ${twcSrf.Type} srf INNER JOIN customrecord_twc_company company ON srf.custrecord_twc_srf_cust = company.id
-                    INNER JOIN  Customer c ON company.custrecordtwc_entity = c.id
-                    INNER JOIN  CustomerAddressBook cab ON cab.entity = c.id
-                    INNER JOIN  CustomerAddressBookEntityAddress cae ON cae.nkey = cab.addressbookaddress
-                    WHERE   srf.id = ${recId} 
-                    AND     cab.defaultbilling = 'T';`
-                );
-
-                const siteID = srfInfo.srfDetails[0].custrecord_twc_srf_site;
-                srfInfo.siteDetails = coreSQL.run(`
-                    select custrecord_twc_site_id as site_id, custrecord_twc_site_name as site_name, custrecord_twc_site_address as address, custrecord_twc_site_address_zip as add_zipCode, 
-                        BUILTIN.DF(custrecord_twc_site_address_county) as add_county, custrecord_twc_site_easting_access as easting, custrecord_twc_site_northing_access as northing, 
-                        custrecord_twc_site_longitude_access as longitude, custrecord_twc_site_latitude_access as latitude,
-
-                    from customrecord_twc_site 
-                    where id = ${siteID}`)
-                srfInfo.srfItems = coreSQL.run(`
-                    select custrecord_twc_srf_itm_stype as step_type, BUILTIN.DF(custrecord_twc_srf_itm_req_type) as status, BUILTIN.DF(custrecord_twc_srf_itm_srf) as srf_id, id, 
-                        BUILTIN.DF(custrecord_twc_srf_itm_type) as type, custrecord_twc_srf_itm_desc as description, custrecord_twc_srf_itm_length_mm as length, custrecord_twc_srf_itm_width_mm as width, custrecord_twc_srf_itm_depth_mm as depth, custrecord_twc_srf_itm_ht_on_twr as equip_height,
-                        custrecord_twc_srf_itm_weight_kg as weight, custrecord_twc_srf_itm_azimuth as azimuth, custrecord_twc_srf_itm_b_end as b_end, BUILTIN.DF(custrecord_twc_srf_itm_loc) as location, 
-                        BUILTIN.DF(custrecord_twc_srf_itm_invent_flag) as inventory_flag, custrecord_twc_srf_itm_feeder_count as feeder_count, 
-                    from ${twcSrfItem.Type} where custrecord_twc_srf_itm_srf = ${recId} `)
-            }
-            return srfInfo;
-        }
-
+       
         function getAssignToEmployees(options) {
             return coreSQL.run(`
                 select  id as value, entityid as text, custentity_twc_can_execute_pack as can_execute_pack
@@ -449,11 +417,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             saveSiteSrf: saveSiteSrf,
             renderSiteLocatorPanel: renderSiteLocatorPanel,
-            getSrfInfo: getSrfInfo,
             getEquipment: getEquipment,
             getEquipmentChildren: getEquipmentChildren,
             submitSiteSrf: submitSiteSrf,
-
 
             getAssignToEmployees: getAssignToEmployees,
 

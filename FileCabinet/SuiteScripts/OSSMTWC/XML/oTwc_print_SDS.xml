@@ -51,7 +51,7 @@
                 </font>
             </td>
             <td border="0" width="30%" align="right">
-                <img src="https://9061443-sb1.app.netsuite.com/core/media/media.nl?id=21788&amp;c=9061443_SB1&amp;h=9K50eGpbmS68ktYJKqc2crZrZXhyOACwey9FegJNb6Se6Okm" height="30%;" width="80%" />
+                <img src="${requestJSON.logo}" />
             </td>
         </tr>
     </table>
@@ -66,7 +66,7 @@
                 (the <b>"MSLA"</b>)
                 <br />
                 between Towercom Limited and the
-                <b>Operator dated 03/11/2011</b>
+                <b>Operator dated ${requestJSON.srf.client_signed}</b>
             </td>
         </tr>
     </table>
@@ -76,32 +76,31 @@
         <tr><td align="center" colspan="6" class="sectionHeader"> Site Details </td></tr>
         <tr>
             <td width="12%" class="label" align="right"> Site Name </td>
-            <td width="20%"> ${requestJSON.siteDetails[0].site_name} </td>
+            <td width="20%"> ${requestJSON.siteDetails.site_name} </td>
             <td width="20%" class="label" align="right"> Site ID: </td>
-            <td width="20%"> ${requestJSON.siteDetails[0].site_id} </td>
+            <td width="20%"> ${requestJSON.siteDetails.site_id} </td>
             <td width="20%" class="label" align="right"> Operator Site ID: </td>
-            <td width="20%"> ${requestJSON.siteDetails[0].operator_site_id} </td>
+            <td width="20%"> ${requestJSON.siteDetails.operator_site_id} </td>
         </tr>
         <tr>
             <td class="label" align="right">Site Address:</td>
             <td colspan="5">
-                <#if requestJSON.siteDetails[0].address?has_content && requestJSON.siteDetails[0].address != "null"> ${requestJSON.siteDetails[0].address} </#if>
-                <#if requestJSON.siteDetails[0].add_zipcode?has_content && requestJSON.siteDetails[0].add_zipcode != "null">, ${requestJSON.siteDetails[0].add_zipcode} </#if>
-                <#if requestJSON.siteDetails[0].add_county?has_content && requestJSON.siteDetails[0].add_county != "null">, ${requestJSON.siteDetails[0].add_county} </#if>
+                <#if requestJSON.siteDetails.address?has_content && requestJSON.siteDetails.address != "null"> ${requestJSON.siteDetails.address} </#if>
+                <#if requestJSON.siteDetails.add_zipcode?has_content && requestJSON.siteDetails.add_zipcode != "null">, ${requestJSON.siteDetails.add_zipcode} </#if>
+                <#if requestJSON.siteDetails.add_county?has_content && requestJSON.siteDetails.add_county != "null">, ${requestJSON.siteDetails.add_county} </#if>
             </td>
         </tr>
         <tr>
             <td class="label" align="right"> Coordinates: </td>
-            <td border-right ="0"> Easting: ${requestJSON.siteDetails[0].easting} </td>
-            <td border-left ="0"> Northing: ${requestJSON.siteDetails[0].northing} </td>
-            <td border-right ="0" colspan="2"> Latitude: ${requestJSON.siteDetails[0].latitude} </td>
-            <td border-left ="0"> Longitude: ${requestJSON.siteDetails[0].longitude} </td>
+            <td border-right ="0"> Easting: ${requestJSON.siteDetails.easting} </td>
+            <td border-left ="0"> Northing: ${requestJSON.siteDetails.northing} </td>
+            <td border-right ="0" colspan="2"> Latitude: ${requestJSON.siteDetails.latitude} </td>
+            <td border-left ="0"> Longitude: ${requestJSON.siteDetails.longitude} </td>
         </tr>
     </table>
 
-    <br />
     <!-- DETAILS OF THE PARTIES -->
-    <table>
+    <table style="margin-top:14px;">
         <tr> <td align="center" colspan="4" class="sectionHeader"> Details of the Parties </td> </tr>
         <tr>
             <td align="center" colspan="2" width="50%" class="subHeader"> Licensor: </td>
@@ -121,32 +120,32 @@
                 Usher House, Main Street, Dundrum, Dublin 14
             </td>
             <td colspan="2" style="line-height: 16px;">
-                Name: ${requestJSON.srfDetails[0].operator_name}
+                Name: ${requestJSON.srf.operator_name}
                 <br />
-                Company Number: ${requestJSON.srfDetails[0].company_number}
+                Company Number: ${requestJSON.srf.company_number}
                 <br />
-                Registered Office: ${requestJSON.srfDetails[0].customer_address}
+                Registered Office: ${requestJSON.srf.customer_address}
                 <br />
                 <br />
                 Whose address for correspondence is:
                 <br />
-                ${requestJSON.srfDetails[0].customer_address}
+                ${requestJSON.srf.customer_address}
             </td>
         </tr>
         <tr>
             <td width="18%" class="label" align="right"> SRF Number: </td>
-            <td width="32%"> ${requestJSON.srfDetails[0].name} </td>
+            <td width="32%"> ${requestJSON.srf.name} </td>
             <td width="18%" class="label" align="right"> SRF Approved: </td>
-            <td width="32%"> ${requestJSON.srfDetails[0].approval_date} </td>
+            <td width="32%"> ${requestJSON.srf.approval_date} </td>
         </tr>
         <tr>
             <td class="label" align="right"> Drawing ref: </td>
-            <td> ${requestJSON.sdsData.custrecord_twc_sds_drawing} </td>
+            <td> ${(requestJSON.sds.custrecord_twc_sds_drawing_name!"")?replace("null", "none")} </td>
             <td colspan="2"> The drawing referenced forms an integral part of the SDS and illustrates the equipment licenced and/or proposed for removal. </td>
         </tr>
         <tr>
             <td colspan="2" class="label" align="right"> Site Access Reference Documents </td>
-            <td colspan="2"> ${requestJSON.srfDetails[0].site_access_doc} </td>
+            <td colspan="2"> ${requestJSON.srf.site_access_doc} </td>
         </tr>
 
     </table>
@@ -252,11 +251,11 @@
         </tr>
         <tr>
             <td style="width:50%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Towercom Temp Supply Required: </td>
-            <td style="width:50%; border:1px solid #666; padding:7px;"> No </td>
+            <td style="width:50%; border:1px solid #666; padding:7px;"> ${requestJSON.srf.power_supply_required} </td>
         </tr>
         <tr>
             <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Other (please specify): </td>
-            <td style="border:1px solid #666; padding:7px;"> Temporary power connection from Towercom. <br/> ${requestJSON.srfDetails[0].custrecord_twc_srf_power_notes}</td>
+            <td style="border:1px solid #666; padding:7px;">${(requestJSON.srf.custrecord_twc_srf_power_notes!"")?replace("null", "")}</td>
         </tr>
     </table>
 
@@ -267,19 +266,19 @@
         </tr>
         <tr>
             <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Rights: </td>
-            <td style="width:25%; border:1px solid #666; padding:7px;"> <#if requestJSON.sdsData.custrecord_twc_sds_fibre_rights == "T"> Yes <#elseif requestJSON.sdsData.custrecord_twc_sds_fibre_rights == "F"> No </#if> </td>
+            <td style="width:25%; border:1px solid #666; padding:7px;"> <#if requestJSON.sds.custrecord_twc_sds_fibre_rights == "T"> Yes <#elseif requestJSON.sds.custrecord_twc_sds_fibre_rights == "F"> No </#if> </td>
             <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Duct Route: </td>
-            <td style="width:25%; border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.custrecord_twc_sds_fibre_duct_route} </td>
+            <td style="width:25%; border:1px solid #666; padding:7px;"> ${requestJSON.sds.custrecord_twc_sds_fibre_duct_route} </td>
         </tr>
         <tr>
             <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Provider: </td>
-            <td style="border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.custrecord_twc_sds_fibre_provider_name} </td>
+            <td style="border:1px solid #666; padding:7px;"> ${requestJSON.sds.custrecord_twc_sds_fibre_provider_name} </td>
             <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Other Provider: </td>
-            <td style="border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.custrecord_twc_sds_fibre_provider_other} </td>
+            <td style="border:1px solid #666; padding:7px;"> ${(requestJSON.sds.custrecord_twc_sds_fibre_provider_other!"")?replace("null", "")} </td>
         </tr>
         <tr>
             <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Conditions: </td>
-            <td colspan="3" style="border:1px solid #666; padding:7px;"> ${requestJSON.sdsData.custrecord_twc_sds_fibre_notes} </td>
+            <td colspan="3" style="border:1px solid #666; padding:7px;"> ${(requestJSON.sds.custrecord_twc_sds_fibre_notes!"")?replace("null", "")} </td>
         </tr>
 
     </table>
@@ -297,25 +296,25 @@
                 Previous Licence Fee:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${requestJSON.sdsData.custrecord_twc_sds_fee_prev}
+                €${requestJSON.sds.custrecord_twc_sds_fee_prev}
             </td>
             <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
                 Fee Reduction:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${requestJSON.sdsData.custrecord_twc_sds_fee_reduction}
+                €${requestJSON.sds.custrecord_twc_sds_fee_reduction}
             </td>
             <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
                 Fee Uplift:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${requestJSON.sdsData.custrecord_twc_sds_fee_uplift}
+                €${requestJSON.sds.custrecord_twc_sds_fee_uplift}
             </td>
             <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
                 Licence Fee:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${requestJSON.sdsData.custrecord_twc_sds_fee_new}
+                €${requestJSON.sds.custrecord_twc_sds_fee_new}
             </td>
         </tr>
         <tr>
@@ -324,14 +323,12 @@
                 SDS Commencement Date:
             </td>
             <td colspan="7" style="border:1px solid #666; padding:7px;">
-                ${requestJSON.sdsData.custrecord_twc_sds_comm_date}
+                ${requestJSON.sds.custrecord_twc_sds_comm_date}
             </td>
         </tr>
-
         <tr>
-            <td colspan="8"
-                style="border:1px solid #666; padding:10px 12px; background-color:gainsboro;">
-                    ${requestJSON.sdsData.custrecord_twc_sds_fee_charge_breackdown}
+            <td colspan="8" style="border:1px solid #666; padding:10px 12px; background-color:gainsboro;">
+                ${requestJSON.sds.custrecord_twc_sds_fee_charge_breackdown}
             </td>
         </tr>
     </table>
@@ -385,7 +382,7 @@
 
                     <tr>
                         <td border="0" style="padding-left:35px; padding-bottom:8px;">
-                            Access Drawing : TKE1019-TCF01 Rev. 1.0
+                            Access Drawing : ${(requestJSON.sds.custrecord_twc_sds_drawing_access_name!"")?replace("null", "none")}
                         </td>
                     </tr>
 
@@ -397,7 +394,7 @@
 
                     <tr>
                         <td border="0" style="padding-left:35px;">
-                            Fibre Drawing : TKE1019-TCF01 Rev. 1.0
+                            Fibre Drawing : ${(requestJSON.sds.custrecord_twc_sds_drawing_fibre_name!"")?replace("null", "none")}
                         </td>
                     </tr>
 
@@ -408,6 +405,8 @@
 
     </table>
 
+    
+<#if requestJSON.srf.client_signed != "null">
     <!-- SIGNED FOR OPERATOR -->
     <table style="width:100%; border-collapse:collapse;margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
         <tr>
@@ -418,12 +417,13 @@
         <tr>
             <td style="border:1px solid #666; padding:8px; background-color:gainsboro;">
                 Electronically signed on behalf of Operator by
-                Joseph Chaney on 09/12/2025 10:32.
+                ${requestJSON.srf.client_singed_by} on ${requestJSON.srf.client_signed}.
             </td>
         </tr>
     </table>
+</#if>
 
-
+<#if requestJSON.srf.tl_signed != "null">
     <!-- SIGNED FOR TOWERCOM -->
     <table style="width:100%; border-collapse:collapse; margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
         <tr>
@@ -434,15 +434,16 @@
         <tr>
             <td style="border:1px solid #666; padding:8px; background-color:gainsboro;">
                 Electronically signed on behalf of Towercom by
-                Morag Pollock on 12/12/2025 08:01.
+                ${requestJSON.srf.tl_signed_by} on ${requestJSON.srf.tl_signed}.
             </td>
         </tr>
     </table>
+</#if>
 
     <!-- FOOTER -->
-    <div style="width:100%; text-align:right; margin-top:10px; font-family:Arial, sans-serif; font-size:11px; color:#333333;">
-        Dunmurry Hill_Vodafone_SDS7507_12-12-2025
-    </div>
+    <p style="width:100%; text-align:right; margin-top:10px; font-family:Arial, sans-serif; font-size:11px; color:silver;">
+        ${requestJSON.siteDetails.site_name}_${requestJSON.srf.customer_name}_${requestJSON.sds.name}_${requestJSON.srf.approval_date}
+    </p>
 
 </body>
 </pdf>

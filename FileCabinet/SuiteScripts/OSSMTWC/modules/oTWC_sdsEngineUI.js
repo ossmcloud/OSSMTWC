@@ -42,7 +42,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         </div>
 
                         <!-- VERTICAL DIVIDER -->
-                        <div style=" width:1px; background:#d0d0d0; min-height:295px; margin:0 20px;"></div>
+                        <div style=" width:1px; background:#d0d0d0; min-height:295px; margin:0 10px;"></div>
 
                         <!-- RIGHT COLUMN -->
                         <div style="flex:1;">
@@ -62,12 +62,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, label: 'Fibre Duct Route', id: twcSds.Fields.FIBRE_DUCT_ROUTE, width: '100%' })}
                             </div>
                             <div>
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Notes / Conditions', id: twcSds.Fields.FIBRE_NOTES, width: '100%', rows: 4 })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Notes / Conditions', id: twcSds.Fields.FIBRE_NOTES, width: '100%', rows: 7 })}
                             </div>
                         </div>
                     </div>
 
-                    <hr style="margin:25px 0;" />
+                    <hr style="margin:10px 0;" />
+
                     <div style="display:flex; align-items:flex-start;">
                         <!-- LEFT COLUMN -->
                         <div style="flex:1;">
@@ -78,12 +79,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 ${twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'New Fee', id: twcSds.Fields.NEW_LICENSE_FEE })}
                             </div>
                             <div>
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Fee Change Breakdown', id: twcSds.Fields.FEE_CHARGE_BREAK_DOWN, width: '100%', rows: 4 })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Fee Change Breakdown', id: twcSds.Fields.FEE_CHARGE_BREAK_DOWN, width: '100%', rows: 7 })}
                             </div>
                         </div>
 
                         <!-- DIVIDER -->
-                        <div style=" width:1px; background:#d0d0d0; min-height:150px; margin:0 10px;"></div>
+                        <div style=" width:1px; background:#d0d0d0; min-height:230px; margin:0 10px;"></div>
                         
                         <!-- RIGHT COLUMN -->
                         <div style="flex:1;">
@@ -115,9 +116,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).visible = e.target.valueObj?.text.toLowerCase().indexOf('other') >= 0;
             })
 
-            dialog.confirm({ title: 'SDS/SRF Pack Produced Check', message: form.ui, width: '1265px', height: '675px', }, (dlg) => {
+            dialog.confirm({ title: 'SDS Pack Produce Info', message: form.ui, width: '1265px', height: '645px', }, (dlg) => {
                 try {
-                    // @@NOTE: just to run manadatory validations
+                    // @@NOTE: just to run mandatory validations
                     form.getValues();
                     for (var k in formData.fields) {
                         var ctrl = form.getControl(formData.fields[k].name);
@@ -137,7 +138,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var ctrl = form.getControl(formData.fields[k].name);
                 if (!ctrl) { continue; }
                 var v = formData.get(formData.fields[k].name)
-                if (formData.fields[k].type == 'date') { v = v.format(); }
+                if (formData.fields[k].type == 'date' && v) { v = v.format(); }
                 ctrl.setValue(v);
             }
 

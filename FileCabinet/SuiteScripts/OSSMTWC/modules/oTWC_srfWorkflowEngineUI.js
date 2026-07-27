@@ -129,10 +129,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             if (next.set_status != twcUtils.SrfStatus.SRFApproved && next.set_status != twcUtils.SrfStatus.FeedbackIssued) { return; }
                             if (next.set_status == twcUtils.SrfStatus.SRFApproved && passedCount < completedCount) { return; }
                             if (next.set_status == twcUtils.SrfStatus.FeedbackIssued && passedCount == completedCount) { return; }
-                        // }
+                            // }
 
-                      
-                        // if (this.#item.next_stage_pick == 'T') {
+
+                            // if (this.#item.next_stage_pick == 'T') {
                             radioButton = `<div style="width: 30px;"><input type="radio" style="transform: scale(2);" name="pick_next_stage" data-id="${next.id}" ${this.#readOnly ? 'readonly' : 'checked'} /></div>`;
                         }
 
@@ -174,7 +174,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     `);
                     for (var k in formData.fields) {
                         if (formData.fields[k].type != 'button') {
-                            formData.fields[k].value = this.#item[formData.fields[k].id] || this.#workflow[formData.fields[k].id];
+                            var v = this.#item[formData.fields[k].id] || this.#workflow[formData.fields[k].id];
+                            if (formData.fields[k].type?.toLowerCase() == 'date' && v) {
+                                // @@NOTE: there can be some inconsistency on the way dates are returned, could be DD/MM/YYYY but control expects YYYY-MM-DD
+                                if (v.indexOf('/') > 0) { v = twcUtils.fromNsToJs(v) }
+                            }
+                            formData.fields[k].value = v;
                         }
                         if (formData.fields[k].readOnly === undefined) {
                             formData.fields[k].readOnly = this.#readOnly;
@@ -195,7 +200,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#form.getControl('generate_sds')?.on('click', e => {
                     twcSdsEngineUI.openDialog(this.#workflowForm.page, this.#workflowForm.data.siteRequestInfo, () => {
                         this.#form.getControl('custrecord_twc_srf_lic_pack_prod').value = TODAY;
-                    }) 
+                    })
                 })
                 // @@NOTE: this is a bit dirty but will do for now
                 this.#form.getControl('print_sds')?.on('click', e => {

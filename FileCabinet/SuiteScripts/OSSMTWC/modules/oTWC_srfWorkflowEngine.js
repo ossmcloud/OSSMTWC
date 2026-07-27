@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_srfReview.js', '../data/oTWC_equipment.js', '../data/oTWC_equipAction.js', '../data/oTWC_srfItem.js', '../data/oTWC_sds.js'],
-    function (core, coreSql, recu, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSrfReview, twcEquipment, twcEqAct, twcSrfItem, twcSds) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_srfReview.js', '../data/oTWC_equipment.js', '../data/oTWC_equipAction.js', '../data/oTWC_srfItem.js', '../data/oTWC_sds.js', './oTWC_sdsEngine.js', '../data/oTWC_file.js'],
+    function (core, coreSql, recu, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSrfReview, twcEquipment, twcEqAct, twcSrfItem, twcSds, twcSdsEngine, twcFile) {
 
         // @@HARDCODED
         const WORKFLOW_STATUS = {
@@ -247,16 +247,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         //     `)
         // }
 
-        function getReviewRecord(wkf) {
-            return coreSql.first(`
-                select  sr.id, w.custrecord_twc_srf_wkf_parent as srf, BUILTIN.DF(w.custrecord_twc_srf_wkf_parent) as srf_name, srf.custrecord_twc_srf_fdbk_loop_iter as feedback_loop_count
-                from    customrecord_twc_srf_wkf w
-                join    customrecord_twc_srf srf on srf.id = w.custrecord_twc_srf_wkf_parent
-                left join    customrecord_twc_srf_rev sr on sr.custrecord_twc_srf_rev_srf = srf.id and sr.custrecord_twc_srf_rev_iter = srf.custrecord_twc_srf_fdbk_loop_iter
-                where   w.id = ${wkf}
-                order by sr.created desc
-            `)
-        }
+        // function getReviewRecord(options) {
+        //     return coreSql.first(`
+        //         select  sr.id, w.custrecord_twc_srf_wkf_parent as srf, BUILTIN.DF(w.custrecord_twc_srf_wkf_parent) as srf_name, srf.custrecord_twc_srf_fdbk_loop_iter as feedback_loop_count
+        //         from    customrecord_twc_srf_wkf w
+        //         join    customrecord_twc_srf srf on srf.id = w.custrecord_twc_srf_wkf_parent
+        //         left join    customrecord_twc_srf_rev sr on sr.custrecord_twc_srf_rev_srf = srf.id and sr.custrecord_twc_srf_rev_iter = srf.custrecord_twc_srf_fdbk_loop_iter
+        //         where   w.id = ${options.wkf}
+        //         order by sr.created desc
+        //     `)
+        // }
 
         function updateWorkflow(userInfo, options) {
             var response = { status: 'success' };
@@ -295,7 +295,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     if (item.formData) {
                         if (item.formData.record == twcSrfReview.Type) {
-                            var reviewRecordInfo = getReviewRecord(options.wkf);
+                            var reviewRecordInfo = twcUtils.getSrfReviewRecord(options);
                             var reviewRecord = twcSrfReview.get(reviewRecordInfo.id);
                             reviewRecord.name = `R${reviewRecordInfo.srf_name}_${reviewRecordInfo.feedback_loop_count}`;
                             if (!reviewRecordInfo.id) {
@@ -351,7 +351,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (options.wkf) {
                         recu.submit(twcSrfWorkflow.Type, options.wkf, twcSrfWorkflow.Fields.STATUS, WORKFLOW_STATUS.IN_PROGRESS);
                         if (options.setStatus == twcUtils.SrfStatus.SRFApproved) {
-                            var reviewRecordInfo = getReviewRecord(options.wkf);
+                            var reviewRecordInfo = twcUtils.getSrfReviewRecord(options);
                             if (reviewRecordInfo.id) {
                                 recu.submit(twcSrfReview.Type, reviewRecordInfo.id, twcSrfReview.Fields.TL_REVIEW_RESULT, twcUtils.SrfReviewStatus.Approved)
                             }
@@ -552,7 +552,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             updateWorkflow(userInfo, updateOptions)
 
-            return { status: 'success' }
+            if (options.isTLSignature) { twcSdsEngine.setAsCurrent({ id: options.srf }) }
+
+            return { status: 'success', srf: options.srf }
         }
 
 
@@ -667,23 +669,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var fields = [
                 twcSrf.Fields.SRF_STATUS, twcSrf.Fields.FEEDBACK_LOOP_ITERATIONS, twcSrf.Fields.WORKS_PERMITTED_DATE,
-                twcSrf.Fields.TL_DRAWING_UPLOADED,
-                twcSrf.Fields.LICENCE_REQUESTED, twcSrf.Fields.LICENCE_PACK_PRODUCED, twcSrf.Fields.LICENCE_PACK_REVIEWER, twcSrf.Fields.LICENCE_PACK_REVIEWED,
+                twcSrf.Fields.TL_DRAWING_UPLOADED, twcSrf.Fields.SRF_APPROVAL_DATE,
+                twcSrf.Fields.LICENCE_PACK_ISSUED, twcSrf.Fields.LICENCE_REQUESTED, twcSrf.Fields.LICENCE_PACK_PRODUCED,
+                twcSrf.Fields.LICENCE_PACK_REVIEWER, twcSrf.Fields.LICENCE_PACK_REVIEWED,
                 twcSrf.Fields.LICENCE_PACK_SIGNED, twcSrf.Fields.LICENCE_PACK_SIGNED_BY,
                 twcSrf.Fields.LICENCE_PACK_EXECUTED, twcSrf.Fields.LICENCE_PACK_EXECUTED_BY
             ]
             var values = [
                 twcUtils.SrfStatus.Draft, 0, null,
-                null,
-                null, null, null, null,
+                null, null,
+                null, null, null,
+                null, null,
                 null, null,
                 null, null,
             ]
 
             recu.submit(twcSrf.Type, options.srf, fields, values);
 
-            var sdsId = coreSql.first(`select id from ${twcSds.Type} where ${twcSds.Fields.SRF} = ${options.srf}`)?.id;
-            if (sdsId) { recu.del(twcSds.Type, sdsId); }
+            var sds = coreSql.first(`select id, ${twcSds.Fields.PDF} as file_id from ${twcSds.Type} where ${twcSds.Fields.SRF} = ${options.srf}`);
+            if (sds) {
+                recu.del(twcSds.Type, sds.id);
+                // @@NOTE: the actual PDF file is not deleted but we do not care as this function will never be used on live
+                if (sds.file_id) { recu.del(twcFile.Type, sds.file_id) }
+            }
         }
 
 
@@ -696,7 +704,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             cancelWorkflow: cancelWorkflow,
             isWaitingForSignature: isWaitingForSignature,
             postSignature: postSignature,
-            acceptSrf: acceptSrf
+            acceptSrf: acceptSrf,
+            
 
         }
     });

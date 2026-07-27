@@ -60,7 +60,8 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
                     //twcSiteRequestUtils.deleteSrf(35)
                     
                     
-                    //console.log(twcSdsEngine.getFormData({id: 36}))
+                    //                    console.log(twcSdsEngine.getFormData({id: 36}))
+                    console.log(twcSdsEngine.setAsCurrent({ id: 36 }))
 
                     // console.log(
                     //     twcSiteRequestUtils.initEquipment({

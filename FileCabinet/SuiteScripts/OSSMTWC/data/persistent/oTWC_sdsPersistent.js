@@ -8,6 +8,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFields = {
             NAME: 'name',
             SRF: 'custrecord_twc_sds_srf',
+            SITE: 'custrecord_twc_sds_site',
+            CUSTOMER: 'custrecord_twc_sds_cust',
             STATUS: 'custrecord_twc_sds_status',
             COMMENCMENT_DATE: 'custrecord_twc_sds_comm_date',
             DRAWING_REFERENCE: 'custrecord_twc_sds_drawing',
@@ -37,6 +39,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             SRF: { name: 'custrecord_twc_sds_srf', type: 'select', alias: 'sRF', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf' },
+            SITE: { name: 'custrecord_twc_sds_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
+            CUSTOMER: { name: 'custrecord_twc_sds_cust', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             STATUS: { name: 'custrecord_twc_sds_status', type: 'select', alias: 'status', display: 'normal', mandatory: false, recordType: 'customrecord_twc_sds_status' },
             COMMENCMENT_DATE: { name: 'custrecord_twc_sds_comm_date', type: 'date', alias: 'commencmentDate', display: 'normal', mandatory: false },
             DRAWING_REFERENCE: { name: 'custrecord_twc_sds_drawing', type: 'select', alias: 'drawingReference', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
@@ -80,6 +84,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.SRF, value)
             }
             get sRFName() { return this.getText(_recordFields.SRF); }
+            
+            get site() {
+                return this.get(_recordFields.SITE);
+            } set site(value) {
+                this.set(_recordFields.SITE, value)
+            }
+            get siteName() { return this.getText(_recordFields.SITE); }
+            
+            get customer() {
+                return this.get(_recordFields.CUSTOMER);
+            } set customer(value) {
+                this.set(_recordFields.CUSTOMER, value)
+            }
+            get customerName() { return this.getText(_recordFields.CUSTOMER); }
             
             get status() {
                 return this.get(_recordFields.STATUS);
