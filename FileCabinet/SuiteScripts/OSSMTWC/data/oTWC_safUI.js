@@ -261,7 +261,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (userInfo.isEmployee) {
                 primaryContractors = twcUtils.getVendors(userInfo);
             } else {
-                if (userInfo.companyProfile.accreditation_status != twcUtils.CompanyAccreditationStatus.Accredited) {
+                if (!userInfo.canEnterSAF) {
                     throw new Error(`Your accreditation status [<b>${userInfo.companyProfile.accreditation_status_name}</b>] does not allow for this action`);
                 }
                 primaryContractors.push({
@@ -353,7 +353,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (userInfo.isEmployee) {
                 primaryContractors = twcUtils.getVendors(userInfo);
             } else {
-                if (userInfo.companyProfile.accreditation_status != twcUtils.CompanyAccreditationStatus.Accredited) {
+                if (!userInfo.canEnterSAF) {
                     throw new Error(`Your accreditation status [<b>${userInfo.companyProfile.accreditation_status_name}</b>] does not allow for this action`);
                 }
                 primaryContractors.push({
@@ -486,8 +486,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var fieldGroups = [];
             if (options.editMode) {
-                fieldGroups = getSAFInfoPanels_Builder(dataSource, userInfo, options); //@@NOTE commented this and added below lien to fix issue with fieldGroups.push() is not function
-                //fieldGroups.push(getSAFInfoPanels_Builder(dataSource, userInfo, options));
+                var fieldGroups = getSAFInfoPanels_Builder(dataSource, userInfo, options); //@@NOTE commented this and added below lien to fix issue with fieldGroups.push() is not function
+                if (!Array.isArray(fieldGroups)) {
+                    fieldGroups = [fieldGroups];
+                }
+                
 
             } else {
                 var requiresSrf = twcUtils.getSafType(dataSource[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';

@@ -8,12 +8,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         var PAGE_VERSION = 'v0.01';
 
-        var suiteLet = uis.new({ title: 'TL Site Locator', script: 'SuiteScripts/OSSMTWC/ui/oTWC_siteLocator_cs.js' });   
+        var suiteLet = uis.new({ title: 'TL Site Locator', script: 'SuiteScripts/OSSMTWC/ui/oTWC_siteLocator_cs.js' });
         suiteLet.get = (context, s) => {
-            
+
             var pageData = twcBaseView.initPageData(context);
 
-            pageData.data.sitesInfo = twcSiteLocatorUtils.getSites();
+            pageData.data.sitesInfo = twcSiteLocatorUtils.getSites(null, pageData.userInfo);
 
             var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
             html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteLocatorUtils.renderSiteLocatorPanel());

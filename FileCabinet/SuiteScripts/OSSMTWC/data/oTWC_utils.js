@@ -6,6 +6,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, cored, coreSQL, twcConfig, twcFile, twcSite, twcIcons) => {
         const HEIGH_LIMIT_FOR_1_CLIMBER = 60;
 
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        const PUBLIC_FLAG = {
+            Yes: 1,
+            TL: 2
+        }
 
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
@@ -84,14 +89,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
-        // @@Note: These values are changed from : CertsExpired - SP Expired | ACA To Be Renewed - No Site Access.
         const COMPANY_ACCREDITATION_STATUS = {
             Inactive: 1,
             Accredited: 2,
             CertsExpired: 3,
             Pending: 4,
-            Approved: 5,
-            ToBeRenewed: 6
+            // Approved: 5,
+            ToBeRenewed: 6,
+            No: 7
         }
         const COMPANY_ACCREDITATION_STATUS_STYLE = {
             Inactive: { color: 'white', backgroundColor: 'silver' },
@@ -679,15 +684,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     where   s.id = ${options.siteId}
                     ${includeTLOnly ? '' : "and NVL(st.custrecord_twc_infra_saf_sts_tl_only, 'F') = 'F'"}
                 `);
-                if (allowedTypes) {
-
-                    if (allowedTypes.types) {
-                        allowedTypes = allowedTypes.types.split(',').map(i => { return parseInt(i.trim()); })
-                    } else {
-                        allowedTypes = [];
-                    }
+                if (allowedTypes?.types) {
+                    allowedTypes = allowedTypes.types.split(',').map(i => { return parseInt(i.trim()); })
+                }
+                if (!allowedTypes) {
+                    allowedTypes = [];
                 }
             }
+
+            //throw new Error(JSON.stringify(allowedTypes))
 
             var safTypes = [];
             coreSQL.each(`select id as value, name as text,	custrecord_twc_saf_type_require_srf as requires_srf from customrecord_twc_saf_type where isinactive='F' order by custrecord_twc_saf_type_sort`, t => {
@@ -1383,6 +1388,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             CUSTOMER_FLAG: twcConfig.CUSTOMER_FLAG,
             CONTRACTOR_FLAG: twcConfig.CONTRACTOR_FLAG,
+
+            PUBLIC_FLAG: PUBLIC_FLAG,
 
             EqLibStatus: EQ_LIB_STATUS,
             EqLibUse: EQ_LIB_USE,

@@ -6,7 +6,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, coreSQL, recu, twcSite, twcUtils, twcConfig, twcIcons, twcUI, twcSiteUI, twcInfra) => {
 
 
-        function getSiteInfo(siteId) {
+        function getSiteInfo(siteId, userInfo) {
             if (!siteId) { throw new Error('No site id provided!'); }
 
             // @@TODO: move to rec.custom.js
@@ -56,7 +56,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 params: [siteId]
             })
 
-            var mainFields = twcSiteUI.getSiteMainInfoFields();
+            var mainFields = twcSiteUI.getSiteMainInfoFields(userInfo);
 
             core.array.each(mainFields, mfg => {
                 core.array.each(mfg.fields, mf => {

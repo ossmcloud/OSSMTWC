@@ -29,6 +29,18 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             No: 3
         }
 
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
+        // @@IMPORTANT :: this is duplicated with twcUtils
+        const COMPANY_ACCREDITATION_STATUS = {
+            Inactive: 1,
+            Accredited: 2,
+            CertsExpired: 3,
+            Pending: 4,
+            // Approved: 5,
+            ToBeRenewed: 6,
+            No: 7
+        }
+
         function isPowerUser(id) {
             return recu.lookUp('employee', id || core.env.user(), CUSTOM_FIELDS.EMP.TWC_POWER_USER);
         }
@@ -228,8 +240,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     userInfo.recordId = userInfo.contact.id;
 
                 }
-
-
             }
 
             var profileInfo = coreSQL.first(`select id, custrecord_twc_prof_phone as phone, name, custrecord_twc_prof_co_desig_cont as designated_contact from customrecord_twc_prof where custrecord_twc_prof_username = ${userInfo.recordId}`);
@@ -254,6 +264,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
             if (!userInfo.profile) { throw new Error('Your user is not associated to any profile, please contact TL administrator to set you up.') }
+
+            if (userInfo.isEmployee) {
+                userInfo.canEnterSAF = true;
+            } else {
+
+                userInfo.canEnterSAF = (userInfo.companyProfile.accreditation_status == COMPANY_ACCREDITATION_STATUS.Accredited || userInfo.companyProfile.accreditation_status == COMPANY_ACCREDITATION_STATUS.ToBeRenewed);
+            }
 
             return userInfo;
         }

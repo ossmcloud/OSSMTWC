@@ -14,7 +14,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var html = ''
             if (context.request.parameters.siteId || context.request.parameters.recId) {
                 pageData.trblTktInfo = twcTroubleTicketUtils.getTrblTktInfo(pageData);
-                pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.trblTktInfo.siteId || context.request.parameters.siteId);
+                pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.trblTktInfo.siteId || context.request.parameters.siteId, pageData.userInfo);
 
                 var tktStatus = pageData.trblTktInfo[twcTkt.Fields.STATUS];
                 log.audit('pageData.siteInfo', pageData.siteInfo)

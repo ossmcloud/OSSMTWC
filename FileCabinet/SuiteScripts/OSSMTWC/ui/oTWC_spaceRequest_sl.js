@@ -16,7 +16,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
             var html = '';
             if (context.request.parameters.siteId || context.request.parameters.recId) {
                 pageData.siteRequestInfo = twcSiteRequestUtils.getSiteRequestInfo(pageData);
-                pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteRequestInfo.siteId || context.request.parameters.siteId);
+                pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteRequestInfo.siteId || context.request.parameters.siteId, pageData.userInfo);
 
                 //
                 pageData.recordStatus = `<div class="twc-div-span-table" id="srf-record-status">${twcSrf.getSrfStatusHtml(pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS])}</div>`;

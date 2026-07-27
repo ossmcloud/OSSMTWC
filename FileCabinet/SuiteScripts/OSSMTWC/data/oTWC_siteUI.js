@@ -25,9 +25,17 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return siteFields;
         }
 
-        function getSiteMainInfoFields() {
+        function getSiteMainInfoFields(userInfo) {
 
             var mainInfoFieldGroups = [];
+
+            var infraFilters = [
+                { field: twcInfra.Fields.INFRASTRUCTURE_TYPE, value: twcUtils.InfraType.Structure },
+                
+            ]
+            if (!userInfo.isEmployee) {
+                infraFilters.push({ field: twcInfra.Fields.INFRASTRUCTURE_PUBLIC, value: twcUtils.PUBLIC_FLAG.Yes })
+            }
 
             var overview = { id: 'site-overview', title: 'Overview', fields: [] };
             overview.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Site Code' })
@@ -42,7 +50,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         { id: twcInfra.Fields.STRUCTURE_TYPE, isForeignKey: true, nullText: 'no struct type' },
                         { id: twcInfra.Fields.STRUCTURE_HEIGHT_M, nullText: '', mask: `<span style="color: var(--accent-fore-color);">(${twcInfra.Fields.STRUCTURE_HEIGHT_M}m)</span>` },
                     ],
-                    filters: [{ field: twcInfra.Fields.INFRASTRUCTURE_TYPE, value: twcUtils.InfraType.Structure }],
+                    filters:infraFilters,
                     mask: `[${twcInfra.Fields.INFRASTRUCTURE_ID}] <b>${twcInfra.Fields.STRUCTURE_TYPE}</b> ${twcInfra.Fields.STRUCTURE_HEIGHT_M}`
                 },
                 label: 'Structure'
@@ -91,7 +99,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return mainInfoFieldGroups;
         }
 
-        function getSitePanelFields_summary(dataSource) {
+        function getSitePanelFields_summary(dataSource, userinfo) {
             var fieldGroup = { id: 'site-summary', title: 'Summary', collapsed: false, controls: [] };
 
             var basicInfo = { id: 'site-summary-basic', title: 'Basic Information', fields: [] };
@@ -108,6 +116,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcSite.Fields.SITE_PUBLIC, label: 'Public' })
             //@NOTE Missing fields - TC Building/Cabin , Indoor Accommodation
 
+            var infraWhere = { [twcInfra.Fields.SITE]: dataSource.id }
+            if (!userinfo.isEmployee) {
+                infraWhere[twcInfra.Fields.INFRASTRUCTURE_PUBLIC] = twcUtils.PUBLIC_FLAG.Yes;
+            }
+
             var structures = { id: 'site-summary-structure', title: 'Site Structures', fields: [] };
             fieldGroup.controls.push(structures);
             structures.fields.push({
@@ -122,7 +135,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcInfra.Fields.STRUCTURE_HEIGHT_M]: 'Height (m)',
                     [twcInfra.Fields.ROOFTOP_HEIGHT_M]: 'Height Rooftop',
                 },
-                where: { [twcInfra.Fields.SITE]: dataSource.id },
+                where: infraWhere,
                 FieldsInfo: twcInfra.FieldsInfo,
             });
 
@@ -352,7 +365,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcPowerSupply.Fields.MPRN]: 'MPRN Number',
                     [twcPowerSupply.Fields.AVAILABLE_METER_SLOTS]: 'Available Meters On Panel',
                     [twcPowerSupply.Fields.POWER_PHASE]: 'Power Phase',
-                    
+
                 },
                 where: { [twcPowerSupply.Fields.SITE]: dataSource.id },
                 FieldsInfo: twcPowerSupply.FieldsInfo,
@@ -429,17 +442,17 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
-        function getSiteInfoPanels(dataSource) {
+        function getSiteInfoPanels(dataSource, userinfo) {
             if (!dataSource) { dataSource = {}; }
             dataSource.Type = twcSite.Type;
 
             var fieldGroups = [];
-            fieldGroups.push(getSitePanelFields_summary(dataSource));
-            fieldGroups.push(getSitePanelFields_estates(dataSource));
-            fieldGroups.push(getSitePanelFields_assets(dataSource));
-            fieldGroups.push(getSitePanelFields_facilities(dataSource))
-            fieldGroups.push(getSitePanelFields_projects(dataSource))
-            fieldGroups.push(getSitePanelFields_files(dataSource))
+            fieldGroups.push(getSitePanelFields_summary(dataSource, userinfo));
+            fieldGroups.push(getSitePanelFields_estates(dataSource, userinfo));
+            fieldGroups.push(getSitePanelFields_assets(dataSource, userinfo));
+            fieldGroups.push(getSitePanelFields_facilities(dataSource, userinfo))
+            fieldGroups.push(getSitePanelFields_projects(dataSource, userinfo))
+            fieldGroups.push(getSitePanelFields_files(dataSource, userinfo))
 
 
             // @@TODO: implement all required panels

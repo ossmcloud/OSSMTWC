@@ -17,7 +17,7 @@ define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bund
             }
 
             var pageData = twcBaseView.initPageData(context);
-            pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(context.request.parameters.recId);
+            pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(context.request.parameters.recId, pageData.userInfo);
 
             var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteInfo');
             html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
@@ -42,7 +42,7 @@ define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bund
             // @@NOTE: if permission lvl is 1 it means view only so even if parameter passed force to read only
             if (pageData.userInfo.permission.lvl == 1) { readOnly = true; }
 
-            var fieldGroups = twcSiteInfoUtils.getSiteInfoPanels(pageData.siteInfo.site);
+            var fieldGroups = twcSiteInfoUtils.getSiteInfoPanels(pageData.siteInfo.site, pageData.userInfo);
             html = html.replaceAll('{SITE_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
 
 

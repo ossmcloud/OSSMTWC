@@ -86,7 +86,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 srfs: srfs,
                 srfFields: srfFields,
                 userFields: userFields,
-                sites: getSites(options).sites
+                sites: getSites(options, userInfo).sites
             }
         }
 
@@ -125,7 +125,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 safs: safs,
                 safFields: safFields,
                 userFields: userFields,
-                sites: getSites(options).sites
+                sites: getSites(options, userInfo).sites
             }
         }
 
@@ -137,24 +137,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sqlFields = 's.id, s.id as record_id, s.name';
             sqlFields += formatUserFields(siteFields, userFields);
 
-            // core.array.each(userFields, uf => {
-            //     var nsField = siteFields.find(nsf => { return nsf.field_id == uf.field });
-            //     var sqlField = uf.field;
-            //     uf.type = nsField.field_type;
-            //     if (nsField.field_type == 'List/Record') {
-            //         uf.listRecord = true;
-            //         sqlField = `${sqlField} as ${sqlField}, BUILTIN.DF(${sqlField}) as ${sqlField}_text`;
-            //     }
-            //     sqlFields += `, s.${sqlField}`;
-
-            //     if (!uf.label) { uf.label = nsField.field_label; }
-
-            // })
-
-
             // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSite.Fields.NAME}`;
+
+            if (!userInfo.isEmployee) {
+                whereClause = `where s.custrecord_twc_site_public in (${twcUtils.PUBLIC_FLAG.Yes})`
+            }
 
             var sites = coreSQL.run(`
                 select  ${sqlFields}, st.custrecord_twc_site_types_color as site_type_color, sp.custrecord_twc_site_portfolio_color as site_color,
