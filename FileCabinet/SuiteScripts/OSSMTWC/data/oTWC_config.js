@@ -313,13 +313,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function setUserPref(context, userPref) {
             var userInfo = null;
             try {
-                core.log.debug('setUserPref', userPref)
                 userInfo = getUserInfo(context);
-                core.log.error('setUserPref', JSON.stringify(userInfo));
                 recu.submit(userInfo.recordType, userInfo.recordId, FIELD_ENTITY_USER_PREF, userPref);
 
             } catch (error) {
-
                 core.log.error('SET-USER-PREF', `${userInfo?.recordType}:${userInfo?.recordId} :: ${error.message}`);
             }
         }

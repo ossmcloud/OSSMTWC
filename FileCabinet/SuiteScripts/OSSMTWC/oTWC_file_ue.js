@@ -57,7 +57,6 @@ define(['N/record', 'N/runtime', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js
                     recordId: recordId,
                     isEditMode: false
                 });
-                log.debug("recordUrl", recordUrl)
                 form.buttonAdd('Open Record', `openRecord('${recordUrl}')`)
 
             }

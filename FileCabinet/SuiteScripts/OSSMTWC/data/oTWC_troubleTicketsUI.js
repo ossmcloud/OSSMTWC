@@ -140,7 +140,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 FieldsInfo: twcFile.FieldsInfo,
                 showToolbar: false,
             });
-            log.debug("resolutionFilesInfo",resolutionFilesInfo)
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
         }
@@ -163,7 +162,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 FieldsInfo: twcFile.FieldsInfo,
                 showToolbar: false,
             });
-            log.debug("openFilesInfo",openFilesInfo)
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
         }

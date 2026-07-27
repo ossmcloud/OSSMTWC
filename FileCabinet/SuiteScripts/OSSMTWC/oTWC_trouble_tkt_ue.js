@@ -16,14 +16,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
                 if (context.type == context.UserEventType.CREATE) {
 
                     let dateTimeStr = newRec.getValue('custrecord_twc_trbl_tkt_submitted');
-                    log.debug("dateTimeStr", dateTimeStr)
-
+                    
                     let dateTimeObj = format.parse({
                         value: dateTimeStr,
                         type: format.Type.DATETIMETZ
                     });
-                    log.debug("dateTimeObj", dateTimeObj)
-
+                    
                     let caseRecordNew = recu.new('supportcase', true)
                     let siteId = newRec.getValue('custrecord_twc_trbl_tkt_site')
                     let siteName = recu.lookUp('customrecord_twc_site', siteId, 'name')

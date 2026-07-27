@@ -762,21 +762,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 fileTypeFilter += `AND t.custrecord_twc_file_type_image = 'T'`;
                 fileTypeFilter += ` AND NVL(t.custrecord_twc_file_type_completion_img, 'F') = '${isCompletionImg}'`;;
             }
-            log.debug("Filter", fileTypeFilter)
 
             return getFiles({ filters: fileTypeFilter });
 
         }
 
         function getTktResolutionFiles(options) {
-            log.debug('OPTIONS', options)
             var fileIds = options['custrecord_twc_trbl_tkt_res_files'] || '';
-            // if (fileIds && options['custrecord_twc_saf_health_safety']) { fileIds += ',' }
-            // fileIds += options['custrecord_twc_saf_health_safety'];
-            if (!fileIds || !fileIds.trim()) {
-                fileIds = '0';
-            }
-            log.debug('fileIds', fileIds)
+            if (!fileIds || !fileIds.trim()) { fileIds = '0'; }
             return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})`, 'customrecord_twc_file': FILE_STATUS.Approved } } })
         }
 

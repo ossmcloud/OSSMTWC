@@ -8,7 +8,6 @@ define([], () => {
     const beforeLoad = (context) => {
 
         try {
-            log.debug("Context Type", context.type);
             if (context.type === context.UserEventType.VIEW) return;
             const form = context.form;
             form.clientScriptModulePath = './oTWC_power_reading_cs.js';

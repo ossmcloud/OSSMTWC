@@ -184,8 +184,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
                 submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.STATUS);
                 submitInfo[twcTrblTkts.Type].values.push(twcUtils.tktStatus.Resolved);
-                log.debug('submitInfo', submitInfo)
-
                 recu.submit(twcTrblTkts.Type, tktInfo.tkt, submitInfo[twcTrblTkts.Type].fields, submitInfo[twcTrblTkts.Type].values);
 
             } catch (error) {
@@ -195,7 +193,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function cancelTicket(tktInfo) {
             try {
                 if (!tktInfo) { return; }
-                log.debug('tktInfo', tktInfo)
                 var submitInfo = {}
                 submitInfo[twcTrblTkts.Type] = { id: tktInfo.tkt, fields: [], values: [] };
                 for (let k in tktInfo) {
@@ -206,9 +203,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 submitInfo[twcTrblTkts.Type].fields.push(twcTrblTkts.Fields.STATUS);
                 submitInfo[twcTrblTkts.Type].values.push(twcUtils.tktStatus.Cancelled);
                 recu.submit(twcTrblTkts.Type, tktInfo.tkt, submitInfo[twcTrblTkts.Type].fields, submitInfo[twcTrblTkts.Type].values);
-
-                //recu.submit(twcTrblTkts.Type, tkt_id, [twcTrblTkts.Fields.STATUS], [twcUtils.tktStatus.Cancelled, true]);
-                //  tkt.save();
             } catch (error) {
                 throw error;
             }
@@ -216,8 +210,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function saveTktInfo(payload, userInfo) {
             // @@NOTE: @@REVIEW: this routine could be generalised to be used with different record types, not only twcSite
-
-            log.debug("payload >>>", payload)
             var submitInfo = {};
             submitInfo[twcTrblTkts.Type] = { id: payload.id, fields: [], values: [] };
 
@@ -360,7 +352,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         function deleteTrblTktsFile(payload) {
-            log.debug('payload...', payload)
             if (!payload.files_deleted) { return; }
             core.array.each(payload.files_deleted, file => {
                 // @@TODO: delete actual file
@@ -384,39 +375,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             })
         }
 
-        // function saveNewResolutionFiles(payload) {
-        //     if (!payload.newFiles) { return; }
-        //     log.debug("payload files new", payload.newFiles)
-
-        //     var fileType = coreSQL.first(`select id from customrecord_twc_file_type where custrecord_twc_file_type_image = 'T' and id = 7`)?.id;
-
-        //     var tktInfo = coreSQL.first(`
-        //         select  s.name, site.${twcSite.Fields.SITE_ID} as site_id
-        //         from    ${twcTrblTkts.Type} s
-        //         join    ${twcSite.Type} site on site.id = s.${twcTrblTkts.Fields.SITE}
-        //         where   s.id = ${payload.id}
-        //     `)
-
-        //     var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/${tktInfo.name}`);
-
-        //     core.array.each(payload.newFiles, file => {
-        //         var nsFile = nsFileUtils.writeFile({
-        //             name: `${payload.id}_${file.name}`,
-        //             fileType: nsFileUtils.getFileType(file.type),
-        //             content: file.content,
-        //             folder: tktFolder,
-        //         });
-
-        //         var tktImage = twcFile.get();
-        //         tktImage.name = file.name;
-        //         tktImage.recordType = twcTrblTkts.Type;
-        //         tktImage.recordID = payload.id;
-        //         tktImage.description = file.notes || '';
-        //         tktImage.file = nsFile.fileId;
-        //         tktImage.r_type = fileType
-        //         tktImage.save();
-        //     })
-        // }
         function saveTktImage(options) {
             // @@NOTE: this function can be called in two cases:
             //  1. A new ticket is saved with pictures, in this case we will have the following properties
