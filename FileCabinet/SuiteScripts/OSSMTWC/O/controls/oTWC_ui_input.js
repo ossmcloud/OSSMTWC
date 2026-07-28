@@ -16,7 +16,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     this.#ui = options;
 
                     var id = this.#ui.data('id');
-                    this.#options = JSON.parse(this.#ui.find(`#${id}_options`).html() || '{}');
+                    var optionsJson = this.#ui.find(`#${id}_options`).html();
+                    if (optionsJson) { optionsJson = b64.decode(optionsJson); }
+                    this.#options = JSON.parse(optionsJson || '{}');
                     if (!this.#options.id) { this.#options.id = id; }
                     if (!this.#options.type) { this.#options.id = this.#ui.data('type'); }
 
@@ -213,7 +215,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                             ${arrowDown}
                         </div>
                         <data id="${this.#options.id}_options">
-                            ${JSON.stringify(this.#options)}
+                            ${b64.encode(JSON.stringify(this.#options))}
                         </data>   
                     </div>
                 `;

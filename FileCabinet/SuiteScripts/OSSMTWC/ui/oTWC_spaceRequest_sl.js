@@ -55,7 +55,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
 
                 } else {
                     pageData.libCfg = twcEqLibCfg.select();
-                    pageData.eqLib = twcEqLib.select({ where: { [twcEqLib.Fields.LIBRARY_ENTRY_STATUS]: twcEqLib.EqLibStatus.Active }, noAlias: true });
+                    pageData.eqLib = twcEqLib.select({ where: { [twcEqLib.Fields.LIBRARY_ENTRY_STATUS]: twcEqLib.EqLibStatus.Active, 'isinactive': 'F' }, noAlias: true });
 
                     // @@NOTES: if the SRF is submitted we still let users with full access to edit it but only if we are a Towercom employee 
                     if (context.request.parameters.recId) {
@@ -112,7 +112,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     }
                     var acceptApprovalButton = '';
                     if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.SRFApproved) {
-                        acceptApprovalButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Accept Approval', id: 'accept-srf-approval' });
+                        acceptApprovalButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Accept and Request License', id: 'accept-srf-approval' });
                         cancelSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SRF', id: 'cancel-srf-button' });
                     }
 

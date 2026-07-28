@@ -56,7 +56,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getCompanyInfoPanels_insuranceInfo(dataSource, userInfo, editMode) {
             var fieldGroup = { id: 'company-insurance', title: 'Insurance Info', renderAsTable: { width: '100%', 'table-layout': 'fixed' }, collapsed: !editMode, controls: [] };
-            
+
             var basicInfo = { id: 'company-insurance-info', fields: [] };
             fieldGroup.controls.push(basicInfo);
             basicInfo.fields.push({ id: twcCompany.Fields.INSURER, label: 'Insurer', width: '100%', lineBreak: true })
@@ -311,9 +311,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (childRecord.type == twcProfile.Type) {
                 fieldGroup = twcProfileUI.getUIFields(childRecord, userInfo);
             } else if (childRecord.type == twcFile.Type) {
-                fieldGroup = twcFileUI.getUIFields(childRecord, {
-                    filters: "and (t.custrecord_twc_file_type_hs= 'T' or t.custrecord_twc_file_type_method = 'T' or t.custrecord_twc_file_type_insurance = 'T')"
-                });
+                fieldGroup = twcFileUI.getUIFields(childRecord, userInfo,
+                    {
+                        company: true,
+                        filters: "and (t.custrecord_twc_file_type_hs= 'T' or t.custrecord_twc_file_type_method = 'T' or t.custrecord_twc_file_type_insurance = 'T')"
+                    }
+                );
             } else {
                 throw new Error(`No Child Record Found in payload (type: ${childRecord.type})`)
             }

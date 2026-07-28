@@ -86,9 +86,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get value() {
                 return this.#options.value;
             } set value(v) {
-                this.#options.value = v;
-                this.toggle(this.#options.value);
-                // @@TODO: we should call the change event
+                this.setValue(v);
+                this.on('change');
             }
 
 
@@ -211,7 +210,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                                 cb({
                                     target: this,
                                     id: this.#options.id,
-                                    value: this.#ui.data('value') || this.#options.value,
+                                    value: this.#options.value,
                                     evt: callBack,
                                 })
                             } catch (error) {

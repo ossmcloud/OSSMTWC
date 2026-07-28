@@ -24,8 +24,9 @@ SCHEMA:
 
 	customrecord_twc_equip
 		custrecord_twc_equip_make			=> change to free text but we may need to use tables make/model, in which case we need these tables on eq. library and srf item too
-		custrecord_twc_equip_inv_flag		 => changed to list/record
-		custrecord_twc_equip_parent_tme_id	 => changed to list/record
+		custrecord_twc_equip_inv_flag		=> changed to list/record
+		custrecord_twc_equip_parent_tme_id	=> changed to list/record
+        custrecord_twc_equip_opt_type       => new
 
 	customrecord_twc_srf_itm
 		change fields to numbers
@@ -39,8 +40,42 @@ SCHEMA:
 		custrecord_twc_saf_a_detach_reason
 		custrecord_twc_saf_a_detach_comment
 
+    customrecord_twc_file_type
+        custrecord_twc_file_type_default_status
+        custrecord_twc_file_type_license_map
+        custrecord_twc_file_type_drawing
+
+    customrecord_twc_company
+        custrecord_twc_co_sds_include_licensemap
 
 
 	TODO:
 		Eq. Table: Type Opt is missing (for feeders)
 		REMOVE: customrecord_twc_srf.custrecord_twc_srf_sds_form_data
+
+
+
+
+
+
+
+
+
+
+
+-------------------------------------------------
+Equip-Lib-Config:
+[
+    {
+        "field": "custrecord_twc_srf_itm_length_mm",
+        "type": "integer",
+        "label": "LLL (mm)",
+        "hide": true
+    },
+    {
+        "field": "custrecord_twc_srf_itm_volt_type",
+        "label": "Voltage Type",
+        "disabled": false,
+		"notMandatory": true
+    }
+]

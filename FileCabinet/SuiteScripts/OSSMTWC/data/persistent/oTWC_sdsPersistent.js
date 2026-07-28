@@ -12,12 +12,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CUSTOMER: 'custrecord_twc_sds_cust',
             STATUS: 'custrecord_twc_sds_status',
             COMMENCMENT_DATE: 'custrecord_twc_sds_comm_date',
-            DRAWING_REFERENCE: 'custrecord_twc_sds_drawing',
+            DRAWING: 'custrecord_twc_sds_drawing',
+            DRAWING_REFERENCE: 'custrecord_twc_sds_drawing_ref',
             INCLUDE_LICENSE_MAP: 'custrecord_twc_sds_include_map',
             ADDITIONAL_SRF_CONIDITONS: 'custrecord_twc_sds_add_cond',
             POWER_SUPPLY_COMMENTS: 'custrecord_twc_sds_power_supply_notes',
             FIBRE_RIGHTS: 'custrecord_twc_sds_fibre_rights',
-            FIBRE_DUCT_ROUTE: 'custrecord_twc_sds_fibre_duct_route',
+            FIBRE_DUCT_ROUTE: 'custrecord_twc_sds_fibre_drawing',
+            FIBRE_DUCT_ROUTE_REFERENCE: 'custrecord_twc_sds_fibre_drawing_ref',
             FIBRE_PROVIDER: 'custrecord_twc_sds_fibre_provider',
             FIBRE_OTHER_PROVIDER: 'custrecord_twc_sds_fibre_provider_other',
             FIBRE_NOTES: 'custrecord_twc_sds_fibre_notes',
@@ -29,7 +31,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             AGREEMENT_TEMPLATE: 'custrecord_twc_sds_agr_tmpl',
             SITE_TYPE: 'custrecord_twc_sds_site_type',
             ACCESS_DRAWING: 'custrecord_twc_sds_drawing_access',
+            ACCESS_DRAWING_REFERENCE: 'custrecord_twc_sds_drawing_access_ref',
             FIBRE_DRAWING: 'custrecord_twc_sds_drawing_fibre',
+            FIBRE_DRAWING_REFERENCE: 'custrecord_twc_sds_drawing_fibre_ref',
             PDF: 'custrecord_twc_sds_pdf',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
@@ -43,12 +47,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CUSTOMER: { name: 'custrecord_twc_sds_cust', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             STATUS: { name: 'custrecord_twc_sds_status', type: 'select', alias: 'status', display: 'normal', mandatory: false, recordType: 'customrecord_twc_sds_status' },
             COMMENCMENT_DATE: { name: 'custrecord_twc_sds_comm_date', type: 'date', alias: 'commencmentDate', display: 'normal', mandatory: false },
-            DRAWING_REFERENCE: { name: 'custrecord_twc_sds_drawing', type: 'select', alias: 'drawingReference', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
+            DRAWING: { name: 'custrecord_twc_sds_drawing', type: 'select', alias: 'drawing', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
+            DRAWING_REFERENCE: { name: 'custrecord_twc_sds_drawing_ref', type: 'text', alias: 'drawingReference', display: 'normal', mandatory: false },
             INCLUDE_LICENSE_MAP: { name: 'custrecord_twc_sds_include_map', type: 'checkbox', alias: 'includeLicenseMap', display: 'normal', mandatory: false },
             ADDITIONAL_SRF_CONIDITONS: { name: 'custrecord_twc_sds_add_cond', type: 'text', alias: 'additionalSRFConiditons', display: 'normal', mandatory: false },
             POWER_SUPPLY_COMMENTS: { name: 'custrecord_twc_sds_power_supply_notes', type: 'text', alias: 'powerSupplyComments', display: 'normal', mandatory: false },
             FIBRE_RIGHTS: { name: 'custrecord_twc_sds_fibre_rights', type: 'checkbox', alias: 'fibreRights', display: 'normal', mandatory: false },
-            FIBRE_DUCT_ROUTE: { name: 'custrecord_twc_sds_fibre_duct_route', type: 'text', alias: 'fibreDuctRoute', display: 'normal', mandatory: false },
+            FIBRE_DUCT_ROUTE: { name: 'custrecord_twc_sds_fibre_drawing', type: 'select', alias: 'fibreDuctRoute', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
+            FIBRE_DUCT_ROUTE_REFERENCE: { name: 'custrecord_twc_sds_fibre_drawing_ref', type: 'text', alias: 'fibreDuctRouteReference', display: 'normal', mandatory: false },
             FIBRE_PROVIDER: { name: 'custrecord_twc_sds_fibre_provider', type: 'select', alias: 'fibreProvider', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_svc_provide' },
             FIBRE_OTHER_PROVIDER: { name: 'custrecord_twc_sds_fibre_provider_other', type: 'text', alias: 'fibreOtherProvider', display: 'normal', mandatory: false },
             FIBRE_NOTES: { name: 'custrecord_twc_sds_fibre_notes', type: 'text', alias: 'fibreNotes', display: 'normal', mandatory: false },
@@ -60,7 +66,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             AGREEMENT_TEMPLATE: { name: 'custrecord_twc_sds_agr_tmpl', type: 'select', alias: 'agreementTemplate', display: 'normal', mandatory: false, recordType: 'customrecord_twc_sds_agr_tmpl' },
             SITE_TYPE: { name: 'custrecord_twc_sds_site_type', type: 'select', alias: 'siteType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_sds_site_type' },
             ACCESS_DRAWING: { name: 'custrecord_twc_sds_drawing_access', type: 'select', alias: 'accessDrawing', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
+            ACCESS_DRAWING_REFERENCE: { name: 'custrecord_twc_sds_drawing_access_ref', type: 'text', alias: 'accessDrawingReference', display: 'normal', mandatory: false },
             FIBRE_DRAWING: { name: 'custrecord_twc_sds_drawing_fibre', type: 'select', alias: 'fibreDrawing', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
+            FIBRE_DRAWING_REFERENCE: { name: 'custrecord_twc_sds_drawing_fibre_ref', type: 'text', alias: 'fibreDrawingReference', display: 'normal', mandatory: false },
             PDF: { name: 'custrecord_twc_sds_pdf', type: 'select', alias: 'pDF', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
@@ -112,12 +120,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.COMMENCMENT_DATE, value)
             }
             
+            get drawing() {
+                return this.get(_recordFields.DRAWING);
+            } set drawing(value) {
+                this.set(_recordFields.DRAWING, value)
+            }
+            get drawingName() { return this.getText(_recordFields.DRAWING); }
+            
             get drawingReference() {
                 return this.get(_recordFields.DRAWING_REFERENCE);
             } set drawingReference(value) {
                 this.set(_recordFields.DRAWING_REFERENCE, value)
             }
-            get drawingReferenceName() { return this.getText(_recordFields.DRAWING_REFERENCE); }
             
             get includeLicenseMap() {
                 return this.get(_recordFields.INCLUDE_LICENSE_MAP);
@@ -147,6 +161,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.FIBRE_DUCT_ROUTE);
             } set fibreDuctRoute(value) {
                 this.set(_recordFields.FIBRE_DUCT_ROUTE, value)
+            }
+            get fibreDuctRouteName() { return this.getText(_recordFields.FIBRE_DUCT_ROUTE); }
+            
+            get fibreDuctRouteReference() {
+                return this.get(_recordFields.FIBRE_DUCT_ROUTE_REFERENCE);
+            } set fibreDuctRouteReference(value) {
+                this.set(_recordFields.FIBRE_DUCT_ROUTE_REFERENCE, value)
             }
             
             get fibreProvider() {
@@ -219,12 +240,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get accessDrawingName() { return this.getText(_recordFields.ACCESS_DRAWING); }
             
+            get accessDrawingReference() {
+                return this.get(_recordFields.ACCESS_DRAWING_REFERENCE);
+            } set accessDrawingReference(value) {
+                this.set(_recordFields.ACCESS_DRAWING_REFERENCE, value)
+            }
+            
             get fibreDrawing() {
                 return this.get(_recordFields.FIBRE_DRAWING);
             } set fibreDrawing(value) {
                 this.set(_recordFields.FIBRE_DRAWING, value)
             }
             get fibreDrawingName() { return this.getText(_recordFields.FIBRE_DRAWING); }
+            
+            get fibreDrawingReference() {
+                return this.get(_recordFields.FIBRE_DRAWING_REFERENCE);
+            } set fibreDrawingReference(value) {
+                this.set(_recordFields.FIBRE_DRAWING_REFERENCE, value)
+            }
             
             get pDF() {
                 return this.get(_recordFields.PDF);

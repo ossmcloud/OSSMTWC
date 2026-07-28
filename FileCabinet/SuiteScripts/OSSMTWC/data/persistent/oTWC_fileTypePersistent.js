@@ -8,6 +8,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFields = {
             NAME: 'name',
             ALLOWED_STATUSES: 'custrecord_twc_file_type_statuses',
+            DEFAULT_STATUS: 'custrecord_twc_file_type_default_status',
             USE_IN_SAF: 'custrecord_twc_file_type_use_in_saf',
             USE_IN_SRF: 'custrecord_twc_file_type_use_in_srf',
             SDS: 'custrecord_twc_file_type_use_in_sds',
@@ -17,6 +18,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             IMAGE: 'custrecord_twc_file_type_image',
             COMPLETIONRESOLUTION_IMAGE: 'custrecord_twc_file_type_completion_img',
             CERTIFICATE: 'custrecord_twc_file_type_cert',
+            LICENSE_MAP: 'custrecord_twc_file_type_license_map',
+            DRAWING: 'custrecord_twc_file_type_drawing',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -25,6 +28,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             ALLOWED_STATUSES: { name: 'custrecord_twc_file_type_statuses', type: 'multiselect', alias: 'allowedStatuses', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file_status' },
+            DEFAULT_STATUS: { name: 'custrecord_twc_file_type_default_status', type: 'select', alias: 'defaultStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file_status' },
             USE_IN_SAF: { name: 'custrecord_twc_file_type_use_in_saf', type: 'checkbox', alias: 'useinSAF', display: 'normal', mandatory: false },
             USE_IN_SRF: { name: 'custrecord_twc_file_type_use_in_srf', type: 'checkbox', alias: 'useinSRF', display: 'normal', mandatory: false },
             SDS: { name: 'custrecord_twc_file_type_use_in_sds', type: 'checkbox', alias: 'sDS', display: 'normal', mandatory: false },
@@ -34,6 +38,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             IMAGE: { name: 'custrecord_twc_file_type_image', type: 'checkbox', alias: 'image', display: 'normal', mandatory: false },
             COMPLETIONRESOLUTION_IMAGE: { name: 'custrecord_twc_file_type_completion_img', type: 'checkbox', alias: 'completionResolutionImage', display: 'normal', mandatory: false },
             CERTIFICATE: { name: 'custrecord_twc_file_type_cert', type: 'checkbox', alias: 'certificate', display: 'normal', mandatory: false },
+            LICENSE_MAP: { name: 'custrecord_twc_file_type_license_map', type: 'checkbox', alias: 'licenseMap', display: 'normal', mandatory: false },
+            DRAWING: { name: 'custrecord_twc_file_type_drawing', type: 'checkbox', alias: 'drawing', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -56,6 +62,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.ALLOWED_STATUSES, value)
             }
             get allowedStatusesName() { return this.getText(_recordFields.ALLOWED_STATUSES); }
+            
+            get defaultStatus() {
+                return this.get(_recordFields.DEFAULT_STATUS);
+            } set defaultStatus(value) {
+                this.set(_recordFields.DEFAULT_STATUS, value)
+            }
+            get defaultStatusName() { return this.getText(_recordFields.DEFAULT_STATUS); }
             
             get useinSAF() {
                 return this.get(_recordFields.USE_IN_SAF);
@@ -109,6 +122,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.CERTIFICATE);
             } set certificate(value) {
                 this.set(_recordFields.CERTIFICATE, value)
+            }
+            
+            get licenseMap() {
+                return this.get(_recordFields.LICENSE_MAP);
+            } set licenseMap(value) {
+                this.set(_recordFields.LICENSE_MAP, value)
+            }
+            
+            get drawing() {
+                return this.get(_recordFields.DRAWING);
+            } set drawing(value) {
+                this.set(_recordFields.DRAWING, value)
             }
             
             get created() {

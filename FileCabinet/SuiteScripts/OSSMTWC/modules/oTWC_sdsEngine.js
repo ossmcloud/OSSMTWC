@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_srfItem.js', '../data/oTWC_srfReview.js', '../data/oTWC_sds.js', '../data/oTWC_fileType.js'],
-    function (core, coreSql, recu, twcUtils, twcSrf, twcSrfItem, twcSrfReview, twcSds, twcFileType) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_srfItem.js', '../data/oTWC_srfReview.js', '../data/oTWC_sds.js', '../data/oTWC_fileType.js', '../data/oTWC_company.js'],
+    function (core, coreSql, recu, twcUtils, twcSrf, twcSrfItem, twcSrfReview, twcSds, twcFileType, twcCompany) {
 
         function getSrfInfo(recId) {
             var srfInfo = {}
@@ -49,6 +49,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sdsId = coreSql.first(`select id from ${twcSds.Type} where ${twcSds.Fields.SRF} = ${srf.id}`)?.id;
             var sds = twcSds.get(sdsId);
             if (!sdsId) {
+                sds.name = srf[twcSrf.Fields.NAME].replace('SRF', 'SDS');
                 sds.sRF = srf.id;
                 sds.site = srf[twcSrf.Fields.SITE];
                 sds.customer = srf[twcSrf.Fields.CUSTOMER];
@@ -64,6 +65,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     sds.previousLicenseFee = parseFloat(srfReview.newLicenceFee || 0) - parseFloat(srfReview.feeUplift || 0) + parseFloat(srfReview.feeReduction || 0);
                     sds.additionalSRFConiditons = srfReview.tLReviewComments;
                 }
+
+                sds.includeLicenseMap = recu.lookUp(twcCompany.Type, sds.customer, twcCompany.Fields.SDS_INCLUDE_LICENSE_MAP);
 
                 sds.save();
 

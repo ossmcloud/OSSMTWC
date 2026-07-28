@@ -1,48 +1,30 @@
+Records:
+    allow to upload files
+    the filelist should open the file record not actual file
 
 SRF:
-	ATME on TME: the structure shiuld be preslect but should be changable
-	when opening form the structire is no longer selected
-
-	// @@TODO: SRF: Delete related item
+    when picking an existing TME for an ATME the structure should be sourced from the TME
 	When swapping TME show list of ATME/Feeders with toggle
-
 	Review email from Mark: Equipment Library
-	Review email from Amy: SRF Workflow and SDS Updates
-
-	work permitted date only <= today
-
-	if TME selcted then fice related eq as well
-
+    Wind fields: do we need them on srf-item table ???
 
 
 SAF:
 	// @@TODO: SAF 
-	if detaching form a diffrent saf only do it at submit
+    if TME selected then flag related eq as well
+	if detaching form a different saf only do it at submit
 	construction saf => allow to complete each eq. acton
 			done
 			need more pic
 			detach
 			cancel
 
-			this determines if we have partailly completed, completed or back to awaitig pics
+			this determines if we have partially completed, completed or back to awaitig pics
 
 Workflow:
-	if all passed still allow to reject
-	licesne requested => the customer should do it (allow power user)
-
-	drawing refrence:
-		change to drawing file => add ref, field which sources from twc file but let change it
-
-	Fibre Duct Route	
-		this is a draweing, and a ref
-		all fields mandatroy if needd fibre
-
-	Include Licence Map
-		Access drawing are mandory
-		Fibre drawing are mandory
-
 	Planned dates 
-		when steps are completed recaluclate planned on following stages
+		Only changes to planned dates (pull forward, or push out) should affect future planned dates.
+            Exception of the 4x check steps after initial review, should not be able to re-forecast these.
 
 	Bugs to fix:
 		editable review entries should be read-only if srf status is >= SRFApproved
@@ -53,17 +35,11 @@ Workflow:
 			on reviewed stage
 
 	SDS Generation Pop-Up:
-		Print SDS should open the PDF unless changes are made
-		Include License Map => 
-			we have license map file per site
-			only for vodafone
-		Agreement Template:
+        Agreement Template:
 			see SDS Objects Schema REV2 ISSUED
-
 			needs schema created and ppulated
 			the pop-up is somehow dynamic
 			the pdf content changes
-		SDS no should match the SRF
 
 		SDS Completed:
 			SDS Pack executed, and Work permitted

@@ -89,6 +89,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 eq.b_End = action[twcSrfItem.Fields.B_END];
                 eq.customerRef = action[twcSrfItem.Fields.CUSTOMER_REF];
                 eq.inventoryFlag = action[twcSrfItem.Fields.INVENTORY_FLAG];
+                eq.optType = action[twcSrfItem.Fields.TYPE_OPT];
 
                 // eq.windLoadingNm2Front
                 // eq.windLoadingNm2Side
@@ -586,10 +587,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     {
                         id: approvalRecord.id,
                         [twcSrfWorkflowItem.Fields.STATUS]: WORKFLOW_STATUS.COMPLETED,
-                        [twcSrfWorkflowItem.Fields.ACTUAL]: new Date(),
+                        [twcSrfWorkflowItem.Fields.ACTUAL]: (new Date()).format(),
                         formData: {
                             record: twcSrf.Type,
-                            [twcSrf.Fields.LICENCE_REQUESTED]: new Date(),
+                            [twcSrf.Fields.LICENCE_REQUESTED]: (new Date()).format(),
                         }
                     }
                 ]

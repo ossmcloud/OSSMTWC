@@ -51,6 +51,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CUSTOMER_REF: 'custrecord_twc_equip_cust_ref',
             INVENTORY_FLAG: 'custrecord_twc_equip_inv_flag',
             PACKAGE: 'custrecord_twc_equip_package',
+            OPT_TYPE: 'custrecord_twc_equip_opt_type',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -102,6 +103,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CUSTOMER_REF: { name: 'custrecord_twc_equip_cust_ref', type: 'text', alias: 'customerRef', display: 'normal', mandatory: false },
             INVENTORY_FLAG: { name: 'custrecord_twc_equip_inv_flag', type: 'select', alias: 'inventoryFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_inv_flag' },
             PACKAGE: { name: 'custrecord_twc_equip_package', type: 'select', alias: 'package', display: 'normal', mandatory: false, recordType: 'customrecord_twc_package' },
+            OPT_TYPE: { name: 'custrecord_twc_equip_opt_type', type: 'select', alias: 'optType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_typ_opt' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -398,6 +400,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.PACKAGE, value)
             }
             get packageName() { return this.getText(_recordFields.PACKAGE); }
+            
+            get optType() {
+                return this.get(_recordFields.OPT_TYPE);
+            } set optType(value) {
+                this.set(_recordFields.OPT_TYPE, value)
+            }
+            get optTypeName() { return this.getText(_recordFields.OPT_TYPE); }
             
             get created() {
                 return this.get(_recordFields.CREATED);

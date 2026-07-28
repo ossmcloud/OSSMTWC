@@ -40,9 +40,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcSrfItem.Fields.DESCRIPTION, label: 'Description', width: '100%' })
 
             if (srfItem.stepType != twcSrfItem.StepType.FEEDER) {
+
                 var dimensionInfo = { id: 'srf-item-dimension', title: 'Equipment Details', hide: isNewRecord, fields: [] };
                 fieldGroup.controls.push(dimensionInfo);
-                dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem[twcSrfItem.Fields.STRUCTURE], dataSource: siteStructures, mandatory: (srfItem.stepType != twcSrfItem.StepType.GIE), noAutoSelect: (srfItem.stepType == twcSrfItem.StepType.GIE) });
+                dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteStructures, mandatory: (srfItem.stepType != twcSrfItem.StepType.GIE), noAutoSelect: (srfItem.stepType == twcSrfItem.StepType.GIE) });
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.MAKE, label: 'Make', mandatory: true })
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.MODEL, label: 'Model', mandatory: true })
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.LENGTH_MM, label: 'Length (mm)', mandatory: true })
@@ -64,6 +65,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 specInfo.fields.push({ id: twcSrfItem.Fields.CUSTOMER_REF, label: 'Customer Ref.', mandatory: true })
 
             } else if (srfItem.stepType == twcSrfItem.StepType.FEEDER) {
+                specInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteStructures, mandatory: true });
                 specInfo.fields.push({ id: twcSrfItem.Fields.TYPE_OPT, label: 'Type Opt', dataSource: twcUtils.getSrfItemTypeOpts(), mandatory: true })
 
             }
@@ -197,7 +199,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
 
-        function getFileTableUIControl(srf, stepType) {
+        function getFileTableUIControl(userInfo, srf) {
             var fields = {
                 [twcFile.Fields.NAME]: {
                     title: 'Name',
@@ -226,23 +228,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return {
                 id: `${twcFile.Type}`, label: 'Step 4 of 5: Drawings/GAD & Documents',
                 fields: fields,
-                // fields: {
-                //     [twcFile.Fields.NAME]: {
-                //         title: 'Name',
-                //         link: {
-                //             url: 'onclick="twc.page.previewFile(${id})"',
-                //             valueField: 'id',
-                //             target: '_self'
-                //         }
-                //     },
-                //     [twcFile.Fields.DESCRIPTION]: 'Description',
-                //     [twcFile.Fields.REVISION]: 'Revision',
-
-                // },
-                // where: {
-                //     [twcFile.Fields.RECORD_TYPE]: twcSrf.Type,
-                //     [twcFile.Fields.RECORD_ID]: srf.id || 0,
-                // }
                 dataSource: files
             }
 

@@ -268,7 +268,7 @@
             <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Rights: </td>
             <td style="width:25%; border:1px solid #666; padding:7px;"> <#if requestJSON.sds.custrecord_twc_sds_fibre_rights == "T"> Yes <#elseif requestJSON.sds.custrecord_twc_sds_fibre_rights == "F"> No </#if> </td>
             <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Duct Route: </td>
-            <td style="width:25%; border:1px solid #666; padding:7px;"> ${requestJSON.sds.custrecord_twc_sds_fibre_duct_route} </td>
+            <td style="width:25%; border:1px solid #666; padding:7px;"> ${requestJSON.sds.custrecord_twc_sds_drawing_ref} </td>
         </tr>
         <tr>
             <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Provider: </td>

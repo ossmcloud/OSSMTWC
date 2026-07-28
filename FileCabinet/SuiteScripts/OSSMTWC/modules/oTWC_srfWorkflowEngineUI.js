@@ -87,8 +87,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 `);
 
                 var isTLResponse = this.#item.next_stage_pick == 'T';
-                var completedCount = 0; var passedCount = 0;
 
+                var completedCount = 0; var passedCount = 0;
                 if (isTLResponse) {
                     // @@NOTE: get the last feedback issue step id
                     var feedbackIssued = this.#workflow.items.filter(i => { return i.set_status == twcUtils.SrfStatus.FeedbackIssued && i.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED; });
@@ -103,10 +103,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         }
                     })
 
-                    if (completedCount < prevSteps.length) {
-                        this.#readOnly = true;
+                    if (completedCount < prevSteps.length) { this.#readOnly = true; }
+                } else {
+                    if (this.#item.set_status == twcUtils.SrfStatus.SRFApproved) {
+                        if (!this.#workflowForm.data.userInfo.powerUser) {
+                            this.#readOnly = true;
+                        }
                     }
                 }
+
 
 
                 var nextSteps = this.#workflow.items.filter(i => {
@@ -127,11 +132,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             // @@NOTE: if we have a TL Response stage then only allow for approve/feedback depending if all required checks have passed
                             if (next.set_status != twcUtils.SrfStatus.SRFApproved && next.set_status != twcUtils.SrfStatus.FeedbackIssued) { return; }
                             if (next.set_status == twcUtils.SrfStatus.SRFApproved && passedCount < completedCount) { return; }
-                            if (next.set_status == twcUtils.SrfStatus.FeedbackIssued && passedCount == completedCount) { return; }
-                            // }
-
-
-                            // if (this.#item.next_stage_pick == 'T') {
+                            //if (next.set_status == twcUtils.SrfStatus.FeedbackIssued && passedCount == completedCount) { return; }
                             radioButton = `<div style="width: 30px;"><input type="radio" style="transform: scale(2);" name="pick_next_stage" data-id="${next.id}" ${this.#readOnly ? 'readonly' : 'checked'} /></div>`;
                         }
 
@@ -197,9 +198,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 // @@NOTE: this is a bit dirty but will do for now
                 this.#form.getControl('generate_sds')?.on('click', e => {
-                    twcSdsEngineUI.openDialog(this.#workflowForm.page, this.#workflowForm.data.siteRequestInfo, () => {
-                        this.#form.getControl('custrecord_twc_srf_lic_pack_prod').value = TODAY;
-                    })
+                    try {
+                        twcSdsEngineUI.openDialog(this.#workflowForm.page, this.#workflowForm.data.siteRequestInfo, () => {
+                            this.#form.getControl('custrecord_twc_srf_lic_pack_prod').value = TODAY;
+                        })
+                    } catch (error) {
+                        dialog.error(error)
+                    }
                 })
                 // @@NOTE: this is a bit dirty but will do for now
                 this.#form.getControl('print_sds')?.on('click', e => {
@@ -273,7 +278,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 next.assigned_to_name = '';
                                 next.status = twcSrfWorkflowEngine.WorkflowStatus.NOT_REQUIRED;
                             }
-                            //next.status_name = 'In Progress';
+
                             if (next.set_status) { setStatus = next.set_status; }
                             appendItem(next);
                         })
@@ -441,7 +446,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
 
                 this.#ui.find('#works-permitted-date').change(async e => {
-                    var payload = { srf: { id: this.#workflow.srf, [twcSrf.Fields.WORKS_PERMITTED_DATE]: jQuery(e.currentTarget).val() } }
+                    var workDate = jQuery(e.currentTarget).val()
+                    if (workDate > TODAY) {
+                        await dialog.errorAsync('Work pemritted date cannot be in the future')
+                        this.#ui.find('#works-permitted-date').val('');
+                        return;
+                    }
+                    var payload = { srf: { id: this.#workflow.srf, [twcSrf.Fields.WORKS_PERMITTED_DATE]: workDate } }
                     this.#workflow.works_permitted_date = await this.updateValue(e, payload);
                 })
 
@@ -486,22 +497,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW && prevItem?.status != twcSrfWorkflowEngine.WorkflowStatus.COMPLETED) {
                         editIcon = ''
                     }
-
-                    // var editIcon = '';
-                    // if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {
-                    //     if (item.is_review == 'T' && item.profile == this.data.userInfo.profile) {
-                    //         editIcon = `<span class="edit-item" style="cursor: pointer;">${twcIcons.get('pencil', 16)}</span>`;   
-                    //     } else {
-                    //         editIcon = `<span class="edit-item" style="cursor: pointer;">${twcIcons.get('lock', 16)}</span>`;
-                    //     }
-                    // } else {
-                    //     if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW || item.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS) {
-                    //         editIcon = `<span class="edit-item" style="cursor: pointer;">${twcIcons.get('pencil', 16)}</span>`;
-                    //         if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW && prevItem?.status != twcSrfWorkflowEngine.WorkflowStatus.COMPLETED) {
-                    //             editIcon = ''
-                    //         }
-                    //     }
-                    // }
 
                     var plannedDateInput = `<input type="date" style="text-align: center; border: none; background-color: transparent; color: inherit;" id="date-planned-${item.id}" value="${item.planned || ''}" />`;
                     if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || this.#workflow.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || this.#workflow.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {

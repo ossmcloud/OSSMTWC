@@ -209,6 +209,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             findField(fieldName, doNotThrowError) {
                 if (fieldName == 'name') { return { name: 'name', alias: 'name', type: 'text' }; }
                 if (fieldName == 'id') { return { name: 'id', alias: 'id', type: 'int' }; }
+                if (fieldName == 'isinactive') { return { name: 'isinactive', alias: 'isinactive', type: 'checkbox' }; }
                 var field = this.#fields[fieldName.toUpperCase()];
                 if (field) { return field; }
                 for (var f in this.#fields) {

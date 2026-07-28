@@ -97,7 +97,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             //
-            deleteSitesSrfItem(payload);
+            deleteSitesSrfItem(payload.items_deleted);
             deleteSitesSrfFile(payload);
 
             //
@@ -125,6 +125,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             core.array.each(items, item => {
                 if (item.relatedItems) {
                     saveSiteSrfItems(payload, item.relatedItems, item);
+                }
+                if (item.relatedItemsDelete) {
+                    deleteSitesSrfItem(item.relatedItemsDelete);
                 }
             })
         }
@@ -184,14 +187,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
-        function deleteSitesSrfItem(payload) {
-            if (!payload.items_deleted) { return; }
-            core.array.each(payload.items_deleted, item => {
+        function deleteSitesSrfItem(items) {
+            if (!items) { return; }
+            core.array.each(items, item => {
                 try {
+                    if (item.relatedItems) { deleteSitesSrfItem(item.relatedItems); }
+                    
                     // @@NOTE: Deleting Eq. Action record first to avoid dependency issue on SRF Item record.
                     var srfItemId = item.id;
                     if (!srfItemId) { return; }
-                    var eqActions = coreSQL.run(`SELECT id FROM ${twcEqAct.Type} WHERE ${twcEqAct.Fields.SRF_ITEM} = ${srfItemId} `);
+                    var eqActions = coreSQL.run(`SELECT id FROM ${twcEqAct.Type} WHERE ${twcEqAct.Fields.EA_SRF_ITEM} = ${srfItemId} `);
                     core.array.each(eqActions, action => {
                         try {
                             recu.del(twcEqAct.Type, action.id);
@@ -329,7 +334,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return html;
         }
 
-       
+
         function getAssignToEmployees(options) {
             return coreSQL.run(`
                 select  id as value, entityid as text, custentity_twc_can_execute_pack as can_execute_pack
@@ -370,6 +375,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     childRecord.copyFromObject(options.item);
                     // @@NOTE: fields itemType has a dependency with field stepType, copyFromObject sets itemType before it sets stepType as a result itemType is "lost"
                     childRecord.set(twcSrfItem.Fields.ITEM_TYPE, options.item[twcSrfItem.Fields.ITEM_TYPE]);
+
                     // @@NOTE: the "relatedItems" property exists if an ATME is being added to a new TME
                     childRecord.child = options.item.child;
                     childRecord.relatedItems = options.item.relatedItems;
@@ -400,7 +406,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // this is a new SRF, if the logged in user is a customer then set the customer field
                     if (pageData.userInfo.isCustomer) { srf[twcSrf.Fields.CUSTOMER] = pageData.userInfo.id; }
                     srf[twcSrf.Fields.SITE] = pageData.siteId;
-                    srf[twcSrf.Fields.OPERATOR_SITE_ID]=twcUtils.getOperatorSiteId()
+
                 }
                 return srf;
             },

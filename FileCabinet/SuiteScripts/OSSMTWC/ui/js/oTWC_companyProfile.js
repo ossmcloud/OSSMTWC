@@ -271,10 +271,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             companyFile.fileObject = file;
                             companyFile.name = file.name;
                             form.getControl(twcFile.Fields.NAME).value = file.name;
-                        })
+                        }) 
                     });
+                    form.getControl(twcFile.Fields.R_TYPE).on('change', e => {
+                        form.getControl(twcFile.Fields.STATUS).value = e.target.valueObj.defaultStatus;
+                    })
 
-                    dialog.confirm({ title: companyFile.id ? 'manage company document' : 'new company document', message: form.ui, width: '750px', height: '400px' }, (dlg) => {
+                    dialog.confirm({ title: companyFile.id ? 'manage company document' : 'new company document', message: form.ui, width: '750px', height: '410px' }, (dlg) => {
                         try {
                             var obj = form.getValues(true);
                             for (var k in obj) {

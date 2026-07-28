@@ -2,20 +2,31 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_sds.js', './oTWC_sdsEngine.js'],
-    function (core, coreSql, recu, dialog, twcUI, twcUtils, twcSrf, twcSds, twcSdsEngine) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_sds.js', '../data/oTWC_file.js', '../data/oTWC_fileType.js', '../data/oTWC_site.js', './oTWC_sdsEngine.js'],
+    function (core, coreSql, recu, dialog, twcUI, twcUtils, twcSrf, twcSds, twcFile, twcFileType, twcSite, twcSdsEngine) {
 
-        function getDialogContent() {
+        function getDialogContent(srf) {
 
             var fibreProviders = coreSql.run(`select id as value, name as text from customrecord_twc_infra_fibre_svc_provide where isinactive ='F' order by name`);
             var agreementTemplates = coreSql.run(`select id as value, name as text from customrecord_twc_sds_agr_tmpl where isinactive ='F' order by name`);
             var agreementSiteTypes = coreSql.run(`select id as value, name as text from customrecord_twc_sds_site_type where isinactive ='F' order by name`);
 
-            // @@TODO: SDS: 
-            var drawingFiles = [];
-            var accessDrawingFiles = [];
-            var fibreDrawingFiles = [];
-
+            var srfDrawingFiles = twcUtils.getFiles({
+                filters: {
+                    [twcFile.Fields.RECORD_TYPE]: twcSrf.Type,
+                    [twcFile.Fields.RECORD_ID]: srf.id,
+                    [twcFileType.Fields.DRAWING]: 'T'
+                }
+            });
+            
+            var drawingFiles = twcUtils.getFiles({
+                filters: {
+                    [twcFile.Fields.RECORD_TYPE]: twcSite.Type,
+                    [twcFile.Fields.RECORD_ID]: srf[twcSrf.Fields.SITE],
+                    [twcFileType.Fields.DRAWING]: 'T'
+                }
+            });
+           
             return jQuery(`
                 <div>
                     <div style=" display:flex; align-items:flex-start;">
@@ -26,15 +37,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     ${twcUI.render({ type: twcUI.CTRL_TYPE.DATE, label: 'Commencement Date', id: twcSds.Fields.COMMENCMENT_DATE, mandatory: true })}
                                 </div>
                                 <div>
-                                    ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Drawing Reference', dataSource: drawingFiles, id: twcSds.Fields.DRAWING_REFERENCE, width: '100%' })}
+                                    ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Drawing', dataSource: srfDrawingFiles, id: twcSds.Fields.DRAWING, width: 'calc(50% - 5px)' })}
+                                    ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, label: 'Drawing Reference', id: twcSds.Fields.DRAWING_REFERENCE, mandatory: true, width: 'calc(50% - 5px)' })}
                                 </div>
                                 <div style="width: 130px;">
                                     <label>Include Licence Map</label>
-                                    ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, label: '', id: 'includeLicenceMap' })}
+                                    ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, label: '', id: twcSds.Fields.INCLUDE_LICENSE_MAP })}
                                 </div>
                             </div>
                             <div>
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Additional SRF Conditions', id: twcSds.Fields.ADDITIONAL_SRF_CONIDITONS, width: '100%', rows: 4 })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Additional SRF Conditions', id: twcSds.Fields.ADDITIONAL_SRF_CONIDITONS, mandatory: true, width: '100%', rows: 4 })}
                             </div>
                             <div>
                                 ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Power Supply Comments', id: twcSds.Fields.POWER_SUPPLY_COMMENTS, mandatory: true, width: '100%', rows: 4 })}
@@ -59,7 +71,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 </div>
                             </div>
                             <div>
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, label: 'Fibre Duct Route', id: twcSds.Fields.FIBRE_DUCT_ROUTE, width: '100%' })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Fibre Duct Route', id: twcSds.Fields.FIBRE_DUCT_ROUTE, dataSource: drawingFiles, width: 'calc(50% - 5px)' })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, label: 'Drawing Reference', id: twcSds.Fields.FIBRE_DUCT_ROUTE_REFERENCE, width: 'calc(50% - 5px)' })}
                             </div>
                             <div>
                                 ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Notes / Conditions', id: twcSds.Fields.FIBRE_NOTES, width: '100%', rows: 7 })}
@@ -79,7 +92,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 ${twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'New Fee', id: twcSds.Fields.NEW_LICENSE_FEE })}
                             </div>
                             <div>
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Fee Change Breakdown', id: twcSds.Fields.FEE_CHARGE_BREAK_DOWN, width: '100%', rows: 7 })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Fee Change Breakdown', id: twcSds.Fields.FEE_CHARGE_BREAK_DOWN, mandatory: true, width: '100%', rows: 7 })}
                             </div>
                         </div>
 
@@ -89,17 +102,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         <!-- RIGHT COLUMN -->
                         <div style="flex:1;">
                             <div>
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Agreement Template', id: twcSds.Fields.AGREEMENT_TEMPLATE, dataSource: agreementTemplates, width: '100%' })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Agreement Template', id: twcSds.Fields.AGREEMENT_TEMPLATE, mandatory: true, dataSource: agreementTemplates, width: '100%' })}
                             </div>
                             <div>
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Site Type', id: twcSds.Fields.SITE_TYPE, dataSource: agreementSiteTypes, width: '100%' })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Site Type', id: twcSds.Fields.SITE_TYPE, mandatory: true, dataSource: agreementSiteTypes, width: '100%' })}
                             </div>
 
                             <div>
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Access Drawing', dataSource: accessDrawingFiles, id: twcSds.Fields.ACCESS_DRAWING, width: '100%' })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Access Drawing', dataSource: drawingFiles, id: twcSds.Fields.ACCESS_DRAWING, width: 'calc(50% - 5px)' })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, label: 'Drawing Reference', id: twcSds.Fields.ACCESS_DRAWING_REFERENCE, width: 'calc(50% - 5px)' })}
+                                
                             </div>
                             <div>
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Fibre Drawing', dataSource: fibreDrawingFiles, id: twcSds.Fields.FIBRE_DRAWING, width: '100%' })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Fibre Drawing', dataSource: drawingFiles, id: twcSds.Fields.FIBRE_DRAWING, width: 'calc(50% - 5px)' })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, label: 'Drawing Reference', id: twcSds.Fields.FIBRE_DRAWING_REFERENCE, width: 'calc(50% - 5px)' })}
                             </div>
                         </div>
                     </div>
@@ -111,10 +127,53 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function openDialog(page, srf, callback) {
             var formData = twcSdsEngine.getSds(srf);
             var form = twcUI.init({}, getDialogContent(srf));
-            form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).visible = formData.fibreProviderName.toLowerCase().indexOf('other') >= 0;
+            // form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).visible = formData.fibreProviderName.toLowerCase().indexOf('other') >= 0;
             form.getControl(twcSds.Fields.FIBRE_PROVIDER).on('change', e => {
                 form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).visible = e.target.valueObj?.text.toLowerCase().indexOf('other') >= 0;
             })
+
+            // form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE).disabled = !formData.fibreRights;
+            // form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE_REFERENCE).disabled = !formData.fibreRights;
+            // form.getControl(twcSds.Fields.FIBRE_PROVIDER).disabled = !formData.fibreRights;
+            // form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).disabled = !formData.fibreRights;
+            // form.getControl(twcSds.Fields.FIBRE_NOTES).disabled = !formData.fibreRights;
+            form.getControl(twcSds.Fields.FIBRE_RIGHTS).on('change', e => {
+                form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE).disabled = !e.value;
+                form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE_REFERENCE).disabled = !e.value;
+                form.getControl(twcSds.Fields.FIBRE_PROVIDER).disabled = !e.value;
+                form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).disabled = !e.value;
+                form.getControl(twcSds.Fields.FIBRE_NOTES).disabled = !e.value;
+
+                form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE).mandatory = e.value;
+                form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE_REFERENCE).mandatory = e.value;
+                form.getControl(twcSds.Fields.FIBRE_PROVIDER).mandatory = e.value;
+                form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).mandatory = e.value;
+                form.getControl(twcSds.Fields.FIBRE_NOTES).mandatory = e.value;
+            })
+
+            // form.getControl(twcSds.Fields.ACCESS_DRAWING).disabled = !formData.includeLicenseMap;
+            // form.getControl(twcSds.Fields.ACCESS_DRAWING_REFERENCE).disabled = !formData.includeLicenseMap;
+            // form.getControl(twcSds.Fields.FIBRE_DRAWING_REFERENCE).disabled = !formData.includeLicenseMap;
+            // form.getControl(twcSds.Fields.FIBRE_DRAWING).disabled = !formData.includeLicenseMap;
+            form.getControl(twcSds.Fields.INCLUDE_LICENSE_MAP).on('change', e => {
+                form.getControl(twcSds.Fields.ACCESS_DRAWING).disabled = !e.value;
+                form.getControl(twcSds.Fields.ACCESS_DRAWING_REFERENCE).disabled = !e.value;
+                form.getControl(twcSds.Fields.FIBRE_DRAWING_REFERENCE).disabled = !e.value;
+                form.getControl(twcSds.Fields.FIBRE_DRAWING).disabled = !e.value;
+
+                form.getControl(twcSds.Fields.ACCESS_DRAWING).mandatory = e.value;
+                form.getControl(twcSds.Fields.ACCESS_DRAWING_REFERENCE).mandatory = e.value;
+                form.getControl(twcSds.Fields.FIBRE_DRAWING_REFERENCE).mandatory = e.value;
+                form.getControl(twcSds.Fields.FIBRE_DRAWING).mandatory = e.value;
+            })
+
+            form.getControl(twcSds.Fields.DRAWING).on('change', e => {
+                form.getControl(twcSds.Fields.DRAWING_REFERENCE).value = e.target.valueObj[twcFile.Fields.DESCRIPTION]
+            });
+
+            form.getControl(twcSds.Fields.ACCESS_DRAWING).on('change', e => {
+                form.getControl(twcSds.Fields.ACCESS_DRAWING_REFERENCE).value = e.target.valueObj[twcFile.Fields.DESCRIPTION]
+            });
 
             dialog.confirm({ title: 'SDS Pack Produce Info', message: form.ui, width: '1265px', height: '645px', }, (dlg) => {
                 try {
@@ -139,7 +198,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (!ctrl) { continue; }
                 var v = formData.get(formData.fields[k].name)
                 if (formData.fields[k].type == 'date' && v) { v = v.format(); }
-                ctrl.setValue(v);
+                //ctrl.setValue(v);
+                ctrl.value = v;
             }
 
 
@@ -147,8 +207,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
-        function printSDS(page, srf) {
-            var popup = window.open(core.url.script('otwc_print_srf_sds_sl', { recId: srf.id }), '_blank', 'width=750,height=900');
+        function printSDS(page, srf, fromFile) {
+            var popup = window.open(core.url.script('otwc_print_srf_sds_sl', { recId: srf.id, fromFile: (fromFile) ? 'T' : 'F' }), '_blank', 'width=750,height=900');
             if (!popup || popup.closed || typeof popup.closed === 'undefined') { alert('Popup was blocked. Please allow popups for this site.'); }
 
         }

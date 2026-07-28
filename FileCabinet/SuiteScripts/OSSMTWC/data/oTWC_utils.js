@@ -242,7 +242,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 select  t.id as value, t.name as text, p.name as parent_name,
                         t.custrecord_twc_file_type_hs as is_hs, t.custrecord_twc_file_type_method as is_method, t.custrecord_twc_file_type_insurance as is_insurance,
                         t.custrecord_twc_file_type_image as is_image, t.custrecord_twc_file_type_completion_img as is_image_completion,
-                        t.custrecord_twc_file_type_cert as is_cert, t.custrecord_twc_file_type_statuses as allowed_statuses
+                        t.custrecord_twc_file_type_cert as is_cert, t.custrecord_twc_file_type_statuses as allowed_statuses, t.custrecord_twc_file_type_default_status as default_status
                 from    customrecord_twc_file_type t
                 join    customrecord_twc_file_type p on p.id = t.parent
                 where   t.isinactive = 'F'
@@ -268,10 +268,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var fileTypes = [];
             coreSQL.each(sql, t => {
-                if (options?.isVendor) {
-                    if (t.is_method != 'T' && t.is_hs != 'T') { return; }
-                }
-
+                
                 t.isInsurance = t.is_insurance == 'T';
                 t.isMethod = t.is_method == 'T';
                 t.isHS = t.is_hs == 'T';
@@ -279,8 +276,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 t.isImageCompletion = t.is_image_completion == 'T';
                 t.isCert = t.is_cert == 'T';
                 t.statuses = t.allowed_statuses?.split(',').map(i => { return parseInt(i.trim()) });
-
                 t.allowedStatues = fileStatues.filter(fs => { return t.statuses.indexOf(fs.value) >= 0; })
+                t.defaultStatus = t.default_status;
 
                 delete t.is_insurance;
                 delete t.is_hs;
@@ -289,6 +286,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 delete t.is_image_completion;
                 delete t.is_cert;
                 delete t.allowed_statuses;
+                delete t.default_status;
 
                 fileTypes.push(t);
             });
@@ -789,7 +787,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getFiles(options) {
             var sql = `
-                select  f.id, ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'yyyy-MM-dd HH:mi') as created, f.name,
+                select  f.id, ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'yyyy-MM-dd HH:mi') as created, f.name, f.id as value, f.name as text, 
                         ${twcFile.Fields.R_TYPE}, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name, 
                         ${twcFile.Fields.STATUS}, BUILTIN.DF(${twcFile.Fields.STATUS}) as ${twcFile.Fields.STATUS}_name, 
                         ${twcFile.Fields.REVISION}, ${twcFile.Fields.UPLOADED_BY}, BUILTIN.DF(${twcFile.Fields.UPLOADED_BY}) as ${twcFile.Fields.UPLOADED_BY}_name, 

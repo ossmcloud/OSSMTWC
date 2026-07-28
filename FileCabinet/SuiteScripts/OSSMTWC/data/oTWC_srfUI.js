@@ -23,7 +23,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return siteFields;
         }
 
-        function getFeedbackReviewRecords(fieldGroup, srf) {
+        function getFeedbackReviewRecords(fieldGroup, srf, userInfo) {
             if (!srf.id) { return; }
             var srfReview = twcSrfReview.select({ where: { [twcSrfReview.Fields.SRF]: srf.id }, orderBy: { [twcSrfReview.Fields.CREATED]: 'DESC' }, noAlias: true });
             //if (srfReview.length > 0 && srfReview[0][twcSrfReview.Fields.TL_REVIEW_RESULT] == twcUtils.SrfReviewStatus.FeedbackIssued) {
@@ -39,33 +39,50 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     return;
                 }
 
+                
                 var srfReviewInfo = { id: 'site-req-review', title: title, fields: [] };
-                //
-                const renderCheckResponsePanel = function (checkName, passed, comments) {
-                    return `
-                        <div style="margin-left: 11px;">
-                            <label>${checkName} Passed</label>
-                            ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, value: passed, readOnly: true })}
-                            <label>${checkName} Comments</label>
-                            ${comments || ''}
+                var reviewInfoHtml = `
+                    <div style="display: flex; padding-bottom: 5px;">
+                        <div>
+                            <label>Review Date</label>
+                            <span style="margin-bottom: 29px; display: block;'">${srfReview[0][twcSrfReview.Fields.TL_REVIEW_COMPLETE]}</span>
+                            <label>Review Comments</label>
+                            ${srfReview[0][twcSrfReview.Fields.TL_REVIEW_COMMENTS]}
                         </div>
-                    `
+                `
+
+                
+                if (userInfo.isEmployee || userInfo.companyProfile?.id == srf[twcSrf.Fields.CUSTOMER]) {
+                    reviewInfoHtml += `
+                        <div style="margin-left: 11px; border-left: 1px dotted silver; padding-left: 11px;">
+                            <label>Accounts Check Passed</label>
+                            ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, value: srfReview[0][twcSrfReview.Fields.CUSTOMER_ACCOUNTS_CHECK_PASSED], readOnly: true })}
+                            <label>Accounts Fee Breakdown</label>
+                            ${srfReview[0][twcSrfReview.Fields.FEE_CHANGE_BREAKDOWN] || ''}
+                        </div>
+                        <div style="margin-left: 11px; text-align: right; border-left: 1px dotted silver; padding-left: 11px;">
+                            <label>New License Fee</label>
+                            <span style="margin-bottom: 20px; display: block; text-align: right;">${srfReview[0][twcSrfReview.Fields.NEW_LICENCE_FEE] || ''}</span>
+                            <div style="display: flex;">
+                                <div style="text-align: right; margin-right: 7px;">
+                                    <label>Fee Uplift</label>
+                                    ${srfReview[0][twcSrfReview.Fields.FEE_UPLIFT] || '0'}
+                                </div>
+                                <div style="text-align: right;">
+                                    <label>Fee Reduction</label>
+                                    ${srfReview[0][twcSrfReview.Fields.FEE_REDUCTION] || '0'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 }
+
+                reviewInfoHtml += '</div>';
+
                 srfReviewInfo.fields.push({
                     id: 'srf-req-review-info', type: twcUI.CTRL_TYPE.PANEL,
                     title: ``,
-                    content: `
-                        <div style="display: flex; padding-bottom: 17px;">
-                            <div>
-                                <label>Review Date</label>
-                                <span style="margin-bottom: 29px; display: block;'">${srfReview[0][twcSrfReview.Fields.TL_REVIEW_COMPLETE]}</span>
-                                <label>Review Comments</label>
-                                ${srfReview[0][twcSrfReview.Fields.TL_REVIEW_COMMENTS]}
-                            </div>
-                            
-                            ${renderCheckResponsePanel('Accounts Check', srfReview[0][twcSrfReview.Fields.CUSTOMER_ACCOUNTS_CHECK_PASSED], srfReview[0][twcSrfReview.Fields.CUSTOMER_ACCOUNTS_CHECK_COMMENTS])}
-                        </div>    
-                    `,
+                    content: reviewInfoHtml,
                     styles: { 'width': '100%' },
                     contentStyles: { 'background-color': bkgdColor }
                 })
@@ -107,7 +124,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSRFInfoPanels(dataSource, userInfo, readOnly) {
             var fieldGroup = { id: 'site-request', title: (dataSource.id) ? `Space Request [${dataSource.name}]` : 'Create New Space Request', collapsed: false, controls: [] };
 
-            getFeedbackReviewRecords(fieldGroup, dataSource);
+            getFeedbackReviewRecords(fieldGroup, dataSource, userInfo);
 
             var basicInfo = { id: 'site-request-struct', title: 'Customer Information', fields: [] };
             fieldGroup.controls.push(basicInfo);

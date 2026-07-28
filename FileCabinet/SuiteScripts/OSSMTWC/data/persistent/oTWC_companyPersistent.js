@@ -63,6 +63,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CUSTOMER_FLAG: 'custrecord_twc_cus_flag',
             CONTRACTOR_FLAG: 'custrecord_twc_con_flag',
             LANDLORD_FLAG: 'custrecord_twc_landlord_flag',
+            SDS_INCLUDE_LICENSE_MAP: 'custrecord_twc_co_sds_include_licensemap',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -126,6 +127,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CUSTOMER_FLAG: { name: 'custrecord_twc_cus_flag', type: 'select', alias: 'customerFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_cus_flag' },
             CONTRACTOR_FLAG: { name: 'custrecord_twc_con_flag', type: 'select', alias: 'contractorFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_con_flag' },
             LANDLORD_FLAG: { name: 'custrecord_twc_landlord_flag', type: 'select', alias: 'landlordFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_landlord_flag' },
+            SDS_INCLUDE_LICENSE_MAP: { name: 'custrecord_twc_co_sds_include_licensemap', type: 'checkbox', alias: 'sDSIncludeLicenseMap', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -495,6 +497,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.LANDLORD_FLAG, value)
             }
             get landlordFlagName() { return this.getText(_recordFields.LANDLORD_FLAG); }
+            
+            get sDSIncludeLicenseMap() {
+                return this.get(_recordFields.SDS_INCLUDE_LICENSE_MAP);
+            } set sDSIncludeLicenseMap(value) {
+                this.set(_recordFields.SDS_INCLUDE_LICENSE_MAP, value)
+            }
             
             get created() {
                 return this.get(_recordFields.CREATED);

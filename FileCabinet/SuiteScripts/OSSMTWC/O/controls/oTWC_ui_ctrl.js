@@ -73,7 +73,13 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
             init() {
                 this.#container.find('.twc_ctrl').each((idx, ele) => {
-                    this.initCtrl(jQuery(ele));
+                    try {
+                        this.initCtrl(jQuery(ele));    
+                    } catch (error) {
+                        console.log(error)
+                        throw error;
+                    }
+                    
                 })
 
                 this.#container.find('.twc-control-panel-expand').click(e => {

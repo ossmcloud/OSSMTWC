@@ -128,6 +128,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             srfNewRelatedItem[twcSrfItem.Fields.REQUEST_TYPE] = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
                             srfNewRelatedItem[twcSrfItem.Fields.STEP_TYPE] = eqClass;
                             srfNewRelatedItem[twcSrfItem.Fields.STEP_TYPE + '_name'] = (eqClass == twcEqUI.EqClass.ATME) ? 'ATME' : 'FEEDER';
+                            srfNewRelatedItem[twcSrfItem.Fields.STRUCTURE] = this.#form.getControl(twcSrfItem.Fields.STRUCTURE).value;
                             TWCSpaceRequestItemForm.open(this.#page, srfNewRelatedItem, (srfRelatedItem) => {
                                 if (!this.#srfItem.relatedItems) { this.#srfItem.relatedItems = []; }
                                 this.#srfItem.relatedItems.push(srfNewRelatedItem);
@@ -140,10 +141,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 relatedEqTable.render(this.#srfItem.relatedItems, true)
                             })
                         } else if (e.action == 'delete') {
-                            // @@TODO: SRF: Delete related item
+                            dialog.confirm('Are you sure you wish to delete this record', () => {
+                                srfNewRelatedItem = e.rowData;
+                                if (!this.#srfItem.relatedItemsDelete) { this.#srfItem.relatedItemsDelete = []; }
+                                this.#srfItem.relatedItemsDelete.push(srfNewRelatedItem);
+                                this.#srfItem.relatedItems.splice(this.#srfItem.relatedItems.indexOf(srfNewRelatedItem), 1);                                
+                                relatedEqTable.render(this.#srfItem.relatedItems, true)
+                            })
                         }
-
-
 
                     }
                 }
@@ -502,7 +507,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             });
                         });
 
-                        this.ui.getControl('print-sds')?.on('click', e => { twcSdsEngineUI.printSDS(this, this.data.siteRequestInfo) })
+                        this.ui.getControl('print-sds')?.on('click', e => { twcSdsEngineUI.printSDS(this, this.data.siteRequestInfo, true) })
                         this.ui.getControl('sign-sds')?.on('click', e => { twcSdsEngineUI.signSDS(this, this.data.siteRequestInfo) })
                         this.ui.getControl('sign-sds-tl')?.on('click', e => { twcSdsEngineUI.signSDSTL(this, this.data.siteRequestInfo) })
 
