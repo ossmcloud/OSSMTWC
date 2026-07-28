@@ -208,7 +208,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
                 // @@NOTE: this is a bit dirty but will do for now
                 this.#form.getControl('print_sds')?.on('click', e => {
-                    twcSdsEngineUI.printSDS(this.#workflowForm.page, this.#workflowForm.data.siteRequestInfo);
+                    twcSdsEngineUI.printSDS(this.#workflowForm.page, this.#workflowForm.data.siteRequestInfo, true);
                 })
 
 
