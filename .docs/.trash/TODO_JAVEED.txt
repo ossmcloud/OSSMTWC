@@ -6,8 +6,7 @@ see issue list on NS
 on saving SRF:
     Save OSSMTWC - SRF Item record (already there)
 
-    // @@TODO: JAVEED:
-
+    
 OSSMTWC - Equip-Action
     if SRF Item is Install/Remove
         Create Eq-Action record
