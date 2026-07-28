@@ -114,13 +114,21 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
             setValue(val) {
                 if (this.disabled) { return; }
-                var v = this.#dataSource.find(vv => { return vv.value == val; })
-                if (v) {
-                    this.#ui.attr('data-value', v.value);
-                    this.#input.val(v.text);
+
+                if (this.#options.multiSelect) {
+                    this.#ui.attr('data-value', val);
+                    this.#input.val(this.setMultiTextValue(val));
+                    
                 } else {
-                    this.#ui.attr('data-value', '');
-                    this.#input.val('');
+
+                    var v = this.#dataSource.find(vv => { return vv.value == val; })
+                    if (v) {
+                        this.#ui.attr('data-value', v.value);
+                        this.#input.val(v.text);
+                    } else {
+                        this.#ui.attr('data-value', '');
+                        this.#input.val('');
+                    }
                 }
             }
 

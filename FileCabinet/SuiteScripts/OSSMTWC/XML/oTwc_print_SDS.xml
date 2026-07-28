@@ -38,6 +38,10 @@
             background-color: #dcdcdc;
         }
 
+        li {
+            margin-left: 15px;
+        }
+
     </style>
 </head>
 
@@ -62,11 +66,11 @@
         <tr>
             <td border="0" align="center">
                 This is an SDS issued pursuant and subject to the
-                <b>Master Services and Licence Agreement</b>
-                (the <b>"MSLA"</b>)
+                <b>${requestJSON.agreement.custrecord_twc_agreement_name}</b>
+                (the <b>"${requestJSON.agreement.custrecord_twc_agreement_code}"</b>)
                 <br />
                 between Towercom Limited and the
-                <b>Operator dated ${requestJSON.srf.client_signed}</b>
+                <b>${requestJSON.agreement.custrecord_twc_agreement_party} dated ${requestJSON.agreement.custrecord_twc_agreement_date}</b>
             </td>
         </tr>
     </table>
@@ -79,7 +83,7 @@
             <td width="20%"> ${requestJSON.siteDetails.site_name} </td>
             <td width="20%" class="label" align="right"> Site ID: </td>
             <td width="20%"> ${requestJSON.siteDetails.site_id} </td>
-            <td width="20%" class="label" align="right"> Operator Site ID: </td>
+            <td width="20%" class="label" align="right"> ${requestJSON.agreement.custrecord_twc_agreement_party} Site ID: </td>
             <td width="20%"> ${requestJSON.siteDetails.operator_site_id} </td>
         </tr>
         <tr>
@@ -104,7 +108,7 @@
         <tr> <td align="center" colspan="4" class="sectionHeader"> Details of the Parties </td> </tr>
         <tr>
             <td align="center" colspan="2" width="50%" class="subHeader"> Licensor: </td>
-            <td align="center" colspan="2" width="50%" class="subHeader"> Operator: </td>
+            <td align="center" colspan="2" width="50%" class="subHeader"> ${requestJSON.agreement.custrecord_twc_agreement_party}: </td>
         </tr>
         <tr>
             <td colspan="2" style="line-height: 16px;">
@@ -260,6 +264,8 @@
     </table>
 
     <!-- FIBRE -->
+    <pbr break="true" orphans="0" widows="0"/>
+
     <table style="width:100%; border-collapse:collapse; margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
         <tr>
             <td class="sectionHeader" align="center" colspan="4" style="border:1px solid #666; text-align:center; padding:5px; font-weight:bold;"> Fibre </td>
@@ -293,34 +299,35 @@
 
         <tr>
             <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
-                Previous Licence Fee:
+                <p style="text-align: left;">Previous Licence Fee:</p>
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${requestJSON.sds.custrecord_twc_sds_fee_prev}
+                €${(requestJSON.sds.custrecord_twc_sds_fee_prev!"")?replace("null", "")}
             </td>
             <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
                 Fee Reduction:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${requestJSON.sds.custrecord_twc_sds_fee_reduction}
+                €${(requestJSON.sds.custrecord_twc_sds_fee_reduction!"")?replace("null", "")}
             </td>
             <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
                 Fee Uplift:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${requestJSON.sds.custrecord_twc_sds_fee_uplift}
+                €${(requestJSON.sds.custrecord_twc_sds_fee_uplift!"")?replace("null", "")}
             </td>
             <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
                 Licence Fee:
             </td>
             <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${requestJSON.sds.custrecord_twc_sds_fee_new}
+                €${(requestJSON.sds.custrecord_twc_sds_fee_new!"")?replace("null", "")}
             </td>
         </tr>
         <tr>
-            <td colspan="1"
-                style="border:1px solid #666; padding:7px; background-color:gainsboro;">
-                SDS Commencement Date:
+            <td colspan="1" style="border:1px solid #666; padding:7px; background-color:gainsboro;">
+                <p style="text-align: left; white-space: nowrap;">
+                    Commencement Date:
+                </p>
             </td>
             <td colspan="7" style="border:1px solid #666; padding:7px;">
                 ${requestJSON.sds.custrecord_twc_sds_comm_date}
@@ -328,7 +335,20 @@
         </tr>
         <tr>
             <td colspan="8" style="border:1px solid #666; padding:10px 12px; background-color:gainsboro;">
-                ${requestJSON.sds.custrecord_twc_sds_fee_charge_breackdown}
+                <!-- ${requestJSON.sds.custrecord_twc_sds_fee_charge_breackdown} -->
+                <#if requestJSON.sdsCondition_1?has_content>
+                    <#list requestJSON.sdsCondition_1.conditions as condition>
+                        <p style="padding-bottom: 0px; margin-bottom: 0px;">${condition.description}</p>
+                        <ul>
+                        <#list condition.fields as conditionField>
+                            <li>
+                                <b>${conditionField.label}:</b> ${conditionField.value}
+                            </li>
+                        </#list>
+                        </ul>
+                    </#list>
+                </#if>
+                
             </td>
         </tr>
     </table>
@@ -366,40 +386,22 @@
         <tr>
             <td style="padding:8px; border:1px solid #666; border-top:none;">
 
-                <table style="width:100%; border-collapse:collapse;">
-
-                    <tr>
-                        <td border="0" style="font-weight:bold; padding-bottom:8px;">
-                            Additional SRF Specific Conditions
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td border="0" style="padding-left:15px; padding-bottom:2px;">
-                            • Access shown in blue on the following:
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td border="0" style="padding-left:35px; padding-bottom:8px;">
-                            Access Drawing : ${(requestJSON.sds.custrecord_twc_sds_drawing_access_name!"")?replace("null", "none")}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td border="0" style="padding-left:15px; padding-bottom:2px;">
-                            • Fibre access in accordance with Clause 4 of the MSLA, and shown in red on the following:
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td border="0" style="padding-left:35px;">
-                            Fibre Drawing : ${(requestJSON.sds.custrecord_twc_sds_drawing_fibre_name!"")?replace("null", "none")}
-                        </td>
-                    </tr>
-
-                </table>
-
+                <#if requestJSON.sdsCondition_2?has_content>
+                    <p style="font-weight:bold; padding-bottom: 3px;">
+                        Additional SRF Specific Conditions
+                    </p>
+                    <#list requestJSON.sdsCondition_2.conditions as condition>
+                        <p style="padding-bottom: 0px; margin-bottom: 0px;">${condition.description}</p>
+                        <ul>
+                            <#list condition.fields as conditionField>
+                                <li>
+                                <b>${conditionField.label}:</b> ${conditionField.value}
+                                </li>
+                            </#list>
+                        </ul>
+                    </#list>
+                </#if>
+              
             </td>
         </tr>
 
@@ -411,12 +413,12 @@
     <table style="width:100%; border-collapse:collapse;margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
         <tr>
             <td class="sectionHeader" align="center" style="border:1px solid #666; text-align:center; padding:5px;font-weight:bold;">
-                Signed for Operator
+                Signed for ${requestJSON.agreement.custrecord_twc_agreement_party}
             </td>
         </tr>
         <tr>
             <td style="border:1px solid #666; padding:8px; background-color:gainsboro;">
-                Electronically signed on behalf of Operator by
+                Electronically signed on behalf of ${requestJSON.agreement.custrecord_twc_agreement_party} by
                 ${requestJSON.srf.client_singed_by} on ${requestJSON.srf.client_signed}.
             </td>
         </tr>

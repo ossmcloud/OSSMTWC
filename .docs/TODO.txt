@@ -5,8 +5,7 @@ Records:
 SRF:
     when picking an existing TME for an ATME the structure should be sourced from the TME
 	When swapping TME show list of ATME/Feeders with toggle
-	Review email from Mark: Equipment Library
-    Wind fields: do we need them on srf-item table ???
+	Wind fields: do we need them on srf-item table ???
 
 
 SAF:
@@ -18,7 +17,6 @@ SAF:
 			need more pic
 			detach
 			cancel
-
 			this determines if we have partially completed, completed or back to awaitig pics
 
 Workflow:
@@ -26,25 +24,18 @@ Workflow:
 		Only changes to planned dates (pull forward, or push out) should affect future planned dates.
             Exception of the 4x check steps after initial review, should not be able to re-forecast these.
 
-	Bugs to fix:
-		editable review entries should be read-only if srf status is >= SRFApproved
-
 	SDS Pack Produced:
 		take snapshot of equipment
 		SDS Can be rejected in which case goes back to SDS Produced (add a 'reject' button for the signatories)
 			on reviewed stage
 
-	SDS Generation Pop-Up:
-        Agreement Template:
-			see SDS Objects Schema REV2 ISSUED
-			needs schema created and ppulated
-			the pop-up is somehow dynamic
-			the pdf content changes
+	SDS Completed:
+		SDS Pack executed, and Work permitted
 
-		SDS Completed:
-			SDS Pack executed, and Work permitted
+    Bugs to fix:
+		editable review entries should be read-only if srf status is >= SRFApproved
 
-
+	
 
 Others:
 	SRF: big files will cause the UI to take time to save

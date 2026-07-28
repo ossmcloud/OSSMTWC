@@ -591,6 +591,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         formData: {
                             record: twcSrf.Type,
                             [twcSrf.Fields.LICENCE_REQUESTED]: (new Date()).format(),
+                            [twcSrf.Fields.SRF_APPROVAL_DATE]: (new Date()).format(),
                         }
                     }
                 ]

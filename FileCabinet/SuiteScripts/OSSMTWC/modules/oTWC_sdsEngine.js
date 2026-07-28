@@ -26,6 +26,49 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             if (!srfInfo.srf) { throw new Error(`No SRF Details fond using id: ${recId}`) }
 
+            srfInfo.agreement = coreSql.first(`
+                SELECT  custrecord_twc_agreement_name, custrecord_twc_agreement_code, TO_CHAR(custrecord_twc_agreement_date, 'DD-MM-YYYY') as custrecord_twc_agreement_date, custrecord_twc_agreement_party,
+                        sds.custrecord_twc_sds_agr_cond_data as sds_cond_data, sds.custrecord_twc_sds_agr_conds
+                FROM    customrecord_twc_agreement ag
+                JOIN    customrecord_twc_sds sds on sds.custrecord_twc_sds_agr_tmpl = ag.id
+                
+                WHERE   sds.custrecord_twc_sds_srf =  ${recId}
+            `)
+
+            // @@TODO: SDS: we should probably b64 this one
+            var sdsCondData = JSON.parse(srfInfo.agreement.sds_cond_data || '{}');
+            //srfInfo.sdsConditions = [];
+            coreSql.each(`
+                SELECT  *
+                FROM    customrecord_twc_agreement_cond 
+                where   id in (${srfInfo.agreement.custrecord_twc_sds_agr_conds})
+            `, cond => {
+                var conditionField = `sdsCondition_${cond.custrecord_twc_agreement_cond_section}`;
+                if (!srfInfo[conditionField]) {
+                    srfInfo[conditionField] = { conditions: [] };
+                }
+                var condition = {
+                    description: cond.custrecord_twc_agreement_cond_descr,
+                    fields: []
+                }
+                srfInfo[conditionField].conditions.push(condition);
+                for (var k in sdsCondData) {
+                    var cId = k.split('-')[0];
+                    if (cId != cond.id) { continue; }
+
+                    var fId = k.split('-')[1];
+                    condition.fields.push({
+                        label: cond[`custrecord_twc_agreement_cond_${fId}`],
+                        value: sdsCondData[k]
+                    })
+                }
+
+            });
+
+
+
+
+
             const siteID = srfInfo.srf.custrecord_twc_srf_site;
             srfInfo.siteDetails = coreSql.first(`
                     select custrecord_twc_site_id as site_id, custrecord_twc_site_name as site_name, custrecord_twc_site_address as address, custrecord_twc_site_address_zip as add_zipCode, 
@@ -41,6 +84,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         custrecord_twc_srf_itm_weight_kg as weight, custrecord_twc_srf_itm_azimuth as azimuth, custrecord_twc_srf_itm_b_end as b_end, BUILTIN.DF(custrecord_twc_srf_itm_loc) as location, 
                         BUILTIN.DF(custrecord_twc_srf_itm_invent_flag) as inventory_flag, custrecord_twc_srf_itm_feeder_count as feeder_count, 
                     from ${twcSrfItem.Type} where custrecord_twc_srf_itm_srf = ${recId} `)
+
+
             return srfInfo;
         }
 

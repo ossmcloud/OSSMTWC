@@ -63,7 +63,8 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
                     //                    console.log(twcSdsEngine.getFormData({id: 36}))
                     //console.log(twcSdsEngine.setAsCurrent({ id: 36 }))
 
-                    console.log(twcSiteLocatorUtils.getSites(null, twcConfig.userInfo()))
+                    //console.log(twcSiteLocatorUtils.getSites(null, twcConfig.userInfo()))
+                    console.log(twcSdsEngine.getSrfInfo(39))
 
                     // console.log(
                     //     twcSiteRequestUtils.initEquipment({

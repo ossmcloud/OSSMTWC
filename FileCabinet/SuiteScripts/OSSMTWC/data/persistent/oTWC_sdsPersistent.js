@@ -29,7 +29,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             NEW_LICENSE_FEE: 'custrecord_twc_sds_fee_new',
             FEE_CHARGE_BREAK_DOWN: 'custrecord_twc_sds_fee_charge_breackdown',
             AGREEMENT_TEMPLATE: 'custrecord_twc_sds_agr_tmpl',
-            SITE_TYPE: 'custrecord_twc_sds_site_type',
+            AGREEMENT_CONDITIONS: 'custrecord_twc_sds_agr_conds',
+            AGREEMENT_CONDITIONS_DATA: 'custrecord_twc_sds_agr_cond_data',
             ACCESS_DRAWING: 'custrecord_twc_sds_drawing_access',
             ACCESS_DRAWING_REFERENCE: 'custrecord_twc_sds_drawing_access_ref',
             FIBRE_DRAWING: 'custrecord_twc_sds_drawing_fibre',
@@ -63,8 +64,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FEE_UPLIFT: { name: 'custrecord_twc_sds_fee_uplift', type: 'float', alias: 'feeUplift', display: 'normal', mandatory: false },
             NEW_LICENSE_FEE: { name: 'custrecord_twc_sds_fee_new', type: 'float', alias: 'newLicenseFee', display: 'normal', mandatory: false },
             FEE_CHARGE_BREAK_DOWN: { name: 'custrecord_twc_sds_fee_charge_breackdown', type: 'text', alias: 'feeChargeBreakDown', display: 'normal', mandatory: false },
-            AGREEMENT_TEMPLATE: { name: 'custrecord_twc_sds_agr_tmpl', type: 'select', alias: 'agreementTemplate', display: 'normal', mandatory: false, recordType: 'customrecord_twc_sds_agr_tmpl' },
-            SITE_TYPE: { name: 'custrecord_twc_sds_site_type', type: 'select', alias: 'siteType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_sds_site_type' },
+            AGREEMENT_TEMPLATE: { name: 'custrecord_twc_sds_agr_tmpl', type: 'select', alias: 'agreementTemplate', display: 'normal', mandatory: false, recordType: 'customrecord_twc_agreement' },
+            AGREEMENT_CONDITIONS: { name: 'custrecord_twc_sds_agr_conds', type: 'multiselect', alias: 'agreementConditions', display: 'normal', mandatory: false, recordType: 'customrecord_twc_agreement_cond' },
+            AGREEMENT_CONDITIONS_DATA: { name: 'custrecord_twc_sds_agr_cond_data', type: 'clobtext', alias: 'agreementConditionsData', display: 'hidden', mandatory: false },
             ACCESS_DRAWING: { name: 'custrecord_twc_sds_drawing_access', type: 'select', alias: 'accessDrawing', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
             ACCESS_DRAWING_REFERENCE: { name: 'custrecord_twc_sds_drawing_access_ref', type: 'text', alias: 'accessDrawingReference', display: 'normal', mandatory: false },
             FIBRE_DRAWING: { name: 'custrecord_twc_sds_drawing_fibre', type: 'select', alias: 'fibreDrawing', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
@@ -226,12 +228,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get agreementTemplateName() { return this.getText(_recordFields.AGREEMENT_TEMPLATE); }
             
-            get siteType() {
-                return this.get(_recordFields.SITE_TYPE);
-            } set siteType(value) {
-                this.set(_recordFields.SITE_TYPE, value)
+            get agreementConditions() {
+                return this.get(_recordFields.AGREEMENT_CONDITIONS);
+            } set agreementConditions(value) {
+                this.set(_recordFields.AGREEMENT_CONDITIONS, value)
             }
-            get siteTypeName() { return this.getText(_recordFields.SITE_TYPE); }
+            get agreementConditionsName() { return this.getText(_recordFields.AGREEMENT_CONDITIONS); }
+            
+            get agreementConditionsData() {
+                return this.get(_recordFields.AGREEMENT_CONDITIONS_DATA);
+            } set agreementConditionsData(value) {
+                this.set(_recordFields.AGREEMENT_CONDITIONS_DATA, value)
+            }
             
             get accessDrawing() {
                 return this.get(_recordFields.ACCESS_DRAWING);
