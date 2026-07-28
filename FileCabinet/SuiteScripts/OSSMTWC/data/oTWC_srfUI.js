@@ -6,8 +6,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
     (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItem, twcSrfItemUI, twcFileUI, configUIFields, twcUI, twcSrfReview) => {
 
         function getSrfTableFields() {
-            // @@TODO: this list of fields to display can be set by user
-            // @@IMPORTANT: we should make sure some fields are there as they are needed by the ui:
+            // @@IMPORTANT: make sure some fields are there as they are needed by the ui:
             //      id, name
             //      lat/lng
             //      site address
@@ -166,15 +165,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             dataSource.Type = twcSrf.Type;
 
             var fieldGroups = [];
-            if (dataSource.id) {
-                fieldGroups.push(getSRFInfoPanels(dataSource, userInfo, readOnly));
-                if (dataSource[twcSrf.Fields.SRF_STATUS] != twcSrf.Status.Draft) {
-                    // @@TODO : these fields should only be editable by TL staff I suppose
-                    // fieldGroups.push(getSRFWorkFlowPanels(dataSource, userInfo));
-                }
-            } else {
-                fieldGroups.push(getSRFInfoPanels(dataSource, userInfo, readOnly));
-            }
+            fieldGroups.push(getSRFInfoPanels(dataSource, userInfo, readOnly));
             return fieldGroups;
         }
 

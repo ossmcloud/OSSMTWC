@@ -25,16 +25,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#page = page;
 
                 var unboundCols = [];
-                // @@TODO: use icons and actions 
-                // unboundCols.push({
-                //     id: 'open_tkt', title: '', unbound: true,
-                //     styles: { 'text-align': 'center' },
-                //     noSort: true,
-                //     sortIdx: 0,
-                //     initValue: (d) => {
-                //         return `<a href="${ticketViewLink(d.id)}">View</a>`;
-                //     }
-                // })
                 unboundCols.push({
                     id: 'new_tkt', title: '', unbound: true,
                     styles: { 'text-align': 'center' },
@@ -51,12 +41,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     fitContainer: false
                 });
 
-                this.#table.onInitEvents = (tbl) => {
-                    // @@TODO: this deows not work
-                    // tbl.table.on('scroll', e => {
-                    //     console.log('scrll', e)
-                    // })
-                }
             }
 
             get table() { return this.#table.table; }

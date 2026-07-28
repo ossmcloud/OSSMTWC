@@ -6,8 +6,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
     (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand) => {
 
         function getSiteTableFields() {
-            // @@TODO: this list of fields to display can be set by user
-            // @@IMPORTANT: we should make sure some fields are there as they are needed by the ui:
+            // @@IMPORTANT: make sure some fields are there as they are needed by the ui:
             //      id, name
             //      lat/lng
             //      site address
@@ -149,10 +148,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             locations.fields.push({ id: twcSite.Fields.SITE_LONGITUDE, label: 'Longitude' })
             locations.fields.push({ id: twcSite.Fields.SITE_EASTING, label: 'Easting' })
             locations.fields.push({ id: twcSite.Fields.SITE_NORTHING, label: 'Northing' })
-
-            // @@TODO: this is just a sample, remove later
-            // locations.fields.push({ id: 'site-directions', type: twcUI.CTRL_TYPE.BUTTON, label: '', value: 'Directions', lineBreak: true })
-
+            
             var locations = { id: 'site-summary-access', title: 'Access Track / Safety Info', fields: [] };
             fieldGroup.controls.push(locations);
             locations.fields.push({ id: twcSite.Fields.TRACK_TYPE, label: 'Track Type' })
@@ -453,9 +449,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroups.push(getSitePanelFields_facilities(dataSource, userinfo))
             fieldGroups.push(getSitePanelFields_projects(dataSource, userinfo))
             fieldGroups.push(getSitePanelFields_files(dataSource, userinfo))
-
-
-            // @@TODO: implement all required panels
             return fieldGroups;
         }
 

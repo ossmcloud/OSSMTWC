@@ -9,8 +9,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSiteInfo(siteId, userInfo) {
             if (!siteId) { throw new Error('No site id provided!'); }
 
-            // @@TODO: move to rec.custom.js
-
             var siteFields = twcSite.getFields();
 
             var joinTables = [];
@@ -228,7 +226,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             }
 
-            // @@TODO: better error message
             if (errors.length > 0) { throw new Error(JSON.stringify(errors)); }
         }
 

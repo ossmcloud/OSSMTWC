@@ -6,7 +6,6 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
     (record, core, coreSQL, b64, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew, twcSafAction, twcEqAct, twcEquipment, twcSafTimeBlock, twcSafLog, twcFile, twcFileType, nsFileUtils) => {
 
         function renderSiteAccessPanel(userInfo, featureId) {
-            // @@TODO: featureId will determine some change on fields in the criteria
             var html = `
                 <script async defer src="https://maps.googleapis.com/maps/api/js?key=${twcConfig.cfg().GOOGLE_API_KEY}&loading=async"></script>
                 <div style="max-height: 60vh; overflow: hidden;">
@@ -197,7 +196,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     select  NVL(custrecord_twc_cus_pre_cust_auto_approve, 'F') as auto_approve
                     from    customrecord_twc_cust_pres
                     where   custrecord_twc_cust_pres_site = ${options.siteId} 
-                    AND     custrecord_twc_cust_pres_infra = ${options['saf-structure']}
+                    AND     custrecord_twc_cust_pres_cust = ${customer}
                     order by lastmodified desc
                 `);
                 if (customerPresence && customerPresence.auto_approve == 'F') { autoApprove = false; }
@@ -298,26 +297,24 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
                 var certCount = crew.filter(c => {
                     return c.attendAs.find(cc => {
-                        // @@TODO: there are still few inconsistencies with casing here
+                        // @@NOTE: there are still few inconsistencies with casing here
                         return cc.value.toLowerCase() == cond.cert?.code.toLowerCase() && cc.exp >= latestDate;
                     });
                 });
 
                 var certExCount = crew.filter(c => {
                     return c.attendAs.find(cc => {
-                        // @@TODO: there are still few inconsistencies with casing here
+                        // @@NOTE: there are still few inconsistencies with casing here
                         return cc.value.toLowerCase() == cond.cert?.code.toLowerCase() && cc.exp < latestDate;
                     });
                 });
 
                 if (certCount.length < condQuantity) {
                     if (certCount.length == 0 && certExCount.length == 0) {
-                        //validationErrors.push(`${cond.quantity} ${cond.name} ${cond.quantity == 1 ? 'is' : 'are'} required, there are none in the crew`);
                         validationErrors.push(`${cond.quantity} ${cond.name}${cond.quantity == 1 ? '' : 's'} must be certified, there are none in the crew`);
                     } else if (certCount.length == 0 && certExCount.length > 0) {
                         // @@TODO: SAF: get expiry date
                         var crewNames = certExCount.map(i => { return `<li>${i.text}</li>` }).join('');
-                        //validationErrors.push(`${cond.quantity} ${cond.name} ${cond.quantity == 1 ? 'is' : 'are'} required, there ${certExCount.length == 1 ? 'is' : 'are'} only ${certExCount.length} compliant in the crew but the cert is expired: <ul class="twc">${crewNames}</ul>`);
                         validationErrors.push(`${cond.quantity} ${cond.name}${cond.quantity == 1 ? '' : 's'} must be certified, there ${certExCount.length == 1 ? 'is' : 'are'} only ${certExCount.length} compliant in the crew but the cert is expired: <ul class="twc">${crewNames}</ul>`);
                     } else {
                         var expiredCrews = '';
@@ -599,7 +596,6 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             core.array.each(safActions, sa => {
                 recu.submit(twcSafAction.Type, sa.saf_action_id, twcSafAction.Fields.SAF_ACTION_STATUS, twcUtils.SafActionStatus.Detached);
-                // @@TODO: build twcEaAction object and use constants here
                 recu.submit(twcEqAct.Type, sa.ea_action_id, twcEqAct.Fields.EA_SAF, null);
             })
         }

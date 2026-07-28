@@ -438,7 +438,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var srfReviewFieldSql = '';
             srfReviewFields.map(f => { if (f.field_id.startsWith('cust')) { srfReviewFieldSql += `${f.field_id},`; } })
 
-            // @@TODO: use constants
             workflow.items = [];
             coreSql.each(`
                 select  wi.id, ws.id as stage, ws.name as stage_name, ws.custrecord_twc_srf_wks_step_no step_no, ws.custrecord_twc_srf_wks_seq_no as seq_no,

@@ -137,7 +137,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sqlFields = 's.id, s.id as record_id, s.name';
             sqlFields += formatUserFields(siteFields, userFields);
 
-            // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSite.Fields.NAME}`;
 
@@ -166,9 +165,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         function renderSiteLocatorPanel(featureId) {
-
-            // @@TODO: featureId will determine some change on fields in the criteria
-
             var html = `
                 <script async defer src="https://maps.googleapis.com/maps/api/js?key=${twcConfig.cfg().GOOGLE_API_KEY}&loading=async"></script>
                 <div style="max-height: 60vh; overflow: hidden;">

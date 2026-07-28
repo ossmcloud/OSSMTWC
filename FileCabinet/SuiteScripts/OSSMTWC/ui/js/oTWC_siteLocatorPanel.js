@@ -57,7 +57,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#page.ui.on('click', e => {
                     try {
                         if (e.id == 'twc-action-new-site') {
-                            // @@TODO:
                             window.open(core.url.record(twcSite.Type));
                         } else if (e.id == 'twc-action-clear-filter') {
                             this.clearFilters();
@@ -70,7 +69,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
 
 
-                // @@TODO: @@REVIEW: we should hook this to this.#sitesTable object
                 var table = jQuery('ossm[data-type="table"]');
                 table.on('scroll', e => {
                     var currentScrollTop = table.scrollTop();
@@ -97,37 +95,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
                 this.updateResults();
             }
-
-            // updateResults_OLD() {
-            //     // @@TODO: filter sites on memory OR load filtered list
-            //     var filters = this.ui.getValues();
-            //     console.log(filters)
-
-            //     var siteIds = [];
-            //     this.#dataFiltered = this.#data.filter(s => {
-            //         var match = true;
-            //         for (var f in filters) {
-            //             if (!f.startsWith('cust') && f != 'record_id' && f != 'name') { continue; }
-            //             if (!filters[f]) { continue; }
-            //             var values = filters[f].split(',').map(i => { return i?.toString() });
-            //             match = values.indexOf(s[f]?.toString()) >= 0;
-            //             if (!match) { break; }
-            //         }
-            //         if (match) { siteIds.push(s.id) }
-            //         return match;
-            //     });
-
-            //     if (this.#tableData) {
-            //         this.#tableDataFiltered = this.#tableData.filter(s => {
-            //             return siteIds.indexOf(s.site_id) >= 0;
-            //         });
-            //         this.#sitesTable.refresh(this.#tableDataFiltered);
-            //     } else {
-
-            //         this.#sitesTable.refresh(this.#dataFiltered);
-            //     }
-            //     this.updateGoogleMap(null);
-            // }
 
             updateResults() {
                 var filters = this.ui.getValues();

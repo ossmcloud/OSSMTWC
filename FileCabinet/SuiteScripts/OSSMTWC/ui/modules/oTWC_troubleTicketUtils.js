@@ -14,7 +14,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sqlFields = 's.id, s.id as record_id, s.name, s.custrecord_twc_trbl_tkt_site as site_id, BUILTIN.DF(s.custrecord_twc_trbl_tkt_site) as site_id_text';
             sqlFields += formatUserFields(ticketFields, userFields);
 
-            // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.created desc`;
             var tickets = coreSQL.run(`
@@ -29,7 +28,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 userFields: userFields,
                 ticketFields: ticketFields,
                 tickets: tickets,
-                sites: getSites(options).sites
+                sites: getSites(options, userInfo).sites
             }
         }
 
@@ -41,9 +40,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sqlFields = 's.id, s.id as record_id, s.name, s.custrecord_twc_site_longitude_access, s.custrecord_twc_site_latitude_access';
             sqlFields += formatUserFields(siteFields, userFields);
 
-            // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSite.Fields.NAME}`;
+
+            if (!userInfo.isEmployee) {
+                whereClause = `where s.custrecord_twc_site_public in (${twcUtils.PUBLIC_FLAG.Yes})`
+            }
+
 
             var sites = coreSQL.run(`
                 select  ${sqlFields}, st.custrecord_twc_site_types_color as site_type_color, sp.custrecord_twc_site_portfolio_color as site_color,
@@ -91,7 +94,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function renderTroubleTicketsPanel(userInfo, featureId) {
-            // @@TODO: featureId will determine some change on fields in the criteria
             var html = `
                 <script async defer src="https://maps.googleapis.com/maps/api/js?key=${twcConfig.cfg().GOOGLE_API_KEY}&loading=async"></script>
                 <div style="max-height: 60vh; overflow: hidden;">
@@ -258,43 +260,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
                 recu.submit(twcTrblTkts.Type, payload.id, submitInfo[twcTrblTkts.Type].fields, submitInfo[twcTrblTkts.Type].values);
 
-                /*
-                // @@NOTE: now we load the linked record fields changes into submitInfo object as we could have more than one
-                var tktFields = twcTrblTkts.getFields();
-                var tkt = twcTrblTkts.get(payload.id);
-                for (var k in payload) {
-                    if (k == 'id') { continue; }
-                    if (k == 'siteId') { continue; }
-                    var fieldPath = k.split('___');
-                    if (fieldPath.length > 1) {
-                        var tktField = tktFields.find(tk => { return tk.field_id == fieldPath[0]; })
-                        if (!tktField || !tktField.field_foreign_table) {
-                            // @@TODO: this should not happen really ???
-                        } else {
-                            // @@NOTE: @@IMPORTANT: we use fieldPath[0] as object property and NOT siteField.field_foreign_table because we could have more than one field linking to the same record type
-                            if (!submitInfo[fieldPath[0]]) {
-                                submitInfo[fieldPath[0]] = { id: tkt.get(fieldPath[0]), type: tktField.field_foreign_table, fields: [], values: [] };
-                            }
-                            submitInfo[fieldPath[0]].fields.push(fieldPath[1]);
-                            submitInfo[fieldPath[0]].values.push(payload[k])
-                        }
-                    }
-                }
-
-
-                // var errors = [];
-                for (var recType in submitInfo) {
-                    if (recType == twcTrblTkts.Type) { continue; }
-                    try {
-                        recu.submit(submitInfo[recType].type, submitInfo[recType].id, submitInfo[recType].fields, submitInfo[recType].values);
-                    } catch (error) {
-                        core.logError('SAVE-TROURBLE TICKET-INFO', `${JSON.stringify(submitInfo[recType])}: ${error.message}`);
-                        submitInfo[recType].error = error.message;
-                        errors.push(submitInfo[recType])
-                    }
-
-                }
-                */
+               
             }
             else {
                 if (!payload.siteId) { throw new Error('Site ID cannot be empty'); }

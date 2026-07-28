@@ -100,7 +100,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#form = twcUIPanel.ui(res);
                 this.#form.on('change', e => { this.setFormState(e); })
                 //if (this.#srfItem.dirty) {
-                    this.setFormState();
+                this.setFormState();
                 //}
 
                 this.#form.getControl('srf-pick-from-library').on('click', e => {
@@ -295,7 +295,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     core.array.each(pickedEq.relatedItems, i => {
                         i[twcSrfItem.Fields.REQUEST_TYPE] = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
-                        
+
                         //i[twcSrfItem.Fields.STEP_TYPE] = eqClass;
                         i.dirty = true;
                     })
@@ -337,7 +337,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             pickFromLibrary(eqClass, eqType, callback) {
                 try {
-                    // @@TODO: filter by step/type
                     var fields = twcEqLibUI.getLibTableFields()
                     const onColumnInit = (tbl, col) => {
                         var cf = fields.find(cf => { return cf.field == col.id });
@@ -410,7 +409,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             if (eqClass == twcEqUI.EqClass.TME) {
                                 var res = await this.#page.post({ action: 'get-equipment-children' }, { eq: pickedEq.id })
                                 pickedEq.relatedItems = res.data;
-                                
+
                             }
 
                             callback(pickedEq);
@@ -498,6 +497,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             dialog.confirmAsync('Are you sure you wish to cancel this SRF?').then(() => {
                                 this.data.siteRequestInfo[twcSrf.Fields.SRF_STATUS] = twcUtils.SrfStatus.SRFCancelled;
                                 this.data.siteRequestInfo.dirty = true;
+                                this.dirty = true;
                                 this.onSave(e);
                             });
                         });
@@ -510,6 +510,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             if (e.target.type != 'table') {
                                 this.data.siteRequestInfo[e.id] = e.value;
                                 this.dirty = true
+                            }
+                            if (e.id == twcSrf.Fields.CUSTOMER) {
+                                this.post({ action: 'get-customer-site-id' }, { site: this.data.siteRequestInfo[twcSrf.Fields.SITE], customer: e.value }).then(res => {
+                                    console.log(res);
+                                    this.ui.getControl(twcSrf.Fields.OPERATOR_SITE_ID).value = res;
+                                })
                             }
                         })
                         core.array.each(this.ui.controls, c => {
@@ -642,22 +648,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             async onSave(e) {
-                const targetId = e.id || e.target.id;
                 try {
+                    if (!this.dirty) { if (!confirm('The record has not changed, are you sure you want to submit it anyway?')) { return; } }
 
-                    if (targetId != 'submit-button' && targetId != 'cancel-srf-button') {
-                        if (!this.dirty) { throw new Error('The record has not changed'); }
+                    // @@NOTE: we use getValues just to detect missing mandatory fields
+                    this.ui.getValues();
+                    if (!this.ui.getControl(twcFile.Type)?.data.length) { throw new Error('You need to attach at least one file'); }
+                    var srfItemsCount = 0;
+                    for (var k in twcEquipment.StepType) {
+                        srfItemsCount += (this.ui.getControl(`${twcSrfItem.Type}_${twcEquipment.StepType[k]}`)?.data.length || 0);
                     }
-
-                    var payload = this.data.siteRequestInfo;
-
-                    // @@TODO: SRF: use the table
-                    // if (!this.data.siteRequestInfo.files || this.data.siteRequestInfo.files.length == 0) { throw new Error('You need to attach at least one file'); }
+                    if (srfItemsCount == 0) { throw new Error(`You need to specify at least one item`); }
 
                     this.wait();
 
-                    var res = await this.post({ action: 'save' }, payload);
+                    var res = await this.post({ action: 'save' }, this.data.siteRequestInfo);
                     this.dirty = false;
+
                     var p = new URLSearchParams(location.search);
                     if (p.has('recId')) {
                         location.href = location.href.replace('&edit=T', '');

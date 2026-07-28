@@ -66,8 +66,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getSafTableFields() {
-            // @@TODO: this list of fields to display can be set by user
-            // @@IMPORTANT: we should make sure some fields are there as they are needed by the ui:
+            // @@IMPORTANT: make sure some fields are there as they are needed by the ui:
             //      id, name
             //      lat/lng
             //      site address

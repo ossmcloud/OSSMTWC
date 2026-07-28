@@ -28,12 +28,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     unboundCols: unboundCols,
 
                 });
-                this.#table.onInitEvents = (tbl) => {
-                    // @@TODO: this deows not work
-                    // tbl.table.on('scroll', e => {
-                    //     console.log('scrll', e)
-                    // })
-                }
+                
             }
 
             get table() { return this.#table.table; }

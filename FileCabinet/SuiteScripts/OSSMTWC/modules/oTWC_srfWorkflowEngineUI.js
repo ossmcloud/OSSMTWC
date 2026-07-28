@@ -86,8 +86,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     </div>
                 `);
 
-                // @@TODO: do not hardcode
-                var isTLResponse = this.#item.next_stage_pick == 'T';   // this.#item.stage == 7;
+                var isTLResponse = this.#item.next_stage_pick == 'T';
                 var completedCount = 0; var passedCount = 0;
 
                 if (isTLResponse) {

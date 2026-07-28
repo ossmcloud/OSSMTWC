@@ -62,7 +62,7 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                 try {
 
                     if (window.NS.UI.Util.isRedwood) {
-                        // @@TODO: this would take effect after few moments the page is loaded, which is ok but looks a bit ugly, can we do better here
+                        // @@REVIEW: this would take effect after few moments the page is loaded, which is ok but looks a bit ugly, can we do better here???
                         jQuery('#main_form').find('.uir-form-header').css('background-color', 'var(--main-bkgd-color)');
                         jQuery('#main_form').find('table').css('background-color', 'var(--main-bkgd-color)');
                         jQuery('#main_form').find('.page-title-menu').css('display', 'none');
@@ -413,7 +413,6 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                 html = html.replaceAll(`{ICON_${k.toUpperCase()}}`, twcIcons.ICONS[k]);
             }
 
-            // @@TODO: based on userInfo populate core page menus and similar
             html = html.replaceAll('{NAVIGATION_DROP_DOWN}', twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, id: 'twc-navigation-select', value: userInfo.permission.id, noEmpty: true, dataSource: userInfo.permission.menuItems }));
 
             if (pageData.portlet) {

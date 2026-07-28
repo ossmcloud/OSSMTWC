@@ -150,8 +150,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Pending: 1,
             Accredited: 2,
             SPExpired: 3,
-            // CertsExpired: 4,        // @@TODO: this status makes no sense, the overall profile accreditation is driven by the Safe Pass state only.
-            // SPCertsExpired: 5,      // @@TODO: this status makes no sense, the overall profile accreditation is driven by the Safe Pass state only.
+            NoSiteAccess: 4,
             Inactive: 6
         }
 
@@ -1103,7 +1102,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         function getSafTimeBlocks(siteId) {
-            // @@TODO: we could have time slots specific to a site if needed
             return coreSQL.run(`select id as value, name as text from ${SAF_TIME_BLOCKS} order by id`);
         }
 
@@ -1383,6 +1381,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
+        function getOperatorSiteId(options) {
+            return coreSQL.first(`
+                select  custrecord_twc_cust_pres_cust_site_id as customer_site_id
+                from    customrecord_twc_cust_pres
+                where   custrecord_twc_cust_pres_site = ${options.site} 
+                AND     custrecord_twc_cust_pres_cust = ${options.customer}
+                order by lastmodified desc
+            `)?.customer_site_id || '';
+        }
+
+
         return {
             // @@HARDCODED:
             TWC_COMPANY: 57,
@@ -1514,6 +1523,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getFiles: getFiles,
             getFilePreviewLink: getFilePreviewLink,
             getCompanyInsuranceDetails: getCompanyInsuranceDetails,
+            getOperatorSiteId: getOperatorSiteId,
+
             formatLongDate: formatLongDate,
             fromJsToNs: fromJsToNs,
             fromNsToJs: fromNsToJs,

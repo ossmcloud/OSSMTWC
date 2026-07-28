@@ -40,7 +40,6 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             addTab(options) {
-                // @@TODO: find if base class is TWCBaseTabVertical
                 this.#tabs.push(new TWCBaseTabVertical(this, options))
             }
 

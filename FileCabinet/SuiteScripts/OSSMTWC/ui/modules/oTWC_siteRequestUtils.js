@@ -261,9 +261,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function renderSiteLocatorPanel(featureId) {
-
-            // @@TODO: featureId will determine some change on fields in the criteria
-
             var html = `
                 <script async defer src="https://maps.googleapis.com/maps/api/js?key=${twcConfig.cfg().GOOGLE_API_KEY}&loading=async"></script>
                 <div style="max-height: 60vh; overflow: hidden;">
@@ -403,6 +400,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // this is a new SRF, if the logged in user is a customer then set the customer field
                     if (pageData.userInfo.isCustomer) { srf[twcSrf.Fields.CUSTOMER] = pageData.userInfo.id; }
                     srf[twcSrf.Fields.SITE] = pageData.siteId;
+                    srf[twcSrf.Fields.OPERATOR_SITE_ID]=twcUtils.getOperatorSiteId()
                 }
                 return srf;
             },

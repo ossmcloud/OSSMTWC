@@ -257,9 +257,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
             if (userInfo.profileInfo) { userInfo.profileInfo.designatedContacts = designatedContacts; }
 
-            if (userInfo.isEmployee) {
-                //userInfo.canSign = true;    // @@TODO: remove
-            } else {
+            if (!userInfo.isEmployee) {
                 if (userInfo.profileInfo) { userInfo.canSign = userInfo.profileInfo.designatedContacts.find(i => { return i.can_sign; })?.can_sign == 'T'; }
             }
 
@@ -321,7 +319,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
         }
 
-        // @@TODO: persist
         var _cfg = null;
         function getConfig() {
             if (!_cfg) {

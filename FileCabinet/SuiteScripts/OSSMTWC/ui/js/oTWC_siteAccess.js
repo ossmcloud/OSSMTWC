@@ -12,7 +12,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return `${_safLink}&recId=${id}&edit=T&reUse=T`
         }
 
-        // @@TODO: this should be from site access table
         class TWCSiteTable {
             #page = null;
             #table = null;
@@ -35,13 +34,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     fitScreen: true,
                     fitContainer: false
                 });
-
-                this.#table.onInitEvents = (tbl) => {
-                    // @@TODO: this deows not work
-                    // tbl.table.on('scroll', e => {
-                    //     console.log('scrll', e)
-                    // })
-                }
+               
             }
 
             get table() { return this.#table.table; }
@@ -639,86 +632,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             manageEqAction(safActions, table) {
                 TWCEqActionForm.open(this, safActions, table);
-                // try {
-                //     if (!safActions) { safActions = {}; }
-                //     if (this.deleteRecord(safActions, table)) { return; }
-
-                //     if (!safActions.ui) {
-
-                //         this.data.siteAccessInfo[twcSaf.Fields.CUSTOMER] = this.ui.getControl('saf-customer').value;
-                //         if (!this.data.siteAccessInfo[twcSaf.Fields.CUSTOMER]) { throw new Error('Please, specify a customer'); }
-
-                //         safActions.ui = this.#page.postSync({ action: 'saf-action-record' }, { saf: this.data.siteAccessInfo, action: safActions })
-                //         safActions.ui.getControl = function (id) {
-                //             return this.controls.find(c => { return c.id == id })
-                //         }
-                //     }
-
-                //     var form = twcUIPanel.ui(safActions.ui);
-                //     var safActionsTable = form.getControl('srf-actions');
-                //     form.getControl('saf-action-srf').on('change', e => {
-                //         // @@TODO: gte SAF Equip action
-                //         var waitPanel = safActionsTable.ui.parent().find('#wait-panel');
-                //         if (waitPanel.length == 0) {
-                //             waitPanel = jQuery(`
-                //                 <div id="wait-panel" style="margin-top: 17px;">
-                //                     <div>loading...</div>
-                //                     <span class="twc-wait-cursor">
-                //                         ${twcIcons.ICONS.waitWheel}
-                //                     </span>
-                //                 </div>
-                //             `);
-                //             safActionsTable.ui.parent().append(waitPanel);
-                //         }
-                //         waitPanel.css('display', 'block');
-                //         safActionsTable.ui.css('display', 'none');
-
-                //         this.#page.post({ action: 'get-srf-actions' }, { srf: e.value })
-                //             .then(res => {
-                //                 safActionsTable.render(res.data, true);
-                //                 safActionsTable.ui.css('display', 'block');
-                //                 safActionsTable.ui.find('#srf-actions-check-all').on('click', e => {
-                //                     var checked = jQuery(e.currentTarget).is(':checked') ? 'checked' : '';
-                //                     safActionsTable.ui.find('input[type="checkbox"]').prop('checked', checked);
-                //                 })
-                //                 waitPanel.css('display', 'none');
-                //             })
-                //             .catch(err => {
-                //                 dialog.error(err);
-                //                 waitPanel.css('display', 'none');
-                //             });
-                //     })
-                //     if (form.getControl('saf-action-srf').value) { form.getControl('saf-action-srf').on('change'); }
-
-                //     dialog.confirm({ title: 'manage action', message: form.ui, width: '1250px', height: '750px' }, () => {
-                //         try {
-                //             if (safActionsTable.ui.find('input[data-id]:checked').length == 0) { throw new Error('No actions selected'); }
-
-                //             var tableActions = safActionsTable.ui.find('input[data-id]').toArray();
-                //             if (!this.data.siteAccessInfo.actions) { this.data.siteAccessInfo.actions = []; }
-                //             core.array.each(tableActions, tableAction => {
-                //                 var eaId = jQuery(tableAction).data('id')
-                //                 var srfAction = safActionsTable.data.find(a => { return a.ea_id == eaId; })
-                //                 var safAction = this.data.siteAccessInfo.actions.find(a => { return a.ea_id == eaId; })
-                //                 if (jQuery(tableAction).is(':checked')) {
-                //                     if (!safAction) { this.data.siteAccessInfo.actions.push(srfAction); }
-                //                 } else {
-                //                     if (safAction) { this.data.siteAccessInfo.actions.splice(this.data.siteAccessInfo.actions.indexOf(safAction), 1); }
-                //                 }
-                //             })
-
-                //             table.render(this.data.siteAccessInfo.actions, true)
-
-                //             this.dirty = true
-                //         } catch (error) {
-                //             dialog.error(error);
-                //             return false;
-                //         }
-                //     })
-
-                // } catch (error) {
-                //     dialog.error(error);
-                // }
             }
 
             deleteRecord(safRecord, table) {
@@ -876,7 +789,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     dialog.saving(dlg);
 
                     this.page.post({ action: 'detach-saf-action' }, values).then(res => {
-                        // @@TODO: change the cell content to check box (checked)
                         this.selectSrf();
                         dlg.close();
                     }).catch(err => {
@@ -886,39 +798,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     return false;
                 })
                 
-                // var formConfig = { controls: [] };
-                // formConfig.controls.push({ type: twcUI.CTRL_TYPE.SELECT, id: 'reason', label: 'Detach Reason', dataSource: this.data.safActionDetachReason, width: '250px', mandatory: true });
-                // formConfig.controls.push({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Detach Comment', width: '100%', rows: 7, mandatory: true });
-
-                // var form = twcUI.init(formConfig);
-                // form.getControl('reason').on('change', e => {
-                //     form.getControl('comment').mandatory = form.getControl('reason').valueObj?.force_comm == 'T';
-                // })
-
-                // dialog.confirm({ title: 'detach action from SAF', message: form.ui, width: '600px', height: '350px' }, dlg => {
-                //     try {
-                //         var values = form.getValues();
-                //         values.saf = safId;
-                //         values.id = eaId;
-
-                //         dialog.saving(dlg);
-
-                //         this.page.post({ action: 'detach-saf-action' }, values).then(res => {
-                //             // @@TODO: change the cell content to check box (checked)
-                //             this.selectSrf();
-                //             dlg.close();
-                //         }).catch(err => {
-                //             dialog.savingError(dlg, err);
-                //         })
-
-                //         return false;
-                        
-                //     } catch (error) {
-                //         dialog.error(error);
-                //         return false;
-                //     }
-                // })
-
+              
                 
             }
 

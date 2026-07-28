@@ -101,7 +101,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 inventoryDetails: inventoryDetails,
                 inventoryFields: inventoryFields,
                 userFields: userFields,
-                sites: getSites(options).sites
+                sites: getSites(options, userInfo).sites
             }
         }
 
@@ -116,6 +116,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSite.Fields.NAME}`;
+
+            if (!userInfo.isEmployee) {
+                whereClause = `where s.custrecord_twc_site_public in (${twcUtils.PUBLIC_FLAG.Yes})`
+            }
 
             var sites = coreSQL.run(`
                 select  ${sqlFields}, st.custrecord_twc_site_types_color as site_type_color, sp.custrecord_twc_site_portfolio_color as site_color,

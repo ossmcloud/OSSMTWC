@@ -86,7 +86,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function setAsCurrent(srf) {
-            // @@TODO: set SD as current and previous one as superseded
+            // @@NOTE: set SD as current and previous one as superseded
 
             var sds = coreSql.first(`select id, ${twcSds.Fields.SITE} as site_id, ${twcSds.Fields.CUSTOMER} as cust_id from ${twcSds.Type} where ${twcSds.Fields.SRF} = ${srf.id}`);
             if (!sds) { throw new Error(`Cannot set SDS as current, no record found for id: ${srf.id}`) };

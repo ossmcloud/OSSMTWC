@@ -139,7 +139,6 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 }
 
             } else {
-                // @@TODO: this should actually be the site access info
                 pageData.data.srfInfo = twcSiteLocatorUtils.getSiteSrf(null, pageData.userInfo);
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
                 html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteRequestUtils.renderSiteLocatorPanel(pageData.permission.featureId));
@@ -192,6 +191,12 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 var resp = twcSrfWorkflowEngine.postSignature(userInfo, payload)
                 twcSdsRender.renderSDS(context, resp.srf, true);    // @@NOTE: this will force the PDF to be recreated and saved
                 return resp;
+
+            } else if (context.request.parameters.action == 'get-customer-site-id') {
+                var payload = JSON.parse(context.request.body);
+                return twcUtils.getOperatorSiteId(payload)
+
+                //
            
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);

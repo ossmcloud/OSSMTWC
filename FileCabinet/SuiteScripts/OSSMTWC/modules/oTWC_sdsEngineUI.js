@@ -11,7 +11,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var agreementTemplates = coreSql.run(`select id as value, name as text from customrecord_twc_sds_agr_tmpl where isinactive ='F' order by name`);
             var agreementSiteTypes = coreSql.run(`select id as value, name as text from customrecord_twc_sds_site_type where isinactive ='F' order by name`);
 
-            // @@TODO: SDS:
+            // @@TODO: SDS: 
             var drawingFiles = [];
             var accessDrawingFiles = [];
             var fibreDrawingFiles = [];
@@ -148,11 +148,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         function printSDS(page, srf) {
-            // @@TODO: user core.url
-            var popup = window.open(`/app/site/hosting/scriptlet.nl?script=customscript_otwc_print_srf_sds_sl&deploy=1&recId=${srf.id}`, '_blank', 'width=750,height=900');
-            if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-                alert('Popup was blocked. Please allow popups for this site.');
-            }
+            var popup = window.open(core.url.script('otwc_print_srf_sds_sl', { recId: srf.id }), '_blank', 'width=750,height=900');
+            if (!popup || popup.closed || typeof popup.closed === 'undefined') { alert('Popup was blocked. Please allow popups for this site.'); }
 
         }
 
