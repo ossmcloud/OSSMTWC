@@ -1,6 +1,0 @@
-
-
-GO-LIVE:
---------
-
-@@IMPORTANT: all (or most script) must be made available to the TWC Customer Center Role

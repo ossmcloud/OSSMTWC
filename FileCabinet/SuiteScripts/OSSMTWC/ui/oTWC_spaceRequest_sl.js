@@ -96,7 +96,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     if (signatureWorkflowItem) {
                         if (signatureWorkflowItem.stage_name.toLowerCase().indexOf('pack executed') > 0) {
                             if (pageData.userInfo.canExecutePack) {
-                                signSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Sign SDS (TL)', id: 'sign-sds-tl' });
+                                signSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Execute SDS', id: 'sign-sds-tl' });
                             }   
                         } else {
                             if (pageData.userInfo.canSign) {

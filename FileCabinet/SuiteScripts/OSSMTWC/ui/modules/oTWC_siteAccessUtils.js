@@ -168,37 +168,39 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var vendor = options['saf-vendor'];
 
             // Whether a SAF can be Auto-Approved is dependent on:
-            // var autoApprove = false;
-            // if (customer && vendor) {
-            //     autoApprove = true;
-            //     // - if MEWP (Mobile Elevating Work Platform => Crane/Cherrypicker) then no auto approval
-            //     if (options['saf-crane-access'] == 'T') { autoApprove = false; }
-            //     // - the SAF Type allows Auto-Approve (see SAF Visit Types tab)
-            //     if (!recu.lookUp('customrecord_twc_saf_type', options.safType, 'custrecord_twc_saf_type_autoapprove')) { autoApprove = false; }
-            //     // - the Customer (the SAF Auto-Approve field for the Customer is YES)
-            //     if (autoApprove) { if (!recu.lookUp('customrecord_twc_company', customer, 'custrecord_twc_co_saf_auto_approve')) { autoApprove = false; } }
-            //     // - the Primary Contractor (the SAF Auto-Approve field for the Primary Contractor is YES)
-            //     if (autoApprove) { if (!recu.lookUp('customrecord_twc_company', vendor, 'custrecord_twc_co_saf_auto_approve')) { autoApprove = false; } }
-            //     // - the Site (the SAF Auto-Approve for the Site is YES)
-            //     if (autoApprove) { if (!recu.lookUp('customrecord_twc_site', options.siteId, 'custrecord_twc_site_saf_auto_approve')) { autoApprove = false; } }
-            //     // - the Structure, if one is selected  (the SAF Auto-Approve for the Structure is YES)
-            //     if (autoApprove && options['saf-structure']) { if (!recu.lookUp('customrecord_twc_infra', options['saf-structure'], 'custrecord_twc_infra_saf_auto_apprv')) { autoApprove = false; } }
-            //     // - the TL Accommodation, if one is selected  (the SAF Auto-Approve for the Accommodation is YES)
-            //     if (autoApprove && options['saf-accommodation']) { if (!recu.lookUp('customrecord_twc_infra', options['saf-accommodation'], 'custrecord_twc_infra_saf_auto_apprv')) { autoApprove = false; } }
-            // }
             var autoApprove = false;
-            if (options.siteId && options['saf-structure']) {
-                var custPresSearch = coreSQL.run(`SELECT custrecord_twc_cus_pre_cust_auto_approve, custrecord_twc_cust_pres_cust FROM customrecord_twc_cust_pres WHERE custrecord_twc_cust_pres_site = ${options.siteId} AND custrecord_twc_cust_pres_infra = ${options['saf-structure']}`);
-                var safCustomer = options['saf-customer'];
-                if (custPresSearch.length > 0 && safCustomer) {
-                    for (var i = 0; i < custPresSearch.length; i++) {
-                        var row = custPresSearch[i];
-                        if (row.custrecord_twc_cus_pre_cust_auto_approve === 'T' && row.custrecord_twc_cust_pres_cust == safCustomer) {
-                            autoApprove = true;
-                            break; // Stop once a matching record is found
-                        }
-                    }
-                }
+            if (customer && vendor) {
+                autoApprove = true;
+                // - if MEWP (Mobile Elevating Work Platform => Crane/Cherrypicker) then no auto approval
+                if (options['saf-crane-access'] == 'T') { autoApprove = false; }
+                // - the SAF Type allows Auto-Approve (see SAF Visit Types tab)
+                if (!recu.lookUp('customrecord_twc_saf_type', options.safType, 'custrecord_twc_saf_type_autoapprove')) { autoApprove = false; }
+                // - the Customer (the SAF Auto-Approve field for the Customer is YES)
+                if (autoApprove) { if (!recu.lookUp('customrecord_twc_company', customer, 'custrecord_twc_co_saf_auto_approve')) { autoApprove = false; } }
+                // - the Primary Contractor (the SAF Auto-Approve field for the Primary Contractor is YES)
+                if (autoApprove) { if (!recu.lookUp('customrecord_twc_company', vendor, 'custrecord_twc_co_saf_auto_approve')) { autoApprove = false; } }
+                // - the Site (the SAF Auto-Approve for the Site is YES)
+                if (autoApprove) { if (!recu.lookUp('customrecord_twc_site', options.siteId, 'custrecord_twc_site_saf_auto_approve')) { autoApprove = false; } }
+                // - the Structure, if one is selected  (the SAF Auto-Approve for the Structure is YES)
+                if (autoApprove && options['saf-structure']) { if (!recu.lookUp('customrecord_twc_infra', options['saf-structure'], 'custrecord_twc_infra_saf_auto_apprv')) { autoApprove = false; } }
+                // - the TL Accommodation, if one is selected  (the SAF Auto-Approve for the Accommodation is YES)
+                if (autoApprove && options['saf-accommodation']) { if (!recu.lookUp('customrecord_twc_infra', options['saf-accommodation'], 'custrecord_twc_infra_saf_auto_apprv')) { autoApprove = false; } }
+            }
+
+            if (autoApprove) {
+                // @@NOTE: the customer presence table will tell us weather we need to overwrite the auto approve
+                //         the table will have more than one entry per customer/site as it has entries by structure
+                //         however, the client stated that they want to check this table for auto-approve on a site level only 
+                //         this means we my have more than one record per client/site which could state different things
+                //         we agreed on getting the latest edited record for this purpose
+                var customerPresence = coreSQL.first(`
+                    select  NVL(custrecord_twc_cus_pre_cust_auto_approve, 'F') as auto_approve
+                    from    customrecord_twc_cust_pres
+                    where   custrecord_twc_cust_pres_site = ${options.siteId} 
+                    AND     custrecord_twc_cust_pres_infra = ${options['saf-structure']}
+                    order by lastmodified desc
+                `);
+                if (customerPresence && customerPresence.auto_approve == 'F') { autoApprove = false; }
             }
 
             var requiresSrf = recu.lookUp('customrecord_twc_saf_type', options.safType, 'custrecord_twc_saf_type_require_srf');

@@ -1,20 +1,103 @@
 
-TODO-NEXT:
+SRF:
+	ATME on TME: the structure shiuld be preslect but should be changable
+	when opening form the structire is no longer selected
+
+	// @@TODO: SRF: Delete related item
+	When swapping TME show list of ATME/Feeders with toggle
+
+	Review email from Mark: Equipment Library
+	Review email from Amy: SRF Workflow and SDS Updates
+
+	work permitted date only <= today
+
+	if TME selcted then fice related eq as well
+
+
+
+SAF:
+	// @@TODO: SAF 
+	if detaching form a diffrent saf only do it at submit
+	construction saf => allow to complete each eq. acton
+			done
+			need more pic
+			detach
+			cancel
+
+			this determines if we have partailly completed, completed or back to awaitig pics
+
+Workflow:
+	if all passed still allow to reject
+	licesne requested => the customer should do it (allow power user)
+
+	drawing refrence:
+		change to drawing file => add ref, field which sources from twc file but let change it
+
+	Fibre Duct Route	
+		this is a draweing, and a ref
+		all fields mandatroy if needd fibre
+
+	Include Licence Map
+		Access drawing are mandory
+		Fibre drawing are mandory
+
+	Planned dates 
+		when steps are completed recaluclate planned on following stages
+
+	Bugs to fix:
+		editable review entries should be read-only if srf status is >= SRFApproved
+
+	SDS Pack Produced:
+		take snapshot of equipment
+		SDS Can be rejected in which case goes back to SDS Produced (add a 'reject' button for the signatories)
+			on reviewed stage
+
+	SDS Generation Pop-Up:
+		Print SDS should open the PDF unless changes are made
+		Include License Map => 
+			we have license map file per site
+			only for vodafone
+		Agreement Template:
+			see SDS Objects Schema REV2 ISSUED
+
+			needs schema created and ppulated
+			the pop-up is somehow dynamic
+			the pdf content changes
+		SDS no should match the SRF
+
+		SDS Completed:
+			SDS Pack executed, and Work permitted
+
+
+
+Others:
+	SRF: big files will cause the UI to take time to save
+	Workflow: 'Generate SDS' button should be not visible once the stage is completed
+
+_________________________________________________________________________________________________________________________________________________
+
+FRAMEWORK:
+	port largeFiles from OMT
+	File Preview: use blobs
+
+_________________________________________________________________________________________________________________________________________________
+
+IMPORTANT:
 ----------
-    OSSMTWC - ACL List, OSSMTWC - ASCL List
-        make sure no duplicates are created
+	Field re-labelled cause an issue when the object is re-built
+	DropDown - noAutoSelect - does not really work as intended
+	RecordBase.select : noAlias and useNames are same thing, remove useNames
+    Radix Role is assigned to the NS Role
+        This means that a user could assign an 'Admin' radix role to a customer or vendor which should not be done under any circumstances
+        We need to figure out a way to avoid this (cannot use Sourcing on the custom field as 'Center Type' is not available as List/Record option)
 
+_________________________________________________________________________________________________________________________________________________
+
+NEXUS RECORDS:
+--------------
+add nexus records to nexus role (with 0 = no, 1 = view, 2 = edit)
+to view/edit use NS Forms 
+	US script where we prevent records that cannot be seem from being opened
+   
 ________________________________________________________________________________________________________________________________________________________________
-
-TO REVIEW:
-----------
-Radix Role is assigned to the NS Role
-    This means that a user could assign an 'Admin' radix role to a customer or vendor which should not be done under any circumstances
-    We need to figure out a way to avoid this (cannot use Sourcing on the custom field as 'Center Type' is not available as List/Record option)
-
-________________________________________________________________________________________________________________________________________________________________
-
-BEFORE GO-LIVE:
----------------
-
 

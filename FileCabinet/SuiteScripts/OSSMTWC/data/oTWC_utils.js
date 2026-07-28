@@ -134,9 +134,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         const COMPANY_INSURANCE_FIELDS = {
-            EL: { field: 'custrecord_twc_co_el_status', fieldEx: 'custrecord_twc_co_el_expiry', code: 'el' },
-            PL: { field: 'custrecord_twc_co_pl_status', fieldEx: 'custrecord_twc_co_pl_expiry', code: 'pl' },
-            PI: { field: 'custrecord_twc_co_pi_status', fieldEx: 'custrecord_twc_co_pi_expiry', code: 'pi' },
+            EL: { field: 'custrecord_twc_co_el_status', fieldEx: 'custrecord_twc_co_el_expiry', fieldLimit: 'custrecord_twc_co_el_limit', fieldAvailable: 'custrecord_twc_co_el_available_typ', fieldCurrency: 'custrecord_twc_co_el_limit_cur', code: 'el' },
+            PL: { field: 'custrecord_twc_co_pl_status', fieldEx: 'custrecord_twc_co_pl_expiry', fieldLimit: 'custrecord_twc_co_pl_limit', fieldAvailable: 'custrecord_twc_co_pl_available_typ', fieldCurrency: 'custrecord_twc_co_pl_limit_cur', code: 'pl' },
+            PI: { field: 'custrecord_twc_co_pi_status', fieldEx: 'custrecord_twc_co_pi_expiry', fieldLimit: 'custrecord_twc_co_pi_limit', fieldAvailable: 'custrecord_twc_co_pi_available_typ', fieldCurrency: 'custrecord_twc_co_pi_limit_cur', code: 'pi' },
+        }
+        const COMPANY_INSURANCE_AVAILABLE_TYPE = {
+            NA: 1,
+            No: 2,
+            SelfInsured: 3,
+            Yes: 4
         }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
@@ -652,6 +658,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getCounties() {
             return getLookUpTableValues('state', "and country = 'IE'");
         }
+
+        function getCurrencies() {
+            return getLookUpTableValues('currency');
+        }
+
 
         function getRegions() {
             return getLookUpTableValues('customrecord_twc_region');
@@ -1319,14 +1330,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getCompanyInsuranceDetails(companyId) {
-            return coreSQL.run(`
-                select custrecord_twc_co_el_limit as el_limit, 
-                    custrecord_twc_co_pl_limit as pl_limit,
-                    custrecord_twc_co_pi_limit as pi_limit,
-                    custrecord_twc_co_el_expiry as el_expiry,
-                    custrecord_twc_co_pl_expiry as pl_expiry,
-                    custrecord_twc_co_pi_expiry as pi_expiry
-                from customrecord_twc_company where id = ${companyId}`)
+            return coreSQL.first(`
+                select  id, name,
+                        custrecord_twc_co_el_limit, TO_CHAR(custrecord_twc_co_el_expiry, 'YYYY-MM-DD') as custrecord_twc_co_el_expiry, custrecord_twc_co_el_status, custrecord_twc_co_el_limit_cur,
+                        custrecord_twc_co_pl_limit, TO_CHAR(custrecord_twc_co_pl_expiry, 'YYYY-MM-DD') as custrecord_twc_co_pl_expiry, custrecord_twc_co_pl_status, custrecord_twc_co_pl_limit_cur,
+                        custrecord_twc_co_pi_limit, TO_CHAR(custrecord_twc_co_pi_expiry, 'YYYY-MM-DD') as custrecord_twc_co_pi_expiry, custrecord_twc_co_pi_status, custrecord_twc_co_pi_limit_cur,
+                        custrecord_twc_co_restrictions, custrecord_twc_co_insurer
+                from    customrecord_twc_company where id = ${companyId}
+            `);
         }
 
 
@@ -1398,8 +1409,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             Certs: PROFILE_CERT_FIELD,
             NoActiveExpired: NO_ACTIVE_EXPIRED,
+            NoActiveExpiredArray: () => {
+                var statuses = [];
+                for (var k in NO_ACTIVE_EXPIRED) {
+                    statuses.push({ value: NO_ACTIVE_EXPIRED[k], text: k })
+                }
+                return statuses;
+            },
 
             Insurances: COMPANY_INSURANCE_FIELDS,
+            InsuranceAvailableType: COMPANY_INSURANCE_AVAILABLE_TYPE,
 
             CompanyAccreditationStatus: COMPANY_ACCREDITATION_STATUS,
             ProfileAccreditationStatus: PROFILE_ACCREDITATION_STATUS,
@@ -1466,6 +1485,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSiteTypes: getSiteTypes,
             getSiteLevels: getSiteLevels,
             getCounties: getCounties,
+            getCurrencies: getCurrencies,
             getRegions: getRegions,
             getPortfolios: getPortfolios,
             getSafStatus: getSafStatus,

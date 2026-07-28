@@ -1,0 +1,46 @@
+
+
+GO-LIVE:
+--------
+
+@@IMPORTANT: all (or most script) must be made available to the TWC Customer Center Role
+
+-------------------------------------------------
+
+OSSMNSDK Bundle - Update
+OSSMTWC - File Type => added type SRF Attachment
+Make sure all @@HARDCODED match
+
+-------------------------------------------------
+
+SCHEMA:
+-------
+	customrecord_twc_srf
+		custrecord_twc_srf_tl_drg_draft	=> remove, not used
+		custrecord_twc_srf_tl_drg_rev	=> remove, not used
+		custrecord_twc_srf_tl_drg		=> remove, not used
+		custrecord_twc_srf_tl_drg_assinged_to => remove, not used
+
+
+	customrecord_twc_equip
+		custrecord_twc_equip_make			=> change to free text but we may need to use tables make/model, in which case we need these tables on eq. library and srf item too
+		custrecord_twc_equip_inv_flag		 => changed to list/record
+		custrecord_twc_equip_parent_tme_id	 => changed to list/record
+
+	customrecord_twc_srf_itm
+		change fields to numbers
+
+	customrecord_twc_sds
+	customrecord_twc_sds_status
+	customrecord_twc_sds_agr_tmpl
+	customrecord_twc_sds_site_type
+
+	customrecord_twc_saf_action
+		custrecord_twc_saf_a_detach_reason
+		custrecord_twc_saf_a_detach_comment
+
+
+
+	TODO:
+		Eq. Table: Type Opt is missing (for feeders)
+		REMOVE: customrecord_twc_srf.custrecord_twc_srf_sds_form_data
