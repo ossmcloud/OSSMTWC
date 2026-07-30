@@ -9,12 +9,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getEquipment(options) {
             var fields = twcEquipmentUI.getInventoryTableFields();
             var fieldsSql = '';
-            fields.map(f => { fieldsSql += `eq.${f.field}, ` });
+            fields.map(f => {
+                if (f.field == twcEquipment.Fields.INFRASTRUCTURE || f.field == twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS || f.field == twcEquipment.Fields.CUSTOMER) {
+                    fieldsSql += `BUILTIN.DF(eq.${f.field}) as ${f.field}, eq.${f.field} as ${f.field}_id, `   
+                } else {
+                    fieldsSql += `eq.${f.field}, `
+                }
+            });
             var sql = `
                     select  eq.id, ${fieldsSql}, 
                             ${twcEquipment.Fields.DESCRIPTION},  
                             ${twcEquipment.Fields.EQUIPMENT_TYPE}, BUILTIN.DF(${twcEquipment.Fields.EQUIPMENT_TYPE}) as ${twcEquipment.Fields.EQUIPMENT_TYPE}_name,
 
+                            
                             
                     from    ${twcEquipment.Type} eq
                     join   customrecord_twc_infra infra on infra.id = eq.custrecord_twc_equip_str
@@ -58,11 +65,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function saveSiteSrf(userInfo, payload) {
-            // @@TODO: SRF: run validations on srf and srfItems records
             // @@TODO: SRF: error handling????
 
             var srfCancelled = false;
-
             var submitInfo = {};
             submitInfo[twcSrf.Type] = { id: payload.id, fields: [], values: [] };
             for (var k in payload) {
@@ -265,7 +270,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             })
         }
 
-        function renderSiteLocatorPanel(featureId) {
+        function renderSiteLocatorPanel(userInfo, featureId) {
             var html = `
                 <script async defer src="https://maps.googleapis.com/maps/api/js?key=${twcConfig.cfg().GOOGLE_API_KEY}&loading=async"></script>
                 <div style="max-height: 60vh; overflow: hidden;">
@@ -316,7 +321,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 </div>
             </div>`;
 
-            html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Name', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames() }));
+            html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Name', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames(userInfo) }));
             html = html.replace('{FILTER_SRF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SRF ID', width: 'calc(25% - 2px)', multiSelect: true, id: 'record_id', noEmpty: true, dataSource: twcUtils.getSrfIds() }));
             html = html.replace('{FILTER_SRF_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SRF STATUS', width: 'calc(25% - 2px)', multiSelect: true, id: twcSrf.Fields.SRF_STATUS, noEmpty: true, dataSource: twcUtils.getSrfStatus() }));
             html = html.replace('{FILTER_SITE_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Type', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));

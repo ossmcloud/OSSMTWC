@@ -145,7 +145,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 srfNewRelatedItem = e.rowData;
                                 if (!this.#srfItem.relatedItemsDelete) { this.#srfItem.relatedItemsDelete = []; }
                                 this.#srfItem.relatedItemsDelete.push(srfNewRelatedItem);
-                                this.#srfItem.relatedItems.splice(this.#srfItem.relatedItems.indexOf(srfNewRelatedItem), 1);                                
+                                this.#srfItem.relatedItems.splice(this.#srfItem.relatedItems.indexOf(srfNewRelatedItem), 1);
                                 relatedEqTable.render(this.#srfItem.relatedItems, true)
                             })
                         }
@@ -221,7 +221,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     var pickFromLb = cfg?.pick_from_library == 'T';
                     jQuery('#srf-pick-from-library-msg').html(cfg?.user_notes || '')
-                    jQuery('#srf-pick-from-library-msg').parent().css('display', cfg?.user_notes ? 'block' : '');
+                    jQuery('#srf-pick-from-library-msg').parent().css('display', cfg?.user_notes ? 'block' : 'none');
 
                     this.#form.getControl('srf-pick-from-library').disabled = !pickFromLb;
                     this.#form.getControl('srf-pick-from-library').hide = (reqType == twcSrfItem.RequestType.REMOVE);
@@ -298,13 +298,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#srfItem[twcSrfItem.Fields.DEPTH_MM] = pickedEq[twcEquipment.Fields.HEIGHTDEPTH_MM];
                     this.#srfItem[twcSrfItem.Fields.WEIGHT_KG] = pickedEq[twcEquipment.Fields.WEIGHT_KG];
 
-                    core.array.each(pickedEq.relatedItems, i => {
-                        i[twcSrfItem.Fields.REQUEST_TYPE] = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
-
-                        //i[twcSrfItem.Fields.STEP_TYPE] = eqClass;
-                        i.dirty = true;
-                    })
-
+                    if (pickedEq.relatedItems) {
+                        core.array.each(pickedEq.relatedItems, i => {
+                            i[twcSrfItem.Fields.REQUEST_TYPE] = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
+                            i.dirty = true;
+                        })
+                    }
                 }
                 this.#form.getControl('srf-equipment').value = this.#srfItem[twcSrfItem.Fields.EQUIPMENT_ID + '_name'] || '';
                 this.setFormEqChildren(pickedEq);
@@ -314,6 +313,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (pickedEq) {
                     this.#srfItem[twcSrfItem.Fields.TME_ID] = pickedEq.id;
                     this.#srfItem[twcSrfItem.Fields.TME_ID + '_name'] = pickedEq[twcEquipment.Fields.NAME];
+                    // this.#srfItem[twcSrfItem.Fields.STRUCTURE] = pickedEq[twcEquipment.Fields.INFRASTRUCTURE + '_id'];
+                    // this.#srfItem[twcSrfItem.Fields.STRUCTURE + '_name'] = pickedEq[twcEquipment.Fields.INFRASTRUCTURE];
+                    this.#form.getControl(twcSrfItem.Fields.STRUCTURE).value = pickedEq[twcEquipment.Fields.INFRASTRUCTURE + '_id'];
                 }
                 var ctrl = this.#form.getControl('srf-tme-equipment');
                 if (ctrl) { ctrl.value = this.#srfItem[twcSrfItem.Fields.TME_ID + '_name'] || ''; }

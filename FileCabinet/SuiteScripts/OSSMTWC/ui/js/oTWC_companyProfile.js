@@ -34,16 +34,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 const formatValue = (v, fv, d) => {
                     return twcUtils.getCompAccredStatusHtml(d.accreditation_status_id, 'twc-record-status-row')
                 }
-                // @@NOTE: Commented this line as we are not using those fields in the Accreditation Status Associated Customer List (Ticket Number - 107)
-                // table.getColumn('accreditation_status').formatValue = formatValue;
-                // table.getColumnOption('accreditation_status').formatValue = formatValue;
+                table.getColumn('accreditation_status').formatValue = formatValue;
+                table.getColumnOption('accreditation_status').formatValue = formatValue;
             }
 
             initProfileFormatValueColumns(table) {
                 const formatValue = (v, fv, d, col) => {
                     return twcProfile.getCertStatusHtml(v, d[col.id.replace('_sts_name', '_exp')])
                 }
-                // @@NOTE: Commented this line as we are not using those fields in the Profile View.
                 this.initProfileFormatValueColumn(table, twcProfile.Fields.CLIMBER_CERTIFIED_STATUS, formatValue);
                 this.initProfileFormatValueColumn(table, twcProfile.Fields.RESCUE_CERTIFIED_STATUS, formatValue);
                 this.initProfileFormatValueColumn(table, twcProfile.Fields.RF_CERTIFIED_STATUS, formatValue);

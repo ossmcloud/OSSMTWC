@@ -124,6 +124,25 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return safActions;
         }
 
+        var _primaryContractors = null;
+        function getPrimaryContractors(userInfo) {
+            if (!_primaryContractors) {
+                _primaryContractors = [];
+                if (userInfo.isEmployee) {
+                    _primaryContractors = twcUtils.getVendors(userInfo);
+                } else {
+                    if (!userInfo.canEnterSAF) {
+                        throw new Error(`Your accreditation status [<b>${userInfo.companyProfile.accreditation_status_name}</b>] does not allow for this action`);
+                    }
+                    _primaryContractors.push({
+                        value: userInfo.companyProfile.id,
+                        text: userInfo.companyProfile.name
+                    })
+                }
+            }
+            return _primaryContractors
+        }
+
 
         function getSAFInfoPanels_Builder(dataSource, userInfo, options) {
             _allowedSafTypes = twcUtils.getSafTypes(dataSource, userInfo.isEmployee);
@@ -255,36 +274,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fieldGroup = { id: 'site-access-step-3', title: 'Step 3 of 5 : Access Details', hide: !isExistingSaf, controls: [] };
 
             var customers = twcUtils.getCustomers(userInfo);
-            var primaryContractors = [];
-
-            if (userInfo.isEmployee) {
-                primaryContractors = twcUtils.getVendors(userInfo);
-            } else {
-                if (!userInfo.canEnterSAF) {
-                    throw new Error(`Your accreditation status [<b>${userInfo.companyProfile.accreditation_status_name}</b>] does not allow for this action`);
-                }
-                primaryContractors.push({
-                    value: userInfo.companyProfile.id,
-                    text: userInfo.companyProfile.name
-                })
-            }
-
-
             var customer = dataSource[twcSaf.Fields.CUSTOMER] || (customers.length == 1 ? customers[0].value : null);
-            var primaryContractor = dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR] || (primaryContractors.length == 1 ? primaryContractors[0].value : null);
 
-            var picwInfo = null; var picwContractorStaff = [];
-            if (isExistingSaf) {
-                // @@NOTE: the PICW is cleared on a re-used SAF
-                // picwInfo = coreSQL.first('select id, custrecord_twc_prof_company as contractor, custrecord_twc_prof_phone as phone from customrecord_twc_prof where id = ' + dataSource[twcSaf.Fields.PICW]);
-                // picwContractorStaff = twcUtils.getProfiles({
-                //     company: picwInfo.contractor,
-                //     filters: {
-                //         'custrecord_twc_prof_picw_acceptable': 'T',
-                //         'custrecord_twc_prof_safe_pass_cert_exp': { op: '>', value: 'CURRENT_DATE' }
-                //     }
-                // });
-            }
+            var primaryContractors = getPrimaryContractors(userInfo);
+            var primaryContractor = dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR] || (primaryContractors.length == 1 ? primaryContractors[0].value : null);
 
             var step3Info = { id: 'site-access-step-3a', fields: [] };
             fieldGroup.controls.push(step3Info);
@@ -329,17 +322,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         </div>
                     </div>
                 `
-                // showEditDelete: !isExistingSaf,
 
             }
             step3CInfo.fields.push(crewTableControl);
-
-            // var step3BInfo = { id: 'site-access-step-3b', title: 'Planned Equipment Work', fields: [] };
-            // fieldGroup.controls.push(step3BInfo);
-            // step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw', label: 'PICW', allowAll: false, value: picwInfo?.contractor, dataSource: primaryContractors, noAutoSelect: true });
-            // step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw-staff', label: 'Staff', hide: true, value: picwInfo?.id, dataSource: picwContractorStaff, allowAll: false });
-            // step3BInfo.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'saf-picw-staff-phone', label: 'Phone', hide: true, value: picwInfo?.phone });
-
 
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
@@ -347,26 +332,24 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroup;
         }
         function getSAFInfoPanels_Builder_Step_4(dataSource, userInfo, options) {
-            var primaryContractors = [];
-
-            if (userInfo.isEmployee) {
-                primaryContractors = twcUtils.getVendors(userInfo);
-            } else {
-                if (!userInfo.canEnterSAF) {
-                    throw new Error(`Your accreditation status [<b>${userInfo.companyProfile.accreditation_status_name}</b>] does not allow for this action`);
-                }
-                primaryContractors.push({
-                    value: userInfo.companyProfile.id,
-                    text: userInfo.companyProfile.name
-                })
-            }
+            var primaryContractors = getPrimaryContractors(userInfo);
 
             var isExistingSaf = dataSource.id !== undefined;
 
-            var picwInfo = null; var picwContractorStaff = [];
+            var picwInfo = null; var picwContractorStaff = []; var attendAsText = '';
             if (isExistingSaf && !dataSource.reUse) {
+                
                 // @@NOTE: the PICW is cleared on a re-used SAF
                 picwInfo = coreSQL.first('select id, custrecord_twc_prof_company as contractor, custrecord_twc_prof_phone as phone from customrecord_twc_prof where id = ' + dataSource[twcSaf.Fields.PICW]);
+                
+            } else if (!isExistingSaf && primaryContractors.length == 1) {
+                // @@NOTE: this is to manage SAF entered by clients, they will be the only primary contractor
+                //          so we'll only have 1 primary contractor in the list (pre-selected)
+                //          in which case we need populate the staff drop down here as that would happen when the primary contractor is selected on UI which won';'t happen if we only have one (as it is pre-selected)
+                picwInfo = { contractor: primaryContractors[0].value }
+            }
+
+            if (picwInfo) {
                 picwContractorStaff = twcUtils.getProfiles({
                     company: picwInfo.contractor,
                     filters: {
@@ -374,6 +357,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         'custrecord_twc_prof_safe_pass_cert_exp': { op: '>', value: 'CURRENT_DATE' }
                     }
                 });
+            }
+
+            if (isExistingSaf) {
+                attendAsText = picwContractorStaff.find(s => { return s.value == picwInfo.id })?.attendAsText
             }
 
 
@@ -406,9 +393,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
             var step4Info = { id: 'site-access-step-4a', fields: [] };
 
-            step4Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw', label: 'PICW', allowAll: false, value: picwInfo?.contractor, dataSource: primaryContractors, noAutoSelect: true });
-            step4Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw-staff', label: 'Staff', hide: picwInfo == null, value: picwInfo?.id, dataSource: picwContractorStaff, allowAll: false });
-            step4Info.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'saf-picw-staff-phone', label: 'Phone', hide: picwInfo == null, value: picwInfo?.phone });
+            // step4Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw', label: 'PICW', allowAll: false, value: picwInfo?.contractor, dataSource: primaryContractors, noAutoSelect: true });
+            step4Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw-staff', label: 'PICW', value: picwInfo?.id, dataSource: picwContractorStaff, allowAll: false });
+            step4Info.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'saf-picw-staff-phone', label: 'Phone', value: picwInfo?.phone, readOnly: true });
+            step4Info.fields.push({ type: twcUI.CTRL_TYPE.TEXT, id: 'saf-picw-staff-certs', label: 'Certificates', value: attendAsText, readOnly: true, width: 'calc(100% - 410px);' });
             step4Info.fields.push(crewTableControl);
 
             fieldGroup.controls.push(step4Info);
@@ -489,7 +477,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 if (!Array.isArray(fieldGroups)) {
                     fieldGroups = [fieldGroups];
                 }
-                
+
 
             } else {
                 var requiresSrf = twcUtils.getSafType(dataSource[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';

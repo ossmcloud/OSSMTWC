@@ -16,7 +16,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             pageData.data.sitesInfo = twcSiteLocatorUtils.getSites(null, pageData.userInfo);
 
             var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
-            html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteLocatorUtils.renderSiteLocatorPanel());
+            html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteLocatorUtils.renderSiteLocatorPanel(pageData.userInfo, pageData.permission.featureId));
 
             s.form.fieldHtml(html);
         };

@@ -49,13 +49,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             core.array.each(actions, action => {
                 var eq = twcEquipment.get(action.eq_id);
                 eq.site = action[twcSrf.Fields.SITE];
+                eq.customer = action[twcSrf.Fields.CUSTOMER];
                 eq.equipmentClass = action[twcSrfItem.Fields.STEP_TYPE];
                 eq.equipmentType = action[twcSrfItem.Fields.ITEM_TYPE];
                 eq.infrastructure = action[twcSrfItem.Fields.STRUCTURE];
-                // @@TODO: SRF: review fields to populate
-                // eq.locationNotes
                 eq.equipmentInstallStatus = twcUtils.EqInstallStatus.Draft;
-
                 if (action.ea_type == twcUtils.EqActionType.Install || action.ea_type == twcUtils.EqActionType.Licence || action.ea_type == twcUtils.EqActionType.SwapLicence) {
                     eq.equipmentLicenceStatus = twcUtils.EqLicenseStatus.ReqtoLicence;
                 } else if (action.ea_type == twcUtils.EqActionType.Remove || action.ea_type == twcUtils.EqActionType.Unlicence || action.ea_type == twcUtils.EqActionType.SwapUnlicence) {
@@ -65,18 +63,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     eq.equipmentLicenceStatus = twcUtils.EqLicenseStatus.Draft;
                 }
 
-                eq.customer = action[twcSrf.Fields.CUSTOMER];
-
-                // get the parent equipment
-                if (action[twcSrfItem.Fields.TMI_ID_SRF]) {
-                    var parent = actions.find(a => { return a.id == action[twcSrfItem.Fields.TMI_ID_SRF]; })
-                    eq.parentTMEID = parent?.eq_id;
-                }
-
-                // @@TODO: SRF: get the lib entry used if we have one set useLib = yes, otherwqise set no
-                // eq.useLibrary = twcEqLib.EqLibUse.Draft;    
-                // eq.equipmentLibraryEntry
-                // eq.activePassive
+                eq.equipmentLibraryEntry = action[twcSrfItem.Fields.EQUIPMENT_LIBRARY];
+                eq.useLibrary = (eq.equipmentLibraryEntry) ? twcUtils.EqLibUse.Yes : twcUtils.EqLibUse.No;
                 eq.make = action[twcSrfItem.Fields.MAKE];
                 eq.model = action[twcSrfItem.Fields.MODEL];
                 eq.description = action[twcSrfItem.Fields.DESCRIPTION];
@@ -90,17 +78,26 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 eq.customerRef = action[twcSrfItem.Fields.CUSTOMER_REF];
                 eq.inventoryFlag = action[twcSrfItem.Fields.INVENTORY_FLAG];
                 eq.optType = action[twcSrfItem.Fields.TYPE_OPT];
+                eq.voltageType = action[twcSrfItem.Fields.VOLTAGE_TYPE];
+                eq.voltageRange = action[twcSrfItem.Fields.VOLTAGE_RANGE];
+                eq.associatedEQUIP_ACTIONs = action.act_id;
 
+                // get the parent equipment
+                if (action[twcSrfItem.Fields.TMI_ID_SRF]) {
+                    var parent = actions.find(a => { return a.id == action[twcSrfItem.Fields.TMI_ID_SRF]; })
+                    eq.parentTMEID = parent?.eq_id;
+                }
+
+                // @@TODO: SRF: review fields to populate
+                // eq.locationNotes
+                // eq.customerNote
+                // eq.tLNote
                 // eq.windLoadingNm2Front
                 // eq.windLoadingNm2Side
                 // eq.windLoadingNm2Rear
                 // eq.windLoadingNm2Max
                 // eq.windRegime
-                eq.voltageType = action[twcSrfItem.Fields.VOLTAGE_TYPE];
-                eq.voltageRange = action[twcSrfItem.Fields.VOLTAGE_RANGE];
-                // eq.customerNote
-                // eq.tLNote
-                eq.associatedEQUIP_ACTIONs = action.act_id;
+                // eq.activePassive
 
                 eq.save();
                 action.eq_id = eq.id;

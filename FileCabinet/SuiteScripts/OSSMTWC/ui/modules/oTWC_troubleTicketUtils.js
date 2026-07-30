@@ -44,7 +44,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var orderBy = `order by s.${twcSite.Fields.NAME}`;
 
             if (!userInfo.isEmployee) {
-                whereClause = `where s.custrecord_twc_site_public in (${twcUtils.PUBLIC_FLAG.Yes})`
+                whereClause = `where s.isinactive = 'F' and s.custrecord_twc_site_public in (${twcUtils.PUBLIC_FLAG.Yes})`
             }
 
 
@@ -143,7 +143,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 </div>
             </div>`;
 
-            html = html.replace('{FILTER_SITE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames() }));
+            html = html.replace('{FILTER_SITE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames(userInfo) }));
             html = html.replace('{FILTER_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Status', width: 'calc(16% - 2px)', multiSelect: true, id: twcTrblTkts.Fields.STATUS, noEmpty: true, dataSource: twcUtils.getTicketStatus() })); // 
             html = html.replace('{FILTER_CATEGORY}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Category', width: 'calc(17% - 2px)', multiSelect: true, id: twcTrblTkts.Fields.CATEGORY, noEmpty: true, dataSource: twcUtils.getTicketCategory() }));
             html = html.replace('{FILTER_PRIORITY}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Priority', width: 'calc(17% - 3px)', multiSelect: true, id: twcTrblTkts.Fields.PRIORITY, noEmpty: true, dataSource: twcUtils.getTicketPriority() }));

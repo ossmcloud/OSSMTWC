@@ -56,7 +56,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 </div>
             </div>`;
 
-            html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames() }));
+            html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames(userInfo) }));
             html = html.replace('{FILTER_SAF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SAF ID', width: 'calc(25% - 2px)', multiSelect: true, id: 'record_id', noEmpty: true, dataSource: twcUtils.getSafIds() })); // @@Note Free form field, filter not working
             html = html.replace('{FILTER_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Status', width: 'calc(25% - 2px)', multiSelect: true, id: twcSaf.Fields.STATUS, noEmpty: true, dataSource: twcUtils.getSafStatus() }));
             html = html.replace('{FILTER_ACCESS_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Access Type', width: '50%', multiSelect: true, id: twcSaf.Fields.R_TYPE, noEmpty: true, dataSource: twcUtils.getSafTypes() }));
@@ -280,8 +280,33 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             if (payload['saf-mast-access'] == 'T' && !payload['saf-structure']) { validationErrors.push(`Specify a structure`); }
             if (payload['saf-building-access'] == 'T' && !payload['saf-accommodation']) { validationErrors.push(`Specify an accommodation`); }
 
-            var crewIds = [];
-            core.array.each(payload.crews, c => { crewIds.push(c['saf-crew-member']); })
+
+            const validateCompanyInsurance = (companyId) => {
+                var insuranceInfo = twcUtils.getCompanyInsuranceDetails(companyId);    
+                for (var k in twcUtils.Insurances) {
+                    if (insuranceInfo[twcUtils.Insurances[k].field] == twcUtils.NoActiveExpired.Active) {
+                        if (insuranceInfo[twcUtils.Insurances[k].fieldEx] < latestDate) {
+                            validationErrors.push(`<b>${insuranceInfo.name}:</b> ${k} Insurance will be expired by ${latestDate}`)
+                        }
+                    }
+                }
+
+            }
+
+            validateCompanyInsurance(payload['saf-customer']);
+            if (payload['saf-vendor'] != payload['saf-customer']) {
+                validateCompanyInsurance(payload['saf-vendor']);
+            }
+            
+            var crewIds = [payload['saf-picw-staff']];
+            core.array.each(payload.crews, c => {
+                if (payload['saf-picw-staff'] == c['saf-crew-member']) {
+                    validationErrors.push(`The PICW [<b>${payload['saf-picw-staff-name']}</b>] cannot be in the crew list`);
+                } else {
+                    crewIds.push(c['saf-crew-member']);
+                }
+            })
+
             var crew = twcUtils.getProfiles({ id: crewIds });
 
             // @@TODO: SAF: wherever e have Climber and Rescue Climber they need to be same person

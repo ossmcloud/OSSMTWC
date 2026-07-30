@@ -141,7 +141,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
             } else {
                 pageData.data.srfInfo = twcSiteLocatorUtils.getSiteSrf(null, pageData.userInfo);
                 html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
-                html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteRequestUtils.renderSiteLocatorPanel(pageData.permission.featureId));
+                html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteRequestUtils.renderSiteLocatorPanel(pageData.userInfo, pageData.permission.featureId));
 
             }
 

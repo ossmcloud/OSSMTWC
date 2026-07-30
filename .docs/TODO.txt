@@ -1,14 +1,10 @@
-Records:
-    allow to upload files
-    the filelist should open the file record not actual file
-
 SRF:
-    when picking an existing TME for an ATME the structure should be sourced from the TME
+    // @@TODO: SRF
 	When swapping TME show list of ATME/Feeders with toggle
-	Wind fields: do we need them on srf-item table ???
-
 
 SAF:
+    https://9061443-sb1.app.netsuite.com/app/common/custom/custrecordentry.nl?rectype=989&id=123
+
 	// @@TODO: SAF 
     if TME selected then flag related eq as well
 	if detaching form a different saf only do it at submit
@@ -26,13 +22,15 @@ Workflow:
 
 	SDS Pack Produced:
 		take snapshot of equipment => take the latest SRF from eq. table
-	
-	
-	
+
+
+OSSMTWC - Field Access Configs List
+    manage to hide whole table
+    manage to hide whole section
 
 Others:
 	SRF: big files will cause the UI to take time to save
-	Workflow: 'Generate SDS' button should be not visible once the stage is completed
+
 
 _________________________________________________________________________________________________________________________________________________
 

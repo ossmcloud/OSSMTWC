@@ -246,11 +246,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 fieldGroup.controls.push(basicInfo);
                 basicInfo.fields.push(getCompanyInfoPanels_acl_list(userInfo, companyProfile, 'vendor'));
             }
-            // if (companyProfile.isVendor) {
-            //     var basicInfo = { id: 'company-ascl-list', title: companyProfile.isBoth ? 'Sub Contractors List' : undefined, fields: [] };
-            //     fieldGroup.controls.push(basicInfo);
-            //     basicInfo.fields.push(getCompanyInfoPanels_acl_list(userInfo, companyProfile, 'sub contractor'));
-            // }
+            if (companyProfile.isVendor) {
+                var basicInfo = { id: 'company-ascl-list', title: companyProfile.isBoth ? 'Sub Contractors List' : undefined, fields: [] };
+                fieldGroup.controls.push(basicInfo);
+                basicInfo.fields.push(getCompanyInfoPanels_acl_list(userInfo, companyProfile, 'sub contractor'));
+            }
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
         }
@@ -283,7 +283,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             ${twcCompany.Fields.ACCREDITATION_STATUS_COMMENT} as accreditation_status_note,
                             ${twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY} as accredited_contractor_expiry
                     from    customrecord_twc_ascl acl
-                    join    ${twcCompany.Type} c on c.id = ascl.custrecord_twc_acl_sub_contractor
+                    join    ${twcCompany.Type} c on c.id = acl.custrecord_twc_acl_sub_contractor
                     where   custrecord_twc_acl_contractor = ${companyProfile.id}
                     order by c.name
                 `)

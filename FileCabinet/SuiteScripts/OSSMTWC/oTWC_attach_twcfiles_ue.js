@@ -5,7 +5,7 @@
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
 define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'N/ui/serverWidget', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', './O/oTWC_themes.js', 'N/file', './data/oTWC_file.js'],
-    (runtime, core, oui, recu, ui, coreSql, htmlStyles, twcThemes, file, twcFiles) => {
+    (runtime, core, oui, recu, ui, coreSql, htmlStyles, twcThemes, file, twcFile) => {
 
         function getTWCCss() {
             var css = file.load('SuiteScripts/OSSMTWC/ui/css/oTWC.css').getContents();
@@ -60,26 +60,28 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
                         .replace(/\b\w/g, c => c.toUpperCase());
 
                 let getFieldType = key => {
-                    if (key === 'file') return ui.FieldType.URL;
+                    if (key === 'file' || key === 'id') return ui.FieldType.URL;
+                    
                     if (key === 'file_description') return ui.FieldType.TEXTAREA;
                     return ui.FieldType.TEXT;
                 };
 
                 coreSql.each(`
                 SELECT
-                    ${twcFiles.Fields.NAME},
-                    BUILTIN.DF(${twcFiles.Fields.R_TYPE}) AS file_type,
-                    BUILTIN.DF(${twcFiles.Fields.STATUS}) AS status,
-                    ${twcFiles.Fields.DESCRIPTION} AS file_description,
-                    BUILTIN.DF(${twcFiles.Fields.UPLOADED_BY}) AS uploaded_by,
-                    BUILTIN.DF(${twcFiles.Fields.CREATED}) AS created_date,
-                    BUILTIN.DF(${twcFiles.Fields.OWNER}) AS owner,
-                    BUILTIN.DF(${twcFiles.Fields.MODIFIED}) AS last_modified_date,
-                    BUILTIN.DF(${twcFiles.Fields.MODIFIED_BY}) AS last_modified_by,
-                    ${twcFiles.Fields.FILE} AS file
-                    FROM ${twcFiles.Type}
-                    WHERE ${twcFiles.Fields.RECORD_TYPE} = '${rec.type}'
-                    AND ${twcFiles.Fields.RECORD_ID} = ${rec.id}
+                    ${twcFile.Fields.NAME},
+                    BUILTIN.DF(${twcFile.Fields.R_TYPE}) AS file_type,
+                    BUILTIN.DF(${twcFile.Fields.STATUS}) AS status,
+                    ${twcFile.Fields.DESCRIPTION} AS file_description,
+                    BUILTIN.DF(${twcFile.Fields.UPLOADED_BY}) AS uploaded_by,
+                    BUILTIN.DF(${twcFile.Fields.CREATED}) AS created_date,
+                    BUILTIN.DF(${twcFile.Fields.OWNER}) AS owner,
+                    BUILTIN.DF(${twcFile.Fields.MODIFIED}) AS last_modified_date,
+                    BUILTIN.DF(${twcFile.Fields.MODIFIED_BY}) AS last_modified_by,
+                    ${twcFile.Fields.FILE} AS file,
+                    id
+                    FROM ${twcFile.Type}
+                    WHERE ${twcFile.Fields.RECORD_TYPE} = '${rec.type}'
+                    AND ${twcFile.Fields.RECORD_ID} = ${rec.id}
                     AND isinactive = 'F'
               `, row => {
                     if (!columnsCreated) {
@@ -92,17 +94,21 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
 
                             if (key === 'file') {
                                 field.linkText = 'View File';
+                            } else if (key === 'id') {
+                                field.linkText = 'Open File Record';
                             }
                         });
                         columnsCreated = true;
                     }
 
                     Object.entries(row).forEach(([key, value]) => {
-
                         if (core.utils.isEmpty(value)) return;
                         try {
-                            if (key === 'file') {
+                            if (key === 'id') {
+                                value = core.url.record(twcFile.Type, row.id)
+                            } else if (key === 'file') {
                                 value = file.load({ id: value }).url;
+                                
                             }
                             fileList.setSublistValue({
                                 id: `custpage_${key.toLowerCase()}`,
@@ -119,6 +125,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
                 });
             } catch (error) {
                 core.logDebug('ERROR in Attaching files', error.message)
+                
             }
         }
 

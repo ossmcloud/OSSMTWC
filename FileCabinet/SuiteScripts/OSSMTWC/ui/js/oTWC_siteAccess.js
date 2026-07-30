@@ -34,7 +34,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     fitScreen: true,
                     fitContainer: false
                 });
-               
+
             }
 
             get table() { return this.#table.table; }
@@ -118,10 +118,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (!this.ui.getControl('saf-template')) { return; }
 
                 const manageVendorDropDown = (dropDownId, e) => {
+                    if (!this.data.userInfo.isEmployee) { return; }
                     // @@NOTE: the customer selected may be the primary contractor/PICW too so we need to add it to the drop down
                     //         however, if they change the customer it should be removed from the primary contractor/PICW drop down (and unselected if it si selected)
                     var primaryContractors = this.ui.getControl(dropDownId).getDataSource();
-                    var thisCustomer = primaryContractors.find(ds => { return ds.safCustomer || ds.value == e.value });
+                    var thisCustomer = primaryContractors.find(ds => { return ds.safCustomer });
                     if (thisCustomer) {
                         primaryContractors.splice(primaryContractors.indexOf(thisCustomer), 1);
                         if (this.ui.getControl(dropDownId).value == thisCustomer.value) {
@@ -129,7 +130,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         }
                     }
                     if (e.value) {
-                        thisCustomer = this.ui.getControl('saf-customer').getDataSource((e.value));
+                        if (primaryContractors.find(ds => { return ds.value == e.value })) { return; }
+                        thisCustomer = this.ui.getControl('saf-customer').getDataSource(e.value);
                         thisCustomer = JSON.parse(JSON.stringify(thisCustomer));
                         thisCustomer.safCustomer = true;
                         thisCustomer.text_render = `<span style="color: var(--accent-fore-color)">${thisCustomer.text}</span>`;
@@ -175,7 +177,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.getControl('saf-drone-survey')?.on('change', e => { this.refreshAccessRequirements(); });
                 this.ui.getControl('saf-customer')?.on('change', e => {
                     manageVendorDropDown('saf-vendor', e);
-                    manageVendorDropDown('saf-picw', e);
+                    // manageVendorDropDown('saf-picw', e);
                     this.refreshAccessRequirements();
                     this.#page.post({ action: 'get-vendor-docs' }, { vendor: this.ui.getControl('saf-vendor').value })
                         .then(res => {
@@ -183,24 +185,36 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         })
                         .catch(err => { dialog.error(err); });
                 });
-                this.ui.getControl('saf-vendor')?.on('change', e => { this.refreshAccessRequirements(); });
-                this.ui.getControl('saf-structure')?.on('change', e => { this.refreshAccessRequirements(); });
-                this.ui.getControl('saf-accommodation')?.on('change', e => { this.refreshAccessRequirements(); });
-
-                this.ui.getControl('saf-picw').on('change', e => {
+                this.ui.getControl('saf-vendor')?.on('change', e => {
+                    this.refreshAccessRequirements();
                     this.ui.getControl('saf-picw-staff').value = null;
                     this.ui.getControl('saf-picw-staff-phone').value = null;
                     this.#page.post({ action: 'get-vendor-picw' }, { vendor: e.value })
                         .then(res => {
                             this.ui.getControl('saf-picw-staff').setDataSource(res.data);
-                            this.ui.getControl('saf-picw-staff').hide = false;
-                            this.ui.getControl('saf-picw-staff-phone').hide = false;
+                            // this.ui.getControl('saf-picw-staff').hide = false;
+                            // this.ui.getControl('saf-picw-staff-phone').hide = false;
                         })
                         .catch(err => { dialog.error(err); });
-
                 });
+                this.ui.getControl('saf-structure')?.on('change', e => { this.refreshAccessRequirements(); });
+                this.ui.getControl('saf-accommodation')?.on('change', e => { this.refreshAccessRequirements(); });
+
+                // this.ui.getControl('saf-picw').on('change', e => {
+                //     this.ui.getControl('saf-picw-staff').value = null;
+                //     this.ui.getControl('saf-picw-staff-phone').value = null;
+                //     this.#page.post({ action: 'get-vendor-picw' }, { vendor: e.value })
+                //         .then(res => {
+                //             this.ui.getControl('saf-picw-staff').setDataSource(res.data);
+                //             this.ui.getControl('saf-picw-staff').hide = false;
+                //             this.ui.getControl('saf-picw-staff-phone').hide = false;
+                //         })
+                //         .catch(err => { dialog.error(err); });
+
+                // });
                 this.ui.getControl('saf-picw-staff').on('change', e => {
                     this.ui.getControl('saf-picw-staff-phone').value = e.object?.phone || ''
+                    this.ui.getControl('saf-picw-staff-certs').value = e.object?.attendAsText || ''
                 })
                 this.ui.getControl('saf-vendor').on('change', e => {
                     this.#page.post({ action: 'get-vendor-docs' }, { vendor: e.value })
@@ -326,7 +340,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 }
 
-                this.ui.getControl('saf-vendor').on('change');
+                //this.ui.getControl('saf-vendor').on('change');
                 //this.ui.getControl('saf-type').value = this.data.siteAccessInfo[twcSaf.Fields.R_TYPE];
             }
 
@@ -546,6 +560,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (!safCrew) { safCrew = {}; }
                     if (this.deleteRecord(safCrew, table)) { return; }
 
+                    var picw = this.ui.getControl('saf-picw-staff').value;
+                    if (!picw) { throw new Error(`Please, specify a PICW before adding crew members`); }
+
                     if (!safCrew.ui) {
                         this.data.siteAccessInfo['saf-customer'] = this.ui.getControl('saf-customer').value;
                         safCrew.ui = this.#page.postSync({ action: 'saf-crew-record' }, { saf: this.data.siteAccessInfo, crew: safCrew })
@@ -558,6 +575,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                         this.#page.post({ action: 'get-vendor-persons' }, { vendor: e.value })
                             .then(res => {
+                                // @@NOTE: remove the PICW from the list
+                                var picwIdx = res.data.find(s => { return s.value == picw; })
+                                if (picwIdx) { res.data.splice(res.data.indexOf(picwIdx), 1); }
                                 form.getControl('saf-crew-member').setDataSource(res.data);
                                 safCrew.ui.controls.find(c => { return c.id == 'saf-crew-member' }).dataSource = res.data;
                             })
@@ -623,7 +643,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         return true;
 
                     })
-                    
+
 
                 } catch (error) {
                     dialog.error(error);
@@ -657,6 +677,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var values = this.ui.getValues();
                     var saf = this.data.siteAccessInfo;
                     for (var k in values) { saf[k] = values[k]; }
+                    saf['saf-picw-staff-name'] = this.ui.getControl('saf-picw-staff').valueObj?.text;
 
                     if (this.#vendorDocuments) { saf.documents = this.#vendorDocuments.getValues(); }
                     if (!saf.crews) { saf.crews = this.#page.ui.getControl('saf-crew-table').data; }
@@ -710,7 +731,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         var values = form.getValues();
 
                         return callback(values, dlg);
-                        
+
                     } catch (error) {
                         dialog.error(error);
                         return false;
@@ -797,9 +818,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     return false;
                 })
-                
-              
-                
+
+
+
             }
 
             render(safActions, table) {

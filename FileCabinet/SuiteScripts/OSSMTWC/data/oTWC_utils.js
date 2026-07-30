@@ -643,9 +643,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return coreSQL.run(`select ${idField} as value, ${nameField} as text from ${recordType} where 1 = 1 ${isInactive} ${additionalFilters || ''} order by ${nameField}`);
         }
 
-        function getSiteNames() {
+        function getSiteNames(userInfo) {
             var siteNames = [];
-            coreSQL.each(`select id as value, name as text, ${twcSite.Fields.SITE_NAME} as site_name, ${twcSite.Fields.SITE_ID} as site_id from ${twcSite.Type} where isinactive = 'F' order by ${twcSite.Fields.SITE_NAME}`, s => {
+            
+            var whereClause = '';
+            if (!userInfo.isEmployee) {
+                whereClause = `and custrecord_twc_site_public in (${PUBLIC_FLAG.Yes})`
+            }
+
+            coreSQL.each(`select id as value, name as text, ${twcSite.Fields.SITE_NAME} as site_name, ${twcSite.Fields.SITE_ID} as site_id from ${twcSite.Type} where isinactive = 'F' ${whereClause} order by ${twcSite.Fields.SITE_NAME}`, s => {
                 s.text_render = `${s.site_name} <span style="color: var(--accent-fore-color)">${s.site_id}</span>`
                 siteNames.push(s);
             });
@@ -844,7 +850,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             //
             // @@NOTE: the accreditation status field is maintained by a task, no need to check each date and stuff
             var additionalFilters = `
-                and c.custrecord_twc_co_accred_status = ${COMPANY_ACCREDITATION_STATUS.Accredited}
+                and c.custrecord_twc_co_accred_status in ( ${COMPANY_ACCREDITATION_STATUS.Accredited},${COMPANY_ACCREDITATION_STATUS.ToBeRenewed} )
             `
 
             if (options.isCustomer) {
@@ -853,7 +859,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 options.vendor = options.companyProfile.id;
             }
 
+            var sql = '';
             if (options.srf) {
+                additionalFilters += ` and c.custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer} `
                 if (options.isVendor) {
                     var agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${options.profile}`)?.agent_passes;
                     if (!agentPasses) {
@@ -861,9 +869,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                     additionalFilters += ` and c.id in (${agentPasses}) `;
                 }
+
+                sql = `
+                    select  c.id as value, c.name as text
+                    from    customrecord_twc_company c
+                    where   c.isinactive = 'F'
+                    ${additionalFilters}
+                    order by LOWER(c.name)
+                `;
+
+                //throw new Error(sql)
+
+                return coreSQL.run(sql);
             }
 
-            var sql = '';
+          
             if (options.vendor) {
                 if (options.type == 'C') {
                     // @@NOTE: here we want to select customers the given vendor can work on behalf of
@@ -993,6 +1013,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getCustomers(userInfo, options) {
+
             var o = JSON.parse(JSON.stringify(userInfo));
             if (options) { for (var k in options) { o[k] = options[k]; } }
             o.type = 'C';
