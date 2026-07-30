@@ -23,13 +23,11 @@ Workflow:
 	SDS Pack Produced:
 		take snapshot of equipment => take the latest SRF from eq. table
 
-
-OSSMTWC - Field Access Configs List
-    manage to hide whole table
-    manage to hide whole section
-
 Others:
 	SRF: big files will cause the UI to take time to save
+
+
+
 
 
 _________________________________________________________________________________________________________________________________________________

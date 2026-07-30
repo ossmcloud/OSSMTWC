@@ -9,9 +9,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             TL: 'TL',           // only TL Staff
             View: 'View',       // onl;y TL Stuff can edit
         }
-        
+
         var _fieldAccessInfo = null; var _userInfo = null;
-        
+
         function getFieldAccess(dataSource, fieldId) {
             if (!_fieldAccessInfo) {
                 _userInfo = twcUtils.userInfo();
@@ -89,7 +89,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return _fieldDefinitions[tableName];
         }
 
-        
+
 
         function formatPanelFields(dataSource, panelFields) {
             if (!dataSource.Type) {
@@ -99,7 +99,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     throw new Error('configUIFields :: dataSource.Type cannot be empty');
                 }
             }
+            
+            // @@NOTE: getFieldAccess for panel visibility
+            var accessType = getFieldAccess(dataSource, panelFields.id);
+            if (accessType) {
+                if (accessType.access == FIELD_ACCESS_TYPE.TL && !_userInfo.isEmployee) {
+                    panelFields.controls = [];
+                    panelFields.hide = true;
+                    return;
+                }
+                // @@NOTE: the read-only does not make sense here
+                //if (accessType.access == FIELD_ACCESS_TYPE.View && !_userInfo.isEmployee) { control.readOnly = true; }
+            }
 
+            
             if (panelFields.controls) {
                 core.array.each(panelFields.controls, control => { formatPanelFields(dataSource, control); })
                 return;
@@ -109,7 +122,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (!panelFields.controls) { panelFields.controls = []; }
 
             core.array.each(panelFields.fields, field => {
-                //if (field.type == twcUI.CTRL_TYPE.BUTTON) {
                 if (field.type !== undefined) {
                     panelFields.controls.push(field)
                     return;
@@ -117,12 +129,18 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 // @@NOTE: this means the field is a sub list
                 if (field.fields) {
-
                     var dataObj = getDataObject(field.recordType || field.id);
-
                     var columns = [];
                     for (var k in field.fields) {
                         var f = getDataFieldInfo(field, k);
+
+                        // @@NOTE: getFieldAccess for columns visibility
+                        var accessType = getFieldAccess(dataObj, k);
+                        if (accessType) {
+                            if (accessType.access == FIELD_ACCESS_TYPE.TL && !_userInfo.isEmployee) { continue; }
+                            // @@NOTE: the read-only does not make sense here
+                            //if (accessType.access == FIELD_ACCESS_TYPE.View && !_userInfo.isEmployee) { control.readOnly = true; }
+                        }
 
                         var columnOptions = { id: (f) ? f.name.toLowerCase() : k.toLowerCase() }
                         if (f?.type == 'select') {
@@ -159,11 +177,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             if (tbl.data.length > 0) {
                                 if (tbl.data[0][`${col.id}_name`] !== undefined) { return false; }
                             }
-
-                            // @@TODO: implement getFieldAccess for columns visibility
-
                             if (field.onColumnInit) { return field.onColumnInit(tbl, col); }
                         }
+                    }
+
+                    // @@NOTE: getFieldAccess for columns visibility
+                    var accessType = getFieldAccess(dataSource, control.id);
+                    if (accessType) {
+                        if (accessType.access == FIELD_ACCESS_TYPE.TL && !_userInfo.isEmployee) { return; }
+                        if (accessType.access == FIELD_ACCESS_TYPE.View && !_userInfo.isEmployee) { control.readOnly = true; }
                     }
 
                     panelFields.controls.push(control);
@@ -175,6 +197,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     core.logError('CONFIG-UI-PANEL', 'no field id: ' + JSON.stringify(field));
                     return;
                 }
+
+                
 
                 var fieldId = field.id; var dataField = null; var dataFields = null;
                 if (field.id.indexOf('.') < 0) {
@@ -269,6 +293,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         throw error;
                     }
                 }
+
+                
 
                 panelFields.controls.push(control)
 
