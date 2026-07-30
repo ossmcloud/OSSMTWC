@@ -1,286 +1,289 @@
-/**
- * @NApiVersion 2.1
- * @NScriptType ClientScript
- */
+// @@NOTE: this is no longer needed (it actually never was)
 
-define(['SuiteBundles/Bundle 548734/O/core.sql.js', './O/oTWC_dialogEx.js', 'N/ui/dialog' , 'N/currentRecord'], (coreSQL, dialog, dlg, currentRecord) => {
 
-    const pageInit = (context) => {
+// /**
+//  * @NApiVersion 2.1
+//  * @NScriptType ClientScript
+//  */
 
-        const rec = context.currentRecord;
+// define(['SuiteBundles/Bundle 548734/O/core.sql.js', './O/oTWC_dialogEx.js', 'N/ui/dialog' , 'N/currentRecord'], (coreSQL, dialog, dlg, currentRecord) => {
 
-        // The customer has diabled the field Power Supply field so added the condition.
-        if(rec.getField({fieldId: 'custrecord_twc_pwr_rdg_pwr_supply'})){
-            rec.getField({fieldId: 'custrecord_twc_pwr_rdg_pwr_supply' }).isDisabled = true;
-        }
-        const siteId = rec.getValue({
-            fieldId: 'custrecord_twc_pwr_rdg_site'
-        });
+//     const pageInit = (context) => {
 
-        const powerSupply = rec.getValue({
-            fieldId: 'custrecord_twc_pwr_rdg_pwr_supply'
-        });
+//         const rec = context.currentRecord;
 
-        if (siteId && !powerSupply) {
+//         // The customer has diabled the field Power Supply field so added the condition.
+//         if(rec.getField({fieldId: 'custrecord_twc_pwr_rdg_pwr_supply'})){
+//             rec.getField({fieldId: 'custrecord_twc_pwr_rdg_pwr_supply' }).isDisabled = true;
+//         }
+//         const siteId = rec.getValue({
+//             fieldId: 'custrecord_twc_pwr_rdg_site'
+//         });
 
-            const options = getPowerSupplyOptions(siteId);
+//         const powerSupply = rec.getValue({
+//             fieldId: 'custrecord_twc_pwr_rdg_pwr_supply'
+//         });
 
-            if (!options.length) {
+//         if (siteId && !powerSupply) {
 
-                dlg.alert({
-                    title: 'No Power Supply Found',
-                    message: 'No Power Supply records are associated with this Site.'
-                });
+//             const options = getPowerSupplyOptions(siteId);
 
-            } else if (options.length === 1) {
+//             if (!options.length) {
 
-                rec.setValue({
-                    fieldId: 'custrecord_twc_pwr_rdg_pwr_supply',
-                    value: options[0].id
-                });
+//                 dlg.alert({
+//                     title: 'No Power Supply Found',
+//                     message: 'No Power Supply records are associated with this Site.'
+//                 });
 
-            } else {
+//             } else if (options.length === 1) {
 
-                showPowerSupplyModal(rec, options);
+//                 rec.setValue({
+//                     fieldId: 'custrecord_twc_pwr_rdg_pwr_supply',
+//                     value: options[0].id
+//                 });
 
-            }
-        }
-    };
+//             } else {
 
+//                 showPowerSupplyModal(rec, options);
 
-    const fieldChanged = async (context) => {
+//             }
+//         }
+//     };
 
-        try {
 
-            if (context.fieldId !== 'custrecord_twc_pwr_rdg_site')
-                return;
+//     const fieldChanged = async (context) => {
 
-            const rec = context.currentRecord;
+//         try {
 
-            const siteId = rec.getValue({
-                fieldId: 'custrecord_twc_pwr_rdg_site'
-            });
+//             if (context.fieldId !== 'custrecord_twc_pwr_rdg_site')
+//                 return;
 
-            if (!siteId) {
+//             const rec = context.currentRecord;
 
-                rec.setValue({
-                    fieldId: 'custrecord_twc_pwr_rdg_pwr_supply',
-                    value: ''
-                });
+//             const siteId = rec.getValue({
+//                 fieldId: 'custrecord_twc_pwr_rdg_site'
+//             });
 
-                return;
-            }
+//             if (!siteId) {
 
-            const options = getPowerSupplyOptions(siteId);
+//                 rec.setValue({
+//                     fieldId: 'custrecord_twc_pwr_rdg_pwr_supply',
+//                     value: ''
+//                 });
 
-            if (!options.length) {
+//                 return;
+//             }
 
-                rec.setValue({
-                    fieldId: 'custrecord_twc_pwr_rdg_pwr_supply',
-                    value: ''
-                });
+//             const options = getPowerSupplyOptions(siteId);
 
-                await dlg.alert({
-                    title: 'No Power Supply Found',
-                    message: 'No Power Supply records are associated with this Site.'
-                });
+//             if (!options.length) {
 
-                return;
-            }
+//                 rec.setValue({
+//                     fieldId: 'custrecord_twc_pwr_rdg_pwr_supply',
+//                     value: ''
+//                 });
 
-            if (options.length === 1) {
+//                 await dlg.alert({
+//                     title: 'No Power Supply Found',
+//                     message: 'No Power Supply records are associated with this Site.'
+//                 });
 
-                rec.setValue({
-                    fieldId: 'custrecord_twc_pwr_rdg_pwr_supply',
-                    value: options[0].id
-                });
+//                 return;
+//             }
 
-                return;
-            }
+//             if (options.length === 1) {
 
-            showPowerSupplyModal(rec, options);
+//                 rec.setValue({
+//                     fieldId: 'custrecord_twc_pwr_rdg_pwr_supply',
+//                     value: options[0].id
+//                 });
 
-        } catch (e) {
+//                 return;
+//             }
 
-            console.error(e);
+//             showPowerSupplyModal(rec, options);
 
-        }
+//         } catch (e) {
 
-    };
+//             console.error(e);
 
-    const openPowerSupplySelector = async () => {
+//         }
 
-        try {
+//     };
 
-            const rec = currentRecord.get();
+//     const openPowerSupplySelector = async () => {
 
-            const siteId = rec.getValue({
-                fieldId: 'custrecord_twc_pwr_rdg_site'
-            });
+//         try {
 
-            if (!siteId) {
+//             const rec = currentRecord.get();
 
-                return await dlg.alert({
-                    title: 'Alert',
-                    message: 'Please select a Site first.'
-                });
+//             const siteId = rec.getValue({
+//                 fieldId: 'custrecord_twc_pwr_rdg_site'
+//             });
 
-            }
+//             if (!siteId) {
 
-            const options = getPowerSupplyOptions(siteId);
+//                 return await dlg.alert({
+//                     title: 'Alert',
+//                     message: 'Please select a Site first.'
+//                 });
 
-            if (!options.length) {
+//             }
 
-                return await dlg.alert({
-                    title: 'No Power Supply Found',
-                    message: 'No Power Supply records are associated with this Site.'
-                });
+//             const options = getPowerSupplyOptions(siteId);
 
-            }
+//             if (!options.length) {
 
-            if (options.length === 1) {
+//                 return await dlg.alert({
+//                     title: 'No Power Supply Found',
+//                     message: 'No Power Supply records are associated with this Site.'
+//                 });
 
-                rec.setValue({
-                    fieldId: 'custrecord_twc_pwr_rdg_pwr_supply',
-                    value: options[0].id
-                });
+//             }
 
-                return;
-            }
+//             if (options.length === 1) {
 
-            showPowerSupplyModal(rec, options);
+//                 rec.setValue({
+//                     fieldId: 'custrecord_twc_pwr_rdg_pwr_supply',
+//                     value: options[0].id
+//                 });
 
-        } catch (e) {
+//                 return;
+//             }
 
-            console.error(e);
+//             showPowerSupplyModal(rec, options);
 
-        }
+//         } catch (e) {
 
-    };
+//             console.error(e);
 
-    const getPowerSupplyOptions = (siteId) => {
+//         }
 
-    const options = [];
+//     };
 
-    const res = coreSQL.run(
-        `SELECT id, name FROM customrecord_twc_pwr_rdg WHERE custrecord_twc_pwr_rdg_site = ${siteId}`,
-    )
-    console.log('Power Supply Options:', res);
+//     const getPowerSupplyOptions = (siteId) => {
 
-    return res;
-};
+//     const options = [];
 
-    const showPowerSupplyModal = (rec, infraOptions) => {
+//     const res = coreSQL.run(
+//         `SELECT id, name FROM customrecord_twc_pwr_rdg WHERE custrecord_twc_pwr_rdg_site = ${siteId}`,
+//     )
+//     console.log('Power Supply Options:', res);
 
-        document.getElementById('twcGenBackupModalOverlay')?.remove();
-
-        const currentValue = rec.getValue({ fieldId: 'custrecord_twc_pwr_rdg_pwr_supply' });
-
-        const optionsHtml = infraOptions.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
-
-        const modalHtml = `
-        <div id="twcGenBackupModalOverlay" style="position:fixed;inset:0;background:rgba(15,23,42,.35);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);">
-        <div style="width:450px;background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.12);font-family:Arial;overflow:hidden;animation:twcFade .18s ease-out;">
-        <div style="padding:18px 22px;border-bottom:1px solid #eef2f7;display:flex;justify-content:space-between;align-items:center;">
-        <div><div style="font-size:18px;font-weight:600;color:#111827;">Power Supply</div><div style="font-size:13px;color:#6b7280;">Select a backup generator</div></div>
-        <div id="twcCloseModal" style="cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:#6b7280;border-radius:50%;">×</div>
-        </div>
-
-        <div style="padding:24px;">
-        <div style="margin-bottom:14px;color:#4b5563;font-size:14px;">Multiple generator backups are available for this site.</div>
-
-        <select id="genBackupSelect" style="width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px;margin-bottom:22px;">
-        <option value="">Select Power Supply</option>${optionsHtml}
-        </select>
-
-        <div style="display:flex;justify-content:flex-end;gap:10px;">
-        <button id="twcCancelBtn" style="padding:10px 18px;border:1px solid #d1d5db;background:#fff;border-radius:8px;">Cancel</button>
-        <button id="twcSelectBtn" style="padding:10px 20px;background:#111827;color:#fff;border-radius:8px;border:none;">Select</button>
-        </div>
-        </div></div></div>
-
-        <style>@keyframes twcFade{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}</style>
-        `;
-
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-        const overlay = document.getElementById('twcGenBackupModalOverlay');
-        const dropdown = document.getElementById('genBackupSelect');
-
-        if (currentValue) dropdown.value = currentValue;
-
-        const close = () => overlay?.remove();
-
-        document.getElementById('twcCloseModal').onclick = close;
-        document.getElementById('twcCancelBtn').onclick = close;
-
-        overlay.onclick = e => e.target.id === 'twcGenBackupModalOverlay' && close();
-
-        document.addEventListener('keydown', function esc(e) {
-            if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
-        });
-
-        document.getElementById('twcSelectBtn').onclick = () => {
-            const val = dropdown.value;
-            if (!val) return alert('Please select a Power Supply.');
-            rec.setValue({ fieldId: 'custrecord_twc_pwr_rdg_pwr_supply', value: val });
-            close();
-        };
-
-        setTimeout(() => dropdown.focus(), 100);
-    };
+//     return res;
+// };
 
 //     const showPowerSupplyModal = (rec, infraOptions) => {
 
-//     const currentValue = rec.getValue({
-//         fieldId: 'custrecord_twc_pwr_rdg_pwr_supply'
-//     });
+//         document.getElementById('twcGenBackupModalOverlay')?.remove();
 
-//     const content = jQuery(`
-//         <div style="padding:15px;">
-//             <label style="display:block;margin-bottom:8px;">
-//                 Select Power Supply
-//             </label>
+//         const currentValue = rec.getValue({ fieldId: 'custrecord_twc_pwr_rdg_pwr_supply' });
 
-//             <select id="twcPowerSupply" class="twc" style="width:100%;">
-//                 <option value="">Select Power Supply</option>
-//                 ${infraOptions.map(o =>
-//                     `<option value="${o.id}">${o.name}</option>`
-//                 ).join('')}
-//             </select>
+//         const optionsHtml = infraOptions.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
+
+//         const modalHtml = `
+//         <div id="twcGenBackupModalOverlay" style="position:fixed;inset:0;background:rgba(15,23,42,.35);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);">
+//         <div style="width:450px;background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.12);font-family:Arial;overflow:hidden;animation:twcFade .18s ease-out;">
+//         <div style="padding:18px 22px;border-bottom:1px solid #eef2f7;display:flex;justify-content:space-between;align-items:center;">
+//         <div><div style="font-size:18px;font-weight:600;color:#111827;">Power Supply</div><div style="font-size:13px;color:#6b7280;">Select a backup generator</div></div>
+//         <div id="twcCloseModal" style="cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:#6b7280;border-radius:50%;">×</div>
 //         </div>
-//     `);
 
-//     if (currentValue) {
-//         content.find('#twcPowerSupply').val(currentValue);
-//     }
+//         <div style="padding:24px;">
+//         <div style="margin-bottom:14px;color:#4b5563;font-size:14px;">Multiple generator backups are available for this site.</div>
 
-//     dialog.open({
+//         <select id="genBackupSelect" style="width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px;margin-bottom:22px;">
+//         <option value="">Select Power Supply</option>${optionsHtml}
+//         </select>
 
-//         title: 'Power Supply',
-//         content: content,
-//         size: {
-//             width: '450px',
-//             height: '220px'
-//         },
-//         ok: function () {
-//             const val = content.find('#twcPowerSupply').val();
-//             if (!val) {
-//                 dialog.message({ title: 'Validation', message: 'Please select a Power Supply.' });
-//                 return false;
-//             }
-//             rec.setValue({
-//                 fieldId: 'custrecord_twc_pwr_rdg_pwr_supply',
-//                 value: val
-//             });
+//         <div style="display:flex;justify-content:flex-end;gap:10px;">
+//         <button id="twcCancelBtn" style="padding:10px 18px;border:1px solid #d1d5db;background:#fff;border-radius:8px;">Cancel</button>
+//         <button id="twcSelectBtn" style="padding:10px 20px;background:#111827;color:#fff;border-radius:8px;border:none;">Select</button>
+//         </div>
+//         </div></div></div>
 
-//             return true;
-//         }
+//         <style>@keyframes twcFade{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}</style>
+//         `;
 
-//     });
+//         document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-// };
+//         const overlay = document.getElementById('twcGenBackupModalOverlay');
+//         const dropdown = document.getElementById('genBackupSelect');
 
-    return { fieldChanged, openPowerSupplySelector, pageInit };
+//         if (currentValue) dropdown.value = currentValue;
 
-});
+//         const close = () => overlay?.remove();
+
+//         document.getElementById('twcCloseModal').onclick = close;
+//         document.getElementById('twcCancelBtn').onclick = close;
+
+//         overlay.onclick = e => e.target.id === 'twcGenBackupModalOverlay' && close();
+
+//         document.addEventListener('keydown', function esc(e) {
+//             if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
+//         });
+
+//         document.getElementById('twcSelectBtn').onclick = () => {
+//             const val = dropdown.value;
+//             if (!val) return alert('Please select a Power Supply.');
+//             rec.setValue({ fieldId: 'custrecord_twc_pwr_rdg_pwr_supply', value: val });
+//             close();
+//         };
+
+//         setTimeout(() => dropdown.focus(), 100);
+//     };
+
+// //     const showPowerSupplyModal = (rec, infraOptions) => {
+
+// //     const currentValue = rec.getValue({
+// //         fieldId: 'custrecord_twc_pwr_rdg_pwr_supply'
+// //     });
+
+// //     const content = jQuery(`
+// //         <div style="padding:15px;">
+// //             <label style="display:block;margin-bottom:8px;">
+// //                 Select Power Supply
+// //             </label>
+
+// //             <select id="twcPowerSupply" class="twc" style="width:100%;">
+// //                 <option value="">Select Power Supply</option>
+// //                 ${infraOptions.map(o =>
+// //                     `<option value="${o.id}">${o.name}</option>`
+// //                 ).join('')}
+// //             </select>
+// //         </div>
+// //     `);
+
+// //     if (currentValue) {
+// //         content.find('#twcPowerSupply').val(currentValue);
+// //     }
+
+// //     dialog.open({
+
+// //         title: 'Power Supply',
+// //         content: content,
+// //         size: {
+// //             width: '450px',
+// //             height: '220px'
+// //         },
+// //         ok: function () {
+// //             const val = content.find('#twcPowerSupply').val();
+// //             if (!val) {
+// //                 dialog.message({ title: 'Validation', message: 'Please select a Power Supply.' });
+// //                 return false;
+// //             }
+// //             rec.setValue({
+// //                 fieldId: 'custrecord_twc_pwr_rdg_pwr_supply',
+// //                 value: val
+// //             });
+
+// //             return true;
+// //         }
+
+// //     });
+
+// // };
+
+//     return { fieldChanged, openPowerSupplySelector, pageInit };
+
+// });

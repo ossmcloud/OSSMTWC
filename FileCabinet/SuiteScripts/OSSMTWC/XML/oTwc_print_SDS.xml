@@ -1,451 +1,455 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE pdf PUBLIC "-//big.faceless.org//report" "report-1.1.dtd">
 
+<pdfset>
+
 <pdf>
-<head>
-    <style type="text/css">
+    <head>
+        <style type="text/css">
 
-        body {
-            font-family: Helvetica, sans-serif;
-            color: #333333;
-            font-size: 11px;
-        }
+            body {
+                font-family: Helvetica, sans-serif;
+                color: #333333;
+                font-size: 11px;
+            }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
 
-        td {
-            border: 1px solid #666666;
-            padding: 4px;
-            vertical-align: top;
-        }
+            td {
+                border: 1px solid #666666;
+                padding: 4px;
+                vertical-align: top;
+            }
 
-        .sectionHeader {
-            background-color: #AADCFF;
-            text-align: center;
-            font-weight: bold;
-        }
+            
+            .sectionHeader {
+                background-color: #AADCFF;
+                text-align: center;
+                font-weight: bold;
+            }
 
-        .subHeader {
-            background-color: #AADCFF;
-            text-align: center;
-            font-weight: bold;
-        }
+            .subHeader {
+                background-color: #AADCFF;
+                text-align: center;
+                font-weight: bold;
+            }
 
-        .label {
-            background-color: #dcdcdc;
-        }
+            .label {
+                background-color: #dcdcdc;
+            }
 
-        li {
-            margin-left: 15px;
-        }
+            li {
+                margin-left: 15px;
+            }
 
-    </style>
-</head>
+        </style>
+    </head>
 
-<body padding="20">
-    <!-- HEADER -->
-    <table border="0">
-        <tr>
-            <td border="0" width="70%">
-                <font size="12">
-                    <b>SITE DETAILS SCHEDULE (SDS)</b>
-                </font>
-            </td>
-            <td border="0" width="30%" align="right">
-                <img src="${requestJSON.logo}" />
-            </td>
-        </tr>
-    </table>
-    <br />
-
-    <!-- AGREEMENT TEXT -->
-    <table border="0">
-        <tr>
-            <td border="0" align="center">
-                This is an SDS issued pursuant and subject to the
-                <b>${requestJSON.agreement.custrecord_twc_agreement_name}</b>
-                (the <b>"${requestJSON.agreement.custrecord_twc_agreement_code}"</b>)
-                <br />
-                between Towercom Limited and the
-                <b>${requestJSON.agreement.custrecord_twc_agreement_party} dated ${requestJSON.agreement.custrecord_twc_agreement_date}</b>
-            </td>
-        </tr>
-    </table>
-
-    <!-- SITE DETAILS -->
-    <table>
-        <tr><td align="center" colspan="6" class="sectionHeader"> Site Details </td></tr>
-        <tr>
-            <td width="12%" class="label" align="right"> Site Name </td>
-            <td width="20%"> ${requestJSON.siteDetails.site_name} </td>
-            <td width="20%" class="label" align="right"> Site ID: </td>
-            <td width="20%"> ${requestJSON.siteDetails.site_id} </td>
-            <td width="20%" class="label" align="right"> ${requestJSON.agreement.custrecord_twc_agreement_party} Site ID: </td>
-            <td width="20%"> ${requestJSON.siteDetails.operator_site_id} </td>
-        </tr>
-        <tr>
-            <td class="label" align="right">Site Address:</td>
-            <td colspan="5">
-                <#if requestJSON.siteDetails.address?has_content && requestJSON.siteDetails.address != "null"> ${requestJSON.siteDetails.address} </#if>
-                <#if requestJSON.siteDetails.add_zipcode?has_content && requestJSON.siteDetails.add_zipcode != "null">, ${requestJSON.siteDetails.add_zipcode} </#if>
-                <#if requestJSON.siteDetails.add_county?has_content && requestJSON.siteDetails.add_county != "null">, ${requestJSON.siteDetails.add_county} </#if>
-            </td>
-        </tr>
-        <tr>
-            <td class="label" align="right"> Coordinates: </td>
-            <td border-right ="0"> Easting: ${requestJSON.siteDetails.easting} </td>
-            <td border-left ="0"> Northing: ${requestJSON.siteDetails.northing} </td>
-            <td border-right ="0" colspan="2"> Latitude: ${requestJSON.siteDetails.latitude} </td>
-            <td border-left ="0"> Longitude: ${requestJSON.siteDetails.longitude} </td>
-        </tr>
-    </table>
-
-    <!-- DETAILS OF THE PARTIES -->
-    <table style="margin-top:14px;">
-        <tr> <td align="center" colspan="4" class="sectionHeader"> Details of the Parties </td> </tr>
-        <tr>
-            <td align="center" colspan="2" width="50%" class="subHeader"> Licensor: </td>
-            <td align="center" colspan="2" width="50%" class="subHeader"> ${requestJSON.agreement.custrecord_twc_agreement_party}: </td>
-        </tr>
-        <tr>
-            <td colspan="2" style="line-height: 16px;">
-                Name: Towercom Limited
-                <br />
-                Company Number: 439951
-                <br />
-                Registered Office: 2 Grand Canal Square, Dublin 2
-                <br />
-                <br />
-                Whose address for correspondence is:
-                <br />
-                Usher House, Main Street, Dundrum, Dublin 14
-            </td>
-            <td colspan="2" style="line-height: 16px;">
-                Name: ${requestJSON.srf.operator_name}
-                <br />
-                Company Number: ${requestJSON.srf.company_number}
-                <br />
-                Registered Office: ${requestJSON.srf.customer_address}
-                <br />
-                <br />
-                Whose address for correspondence is:
-                <br />
-                ${requestJSON.srf.customer_address}
-            </td>
-        </tr>
-        <tr>
-            <td width="18%" class="label" align="right"> SRF Number: </td>
-            <td width="32%"> ${requestJSON.srf.name} </td>
-            <td width="18%" class="label" align="right"> SRF Approved: </td>
-            <td width="32%"> ${requestJSON.srf.approval_date} </td>
-        </tr>
-        <tr>
-            <td class="label" align="right"> Drawing ref: </td>
-            <td> ${(requestJSON.sds.custrecord_twc_sds_drawing_name!"")?replace("null", "none")} </td>
-            <td colspan="2"> The drawing referenced forms an integral part of the SDS and illustrates the equipment licenced and/or proposed for removal. </td>
-        </tr>
-        <tr>
-            <td colspan="2" class="label" align="right"> Site Access Reference Documents </td>
-            <td colspan="2"> ${requestJSON.srf.site_access_doc} </td>
-        </tr>
-
-    </table>
-
-    <!-- TOWER MOUNTED EQUIPMENT -->
-    <table style="width:100%; border-collapse:collapse; margin-top:14px; font-family:Arial, sans-serif; font-size:10px; border:1px solid #666;">
-
-        <!-- Section Header -->
-        <tr>
-            <td class="sectionHeader" colspan="16" align="center" style="border:1px solid #666; text-align:center; font-weight:bold; padding:5px;"> Tower Mounted Equipment </td>
-        </tr>
-
-        <!-- Column Headers -->
-        <tr class="subHeader" style="text-align:center; font-weight:bold;">
-            <td style="border:1px solid #666; padding:4px;">Status</td>
-            <td style="border:1px solid #666; padding:4px;">SRF ID</td>
-            <td style="border:1px solid #666; padding:4px;">ID</td>
-            <td style="border:1px solid #666; padding:4px;">Type</td>
-            <td style="border:1px solid #666; padding:4px;">Description</td>
-            <td style="border:1px solid #666; padding:4px;">Length<br />(mm)</td>
-            <td style="border:1px solid #666; padding:4px;">Width<br />(mm)</td>
-            <td style="border:1px solid #666; padding:4px;">Depth<br />(mm)</td>
-            <td style="border:1px solid #666; padding:4px;">Equipment<br />Height (m)</td>
-            <td style="border:1px solid #666; padding:4px;">Weight<br />(kg)</td>
-            <td style="border:1px solid #666; padding:4px;">Azimuth</td>
-            <td style="border:1px solid #666; padding:4px;">B-End</td>
-            <td style="border:1px solid #666; padding:4px;">Location</td>
-            <td style="border:1px solid #666; padding:4px;">Inventory<br />Flag</td>
-            <td style="border:1px solid #666; padding:4px;">Atme<br />Count</td>
-            <td style="border:1px solid #666; padding:4px;">Feeder<br />Count</td>
-        </tr>
-
-        <#list requestJSON.srfItems as srfItems> 
-        <tr <#if srfItems_index % 2 == 0>background-color="#C8D8E5"</#if>>
-            <#if srfItems.step_type != "3">
-                <td style="border:1px solid #666; padding:4px;">${srfItems.status}</td>
-                <td style="border:1px solid #666; padding:4px;">[${srfItems.srf_id}]</td>
-                <td style="border:1px solid #666; padding:4px;">${srfItems.id}</td>
-                <td style="border:1px solid #666; padding:4px;">${srfItems.type}</td>
-                <td style="border:1px solid #666; padding:4px;">${srfItems.description}</td>
-                <td style="border:1px solid #666; padding:4px;">${(srfItems.length!"")?replace("null", "")}</td>
-                <td style="border:1px solid #666; padding:4px;">${(srfItems.width!"")?replace("null", "")}</td>
-                <td style="border:1px solid #666; padding:4px;">${(srfItems.depth!"")?replace("null", "")}</td>
-                <td style="border:1px solid #666; padding:4px;">${(srfItems.equip_height!"")?replace("null", "")}</td>
-                <td style="border:1px solid #666; padding:4px;">${(srfItems.weight!"")?replace("null", "")}</td>
-                <td style="border:1px solid #666; padding:4px;">${(srfItems.azimuth!"")?replace("null", "")}</td>
-                <td style="border:1px solid #666; padding:4px;">${(srfItems.b_end!"")?replace("null", "")}</td>
-                <td style="border:1px solid #666; padding:4px;">${(srfItems.location!"")?replace("null", "")}</td>
-                <td style="border:1px solid #666; padding:4px;">${(srfItems.inventory_flag!"")?replace("null", "")}</td>
-                <td style="border:1px solid #666; padding:4px;">
-                <#if srfItems.step_type == "2" > 
-                    1
-                <#else>
-                    0
-                </#if>
-                </td>
-                <td style="border:1px solid #666; padding:4px;">${(srfItems.feeder_count!"")?replace("null", "")}</td>
-            </#if>
-        </tr>
-        </#list>
-
-    </table>
-
-    <!-- GROUND / INDOOR EQUIPMENT -->
-    <table style="width:100%; border-collapse:collapse; margin-top:14px; font-family:Arial, sans-serif; font-size:10px; border:1px solid #666;">
-        <tr>
-            <td class="sectionHeader" align="center" colspan="10" style="border:1px solid #666; text-align:center; font-weight:bold; padding:5px;"> Ground/Indoor Equipment </td>
-        </tr>
-        <tr class="subHeader" style="text-align:center; font-weight:bold;">
-            <td style="border:1px solid #666; padding:4px;">Status</td>
-            <td style="border:1px solid #666; padding:4px;">SRF ID</td>
-            <td style="border:1px solid #666; padding:4px;">ID</td>
-            <td style="border:1px solid #666; padding:4px;">Type</td>
-            <td style="border:1px solid #666; padding:4px;">Description</td>
-            <td style="border:1px solid #666; padding:4px;">Length</td>
-            <td style="border:1px solid #666; padding:4px;">Width</td>
-            <td style="border:1px solid #666; padding:4px;">Height</td>
-            <td style="border:1px solid #666; padding:4px;">Location</td>
-            <td style="border:1px solid #666; padding:4px;">Inventory Flag</td>
-        </tr>
-        <#list requestJSON.srfItems as srfItems>
+    <body padding="20">
+        <!-- HEADER -->
+        <table border="0">
             <tr>
-                <#if srfItems.step_type == "3">
-                    <td style="border:1px solid #666; padding:4px;">${srfItems.status}</td>
-                    <td style="border:1px solid #666; padding:4px;">${srfItems.srf_id}</td>
-                    <td style="border:1px solid #666; padding:4px;">${srfItems.id}</td>
-                    <td style="border:1px solid #666; padding:4px;">${srfItems.type}</td>
-                    <td style="border:1px solid #666; padding:4px;">${srfItems.description}</td>
-                    <td style="border:1px solid #666; padding:4px;">${(srfItems.length!"")?replace("null", "")}</td>
-                    <td style="border:1px solid #666; padding:4px;">${(srfItems.width!"")?replace("null", "")}</td>
-                    <td style="border:1px solid #666; padding:4px;">${(srfItems.equip_height!"")?replace("null", "")}</td>
-                    <td style="border:1px solid #666; padding:4px;">${(srfItems.location!"")?replace("null", "")}</td>
-                    <td style="border:1px solid #666; padding:4px;">${(srfItems.inventory_flag!"")?replace("null", "")}</td>
+                <td border="0" width="70%">
+                    <font size="12">
+                        <b>SITE DETAILS SCHEDULE (SDS)</b>
+                    </font>
+                </td>
+                <td border="0" width="30%" align="right">
+                    <img src="${requestJSON.logo}" />
+                </td>
+            </tr>
+        </table>
+        <br />
+
+        <!-- AGREEMENT TEXT -->
+        <table border="0">
+            <tr>
+                <td border="0" align="center">
+                    This is an SDS issued pursuant and subject to the
+                    <b>${requestJSON.agreement.custrecord_twc_agreement_name}</b>
+                    (the <b>"${requestJSON.agreement.custrecord_twc_agreement_code}"</b>)
+                    <br />
+                    between Towercom Limited and the
+                    <b>${requestJSON.agreement.custrecord_twc_agreement_party} dated ${requestJSON.agreement.custrecord_twc_agreement_date}</b>
+                </td>
+            </tr>
+        </table>
+
+        <!-- SITE DETAILS -->
+        <table>
+            <tr><td align="center" colspan="6" class="sectionHeader"> Site Details </td></tr>
+            <tr>
+                <td width="12%" class="label" align="right"> Site Name </td>
+                <td width="20%"> ${requestJSON.siteDetails.site_name} </td>
+                <td width="20%" class="label" align="right"> Site ID: </td>
+                <td width="20%"> ${requestJSON.siteDetails.site_id} </td>
+                <td width="20%" class="label" align="right"> ${requestJSON.agreement.custrecord_twc_agreement_party} Site ID: </td>
+                <td width="20%"> ${requestJSON.siteDetails.operator_site_id} </td>
+            </tr>
+            <tr>
+                <td class="label" align="right">Site Address:</td>
+                <td colspan="5">
+                    <#if requestJSON.siteDetails.address?has_content && requestJSON.siteDetails.address != "null"> ${requestJSON.siteDetails.address} </#if>
+                    <#if requestJSON.siteDetails.add_zipcode?has_content && requestJSON.siteDetails.add_zipcode != "null">, ${requestJSON.siteDetails.add_zipcode} </#if>
+                    <#if requestJSON.siteDetails.add_county?has_content && requestJSON.siteDetails.add_county != "null">, ${requestJSON.siteDetails.add_county} </#if>
+                </td>
+            </tr>
+            <tr>
+                <td class="label" align="right"> Coordinates: </td>
+                <td border-right ="0"> Easting: ${requestJSON.siteDetails.easting} </td>
+                <td border-left ="0"> Northing: ${requestJSON.siteDetails.northing} </td>
+                <td border-right ="0" colspan="2"> Latitude: ${requestJSON.siteDetails.latitude} </td>
+                <td border-left ="0"> Longitude: ${requestJSON.siteDetails.longitude} </td>
+            </tr>
+        </table>
+
+        <!-- DETAILS OF THE PARTIES -->
+        <table style="margin-top:14px;">
+            <tr> <td align="center" colspan="4" class="sectionHeader"> Details of the Parties </td> </tr>
+            <tr>
+                <td align="center" colspan="2" width="50%" class="subHeader"> Licensor: </td>
+                <td align="center" colspan="2" width="50%" class="subHeader"> ${requestJSON.agreement.custrecord_twc_agreement_party}: </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="line-height: 16px;">
+                    Name: Towercom Limited
+                    <br />
+                    Company Number: 439951
+                    <br />
+                    Registered Office: 2 Grand Canal Square, Dublin 2
+                    <br />
+                    <br />
+                    Whose address for correspondence is:
+                    <br />
+                    Usher House, Main Street, Dundrum, Dublin 14
+                </td>
+                <td colspan="2" style="line-height: 16px;">
+                    Name: ${requestJSON.srf.operator_name}
+                    <br />
+                    Company Number: ${requestJSON.srf.company_number}
+                    <br />
+                    Registered Office: ${requestJSON.srf.customer_address}
+                    <br />
+                    <br />
+                    Whose address for correspondence is:
+                    <br />
+                    ${requestJSON.srf.customer_address}
+                </td>
+            </tr>
+            <tr>
+                <td width="18%" class="label" align="right"> SRF Number: </td>
+                <td width="32%"> ${requestJSON.srf.name} </td>
+                <td width="18%" class="label" align="right"> SRF Approved: </td>
+                <td width="32%"> ${requestJSON.srf.approval_date} </td>
+            </tr>
+            <tr>
+                <td class="label" align="right"> Drawing ref: </td>
+                <td> ${(requestJSON.sds.custrecord_twc_sds_drawing_name!"")?replace("null", "none")} </td>
+                <td colspan="2"> The drawing referenced forms an integral part of the SDS and illustrates the equipment licenced and/or proposed for removal. </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="label" align="right"> Site Access Reference Documents </td>
+                <td colspan="2"> ${requestJSON.srf.site_access_doc} </td>
+            </tr>
+
+        </table>
+
+        <!-- TOWER MOUNTED EQUIPMENT -->
+        <table style="width:100%; margin-top:14px; font-family:Arial, sans-serif; font-size:10px;">
+
+            <!-- Section Header -->
+            <tr>
+                <td class="sectionHeader" colspan="16" align="center" style="text-align:center; font-weight:bold; padding:5px;"> Tower Mounted Equipment </td>
+            </tr>
+
+            <!-- Column Headers -->
+            <tr class="subHeader" style="text-align:center; font-weight:bold;">
+                <td style="padding:4px;">Status</td>
+                <td style="padding:4px;">SRF ID</td>
+                <td style="padding:4px;">ID</td>
+                <td style="padding:4px;">Type</td>
+                <td style="padding:4px;">Description</td>
+                <td style="padding:4px;">Length<br />(mm)</td>
+                <td style="padding:4px;">Width<br />(mm)</td>
+                <td style="padding:4px;">Depth<br />(mm)</td>
+                <td style="padding:4px;">Equipment<br />Height (m)</td>
+                <td style="padding:4px;">Weight<br />(kg)</td>
+                <td style="padding:4px;">Azimuth</td>
+                <td style="padding:4px;">B-End</td>
+                <td style="padding:4px;">Location</td>
+                <td style="padding:4px;">Inventory<br />Flag</td>
+                <td style="padding:4px;">Atme<br />Count</td>
+                <td style="padding:4px;">Feeder<br />Count</td>
+            </tr>
+
+            <#list requestJSON.srfItems as srfItems> 
+            <tr>
+                <#if srfItems.equip_class != "3">
+                    <td style="padding:4px; white-space: nowrap;">${srfItems.status}</td>
+                    <td style="padding:4px;">${srfItems.srf_id}</td>
+                    <td style="padding:4px;">${srfItems.id}</td>
+                    <td style="padding:4px;">${srfItems.type}</td>
+                    <td style="padding:4px;">${srfItems.description}</td>
+                    <td style="padding:4px;">${(srfItems.length!"")?replace("null", "")}</td>
+                    <td style="padding:4px;">${(srfItems.width!"")?replace("null", "")}</td>
+                    <td style="padding:4px;">${(srfItems.depth!"")?replace("null", "")}</td>
+                    <td style="padding:4px;">${(srfItems.equip_height!"")?replace("null", "")}</td>
+                    <td style="padding:4px;">${(srfItems.weight!"")?replace("null", "")}</td>
+                    <td style="padding:4px;">${(srfItems.azimuth!"")?replace("null", "")}</td>
+                    <td style="padding:4px;">${(srfItems.b_end!"")?replace("null", "")}</td>
+                    <td style="padding:4px;">${(srfItems.location!"")?replace("null", "")}</td>
+                    <td style="padding:4px;">${(srfItems.inventory_flag!"")?replace("null", "")}</td>
+                    <td style="padding:4px;">
+                    <#if srfItems.equip_class == "2" > 
+                        1
+                    <#else>
+                        0
+                    </#if>
+                    </td>
+                    <td style="padding:4px;">${(srfItems.feeder_count!"")?replace("null", "")}</td>
                 </#if>
             </tr>
-        </#list>
-    </table>
+            </#list>
 
-    <!-- POWER SUPPLY -->
-    <table style="width:100%; border-collapse:collapse; margin-top:14px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
-        <tr>
-            <td class="sectionHeader" align="center" colspan="2" style="border:1px solid #666; text-align:center; padding:5px; font-weight:bold;"> Power Supply </td>
-        </tr>
-        <tr>
-            <td style="width:50%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Towercom Temp Supply Required: </td>
-            <td style="width:50%; border:1px solid #666; padding:7px;"> ${requestJSON.srf.power_supply_required} </td>
-        </tr>
-        <tr>
-            <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Other (please specify): </td>
-            <td style="border:1px solid #666; padding:7px;">${(requestJSON.srf.custrecord_twc_srf_power_notes!"")?replace("null", "")}</td>
-        </tr>
-    </table>
+        </table>
 
-    <!-- FIBRE -->
-    <pbr break="true" orphans="0" widows="0"/>
+        <!-- GROUND / INDOOR EQUIPMENT -->
+        <table style="width:100%; border-collapse:collapse; margin-top:14px; font-family:Arial, sans-serif; font-size:10px; ">
+            <tr>
+                <td class="sectionHeader" align="center" colspan="10" style="text-align:center; font-weight:bold; padding:5px;"> Ground/Indoor Equipment </td>
+            </tr>
+            <tr class="subHeader" style="text-align:center; font-weight:bold;">
+                <td style="padding:4px;">Status</td>
+                <td style="padding:4px;">SRF ID</td>
+                <td style="padding:4px;">ID</td>
+                <td style="padding:4px;">Type</td>
+                <td style="padding:4px;">Description</td>
+                <td style="padding:4px;">Length</td>
+                <td style="padding:4px;">Width</td>
+                <td style="padding:4px;">Height</td>
+                <td style="padding:4px;">Location</td>
+                <td style="padding:4px;">Inventory Flag</td>
+            </tr>
+            <#list requestJSON.srfItems as srfItems>
+                <tr>
+                    <#if srfItems.equip_class == "3">
+                        <td style="padding:4px; white-space: nowrap;">${srfItems.status}</td>
+                        <td style="padding:4px;">${srfItems.srf_id}</td>
+                        <td style="padding:4px;">${srfItems.id}</td>
+                        <td style="padding:4px;">${srfItems.type}</td>
+                        <td style="padding:4px;">${srfItems.description}</td>
+                        <td style="padding:4px;">${(srfItems.length!"")?replace("null", "")}</td>
+                        <td style="padding:4px;">${(srfItems.width!"")?replace("null", "")}</td>
+                        <td style="padding:4px;">${(srfItems.equip_height!"")?replace("null", "")}</td>
+                        <td style="padding:4px;">${(srfItems.location!"")?replace("null", "")}</td>
+                        <td style="padding:4px;">${(srfItems.inventory_flag!"")?replace("null", "")}</td>
+                    </#if>
+                </tr>
+            </#list>
+        </table>
 
-    <table style="width:100%; border-collapse:collapse; margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
-        <tr>
-            <td class="sectionHeader" align="center" colspan="4" style="border:1px solid #666; text-align:center; padding:5px; font-weight:bold;"> Fibre </td>
-        </tr>
-        <tr>
-            <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Rights: </td>
-            <td style="width:25%; border:1px solid #666; padding:7px;"> <#if requestJSON.sds.custrecord_twc_sds_fibre_rights == "T"> Yes <#elseif requestJSON.sds.custrecord_twc_sds_fibre_rights == "F"> No </#if> </td>
-            <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Duct Route: </td>
-            <td style="width:25%; border:1px solid #666; padding:7px;"> ${requestJSON.sds.custrecord_twc_sds_drawing_ref} </td>
-        </tr>
-        <tr>
-            <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Provider: </td>
-            <td style="border:1px solid #666; padding:7px;"> ${requestJSON.sds.custrecord_twc_sds_fibre_provider_name} </td>
-            <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Other Provider: </td>
-            <td style="border:1px solid #666; padding:7px;"> ${(requestJSON.sds.custrecord_twc_sds_fibre_provider_other!"")?replace("null", "")} </td>
-        </tr>
-        <tr>
-            <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Conditions: </td>
-            <td colspan="3" style="border:1px solid #666; padding:7px;"> ${(requestJSON.sds.custrecord_twc_sds_fibre_notes!"")?replace("null", "")} </td>
-        </tr>
+        <!-- POWER SUPPLY -->
+        <table style="width:100%; border-collapse:collapse; margin-top:14px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
+            <tr>
+                <td class="sectionHeader" align="center" colspan="2" style="border:1px solid #666; text-align:center; padding:5px; font-weight:bold;"> Power Supply </td>
+            </tr>
+            <tr>
+                <td style="width:50%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Towercom Temp Supply Required: </td>
+                <td style="width:50%; border:1px solid #666; padding:7px;"> ${requestJSON.srf.power_supply_required} </td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Other (please specify): </td>
+                <td style="border:1px solid #666; padding:7px;">${(requestJSON.srf.custrecord_twc_srf_power_notes!"")?replace("null", "")}</td>
+            </tr>
+        </table>
 
-    </table>
+        <!-- FIBRE -->
+        <pbr break="true" orphans="0" widows="0"/>
 
-    <!-- LICENCE FEES -->
-    <table style="width:100%; border-collapse:collapse; margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
-        <tr>
-            <td class="sectionHeader" align="center" colspan="8" style="border:1px solid #666; text-align:center; padding:5px; font-weight:bold;">
-                Licence Fees
-            </td>
-        </tr>
+        <table style="width:100%; border-collapse:collapse; margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
+            <tr>
+                <td class="sectionHeader" align="center" colspan="4" style="border:1px solid #666; text-align:center; padding:5px; font-weight:bold;"> Fibre </td>
+            </tr>
+            <tr>
+                <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Rights: </td>
+                <td style="width:25%; border:1px solid #666; padding:7px;"> <#if requestJSON.sds.custrecord_twc_sds_fibre_rights == "T"> Yes <#elseif requestJSON.sds.custrecord_twc_sds_fibre_rights == "F"> No </#if> </td>
+                <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Duct Route: </td>
+                <td style="width:25%; border:1px solid #666; padding:7px;"> ${requestJSON.sds.custrecord_twc_sds_drawing_ref} </td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Provider: </td>
+                <td style="border:1px solid #666; padding:7px;"> ${requestJSON.sds.custrecord_twc_sds_fibre_provider_name} </td>
+                <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Other Provider: </td>
+                <td style="border:1px solid #666; padding:7px;"> ${(requestJSON.sds.custrecord_twc_sds_fibre_provider_other!"")?replace("null", "")} </td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Conditions: </td>
+                <td colspan="3" style="border:1px solid #666; padding:7px;"> ${(requestJSON.sds.custrecord_twc_sds_fibre_notes!"")?replace("null", "")} </td>
+            </tr>
 
-        <tr>
-            <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
-                <p style="text-align: left;">Previous Licence Fee:</p>
-            </td>
-            <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${(requestJSON.sds.custrecord_twc_sds_fee_prev!"")?replace("null", "")}
-            </td>
-            <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
-                Fee Reduction:
-            </td>
-            <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${(requestJSON.sds.custrecord_twc_sds_fee_reduction!"")?replace("null", "")}
-            </td>
-            <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
-                Fee Uplift:
-            </td>
-            <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${(requestJSON.sds.custrecord_twc_sds_fee_uplift!"")?replace("null", "")}
-            </td>
-            <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
-                Licence Fee:
-            </td>
-            <td style="border:1px solid #666; padding:7px; width:10%;">
-                €${(requestJSON.sds.custrecord_twc_sds_fee_new!"")?replace("null", "")}
-            </td>
-        </tr>
-        <tr>
-            <td colspan="1" style="border:1px solid #666; padding:7px; background-color:gainsboro;">
-                <p style="text-align: left; white-space: nowrap;">
-                    Commencement Date:
-                </p>
-            </td>
-            <td colspan="7" style="border:1px solid #666; padding:7px;">
-                ${requestJSON.sds.custrecord_twc_sds_comm_date}
-            </td>
-        </tr>
-        <tr>
-            <td colspan="8" style="border:1px solid #666; padding:10px 12px; background-color:gainsboro;">
-                <!-- ${requestJSON.sds.custrecord_twc_sds_fee_charge_breackdown} -->
-                <#if requestJSON.sdsCondition_1?has_content>
-                    <#list requestJSON.sdsCondition_1.conditions as condition>
-                        <p style="padding-bottom: 0px; margin-bottom: 0px;">${condition.description}</p>
-                        <ul>
-                        <#list condition.fields as conditionField>
-                            <li>
-                                <b>${conditionField.label}:</b> ${conditionField.value}
-                            </li>
-                        </#list>
-                        </ul>
-                    </#list>
-                </#if>
-                
-            </td>
-        </tr>
-    </table>
+        </table>
 
-    <!-- SDS CONDITIONS -->
-    <table style="width:100%; border-collapse:collapse; margin-top:22px; font-family:Arial, sans-serif; font-size:11px;">
-        <tr>
-            <td class="sectionHeader" align="center" style="border:1px solid #666; padding:5px; font-weight:bold; text-align:center;">
-                SDS Conditions
-            </td>
-        </tr>
-        <tr>
-            <td style="background-color:#d9d9d9; padding:8px; border-left:1px solid #666; border-right:1px solid #666;">
-                <table style="width:100%; border-collapse:collapse;">
-                    <tr>
-                        <td border="0" style="padding-bottom:6px;">
-                            1. This SDS becomes effective on the SDS commencement date and supersedes any previous SDS in respect of this site.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td border="0" style="padding-bottom:6px;">
-                            2. The effective date for additional equipment is the date the SRF is approved.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td border="0">
-                            3. The effective date for equipment removals is the date the equipment is removed.
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
+        <!-- LICENCE FEES -->
+        <table style="width:100%; border-collapse:collapse; margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
+            <tr>
+                <td class="sectionHeader" align="center" colspan="8" style="border:1px solid #666; text-align:center; padding:5px; font-weight:bold;">
+                    Licence Fees
+                </td>
+            </tr>
 
-        <!-- White Section -->
-        <tr>
-            <td style="padding:8px; border:1px solid #666; border-top:none;">
-
-                <#if requestJSON.sdsCondition_2?has_content>
-                    <p style="font-weight:bold; padding-bottom: 3px;">
-                        Additional SRF Specific Conditions
+            <tr>
+                <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
+                    <p style="text-align: left;">Previous Licence Fee:</p>
+                </td>
+                <td style="border:1px solid #666; padding:7px; width:10%;">
+                    €${(requestJSON.sds.custrecord_twc_sds_fee_prev!"")?replace("null", "")}
+                </td>
+                <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
+                    Fee Reduction:
+                </td>
+                <td style="border:1px solid #666; padding:7px; width:10%;">
+                    €${(requestJSON.sds.custrecord_twc_sds_fee_reduction!"")?replace("null", "")}
+                </td>
+                <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
+                    Fee Uplift:
+                </td>
+                <td style="border:1px solid #666; padding:7px; width:10%;">
+                    €${(requestJSON.sds.custrecord_twc_sds_fee_uplift!"")?replace("null", "")}
+                </td>
+                <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
+                    Licence Fee:
+                </td>
+                <td style="border:1px solid #666; padding:7px; width:10%;">
+                    €${(requestJSON.sds.custrecord_twc_sds_fee_new!"")?replace("null", "")}
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1" style="border:1px solid #666; padding:7px; background-color:gainsboro;">
+                    <p style="text-align: left; white-space: nowrap;">
+                        Commencement Date:
                     </p>
-                    <#list requestJSON.sdsCondition_2.conditions as condition>
-                        <p style="padding-bottom: 0px; margin-bottom: 0px;">${condition.description}</p>
-                        <ul>
+                </td>
+                <td colspan="7" style="border:1px solid #666; padding:7px;">
+                    ${requestJSON.sds.custrecord_twc_sds_comm_date}
+                </td>
+            </tr>
+            <tr>
+                <td colspan="8" style="border:1px solid #666; padding:10px 12px; background-color:gainsboro;">
+                    <!-- ${requestJSON.sds.custrecord_twc_sds_fee_charge_breackdown} -->
+                    <#if requestJSON.sdsCondition_1?has_content>
+                        <#list requestJSON.sdsCondition_1.conditions as condition>
+                            <p style="padding-bottom: 0px; margin-bottom: 0px;">${condition.description}</p>
+                            <ul>
                             <#list condition.fields as conditionField>
                                 <li>
-                                <b>${conditionField.label}:</b> ${conditionField.value}
+                                    <b>${conditionField.label}:</b> ${conditionField.value}
                                 </li>
                             </#list>
-                        </ul>
-                    </#list>
-                </#if>
-              
-            </td>
-        </tr>
+                            </ul>
+                        </#list>
+                    </#if>
+                    
+                </td>
+            </tr>
+        </table>
 
-    </table>
+        <!-- SDS CONDITIONS -->
+        <table style="width:100%; border-collapse:collapse; margin-top:22px; font-family:Arial, sans-serif; font-size:11px;">
+            <tr>
+                <td class="sectionHeader" align="center" style="border:1px solid #666; padding:5px; font-weight:bold; text-align:center;">
+                    SDS Conditions
+                </td>
+            </tr>
+            <tr>
+                <td style="background-color:#d9d9d9; padding:8px; border-left:1px solid #666; border-right:1px solid #666;">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <tr>
+                            <td border="0" style="padding-bottom:6px;">
+                                1. This SDS becomes effective on the SDS commencement date and supersedes any previous SDS in respect of this site.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td border="0" style="padding-bottom:6px;">
+                                2. The effective date for additional equipment is the date the SRF is approved.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td border="0">
+                                3. The effective date for equipment removals is the date the equipment is removed.
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
 
-    
-<#if requestJSON.srf.client_signed != "null">
-    <!-- SIGNED FOR OPERATOR -->
-    <table style="width:100%; border-collapse:collapse;margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
-        <tr>
-            <td class="sectionHeader" align="center" style="border:1px solid #666; text-align:center; padding:5px;font-weight:bold;">
-                Signed for ${requestJSON.agreement.custrecord_twc_agreement_party}
-            </td>
-        </tr>
-        <tr>
-            <td style="border:1px solid #666; padding:8px; background-color:gainsboro;">
-                Electronically signed on behalf of ${requestJSON.agreement.custrecord_twc_agreement_party} by
-                ${requestJSON.srf.client_singed_by} on ${requestJSON.srf.client_signed}.
-            </td>
-        </tr>
-    </table>
-</#if>
+            <!-- White Section -->
+            <tr>
+                <td style="padding:8px; border:1px solid #666; border-top:none;">
 
-<#if requestJSON.srf.tl_signed != "null">
-    <!-- SIGNED FOR TOWERCOM -->
-    <table style="width:100%; border-collapse:collapse; margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
-        <tr>
-            <td class="sectionHeader" align="center" style="border:1px solid #666; text-align:center; padding:5px; font-weight:bold;">
-                Signed for Towercom
-            </td>
-        </tr>
-        <tr>
-            <td style="border:1px solid #666; padding:8px; background-color:gainsboro;">
-                Electronically signed on behalf of Towercom by
-                ${requestJSON.srf.tl_signed_by} on ${requestJSON.srf.tl_signed}.
-            </td>
-        </tr>
-    </table>
-</#if>
+                    <#if requestJSON.sdsCondition_2?has_content>
+                        <p style="font-weight:bold; padding-bottom: 3px;">
+                            Additional SRF Specific Conditions
+                        </p>
+                        <#list requestJSON.sdsCondition_2.conditions as condition>
+                            <p style="padding-bottom: 0px; margin-bottom: 0px;">${condition.description}</p>
+                            <ul>
+                                <#list condition.fields as conditionField>
+                                    <li>
+                                    <b>${conditionField.label}:</b> ${conditionField.value}
+                                    </li>
+                                </#list>
+                            </ul>
+                        </#list>
+                    </#if>
+                
+                </td>
+            </tr>
 
-    <!-- FOOTER -->
-    <p style="width:100%; text-align:right; margin-top:10px; font-family:Arial, sans-serif; font-size:11px; color:silver;">
-        ${requestJSON.siteDetails.site_name}_${requestJSON.srf.customer_name}_${requestJSON.sds.name}_${requestJSON.srf.approval_date}
-    </p>
+        </table>
 
-</body>
+        
+    <#if requestJSON.srf.client_signed != "null">
+        <!-- SIGNED FOR OPERATOR -->
+        <table style="width:100%; border-collapse:collapse;margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
+            <tr>
+                <td class="sectionHeader" align="center" style="border:1px solid #666; text-align:center; padding:5px;font-weight:bold;">
+                    Signed for ${requestJSON.agreement.custrecord_twc_agreement_party}
+                </td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #666; padding:8px; background-color:gainsboro;">
+                    Electronically signed on behalf of ${requestJSON.agreement.custrecord_twc_agreement_party} by
+                    ${requestJSON.srf.client_singed_by} on ${requestJSON.srf.client_signed}.
+                </td>
+            </tr>
+        </table>
+    </#if>
+
+    <#if requestJSON.srf.tl_signed != "null">
+        <!-- SIGNED FOR TOWERCOM -->
+        <table style="width:100%; border-collapse:collapse; margin-top:22px; font-family:Arial, sans-serif; font-size:11px; border:1px solid #666;">
+            <tr>
+                <td class="sectionHeader" align="center" style="border:1px solid #666; text-align:center; padding:5px; font-weight:bold;">
+                    Signed for Towercom
+                </td>
+            </tr>
+            <tr>
+                <td style="border:1px solid #666; padding:8px; background-color:gainsboro;">
+                    Electronically signed on behalf of Towercom by
+                    ${requestJSON.srf.tl_signed_by} on ${requestJSON.srf.tl_signed}.
+                </td>
+            </tr>
+        </table>
+    </#if>
+
+        <!-- FOOTER -->
+        <p style="width:100%; text-align:right; margin-top:10px; font-family:Arial, sans-serif; font-size:11px; color:silver;">
+            ${requestJSON.siteDetails.site_name}_${requestJSON.srf.customer_name}_${requestJSON.sds.name}_${requestJSON.srf.approval_date}
+        </p>
+    </body>
 </pdf>
+<pdf src=""></pdf>
+</pdfset>

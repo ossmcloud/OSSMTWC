@@ -231,33 +231,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
-        // function getParentReviewRecord(wkf, item) {
-        //     return coreSql.first(`
-        //         select  wi.id, NVL(srf.custrecord_twc_srf_fdbk_loop_iter, 1) as feedback_loop_count, w.custrecord_twc_srf_wkf_parent as srf, BUILTIN.DF(w.custrecord_twc_srf_wkf_parent) as srf_name, 
-        //                 wi.custrecord_twc_srf_wkfi_stage as stage, ws.custrecord_twc_srf_wks_next as stage_next, 
-        //                 ws.custrecord_twc_srf_wks_is_review as is_review, custrecord_twc_srf_wkfi_review as review
-        //         from    customrecord_twc_srf_wkfi wi
-        //         join    customrecord_twc_srf_wks ws on ws.id = wi.custrecord_twc_srf_wkfi_stage
-        //         join    customrecord_twc_srf_wkf w on w.id = wi.custrecord_twc_srf_wkfi_parent 
-        //         join    customrecord_twc_srf srf on srf.id = w.custrecord_twc_srf_wkf_parent
-
-        //         where  wi.custrecord_twc_srf_wkfi_parent = ${wkf}
-        //         and    BUILTIN.MNFILTER(ws.custrecord_twc_srf_wks_next , 'MN_INCLUDE', '', 'TRUE', ${item.stage}) = 'T'
-        //         and    wi.id < ${item.id}
-        //         order by wi.created desc
-        //     `)
-        // }
-
-        // function getReviewRecord(options) {
-        //     return coreSql.first(`
-        //         select  sr.id, w.custrecord_twc_srf_wkf_parent as srf, BUILTIN.DF(w.custrecord_twc_srf_wkf_parent) as srf_name, srf.custrecord_twc_srf_fdbk_loop_iter as feedback_loop_count
-        //         from    customrecord_twc_srf_wkf w
-        //         join    customrecord_twc_srf srf on srf.id = w.custrecord_twc_srf_wkf_parent
-        //         left join    customrecord_twc_srf_rev sr on sr.custrecord_twc_srf_rev_srf = srf.id and sr.custrecord_twc_srf_rev_iter = srf.custrecord_twc_srf_fdbk_loop_iter
-        //         where   w.id = ${options.wkf}
-        //         order by sr.created desc
-        //     `)
-        // }
 
         function updateWorkflow(userInfo, options) {
             var response = { status: 'success' };
@@ -270,7 +243,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             if (items) {
-                var isLastStage = false; var stepNotRequired = false;
+                var stepNotRequired = false;
                 core.array.each(items, item => {
                     var fields = []; var values = [];
                     fields.push(twcSrfWorkflowItem.Fields.PROFILE);
@@ -289,8 +262,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         }
                     }
                     recu.submit(twcSrfWorkflowItem.Type, item.id, fields, values);
-
-                    isLastStage = item.last;
 
                     if (stepNotRequired) { return; }
 
@@ -322,8 +293,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 if (!k.startsWith('cust')) { continue; }
                                 fields.push(k);
                                 var val = item.formData[k];
-                                if (val.length == 10 && val.indexOf('-') == 4) { val = twcUtils.fromJsToNs(val); }
+                                if (val?.length == 10 && val?.indexOf('-') == 4) { val = twcUtils.fromJsToNs(val); }
                                 values.push(val);
+                                // @@NOTE: license is issued when reviewed not sure why we have 2 dates
+                                //         however we agreed that the user will only set the reviewed date and the issued date will be same
+                                if (k == twcSrf.Fields.LICENCE_PACK_REVIEWED) {
+                                    fields.push(twcSrf.Fields.LICENCE_PACK_ISSUED);
+                                    values.push(val);
+                                }
                             }
                             var recordId = null;
                             if (item.formData.record == twcSrf.Type) { recordId = options.srf; }
@@ -364,12 +341,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     response.wkfStatusName = 'In Progress';
 
                 }
-                if (isLastStage) {
-                    recu.submit(twcSrfWorkflow.Type, options.wkf, twcSrfWorkflow.Fields.STATUS, WORKFLOW_STATUS.COMPLETED);
 
-                    response.wkfStatus = WORKFLOW_STATUS.COMPLETED;
-                    response.wkfStatusName = 'Completed';
-                }
 
             } else if (core.utils.isObj(options.srf)) {
                 var fields = []; var values = [];
@@ -377,7 +349,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (!k.startsWith('cust')) { continue; }
                     fields.push(k);
                     if (twcSrf.getField(k)?.type == 'date') {
-
                         values.push(twcUtils.fromJsToNs(options.srf[k]));
                     } else {
                         values.push(options.srf[k]);
@@ -399,7 +370,38 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 recu.submit(twcSrfWorkflow.Type, options.wkf.id, fields, values);
             }
 
+            if (isWorkFlowCompleted(options)) {
+                response.wkfStatus = WORKFLOW_STATUS.COMPLETED;
+                response.wkfStatusName = 'Completed';
+            }
+
             return response;
+        }
+
+        function isWorkFlowCompleted(options) {
+            var wkf = options.wkf?.id || options.wkf;
+            if (!wkf) { return; }
+
+            var wkfRemainingSteps = coreSql.run(`
+                select  wkfi.id, srf.custrecord_twc_srf_permit_date, wkfi.custrecord_twc_srf_wkfi_status, wks.custrecord_twc_srf_wks_is_last, wks.name
+                from    customrecord_twc_srf_wkf wkf
+                join    customrecord_twc_srf srf on srf.id = wkf.custrecord_twc_srf_wkf_parent
+                join    customrecord_twc_srf_wkfi wkfi on wkfi.custrecord_twc_srf_wkfi_parent = wkf.id
+                join    customrecord_twc_srf_wks wks on wks.id = wkfi.custrecord_twc_srf_wkfi_stage
+                where   wkf.id = ${wkf}
+                and     NVL(wks.custrecord_twc_srf_wks_hide, 'F') = 'F'
+                and     wkfi.custrecord_twc_srf_wkfi_status not in (${WORKFLOW_STATUS.COMPLETED}, ${WORKFLOW_STATUS.NOT_REQUIRED})
+                order by wkfi.created desc
+            `)
+
+            if (wkfRemainingSteps.length == 1 && wkfRemainingSteps[0].custrecord_twc_srf_permit_date != null) {
+                recu.submit(twcSrfWorkflowItem.Type, wkfRemainingSteps[0].id, twcSrfWorkflowItem.Fields.STATUS, WORKFLOW_STATUS.COMPLETED);
+                recu.submit(twcSrfWorkflow.Type, options.wkf, twcSrfWorkflow.Fields.STATUS, WORKFLOW_STATUS.COMPLETED);
+                return true;
+            } else if (wkfRemainingSteps.length == 0) {
+                recu.submit(twcSrfWorkflow.Type, options.wkf, twcSrfWorkflow.Fields.STATUS, WORKFLOW_STATUS.COMPLETED);
+                return true;
+            }
         }
 
 
@@ -426,7 +428,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         TO_CHAR(srf.custrecord_twc_srf_lic_pack_revd, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_revd,
                         TO_CHAR(srf.custrecord_twc_srf_lic_pack_issued, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_issued,
                         TO_CHAR(srf.custrecord_twc_srf_lic_pack_signed, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_signed,
-                        srf.custrecord_twc_srf_lic_pack_sign_by
+                        srf.custrecord_twc_srf_lic_pack_sign_by,
+                        TO_CHAR(srf.custrecord_twc_srf_lic_pack_exec, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_exec,
+                        srf.custrecord_twc_srf_lic_pack_exec_by,
                         
                     
                 from    ${twcSrfWorkflow.Type} w
@@ -541,7 +545,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `, nextStage => {
                 updateOptions.items.push({
                     id: nextStage.id,
-                    [twcSrfWorkflowItem.Fields.STATUS]: nextStage.is_last == 'T' ? WORKFLOW_STATUS.COMPLETED : WORKFLOW_STATUS.IN_PROGRESS,
+                    //[twcSrfWorkflowItem.Fields.STATUS]: nextStage.is_last == 'T' ? WORKFLOW_STATUS.COMPLETED : WORKFLOW_STATUS.IN_PROGRESS,
+                    [twcSrfWorkflowItem.Fields.STATUS]: WORKFLOW_STATUS.IN_PROGRESS,
                     last: nextStage.is_last == 'T'
                 })
 
@@ -558,7 +563,41 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
+        function rejectSds(userInfo, options) {
+            var sdsProduced = options.wkf.items.find(i => { return i.next_stage.indexOf(options.item.stage) >= 0; });
+            if (!sdsProduced) { throw new Error(`Cannot find SDS Produced Workflow Stage`); }
 
+            var data = JSON.parse(sdsProduced.form_data);
+            var formData = {
+                record: data.record
+            }
+            core.array.each(data.fields, f => {
+                if (f.type == 'button') { return; }
+                formData[f.id] = null;
+            })
+
+            var updateOptions = {
+                wkf: options.wkf.id,
+                srf: options.wkf.srf,
+                items: [
+                    {
+                        id: options.item.id,
+                        [twcSrfWorkflowItem.Fields.STATUS]: WORKFLOW_STATUS.NEW,
+                        [twcSrfWorkflowItem.Fields.ACTUAL]: null,
+                    },
+                    {
+                        id: sdsProduced.id,
+                        [twcSrfWorkflowItem.Fields.STATUS]: WORKFLOW_STATUS.IN_PROGRESS,
+                        [twcSrfWorkflowItem.Fields.ACTUAL]: null,
+                        formData: formData
+                    }
+                ]
+            }
+
+            var response = updateWorkflow(userInfo, updateOptions);
+            response.reload = true;
+            return response;
+        }
 
 
         function isWaitingForAcceptance(userInfo, options) {
@@ -576,7 +615,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `;
             return coreSql.first(sql);
         }
-
         function acceptSrf(userInfo, options) {
             var approvalRecord = isWaitingForAcceptance(userInfo, options);
             if (!approvalRecord) { throw new Error(`Could not find a pending acceptance workflow item for srf: ${options.srf}`); }
@@ -643,7 +681,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             recu.submit(twcSrfWorkflow.Type, wkf, twcSrfWorkflow.Fields.STATUS, WORKFLOW_STATUS.CANCELLED);
         }
 
-
         function deleteWorkflow(options) {
             if (!options) { throw new Error('no parameters passed'); }
 
@@ -689,6 +726,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var sds = coreSql.first(`select id, ${twcSds.Fields.PDF} as file_id from ${twcSds.Type} where ${twcSds.Fields.SRF} = ${options.srf}`);
             if (sds) {
+                coreSql.each(`select id from customrecord_twc_sds_item where custrecord_twc_sds_item_parent = ${sds.id}`, r => {
+                    recu.del('customrecord_twc_sds_item', r.id);
+                })
                 recu.del(twcSds.Type, sds.id);
                 // @@NOTE: the actual PDF file is not deleted but we do not care as this function will never be used on live
                 if (sds.file_id) { recu.del(twcFile.Type, sds.file_id) }
@@ -706,7 +746,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             isWaitingForSignature: isWaitingForSignature,
             postSignature: postSignature,
             acceptSrf: acceptSrf,
-            
+            rejectSds: rejectSds
 
         }
     });

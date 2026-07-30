@@ -45,6 +45,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             get id() { return this.#options.id; }
+            get ui() { return this.#ui; }
             get type() { return this.#options?.type; }
             get label() {
                 return this.#options?.label;

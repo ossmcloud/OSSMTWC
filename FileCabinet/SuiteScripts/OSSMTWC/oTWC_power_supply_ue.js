@@ -1,25 +1,28 @@
-/**
- * @NApiVersion 2.1
- * @NScriptType UserEventScript
- * @NModuleScope public
- */
-define([], () => {
 
-    const beforeLoad = (context) => {
+// @@NOTE: this is no longer needed (it actually never was)
 
-        try {
-            if (context.type === context.UserEventType.VIEW) return;
-            const form = context.form;
-            form.clientScriptModulePath = './oTWC_power_supply_cs.js';
-            form.addButton({ id: 'custpage_select_gen_backup', label: 'Select Generator Backup', functionName: 'openGeneratorBackupSelector' });
+// /**
+//  * @NApiVersion 2.1
+//  * @NScriptType UserEventScript
+//  * @NModuleScope public
+//  */
+// define([], () => {
 
-        } catch (e) {
-            log.error('beforeLoad Error', e);
-        }
-    };
+//     const beforeLoad = (context) => {
 
-    return {
-        beforeLoad
-    };
+//         try {
+//             if (context.type === context.UserEventType.VIEW) return;
+//             const form = context.form;
+//             form.clientScriptModulePath = './oTWC_power_supply_cs.js';
+//             form.addButton({ id: 'custpage_select_gen_backup', label: 'Select Generator Backup', functionName: 'openGeneratorBackupSelector' });
 
-});
+//         } catch (e) {
+//             log.error('beforeLoad Error', e);
+//         }
+//     };
+
+//     return {
+//         beforeLoad
+//     };
+
+// });

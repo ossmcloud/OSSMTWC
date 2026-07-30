@@ -1,25 +1,28 @@
-/**
- * @NApiVersion 2.1
- * @NScriptType UserEventScript
- * @NModuleScope public
- */
-define([], () => {
+// @@NOTE: this is no longer needed (it actually never was)
 
-    const beforeLoad = (context) => {
 
-        try {
-            if (context.type === context.UserEventType.VIEW) return;
-            const form = context.form;
-            form.clientScriptModulePath = './oTWC_power_reading_cs.js';
-            form.addButton({ id: 'custpage_select_pwr_supply', label: 'Select Power Supply', functionName: 'openPowerSupplySelector' });
+// /**
+//  * @NApiVersion 2.1
+//  * @NScriptType UserEventScript
+//  * @NModuleScope public
+//  */
+// define([], () => {
 
-        } catch (e) {
-            log.error('beforeLoad Error', e);
-        }
-    };
+//     const beforeLoad = (context) => {
 
-    return {
-        beforeLoad
-    };
+//         try {
+//             if (context.type === context.UserEventType.VIEW) return;
+//             const form = context.form;
+//             form.clientScriptModulePath = './oTWC_power_reading_cs.js';
+//             form.addButton({ id: 'custpage_select_pwr_supply', label: 'Select Power Supply', functionName: 'openPowerSupplySelector' });
 
-});
+//         } catch (e) {
+//             log.error('beforeLoad Error', e);
+//         }
+//     };
+
+//     return {
+//         beforeLoad
+//     };
+
+// });

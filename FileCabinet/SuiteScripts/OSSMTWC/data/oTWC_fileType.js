@@ -22,6 +22,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             Type: twcFileType.Type,
             Fields: twcFileType.Fields,
+            FieldsInfo: twcFileType.FieldsInfo,
 
             get: function (id) {
                 var rec = new OSSMTWC_FileType(id);

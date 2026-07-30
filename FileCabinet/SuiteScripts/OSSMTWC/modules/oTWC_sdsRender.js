@@ -6,12 +6,32 @@
 define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../modules/oTWC_sdsEngine.js', '../data/oTWC_config.js', '../data/oTWC_sds.js', '../data/oTWC_file.js', '../data/oTWC_utils.js', '../O/oTWC_nsFileUtils.js'],
     (render, file, core, recu, twcSiteRequestUtils, twcSdsEngine, twcConfig, twcSDS, twcFile, twcUtils, nsFileUtils) => {
 
+        function getDrawings(requestedJson) {
+            var embeddedPds = '';
+
+            const embedPdf = (drawings) => {
+                core.array.each(drawings, drawing => {
+                    embeddedPds += formatEmbedPdf(drawing.file_id);
+                })
+            }
+
+            embedPdf(twcSdsEngine.getSrfDrawingFiles(requestedJson.srf.id));
+            embedPdf(twcSdsEngine.getSiteLicenseMapFiles(requestedJson.siteDetails.id, requestedJson.srf.company_id));
+            embedPdf(twcSdsEngine.getSiteAccessFiles(requestedJson.siteDetails.id));
+
+            return embeddedPds;
+            
+        }
+
+        function formatEmbedPdf(fileId) {
+            var f = file.load(fileId);
+            return `<pdf src="data:application/pdf;base64,${f.getContents()}"></pdf>`
+        }
 
         function renderSDS(context, recId, setStatus) {
             var userInfo = twcConfig.userInfo(context);
 
             const requestJSON = twcSdsEngine.getSrfInfo(recId);
-            if (requestJSON.srf.length == 0) { throw new Error(`No SRF found using id: ${recId}`); }
 
             requestJSON.sds = twcSdsEngine.getFormData({ id: recId });
 
@@ -19,7 +39,11 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
             if (core.env.live()) { requestJSON.logo = 'https://9061443.app.netsuite.com/core/media/media.nl?id=2&amp;c=9061443&amp;h=DLBF3L9Uup0gbcrPVFiqDAl_MlZywyZdMJO0rzYfa6EtDJn6'; }
 
             const xmlFile = file.load({ id: 'SuiteScripts/OSSMTWC/XML/oTwc_print_SDS.xml' });
-            const xmlString = xmlFile.getContents();
+            var xmlString = xmlFile.getContents();
+
+            xmlString = xmlString.replace(`<pdf src=""></pdf>`, getDrawings(requestJSON))
+            //throw new Error(xmlString)
+
             const renderer = render.create();
             renderer.templateContent = xmlString;
             renderer.addCustomDataSource({ format: render.DataSource.OBJECT, alias: 'requestJSON', data: requestJSON });

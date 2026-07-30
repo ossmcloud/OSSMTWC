@@ -25,16 +25,9 @@ Workflow:
             Exception of the 4x check steps after initial review, should not be able to re-forecast these.
 
 	SDS Pack Produced:
-		take snapshot of equipment
-		SDS Can be rejected in which case goes back to SDS Produced (add a 'reject' button for the signatories)
-			on reviewed stage
-
-	SDS Completed:
-		SDS Pack executed, and Work permitted
-
-    Bugs to fix:
-		editable review entries should be read-only if srf status is >= SRFApproved
-
+		take snapshot of equipment => take the latest SRF from eq. table
+	
+	
 	
 
 Others:

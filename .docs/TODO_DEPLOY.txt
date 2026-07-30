@@ -44,11 +44,14 @@ SCHEMA:
         custrecord_twc_file_type_default_status
         custrecord_twc_file_type_license_map
         custrecord_twc_file_type_drawing
+        custrecord_twc_file_recordtype
+        custrecord_twc_file_type_access
 
     customrecord_twc_company
         custrecord_twc_co_sds_include_licensemap
 
-    
+    customrecord_twc_equip_licence_status
+        custrecord_twc_equip_licence_status_sds
 
 
 	TODO:
@@ -57,7 +60,11 @@ SCHEMA:
 
 
 
-
+disabled:
+C:\e_drive\OSSM Developments\OSSMTWC\FileCabinet\SuiteScripts\OSSMTWC\oTWC_power_supply_ue.js
+C:\e_drive\OSSM Developments\OSSMTWC\FileCabinet\SuiteScripts\OSSMTWC\oTWC_power_supply_cs.js
+C:\e_drive\OSSM Developments\OSSMTWC\FileCabinet\SuiteScripts\OSSMTWC\oTWC_power_reading_ue.js
+C:\e_drive\OSSM Developments\OSSMTWC\FileCabinet\SuiteScripts\OSSMTWC\oTWC_power_reading_cs.js
 
 
 

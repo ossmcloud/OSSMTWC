@@ -31,10 +31,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             AGREEMENT_TEMPLATE: 'custrecord_twc_sds_agr_tmpl',
             AGREEMENT_CONDITIONS: 'custrecord_twc_sds_agr_conds',
             AGREEMENT_CONDITIONS_DATA: 'custrecord_twc_sds_agr_cond_data',
-            ACCESS_DRAWING: 'custrecord_twc_sds_drawing_access',
-            ACCESS_DRAWING_REFERENCE: 'custrecord_twc_sds_drawing_access_ref',
-            FIBRE_DRAWING: 'custrecord_twc_sds_drawing_fibre',
-            FIBRE_DRAWING_REFERENCE: 'custrecord_twc_sds_drawing_fibre_ref',
             PDF: 'custrecord_twc_sds_pdf',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
@@ -67,10 +63,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             AGREEMENT_TEMPLATE: { name: 'custrecord_twc_sds_agr_tmpl', type: 'select', alias: 'agreementTemplate', display: 'normal', mandatory: false, recordType: 'customrecord_twc_agreement' },
             AGREEMENT_CONDITIONS: { name: 'custrecord_twc_sds_agr_conds', type: 'multiselect', alias: 'agreementConditions', display: 'normal', mandatory: false, recordType: 'customrecord_twc_agreement_cond' },
             AGREEMENT_CONDITIONS_DATA: { name: 'custrecord_twc_sds_agr_cond_data', type: 'clobtext', alias: 'agreementConditionsData', display: 'hidden', mandatory: false },
-            ACCESS_DRAWING: { name: 'custrecord_twc_sds_drawing_access', type: 'select', alias: 'accessDrawing', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
-            ACCESS_DRAWING_REFERENCE: { name: 'custrecord_twc_sds_drawing_access_ref', type: 'text', alias: 'accessDrawingReference', display: 'normal', mandatory: false },
-            FIBRE_DRAWING: { name: 'custrecord_twc_sds_drawing_fibre', type: 'select', alias: 'fibreDrawing', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
-            FIBRE_DRAWING_REFERENCE: { name: 'custrecord_twc_sds_drawing_fibre_ref', type: 'text', alias: 'fibreDrawingReference', display: 'normal', mandatory: false },
             PDF: { name: 'custrecord_twc_sds_pdf', type: 'select', alias: 'pDF', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
@@ -239,32 +231,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.AGREEMENT_CONDITIONS_DATA);
             } set agreementConditionsData(value) {
                 this.set(_recordFields.AGREEMENT_CONDITIONS_DATA, value)
-            }
-            
-            get accessDrawing() {
-                return this.get(_recordFields.ACCESS_DRAWING);
-            } set accessDrawing(value) {
-                this.set(_recordFields.ACCESS_DRAWING, value)
-            }
-            get accessDrawingName() { return this.getText(_recordFields.ACCESS_DRAWING); }
-            
-            get accessDrawingReference() {
-                return this.get(_recordFields.ACCESS_DRAWING_REFERENCE);
-            } set accessDrawingReference(value) {
-                this.set(_recordFields.ACCESS_DRAWING_REFERENCE, value)
-            }
-            
-            get fibreDrawing() {
-                return this.get(_recordFields.FIBRE_DRAWING);
-            } set fibreDrawing(value) {
-                this.set(_recordFields.FIBRE_DRAWING, value)
-            }
-            get fibreDrawingName() { return this.getText(_recordFields.FIBRE_DRAWING); }
-            
-            get fibreDrawingReference() {
-                return this.get(_recordFields.FIBRE_DRAWING_REFERENCE);
-            } set fibreDrawingReference(value) {
-                this.set(_recordFields.FIBRE_DRAWING_REFERENCE, value)
             }
             
             get pDF() {

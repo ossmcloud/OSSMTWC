@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', '../../O/oTWC_themes.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_permissions.js'],
-    (email, file, url, core, https, b64, oStyles, twcThemes, twcIcons, twcConfig, dialog, twcUI, uiTable, permissions) => {
+define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', '../../O/oTWC_themes.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_permissions.js', '../../data/oTWC_file.js', '../../O/controls/oTWC_ui_fieldPanel.js' ],
+    (email, file, url, core, https, b64, oStyles, twcThemes, twcIcons, twcConfig, dialog, twcUI, uiTable, permissions, twcFile, twcUIPanel) => {
 
         //
         const PORTLET_STYLES_PROPS = {
@@ -303,7 +303,7 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
             }
 
             async previewFile(file, e, getHtml) {
-                await TWCPageBase.previewFileStatic(file, e);
+                return await TWCPageBase.previewFileStatic(file, e, getHtml);
             }
             static async previewFileStatic(file, e, getHtml) {
                 var icon = '';
@@ -345,6 +345,71 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
                     message: html,
                     size: { width: '1000px', height: '95vh' }
                 })
+            }
+
+            async uploadFile(options, callback) {
+                return await TWCPageBase.uploadFileStatic(options, callback);
+            }
+            static async uploadFileStatic(options, callback) {
+
+                try {
+                    var fileObject = null;
+
+                    var url = core.url.script('otwc_microsvc_sl', { action: 'upload-file-ui' });
+                    var res = await https.promise.post({ url: url, body: { options: options } });
+
+                    var form = twcUIPanel.ui(res);
+                    form.on('change', e => {
+                        if (e.id == 'upload-file') {
+                            e.target.readFile(file => {
+                                fileObject = file;
+                                form.getControl('name').value = file.name;
+                            })
+                        } else if (e.id == twcFile.Fields.R_TYPE) {
+                            form.getControl(twcFile.Fields.STATUS).setDataSource(e.target.valueObj.allowedStatues);
+                            if (e.target.valueObj.defaultStatus) {
+                                form.getControl(twcFile.Fields.STATUS).value = e.target.valueObj.defaultStatus;
+                            }
+                        }
+
+                    });
+
+                    dialog.confirm({ title: 'upload file', message: form.ui, width: '600px', height: '410px' }, (dlg) => {
+                        try {
+                            if (!fileObject) { throw new Error('Please pick a file from your PC'); }
+                            var obj = form.getValues(true);
+                            obj.fileObject = fileObject;
+                            obj[twcFile.Fields.RECORD_TYPE] = options.recordType;
+                            obj[twcFile.Fields.RECORD_ID] = options.recordId;
+                            obj[twcFile.Fields.R_TYPE] = obj[twcFile.Fields.R_TYPE].value;
+                            obj[twcFile.Fields.STATUS] = obj[twcFile.Fields.STATUS].value;
+
+                            console.log(obj);
+
+                            dialog.saving(dlg, 'uploading file...<br />this may take some time depending of the file size.<br />Please do not close this pop-up, this browser tab or refresh the page')
+
+                            var url = core.url.script('otwc_microsvc_sl', { action: 'upload-file' });
+                            https.promise.post({ url: url, body: obj }).then(res => {
+                                if (res.error) {
+                                    dialog.savingError(dlg, res.error);
+                                } else {
+                                    dlg.close();
+                                }
+                                if (callback) { callback(obj, res); }
+                            }).catch(err => {
+                                dialog.savingError(dlg, err);
+                            })
+
+                            return false;
+                        } catch (error) {
+                            dialog.error(error);
+                            return false;
+                        }
+                    })
+                } catch (error) {
+                    dialog.error(error);
+                }
+
             }
         }
 
@@ -449,6 +514,10 @@ define(['N/email', 'N/file', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'S
 
             async previewFile(file, e, getHtml) {
                 return await TWCPageBase.previewFileStatic(file, e, getHtml)
+            },
+
+            async uploadFile(options, callback) {
+                return await TWCPageBase.uploadFileStatic(options, callback)
             }
 
         }

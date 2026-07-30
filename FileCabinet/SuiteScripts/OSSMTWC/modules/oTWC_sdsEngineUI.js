@@ -36,24 +36,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                        custrecord_twc_agreement_cond_cust_all = 'T'
                     or BUILTIN.MNFILTER(custrecord_twc_agreement_cond_cust , 'MN_INCLUDE', '', 'TRUE', ${srf[twcSrf.Fields.CUSTOMER]}) = 'T'
                 )
-                order by name
+                order by custrecord_twc_agreement_cond_sort, name
             `);
 
-            var srfDrawingFiles = twcUtils.getFiles({
-                filters: {
-                    [twcFile.Fields.RECORD_TYPE]: twcSrf.Type,
-                    [twcFile.Fields.RECORD_ID]: srf.id,
-                    [twcFileType.Fields.DRAWING]: 'T'
-                }
-            });
-
-            var drawingFiles = twcUtils.getFiles({
-                filters: {
-                    [twcFile.Fields.RECORD_TYPE]: twcSite.Type,
-                    [twcFile.Fields.RECORD_ID]: srf[twcSrf.Fields.SITE],
-                    [twcFileType.Fields.DRAWING]: 'T'
-                }
-            });
+            var srfDrawingFiles = twcSdsEngine.getSrfDrawingFiles(srf.id);
+            var drawingFiles = twcSdsEngine.getSiteDrawingFiles(srf[twcSrf.Fields.SITE]);
 
             return jQuery(`
                 <div>
@@ -136,16 +123,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 ${twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Agreement Condition', id: twcSds.Fields.AGREEMENT_CONDITIONS, multiSelect: true, mandatory: true, dataSource: agreementSiteTypes, width: 'calc(100% - 35px)' })}
                                 ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, label: '', id: 'set-conditions', value: '...', width: '25px' })}
                             </div>
-
-                            <div>
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Access Drawing', dataSource: drawingFiles, id: twcSds.Fields.ACCESS_DRAWING, width: 'calc(50% - 5px)' })}
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, label: 'Drawing Reference', id: twcSds.Fields.ACCESS_DRAWING_REFERENCE, width: 'calc(50% - 5px)' })}
-                                
-                            </div>
-                            <div>
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Fibre Drawing', dataSource: drawingFiles, id: twcSds.Fields.FIBRE_DRAWING, width: 'calc(50% - 5px)' })}
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, label: 'Drawing Reference', id: twcSds.Fields.FIBRE_DRAWING_REFERENCE, width: 'calc(50% - 5px)' })}
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -153,100 +130,95 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
-        function openDialog(page, srf, callback) {
-            var formData = twcSdsEngine.getSds(srf);
-            var form = twcUI.init({}, getDialogContent(srf));
+        async function openDialog(page, srf, callback) {
+            //var formData = twcSdsEngine.getSds(srf);
+            try {
 
-            form.getControl(twcSds.Fields.FIBRE_PROVIDER).on('change', e => {
-                form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).visible = e.target.valueObj?.text.toLowerCase().indexOf('other') >= 0;
-            })
+                var resp = await page.post({ action: 'get-sds' }, srf)
+                var formData = twcSds.get(resp.id);
+                var form = twcUI.init({}, getDialogContent(srf));
 
-            form.getControl(twcSds.Fields.FIBRE_RIGHTS).on('change', e => {
-                form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE).disabled = !e.value;
-                form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE_REFERENCE).disabled = !e.value;
-                form.getControl(twcSds.Fields.FIBRE_PROVIDER).disabled = !e.value;
-                form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).disabled = !e.value;
-                form.getControl(twcSds.Fields.FIBRE_NOTES).disabled = !e.value;
-
-                form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE).mandatory = e.value;
-                form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE_REFERENCE).mandatory = e.value;
-                form.getControl(twcSds.Fields.FIBRE_PROVIDER).mandatory = e.value;
-                form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).mandatory = e.value;
-                form.getControl(twcSds.Fields.FIBRE_NOTES).mandatory = e.value;
-            })
-
-            form.getControl(twcSds.Fields.INCLUDE_LICENSE_MAP).on('change', e => {
-                form.getControl(twcSds.Fields.ACCESS_DRAWING).disabled = !e.value;
-                form.getControl(twcSds.Fields.ACCESS_DRAWING_REFERENCE).disabled = !e.value;
-                form.getControl(twcSds.Fields.FIBRE_DRAWING_REFERENCE).disabled = !e.value;
-                form.getControl(twcSds.Fields.FIBRE_DRAWING).disabled = !e.value;
-
-                form.getControl(twcSds.Fields.ACCESS_DRAWING).mandatory = e.value;
-                form.getControl(twcSds.Fields.ACCESS_DRAWING_REFERENCE).mandatory = e.value;
-                form.getControl(twcSds.Fields.FIBRE_DRAWING_REFERENCE).mandatory = e.value;
-                form.getControl(twcSds.Fields.FIBRE_DRAWING).mandatory = e.value;
-            })
-
-            form.getControl(twcSds.Fields.DRAWING).on('change', e => {
-                form.getControl(twcSds.Fields.DRAWING_REFERENCE).value = e.target.valueObj[twcFile.Fields.DESCRIPTION]
-            });
-
-            form.getControl(twcSds.Fields.ACCESS_DRAWING).on('change', e => {
-                form.getControl(twcSds.Fields.ACCESS_DRAWING_REFERENCE).value = e.target.valueObj[twcFile.Fields.DESCRIPTION]
-            });
-
-            form.getControl(twcSds.Fields.AGREEMENT_CONDITIONS).on('change', e => {
-                formData.set(twcSds.Fields.AGREEMENT_CONDITIONS_DATA, '')
-            });
-            form.getControl('set-conditions').on('click', e => {
-                try {
-                    manageAgreementConditions(form.getControl(twcSds.Fields.AGREEMENT_CONDITIONS).valueObj, formData)
-                } catch (error) {
-                    dialog.error(error);
+                if (!resp.includeLicenseMap) {
+                    form.getControl(twcSds.Fields.INCLUDE_LICENSE_MAP).ui.parent().parent().remove();
                 }
-            })
+                //if (formData[twcSds.F INCLUDE_LICENSE_MAP])
+                
+                form.getControl(twcSds.Fields.FIBRE_PROVIDER).on('change', e => {
+                    form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).visible = e.target.valueObj && e.target.valueObj?.text.toLowerCase().indexOf('other') >= 0;
+                })
 
-            dialog.confirm({ title: 'SDS Pack Produce Info', message: form.ui, width: '1265px', height: '645px', }, (dlg) => {
-                try {
-                    
-                    // @@NOTE: just to run mandatory validations
-                    form.getValues();
-                    // @@NOTE: SDS: make sure we have forms data
-                    if (!formData.get(twcSds.Fields.AGREEMENT_CONDITIONS_DATA)) { throw new Error('Please, specify sds conditions values'); }
+                form.getControl(twcSds.Fields.FIBRE_RIGHTS).on('change', e => {
+                    form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE).disabled = !e.value;
+                    form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE_REFERENCE).disabled = !e.value;
+                    form.getControl(twcSds.Fields.FIBRE_PROVIDER).disabled = !e.value;
+                    form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).disabled = !e.value;
+                    form.getControl(twcSds.Fields.FIBRE_NOTES).disabled = !e.value;
 
-                    for (var k in formData.fields) {
-                        var ctrl = form.getControl(formData.fields[k].name);
-                        if (ctrl) {
-                            if (ctrl.multiSelect) {
-                                formData.set(formData.fields[k].name, ctrl.value.split(',').map(i => { return parseInt(i); }))   
-                            } else {
-                                formData.set(formData.fields[k].name, ctrl.value)
+                    form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE_REFERENCE).mandatory = e.value;
+                    form.getControl(twcSds.Fields.FIBRE_PROVIDER).mandatory = e.value;
+                    form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).mandatory = e.value;
+                    form.getControl(twcSds.Fields.FIBRE_NOTES).mandatory = e.value;
+                })
+
+                form.getControl(twcSds.Fields.DRAWING).on('change', e => {
+                    if (!e.target.valueObj) { return; }
+                    form.getControl(twcSds.Fields.DRAWING_REFERENCE).value = e.target.valueObj[twcFile.Fields.DESCRIPTION]
+                });
+
+                form.getControl(twcSds.Fields.AGREEMENT_CONDITIONS).on('change', e => {
+                    formData.set(twcSds.Fields.AGREEMENT_CONDITIONS_DATA, '')
+                });
+                form.getControl('set-conditions').on('click', e => {
+                    try {
+                        manageAgreementConditions(form.getControl(twcSds.Fields.AGREEMENT_CONDITIONS).valueObj, formData)
+                    } catch (error) {
+                        dialog.error(error);
+                    }
+                })
+
+                dialog.confirm({ title: 'SDS Pack Produce Info', message: form.ui, width: '1265px', height: '645px', }, (dlg) => {
+                    try {
+
+                        // @@NOTE: just to run mandatory validations
+                        form.getValues();
+
+                        // @@NOTE: SDS: make sure we have forms data
+                        if (!formData.get(twcSds.Fields.AGREEMENT_CONDITIONS_DATA)) { throw new Error('Please, specify sds conditions values'); }
+
+                        for (var k in formData.fields) {
+                            var ctrl = form.getControl(formData.fields[k].name);
+                            if (ctrl) {
+                                var v = ctrl.value;
+                                if (ctrl.multiSelect) { v = v.split(',').map(i => { return parseInt(i); }); }
+                                formData.set(formData.fields[k].name, v)
                             }
                         }
+                        formData.save();
+                        printSDS(page, srf);
+                        if (callback) { callback(); }
+                        return true;
+                    } catch (error) {
+                        dialog.error(error);
+                        return false;
                     }
-                    formData.save();
-                    printSDS(page, srf);
-                    if (callback) { callback(); }
-                    return true;
-                } catch (error) {
-                    dialog.error(error);
-                    return false;
-                }
-            });
+                });
 
-            for (var k in formData.fields) {
-                var ctrl = form.getControl(formData.fields[k].name);
-                if (!ctrl) { continue; }
-                var v = formData.get(formData.fields[k].name)
-                if (formData.fields[k].type == 'date' && v) { v = v.format(); }
-                if (ctrl.multiSelect) {
-                    // @@IMPORTANT: we use set value because we do not want to fire the change event in this case
-                    ctrl.setValue(v.join(','));
-                } else {
-                    ctrl.value = v;
+                for (var k in formData.fields) {
+                    var ctrl = form.getControl(formData.fields[k].name);
+                    if (!ctrl) { continue; }
+                    var v = formData.get(formData.fields[k].name)
+                    if (formData.fields[k].type == 'date' && v) { v = v.format(); }
+                    if (ctrl.multiSelect) {
+                        // @@IMPORTANT: we use set value because we do not want to fire the change event in this case
+                        ctrl.setValue(v.join(','));
+                    } else {
+                        ctrl.value = v;
+                    }
                 }
+
+            } catch (error) {
+                dialog.error(error);
             }
-
 
 
         }
@@ -254,16 +226,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function manageAgreementConditions(sdsConditions, sds) {
             if (!sdsConditions || sdsConditions.length == 0) { throw new Error('Please, specify a condition'); }
             var formData = sds.get(twcSds.Fields.AGREEMENT_CONDITIONS_DATA);
+
             // @@TODO: SDS: we should probably b64 this one
             formData = JSON.parse(formData || '{}');
 
             var formUi = jQuery(`<div></div>`);
-
             core.array.each(sdsConditions, sdsCondition => {
                 var condForm = jQuery(`
-                    <div>
-                        <div style="font-size: 1em; font-weight: bold; border-bottom: 1px dotted silver; margin-bottom: 5px;">${sdsCondition.description}</div>
-                        <div style="font-size: 0.75em; border-bottom: 1px solid silver; margin-bottom: 13px;">${sdsCondition.sds_section}</div>
+                    <div style="border-bottom: 1px solid silver; padding-bottom: 13px; margin-bottom: 13px;">
+                        <div style="font-size: 1em; font-weight: bold; margin-bottom: 5px; text-decoration: underline; color: var(--accent-fore-color);">${sdsCondition.sds_section}</div>
+                        <div style="font-size: 0.75em;">${sdsCondition.description}</div>
                     </div>
                 `);
                 formUi.append(condForm);
@@ -288,8 +260,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             })
 
             var form = twcUI.init({}, formUi);
-
-            dialog.confirm({ title: 'SDS Agreement Conditions', message: form.ui, width: '750px', height: '625px', }, (dlg) => {
+            dialog.confirm({ title: 'SDS Agreement Conditions', message: form.ui, width: '750px', height: '675px', }, (dlg) => {
                 try {
                     formData = form.getValues();
                     // @@TODO: SDS: we should probably b64 this one
@@ -312,51 +283,64 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
-        function signSDS(page, srf, isTL) {
+        async function signSDS(page, srf, isTL) {
+            try {
 
-            var disclaimer = "By clicking the 'Approve & Sign SDS' button, you (as an authorised representative of the Operator identified in the SDS) indicate that the Operator accepts the terms set out in this SDS and that it agrees to be contractually bound by this SDS (issued pursuant to the Master Services and Licence Agreement in place with Towercom Limited). If the Operator does not agree to these terms of the SDS, please cancel this process by clicking the 'Cancel' button.";
-            var checkBox = `
-                <div style="padding-top: 13px">
-                    <label>Approve & Sign SDS</label>
-                    ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'terms-and-cond-agreed' })}
-                </div>
-            `
-            if (isTL) {
-                disclaimer = 'By clicking "Ok" you are entering into a legally binding agreement';
-                checkBox = '';
-            }
+                var twcFile = await page.post({ action: 'get-sds-twc-file' }, { srf: srf.id })
+                var preview = await page.previewFile(twcFile, null, true);
 
-            var html = jQuery(`
-                    <div>
-                        <label>Disclaimer</label>
-                        ${disclaimer}
+                var disclaimer = "By clicking the 'Approve & Sign SDS' button, you (as an authorised representative of the Operator identified in the SDS) indicate that the Operator accepts the terms set out in this SDS and that it agrees to be contractually bound by this SDS (issued pursuant to the Master Services and Licence Agreement in place with Towercom Limited). If the Operator does not agree to these terms of the SDS, please cancel this process by clicking the 'Cancel' button.";
+                var checkBox = `
+                    <div style="padding-top: 13px">
+                        <label>Approve & Sign SDS</label>
+                        ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'terms-and-cond-agreed' })}
                     </div>
-                    ${checkBox}
+                `
+                if (isTL) {
+                    disclaimer = 'By clicking "Ok" you are entering into a legally binding agreement';
+                    checkBox = '';
+                }
+
+                var html = jQuery(`
+                    <div class="twc-div-table-t" >
+                        <div style="height: calc(90vh - 100px);">
+                            ${preview}
+                        </div>
+                        <div style="width: 550px">
+                            <div>
+                                <label>Disclaimer</label>
+                                ${disclaimer}
+                            </div>
+                            ${checkBox}
+                        </div>
+                    </div>
                 `);
 
-            var form = twcUI.init({}, html);
+                var form = twcUI.init({}, html);
+                dialog.confirm({ title: 'Sign SDS', message: html, size: { width: '70%', height: '90vh' } }, dlg => {
+                    try {
+                        if (!isTL) {
+                            if (!form.getControl('terms-and-cond-agreed').value) { throw new Error('You need to check the "Approve & Sign SDS" toggle'); }
+                        }
 
-            dialog.confirm({ title: 'Sign SDS', message: html, size: { width: '550px', height: '400px' } }, dlg => {
-                try {
+                        dialog.saving(dlg, 'signing document...<br />do not close the pop-up or refresh the page.');
+                        page.post({ action: isTL ? 'sign-sds-tl' : 'sign-sds' }, { srf: srf.id })
+                            .then(res => {
+                                location.reload();
+                            }).catch(err => {
+                                dialog.savingError(dlg, err);
+                            });
 
-                    if (!isTL) {
-                        if (!form.getControl('terms-and-cond-agreed').value) { throw new Error('You need to check the "Approve & Sign SDS" toggle'); }
+                        return false;
+                    } catch (error) {
+                        dialog.error(error);
+                        return false;
                     }
+                })
+            } catch (error) {
+                dialog.error(error);
+            }
 
-                    dialog.saving(dlg, 'signing document...<br />do not close the pop-up or refresh the page.');
-                    page.post({ action: isTL ? 'sign-sds-tl' : 'sign-sds' }, { srf: srf.id })
-                        .then(res => {
-                            location.reload();
-                        }).catch(err => {
-                            dialog.savingError(dlg, err);
-                        });
-
-                    return false;
-                } catch (error) {
-                    dialog.error(error);
-                    return false;
-                }
-            })
         }
 
         return {

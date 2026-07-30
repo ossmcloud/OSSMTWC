@@ -3,12 +3,12 @@
  *@NScriptType ClientScript
  *@NModuleScope public
  */
-define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js',
+define(['N/xml','/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js',
     './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js',
     './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_saf.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js', './O/oTWC_nsFileUtils.js', './O/controls/oTWC_ui_ctrl.js',
     './oTWC_otop_test.js', './data/oTWC_profileUI.js', './modules/oTWC_certStatusEngine.js', './data/oTWC_equipAction.js', './modules/oTWC_srfWorkflowEngine.js',
     './modules/oTWC_srfWorkflowEngineUI.js', './ui/modules/oTWC_siteRequestUtils.js', './ui/modules/oTWC_siteAccessUtils.js', './modules/oTWC_sdsEngine.js', './modules/oTWC_sdsEngineUI.js', './ui/modules/oTWC_siteLocatorUtils.js'],
-    function (core, coreSQL, dialog, recu,
+    function (xml, core, coreSQL, dialog, recu,
         twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields,
         siteInfoUtils, twcSaf, twcSrfUI, twcEquipment, nsFileUtils, twcUI,
         otop, twcProfileUI, twcCertStatusEngine, twcEquipAction, twcSrfWorkflowEngine,
@@ -64,7 +64,10 @@ define(['/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBund
                     //console.log(twcSdsEngine.setAsCurrent({ id: 36 }))
 
                     //console.log(twcSiteLocatorUtils.getSites(null, twcConfig.userInfo()))
-                    console.log(twcSdsEngine.getSrfInfo(39))
+                    //console.log(twcSdsEngine.getSrfInfo(39))
+                    //twcSdsEngine.getSdsEquipments(25)
+
+                    console.log(xml.escape({ xmlText: '/core/media/media.nl?id=25190&c=9061443_SB1&h=0x8UEtEYj_WI0zAlZrm7m_qYnvhXfgsOCm6N2VuCknGLV6DH&_xt=.pdf' }));
 
                     // console.log(
                     //     twcSiteRequestUtils.initEquipment({

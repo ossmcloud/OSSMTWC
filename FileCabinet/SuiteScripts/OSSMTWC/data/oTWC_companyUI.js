@@ -237,15 +237,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fieldGroup = { id: 'company-acl', title: title, collapsed: true, controls: [] };
 
             if (companyProfile.isVendor || companyProfile.isBoth) {
-                var basicInfo = { id: 'company-acl-list', title: companyProfile.isBoth ? 'Associated Customers List' : undefined, fields: [] };
+                var basicInfo = { id: 'company-acl-list', title: companyProfile.isBoth ? 'Customers List' : undefined, fields: [] };
                 fieldGroup.controls.push(basicInfo);
                 basicInfo.fields.push(getCompanyInfoPanels_acl_list(userInfo, companyProfile, 'customer'));
             }
             if (companyProfile.isCustomer) {
-                var basicInfo = { id: 'company-acl-list', title: companyProfile.isBoth ? 'Accredited Contractors List' : undefined, fields: [] };
+                var basicInfo = { id: 'company-acl-list', title: companyProfile.isBoth ? 'Contractors List' : undefined, fields: [] };
                 fieldGroup.controls.push(basicInfo);
                 basicInfo.fields.push(getCompanyInfoPanels_acl_list(userInfo, companyProfile, 'vendor'));
             }
+            // if (companyProfile.isVendor) {
+            //     var basicInfo = { id: 'company-ascl-list', title: companyProfile.isBoth ? 'Sub Contractors List' : undefined, fields: [] };
+            //     fieldGroup.controls.push(basicInfo);
+            //     basicInfo.fields.push(getCompanyInfoPanels_acl_list(userInfo, companyProfile, 'sub contractor'));
+            // }
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
         }
@@ -262,7 +267,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     where   custrecord_twc_acl_cont = ${companyProfile.id}
                     order by c.name
                 `)
-            } else {
+            } else if (listType == 'vendor') {
                 aclList = coreSQL.run(`
                     select  acl.id, c.name, ${twcCompany.Fields.ACCREDITATION_STATUS} as accreditation_status_id, BUILTIN.DF(c.${twcCompany.Fields.ACCREDITATION_STATUS}) as accreditation_status, 
                             ${twcCompany.Fields.ACCREDITATION_STATUS_COMMENT} as accreditation_status_note,
@@ -270,6 +275,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     from    customrecord_twc_acl acl
                     join    ${twcCompany.Type} c on c.id = acl.custrecord_twc_acl_cont
                     where   custrecord_twc_acl_cust = ${companyProfile.id}
+                    order by c.name
+                `)
+            } else {
+                aclList = coreSQL.run(`
+                    select  acl.id, c.name, ${twcCompany.Fields.ACCREDITATION_STATUS} as accreditation_status_id, BUILTIN.DF(c.${twcCompany.Fields.ACCREDITATION_STATUS}) as accreditation_status, 
+                            ${twcCompany.Fields.ACCREDITATION_STATUS_COMMENT} as accreditation_status_note,
+                            ${twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY} as accredited_contractor_expiry
+                    from    customrecord_twc_ascl acl
+                    join    ${twcCompany.Type} c on c.id = ascl.custrecord_twc_acl_sub_contractor
+                    where   custrecord_twc_acl_contractor = ${companyProfile.id}
                     order by c.name
                 `)
             }

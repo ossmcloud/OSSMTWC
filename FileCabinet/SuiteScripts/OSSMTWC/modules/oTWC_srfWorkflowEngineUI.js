@@ -32,18 +32,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return `color: ${styles.color}; background-color: ${styles.bkgd}`;
         }
 
-        function canEditWorkflowItem(item, userInfo) {
-            if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {
-                if (item.is_review == 'T' && item.profile == userInfo.profile) {
-                    return true;
-                }
-            } else {
-                if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW || item.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS) {
-                    return true;
-                }
-            }
-            return false;
-        }
+
 
         class WorkflowFormItem {
             #workflowForm = null;
@@ -51,13 +40,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #workflow = null;
             #ui = null;
             #form = null;
+            #dlg = null;
             #readOnly = false;
             constructor(form, item) {
                 this.#workflowForm = form;
                 this.#workflow = form.workflow;
                 this.#item = item;
 
-                this.#readOnly = !canEditWorkflowItem(item, form.data.userInfo);
+                this.#readOnly = !this.#workflowForm.canEditWorkflowItem(item, form.data.userInfo);
                 //this.#readOnly = this.#item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || this.#item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED;
             }
 
@@ -196,24 +186,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 this.#form = twcUi.init({}, this.#ui);
 
-                // @@NOTE: this is a bit dirty but will do for now
-                this.#form.getControl('generate_sds')?.on('click', e => {
-                    try {
-                        twcSdsEngineUI.openDialog(this.#workflowForm.page, this.#workflowForm.data.siteRequestInfo, () => {
-                            this.#form.getControl('custrecord_twc_srf_lic_pack_prod').value = TODAY;
-                        })
-                    } catch (error) {
-                        dialog.error(error)
-                    }
-                })
-                // @@NOTE: this is a bit dirty but will do for now
-                this.#form.getControl('print_sds')?.on('click', e => {
-                    twcSdsEngineUI.printSDS(this.#workflowForm.page, this.#workflowForm.data.siteRequestInfo, true);
-                })
-
-
                 var method = this.#readOnly ? 'open' : 'confirm';
-                dialog[method]({ title: 'manage item', content: this.#ui, size: { width: '700px', height: '550px' } }, dlg => {
+                this.#dlg = dialog[method]({ title: 'manage item', content: this.#ui, size: { width: '700px', height: '550px' } }, dlg => {
                     try {
                         var values = this.#form.getValues(true);
 
@@ -300,6 +274,58 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         return false;
                     }
                 });
+
+
+                var generateSdsButton = this.#form.getControl('generate_sds');
+                if (generateSdsButton) {
+                    if (this.#item.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS) {
+                        // @@NOTE: this is a bit dirty but will do for now
+                        generateSdsButton.input.on('click', async e => {
+                            try {
+                                await twcSdsEngineUI.openDialog(this.#workflowForm.page, this.#workflowForm.data.siteRequestInfo, () => {
+                                    this.#form.getControl('custrecord_twc_srf_lic_pack_prod').value = TODAY;
+                                })
+                            } catch (error) {
+                                dialog.error(error)
+                            }
+                        })
+                    } else {
+                        generateSdsButton.hide = true;
+                    }
+                }
+
+                var rejectSdsButton = this.#form.getControl('reject_sds');
+                if (rejectSdsButton) {
+                    if (this.#item.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS) {
+                        // @@NOTE: this is a bit dirty but will do for now
+                        rejectSdsButton.on('click', e => {
+                            dialog.confirm('Are you sure you wish to reject the SDS', () => {
+                                try {
+
+                                    this.#workflowForm.post('reject-sds', { wkf: this.#workflow, item: this.#item })
+                                        .then(res => {
+                                            callback(res);
+                                            this.#dlg.close();
+                                        }).catch(err => {
+                                            dialog.savingError(this.#dlg, err);
+                                        });
+
+                                } catch (error) {
+                                    dialog.error(error)
+                                }
+                            })
+                        })
+                    } else {
+                        rejectSdsButton.hide = true;
+                    }
+                }
+
+                // @@NOTE: this is a bit dirty but will do for now
+                this.#form.getControl('print_sds')?.on('click', e => {
+                    twcSdsEngineUI.printSDS(this.#workflowForm.page, this.#workflowForm.data.siteRequestInfo, true);
+                })
+
+
             }
 
             static open(workflowForm, item, callback) {
@@ -369,11 +395,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     await this.post('update-workflow', payload);
 
-                    if (input.attr('type') == 'date') {
-                        if (value && value < TODAY) {
-                            input.parent().addClass('ktl-highlight-red');
-                        } else {
-                            input.parent().removeClass('ktl-highlight-red');
+                    if (input.attr('id') == 'works-permitted-date') {
+                        this.render();
+                    } else {
+                        if (input.attr('type') == 'date') {
+                            if (value && value < TODAY) {
+                                input.parent().addClass('ktl-highlight-red');
+                            } else {
+                                input.parent().removeClass('ktl-highlight-red');
+                            }
                         }
                     }
 
@@ -493,7 +523,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (item.stage_loop != 'T') { loopStart = false; loopCellAdded = false; }
 
 
-                    var editIcon = `<span class="edit-item" style="cursor: pointer;">${twcIcons.get(canEditWorkflowItem(item, this.data.userInfo) ? 'pencil' : 'lock', 16)}</span>`;;
+                    var editIcon = `<span class="edit-item" style="cursor: pointer;">${twcIcons.get(this.canEditWorkflowItem(item, this.data.userInfo) ? 'pencil' : 'lock', 16)}</span>`;;
                     if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW && prevItem?.status != twcSrfWorkflowEngine.WorkflowStatus.COMPLETED) {
                         editIcon = ''
                     }
@@ -541,15 +571,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     })
                     tableRow.find('.edit-item').click(async e => {
                         WorkflowFormItem.open(this, item, (resp) => {
-                            if (resp.wkfStatus) {
-                                this.#workflow.status = resp.wkfStatus;
-                                this.#workflow.status_name = resp.wkfStatusName;
+                            if (resp.reload) {
+                                this.render();
+                            } else {
+                                if (resp.wkfStatus) {
+                                    this.#workflow.status = resp.wkfStatus;
+                                    this.#workflow.status_name = resp.wkfStatusName;
+                                }
+                                if (resp.srfStatus) {
+                                    jQuery('#srf-record-status').html(twcSrf.getSrfStatusHtml(resp.srfStatus));
+                                    this.#workflow.srf_status = resp.srfStatus;
+                                }
+                                this.renderWorkflow();
                             }
-                            if (resp.srfStatus) {
-                                jQuery('#srf-record-status').html(twcSrf.getSrfStatusHtml(resp.srfStatus));
-                                this.#workflow.srf_status = resp.srfStatus;
-                            }
-                            this.renderWorkflow();
                         })
                     })
 
@@ -560,6 +594,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#container.html(this.#ui);
             }
 
+            canEditWorkflowItem(item, userInfo) {
+                if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {
+                    if (item.is_review == 'T' && item.profile == userInfo.profile) {
+
+                        return this.#workflow.items.filter(i => { return i.id > item.id && i.next_stage_pick == 'T'; })[0].status != twcSrfWorkflowEngine.WorkflowStatus.COMPLETED;
+
+                    }
+                } else {
+                    if (item.status == twcSrfWorkflowEngine.WorkflowStatus.NEW || item.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS) {
+                        return true;
+                    }
+                }
+                return false;
+            }
 
             popUp() {
                 this.render(jQuery('<div></div>'));

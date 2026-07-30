@@ -4,8 +4,8 @@
  *@NModuleScope public
  *@NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_config.js'],
-    function (file, uis, core, coreSQL, recu, twcConfig) {
+define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_config.js', './data/oTWC_file.js', './data/oTWC_fileUI.js'],
+    function (file, uis, core, coreSQL, recu, twcConfig, twcFile, twcFileUI) {
         var suiteLet = uis.new({ title: 'TL Micro Service' });
         suiteLet.get = (context, s) => {
             return { status: 'success' };
@@ -24,8 +24,17 @@ define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
 
                 var f = file.load(payload.file);
 
-                if (payload.getUrl) {                    return { url: f.url };                }
+                if (payload.getUrl) { return { url: f.url }; }
                 return { fileContent: f.getContents(), name: f.name, type: f.fileType }
+
+            } else if (context.request.parameters.action == 'upload-file-ui') {
+                var payload = JSON.parse(context.request.body);
+                return twcFileUI.getUIFields(payload.file || { type: twcFileUI.RecordType }, twcConfig.userInfo(context), payload.options);
+
+            } else if (context.request.parameters.action == 'upload-file') {
+                var payload = JSON.parse(context.request.body);
+                return { id: twcFile.saveFile(payload) };
+                
 
             } else {
                 throw new Error('Invalid or unrecognised action');

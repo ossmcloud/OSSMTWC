@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_config.js', './oTWC_file.js', './oTWC_site.js', './oTWC_icons.js'],
-    (core, cored, coreSQL, twcConfig, twcFile, twcSite, twcIcons) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_config.js', './oTWC_file.js', './oTWC_fileType.js', './oTWC_site.js', './oTWC_icons.js'],
+    (core, cored, coreSQL, twcConfig, twcFile, twcFileType, twcSite, twcIcons) => {
         const HEIGH_LIMIT_FOR_1_CLIMBER = 60;
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
@@ -248,6 +248,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 where   t.isinactive = 'F'
             `
 
+            if (options?.recordType) {
+                sql += `and p.custrecord_twc_file_recordtype = '${options?.recordType}'`;
+            }
+
             if (options?.filters) {
                 if (options.filters.constructor.name == 'String') {
                     sql += options.filters;
@@ -268,7 +272,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var fileTypes = [];
             coreSQL.each(sql, t => {
-                
+
                 t.isInsurance = t.is_insurance == 'T';
                 t.isMethod = t.is_method == 'T';
                 t.isHS = t.is_hs == 'T';
@@ -278,6 +282,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 t.statuses = t.allowed_statuses?.split(',').map(i => { return parseInt(i.trim()) });
                 t.allowedStatues = fileStatues.filter(fs => { return t.statuses.indexOf(fs.value) >= 0; })
                 t.defaultStatus = t.default_status;
+
+                if (options.showParent) {
+                    t.text_render = `<span style="color: var(--accent-fore-color)">${t.parent_name}:</span> ${t.text}`;
+                }
 
                 delete t.is_insurance;
                 delete t.is_hs;
@@ -694,6 +702,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 `);
                 if (allowedTypes?.types) {
                     allowedTypes = allowedTypes.types.split(',').map(i => { return parseInt(i.trim()); })
+                } else {
+                    allowedTypes = [];
                 }
                 if (!allowedTypes) {
                     allowedTypes = [];
@@ -786,6 +796,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getFiles(options) {
+            var fileTypeFields = '';
+            for (var k in twcFileType.Fields) {
+                fileTypeFields += `, t.${twcFileType.Fields[k]}`
+            }
             var sql = `
                 select  f.id, ${twcFile.Fields.FILE} as file_id, TO_CHAR(f.created, 'yyyy-MM-dd HH:mi') as created, f.name, f.id as value, f.name as text, 
                         ${twcFile.Fields.R_TYPE}, BUILTIN.DF(${twcFile.Fields.R_TYPE}) as ${twcFile.Fields.R_TYPE}_name, 
@@ -793,8 +807,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         ${twcFile.Fields.REVISION}, ${twcFile.Fields.UPLOADED_BY}, BUILTIN.DF(${twcFile.Fields.UPLOADED_BY}) as ${twcFile.Fields.UPLOADED_BY}_name, 
                         BUILTIN.DF(${twcFile.Fields.R_TYPE}) as type, 
                         ${twcFile.Fields.DESCRIPTION}, 
+                        ${fileTypeFields}
                 from    ${twcFile.Type} f
-                join    customrecord_twc_file_type t on t.id = f.${twcFile.Fields.R_TYPE}
+                join    ${twcFileType.Type} t on t.id = f.${twcFile.Fields.R_TYPE}
                 where   f.isinactive = 'F'
             `;
 
@@ -1394,7 +1409,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             // @@HARDCODED:
             TWC_COMPANY: 57,
 
-            ROOT_FILE_FOLDER: 'TL Files',
+            ROOT_FILE_FOLDER: 'TL Files', // @@NOTE: this is duplicated on twc_confog.js
             HEIGH_LIMIT_FOR_1_CLIMBER: HEIGH_LIMIT_FOR_1_CLIMBER,
 
             CUSTOMER_FLAG: twcConfig.CUSTOMER_FLAG,

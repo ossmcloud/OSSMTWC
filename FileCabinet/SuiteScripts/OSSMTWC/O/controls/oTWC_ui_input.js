@@ -42,6 +42,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
             get id() { return this.#options.id; }
+            get ui() { return this.#ui; }
             get type() { return this.#options?.type; }
             get label() {
                 return this.#options?.label;
@@ -296,7 +297,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 var reader = new FileReader();
                 reader.onload = (e) => {
                     var fileInfo = reader.result.split(',');
-                    callBack({ name: this.#input[0].files[0].name, type: fileInfo[0].split(/[\:;]+/)[1], content: fileInfo[1] });
+                    callBack({ name: this.#input[0].files[0].name, size: this.#input[0].files[0].size, type: fileInfo[0].split(/[\:;]+/)[1], content: fileInfo[1] });
                 }
                 reader.readAsDataURL(this.#input[0].files[0]);
             }

@@ -340,6 +340,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         return {
+            ROOT_FILE_FOLDER: 'TL Files', // @@NOTE: this is duplicated on twc_utils.js
             CONTRACTOR_FLAG: CONTRACTOR_FLAG,
             CUSTOMER_FLAG: CUSTOMER_FLAG,
             PERMISSION_LEVEL: permissions.LEVEL,

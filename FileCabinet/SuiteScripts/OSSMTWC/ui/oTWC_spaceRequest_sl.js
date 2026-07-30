@@ -3,8 +3,8 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_equipmentLibCfg.js', '../data/oTWC_equipmentLib.js', '../data/oTWC_equipment.js', '../data/oTWC_icons.js', '../modules/oTWC_srfWorkflowEngine.js', '../modules/oTWC_sdsRender.js'],
-    function (render, nsFile, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcUtils, twcSrf, twcEqLibCfg, twcEqLib, twcEquipment, twcIcons, twcSrfWorkflowEngine, twcSdsRender) {
+define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_equipmentLibCfg.js', '../data/oTWC_equipmentLib.js', '../data/oTWC_equipment.js', '../data/oTWC_icons.js', '../modules/oTWC_srfWorkflowEngine.js', '../modules/oTWC_sdsRender.js', '../modules/oTWC_sdsEngine.js'],
+    function (render, nsFile, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcUtils, twcSrf, twcEqLibCfg, twcEqLib, twcEquipment, twcIcons, twcSrfWorkflowEngine, twcSdsRender, twcSdsEngine) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -87,7 +87,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     }
 
                     var printSDSButton = '';
-                    if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceRequested || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceIssued || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted) {
+                    if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceRequested || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceIssued || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenseSigned || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted) {
                         printSDSButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Print SDS', id: 'print-sds' });
                     }
 
@@ -97,7 +97,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                         if (signatureWorkflowItem.stage_name.toLowerCase().indexOf('pack executed') > 0) {
                             if (pageData.userInfo.canExecutePack) {
                                 signSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Execute SDS', id: 'sign-sds-tl' });
-                            }   
+                            }
                         } else {
                             if (pageData.userInfo.canSign) {
                                 signSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Sign SDS', id: 'sign-sds' });
@@ -167,7 +167,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
             } else if (context.request.parameters.action == 'accept-srf-approval') {
                 var payload = JSON.parse(context.request.body);
                 return twcSrfWorkflowEngine.acceptSrf(userInfo, payload);
-            
+
             } else if (context.request.parameters.action == 'get-equipment') {
                 return { data: twcSiteRequestUtils.getEquipment(JSON.parse(context.request.body)) }
 
@@ -180,11 +180,21 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
             } else if (context.request.parameters.action == 'update-workflow') {
                 return twcSrfWorkflowEngine.updateWorkflow(userInfo, JSON.parse(context.request.body))
 
+            } else if (context.request.parameters.action == 'reject-sds') {
+                return twcSrfWorkflowEngine.rejectSds(userInfo, JSON.parse(context.request.body))
+
+            } else if (context.request.parameters.action == 'get-sds') {
+                return twcSdsEngine.getSds(JSON.parse(context.request.body))
+
+            } else if (context.request.parameters.action == 'get-sds-twc-file') {
+                var twcFile = coreSql.first(`select custrecord_twc_sds_pdf as twc_file from customrecord_twc_sds where custrecord_twc_sds_srf = ${JSON.parse(context.request.body).srf}`)?.twc_file;
+                return { twcFile: twcFile }
+
             } else if (context.request.parameters.action == 'sign-sds') {
                 var resp = twcSrfWorkflowEngine.postSignature(userInfo, JSON.parse(context.request.body));
                 twcSdsRender.renderSDS(context, resp.srf, true);
                 return resp;
-                
+
             } else if (context.request.parameters.action == 'sign-sds-tl') {
                 var payload = JSON.parse(context.request.body);
                 payload.isTLSignature = true;
@@ -197,7 +207,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 return twcUtils.getOperatorSiteId(payload)
 
                 //
-           
+
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);
             }
