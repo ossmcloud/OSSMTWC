@@ -3,20 +3,18 @@
  * @NScriptType Suitelet
  
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_companyProfileUtils.js', '../O/controls/oTWC_ui_fieldPanel.js'],
-    function (core, cored, coreSql, uis, twcBaseView, twcConfig, twcCompanyProfileUtils, twcUIPanel) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView_ue.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_companyProfileUtils.js', '../O/controls/oTWC_ui_fieldPanel.js'],
+    function (core, cored, coreSql, uis, twcBaseViewUE, twcBaseView, twcConfig, twcCompanyProfileUtils, twcUIPanel) {
         var PAGE_VERSION = 'v0.01';
 
         var suiteLet = uis.new({ title: 'TL Company Details', script: 'SuiteScripts/OSSMTWC/ui/oTWC_companyProfile_cs.js' });
         suiteLet.get = (context, s) => {
             var pageData = twcBaseView.initPageData(context);
 
-            
-
             pageData.profileInfo = twcCompanyProfileUtils.getProfileInfo(pageData);
             pageData.recId = pageData.profileInfo.id;
 
-            var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_companyProfile');
+            var html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_companyProfile');
 
             var readOnly = context.request.parameters.edit != 'T';
             // @@NOTE: if permission lvl is 1 it means view only so even if parameter passed force to read only
@@ -24,10 +22,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var fieldGroups = twcCompanyProfileUtils.getCompanyInfoPanels(pageData);
             html = html.replaceAll('{COMPANY_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
 
-            // var profiles = twcCompanyProfileUtils.getCompanyProfilesPanel(pageData.profileInfo, pageData.userInfo);
-            // html = html.replaceAll('{COMPANY_PROFILES}', twcUIPanel.render(profiles, readOnly));
-
             s.form.fieldHtml(html);
+            s.form.title = `TL Company Details: ${pageData.profileInfo.name}`
         };
 
         suiteLet.post = (context, s) => {

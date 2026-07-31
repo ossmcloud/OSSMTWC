@@ -4,8 +4,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['N/record', 'N/runtime', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'O/form', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', './O/oTWC_themes.js', './data/oTWC_file.js', './data/oTWC_company.js', './data/oTWC_utils.js','N/url'],
-    (record, runtime, file, core, coreSql, oui, recu, htmlStyles, twcThemes, twcFile, twcCompany, twcUtils, url) => {
+define(['N/record', 'N/runtime', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'O/form', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', './O/oTWC_themes_ue.js', './data/oTWC_file.js', './data/oTWC_company.js', './data/oTWC_utils.js','N/url'],
+    (record, runtime, file, core, coreSql, oui, recu, htmlStyles, twcThemesUE, twcFile, twcCompany, twcUtils, url) => {
 
         function beforeLoad(context) {
 
@@ -15,11 +15,7 @@ define(['N/record', 'N/runtime', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js
                     form.pageInitView('OSSMTWC', 'oTWC_file');
                     form.f.clientScriptModulePath = './oTWC_file_cs.js';
 
-                    form.fieldHtml(htmlStyles.all(''));
-                    var styles = twcThemes.css('default')
-                    styles += file.load('SuiteScripts/OSSMTWC/O/css/html.styles.css').getContents();
-                    styles += file.load('SuiteScripts/OSSMTWC/ui/css/oTWC.css').getContents();
-                    form.fieldHtml(`<style>${styles}</style>`)
+                   twcThemesUE.setForm(form);
 
                     if (context.newRecord.getValue(twcFile.Fields.RECORD_TYPE) == twcCompany.Type) {
                         if (context.newRecord.getValue(twcFile.Fields.STATUS) == twcUtils.FileStatus.Pending) {

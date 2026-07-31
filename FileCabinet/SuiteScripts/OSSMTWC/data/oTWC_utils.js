@@ -155,13 +155,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         const PROFILE_CERT_FIELD = {
-            SAFE_PASS: { field: 'custrecord_twc_prof_safe_pass_cert_sts', fieldEx: 'custrecord_twc_prof_safe_pass_cert_exp', code: 'safe_pass', attendAs: 'SAFE_PASS', attendAsText: 'Visitor', safePass: true },
-            CLIMBER: { field: 'custrecord_twc_prof_climber_cert_sts', fieldEx: 'custrecord_twc_prof_climber_cert_exp', code: 'climber', attendAs: 'CLIMBER', attendAsText: 'Climber Certified' },
-            RESCUE: { field: 'custrecord_twc_prof_rescue_cert_sts', fieldEx: 'custrecord_twc_prof_rescue_cert_exp', code: 'rescue', attendAs: 'RESCUE', attendAsText: 'Rescue Certified' },
-            ROOFTOP: { field: 'custrecord_twc_prof_rooftop_cert_sts', fieldEx: 'custrecord_twc_prof_rooftop_cert_exp', code: 'rooftop', attendAs: 'ROOFTOP', attendAsText: 'Rooftop Certified' },
-            ELECTRICAL: { field: 'custrecord_twc_prof_elec_cert_sts', fieldEx: 'custrecord_twc_prof_elec_cert_exp', code: 'elec', attendAs: 'ELEC', attendAsText: 'Electrician Certified' },
-            RF: { field: 'custrecord_twc_prof_rf_cert_sts', fieldEx: 'custrecord_twc_prof_rf_cert_exp', code: 'rf', attendAs: 'rf', attendAsText: 'RF Certified' },
-            DRONE: { field: 'custrecord_twc_prof_drone_cert_sts', fieldEx: 'custrecord_twc_prof_drone_cert_exp', code: 'drone', attendAs: 'DRONE', attendAsText: 'Drone Certified' }
+            SAFE_PASS: { field: 'custrecord_twc_prof_safe_pass_cert_sts', fieldEx: 'custrecord_twc_prof_safe_pass_cert_exp', fieldFile: 'custrecord_twc_prof_safe_pass_filename', code: 'safe_pass', attendAs: 'SAFE_PASS', attendAsText: 'Visitor', safePass: true },
+            CLIMBER: { field: 'custrecord_twc_prof_climber_cert_sts', fieldEx: 'custrecord_twc_prof_climber_cert_exp', fieldFile: 'custrecord_twc_prof_climber_filename', code: 'climber', attendAs: 'CLIMBER', attendAsText: 'Climber Certified' },
+            RESCUE: { field: 'custrecord_twc_prof_rescue_cert_sts', fieldEx: 'custrecord_twc_prof_rescue_cert_exp', fieldFile: 'custrecord_twc_prof_rescue_filename', code: 'rescue', attendAs: 'RESCUE', attendAsText: 'Rescue Certified' },
+            ROOFTOP: { field: 'custrecord_twc_prof_rooftop_cert_sts', fieldEx: 'custrecord_twc_prof_rooftop_cert_exp', fieldFile: 'custrecord_twc_prof_rooftop_filename', code: 'rooftop', attendAs: 'ROOFTOP', attendAsText: 'Rooftop Certified' },
+            ELECTRICAL: { field: 'custrecord_twc_prof_elec_cert_sts', fieldEx: 'custrecord_twc_prof_elec_cert_exp', fieldFile: 'custrecord_twc_prof_elec_filename', code: 'elec', attendAs: 'ELEC', attendAsText: 'Electrician Certified' },
+            RF: { field: 'custrecord_twc_prof_rf_cert_sts', fieldEx: 'custrecord_twc_prof_rf_cert_exp', fieldFile: 'custrecord_twc_prof_rf_filename', code: 'rf', attendAs: 'rf', attendAsText: 'RF Certified' },
+            DRONE: { field: 'custrecord_twc_prof_drone_cert_sts', fieldEx: 'custrecord_twc_prof_drone_cert_exp', fieldFile: 'custrecord_twc_prof_drone_filename', code: 'drone', attendAs: 'DRONE', attendAsText: 'Drone Certified' }
         }
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const NO_ACTIVE_EXPIRED = {
@@ -283,7 +283,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 t.allowedStatues = fileStatues.filter(fs => { return t.statuses.indexOf(fs.value) >= 0; })
                 t.defaultStatus = t.default_status;
 
-                if (options.showParent) {
+                if (options?.showParent) {
                     t.text_render = `<span style="color: var(--accent-fore-color)">${t.parent_name}:</span> ${t.text}`;
                 }
 

@@ -3,8 +3,8 @@
  * @NScriptType Suitelet
 
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_troubleTicketUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../ui/modules/oTWC_siteInfoUtils.js', '../data/oTWC_troubleTickets.js', '../O/controls/oTWC_ui_ctrl.js','../data/oTWC_utils.js'],
-    function (core, cored, coreSql, uis, twcBaseView, twcConfig, twcTroubleTicketUtils, twcUIPanel, twcSiteInfoUtils, twcTkt, twcUI,twcUtils) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView_ue.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_troubleTicketUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../ui/modules/oTWC_siteInfoUtils.js', '../data/oTWC_troubleTickets.js', '../O/controls/oTWC_ui_ctrl.js','../data/oTWC_utils.js'],
+    function (core, cored, coreSql, uis, twcBaseViewUE, twcBaseView, twcConfig, twcTroubleTicketUtils, twcUIPanel, twcSiteInfoUtils, twcTkt, twcUI,twcUtils) {
         var PAGE_VERSION = 'v0.01';
 
         var suiteLet = uis.new({ title: 'TL Trouble Ticket', script: 'SuiteScripts/OSSMTWC/ui/oTWC_troubleTicket_cs.js' });
@@ -56,7 +56,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     pageData.forceViewOnly = true;
                 }
 
-                html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_troubleTicket');
+                html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_troubleTicket');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
 
                 var readOnly = context.request.parameters.edit != 'T';
@@ -79,7 +79,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             } else {
                 pageData.ticketsInfo = twcTroubleTicketUtils.getTroubleTickets(null, pageData.userInfo);
-                html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
+                html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
                 html = html.replace('{SITE_LOCATOR_PANEL}', twcTroubleTicketUtils.renderTroubleTicketsPanel(pageData.userInfo, pageData.permission.featureId));
             }
 

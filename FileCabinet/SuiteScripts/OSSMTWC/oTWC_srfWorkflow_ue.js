@@ -4,14 +4,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['N/record', 'N/runtime', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'O/form', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', './O/oTWC_themes.js', './data/oTWC_config.js'],
-    (record, runtime, file, core, coreSql, oui, recu, htmlStyles, twcThemes, twcConfig) => {
-
-        function getTWCCss() {
-            var css = file.load('SuiteScripts/OSSMTWC/ui/css/oTWC.css').getContents();
-            return css.substring(css.indexOf('/* TRUNCATE */'));
-
-        }
+define(['N/record', 'N/runtime', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'O/form', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', './O/oTWC_themes_ue.js', './data/oTWC_config.js'],
+    (record, runtime, file, core, coreSql, oui, recu, htmlStyles, twcThemesUE, twcConfig) => {
 
         function beforeLoad(context) {
             if (context.type == context.UserEventType.VIEW) {
@@ -22,11 +16,8 @@ define(['N/record', 'N/runtime', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js
                         form.f.clientScriptModulePath = './oTWC_srfWorkflow_cs.js';
                         form.buttonAdd('Delete Workflow', 'deleteWorkflow');
 
-                        form.fieldHtml(htmlStyles.all(''));
-                        var styles = twcThemes.css('default')
-                        styles += file.load('SuiteScripts/OSSMTWC/O/css/html.styles.css').getContents();
-                        styles += getTWCCss();
-                        form.fieldHtml(`<style>${styles}</style>`)
+                        twcThemesUE.setForm(form);
+                        
                     }
 
                 } catch (error) {

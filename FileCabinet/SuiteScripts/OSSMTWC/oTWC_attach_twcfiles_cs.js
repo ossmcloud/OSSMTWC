@@ -14,6 +14,7 @@ define(['N/currentRecord', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.
         async function uploadFile() {
             await twcBaseView.uploadFile({ showParent: true, recordType: currentRecord.get().type, recordId: currentRecord.get().id }, (file, res) => {
                 console.log(file, res);
+                location.reload();
             })
 
            

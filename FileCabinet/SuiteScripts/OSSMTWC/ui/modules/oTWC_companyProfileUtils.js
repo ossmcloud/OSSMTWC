@@ -133,12 +133,15 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
 
             getProfileInfo(pageData) {
+                var company = null;
                 if (pageData.userInfo.isEmployee) {
-                    return twcCompany.select({ noAlias: true, where: { id: pageData.recId || pageData.userInfo.companyProfile?.id || 0 } })[0];
+                    company= twcCompany.select({ noAlias: true, where: { id: pageData.recId || pageData.userInfo.companyProfile?.id || 0 } })[0];
                 } else {
                     if (!pageData.userInfo.companyProfile) { throw new Error('There is no company profile associated to your profile, contact TL Administrator to get this resolved') }
-                    return twcCompany.select({ noAlias: true, where: { id: pageData.userInfo.companyProfile?.id || 0 } })[0];
+                    company =  twcCompany.select({ noAlias: true, where: { id: pageData.userInfo.companyProfile?.id || 0 } })[0];
                 }
+                if (!company) { throw new Error(`No company profile loaded`); }
+                return company;
             },
 
             saveCompanyChildRecord: (options, userInfo) => {

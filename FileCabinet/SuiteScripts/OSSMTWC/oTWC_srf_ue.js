@@ -4,8 +4,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redirect', 'O/form', './data/oTWC_srf.js', './O/oTWC_themes.js', './data/oTWC_config.js'],
-    (file, runtime, core, redirect, oui, twcSrf, twcThemes, twcConfig) => {
+define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redirect', 'O/form', './data/oTWC_srf.js', './O/oTWC_themes_ue.js', './data/oTWC_config.js'],
+    (file, runtime, core, redirect, oui, twcSrf, twcThemesUE, twcConfig) => {
 
         function beforeLoad(context) {
             try {

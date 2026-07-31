@@ -3,8 +3,8 @@
  * @NScriptType Suitelet
  
  */
-define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js'],
-    function (redirect, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcUI, twcUIPanel, twcConfig) {
+define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView_ue.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js'],
+    function (redirect, core, cored, coreSql, uis, twcBaseViewUE, twcBaseView, twcSiteInfoUtils, twcUI, twcUIPanel, twcConfig) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -19,7 +19,7 @@ define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bund
             var pageData = twcBaseView.initPageData(context);
             pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(context.request.parameters.recId, pageData.userInfo);
 
-            var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteInfo');
+            var html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteInfo');
             html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
 
             let actions = '';

@@ -3,8 +3,8 @@
  * @NScriptType Suitelet
 
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_inventoryUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../ui/modules/oTWC_siteInfoUtils.js', '../data/oTWC_equipment.js', '../O/controls/oTWC_ui_ctrl.js'],
-    function (core, cored, coreSql, uis, twcBaseView, twcConfig, twcInventoryUtils, twcUIPanel, twcSiteInfoUtils, twcInventory, twcUI) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView_ue.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_inventoryUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../ui/modules/oTWC_siteInfoUtils.js', '../data/oTWC_equipment.js', '../O/controls/oTWC_ui_ctrl.js'],
+    function (core, cored, coreSql, uis, twcBaseViewUE, twcBaseView, twcConfig, twcInventoryUtils, twcUIPanel, twcSiteInfoUtils, twcInventory, twcUI) {
         var PAGE_VERSION = 'v0.01';
 
         var suiteLet = uis.new({ title: 'TL Inventory', script: 'SuiteScripts/OSSMTWC/ui/oTWC_inventory_cs.js' });
@@ -16,7 +16,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 pageData.inventoryInfo = twcInventoryUtils.getInventoryInfo(pageData);
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.inventoryInfo.siteId || context.request.parameters.siteId, pageData.userInfo);
 
-                var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteInfo');
+                var html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteInfo');
                 // @TODO : Work on the Status field for Inventory Record
                 // pageData.recordStatus = `<div class="twc-div-span-table">${twcInventory.getTktStatusHtml(pageData.inventoryInfo[twcInventory.Fields.EQUIPMENT_STATUS])}</div>`;
                 if (context.request.parameters.recId) {
@@ -43,7 +43,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
 
 
-                html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_inventory');
+                html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_inventory');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
 
                 var readOnly = context.request.parameters.edit != 'T';
@@ -61,7 +61,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             } else {
                 pageData.data.inventoryInfo = twcInventoryUtils.getInventoryData(null, pageData.userInfo);
-                html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
+                html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
                 html = html.replace('{SITE_LOCATOR_PANEL}', twcInventoryUtils.renderInventoryPanel(pageData.userInfo, pageData.permission.featureId));
             }
 

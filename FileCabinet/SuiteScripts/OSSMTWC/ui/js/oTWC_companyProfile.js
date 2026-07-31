@@ -1,11 +1,10 @@
 /**
  * @NApiVersion 2.1
  * @NModuleScope public
- * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
- */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../data/oTWC_profile.js', '../../data/oTWC_profileUI.js', '../../data/oTWC_file.js', '../../data/oTWC_utils.js', '../../O/controls/oTWC_ui_ctrl.js','../../data/oTWC_company.js'],
-    (core, coreSql, b64, twcPageBase, dialog, twcUIPanel, twcConfig, twcIcons, twcProfile, twcProfileUI, twcFile, twcUtils, twcUI, twcCompany) => {
 
+ */
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../data/oTWC_profile.js', '../../data/oTWC_profileUI.js', '../../data/oTWC_file.js', '../../data/oTWC_utils.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_company.js'],
+    (core, coreSql, b64, twcPageBase, dialog, twcUIPanel, twcConfig, twcIcons, twcProfile, twcProfileUI, twcFile, twcUtils, twcUI, twcCompany) => {
 
         class TWCCompanyProfilePage extends twcPageBase.TWCPageBase {
             #changes = {};
@@ -269,7 +268,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             companyFile.fileObject = file;
                             companyFile.name = file.name;
                             form.getControl(twcFile.Fields.NAME).value = file.name;
-                        }) 
+                        })
                     });
                     form.getControl(twcFile.Fields.R_TYPE).on('change', e => {
                         form.getControl(twcFile.Fields.STATUS).value = e.target.valueObj.defaultStatus;

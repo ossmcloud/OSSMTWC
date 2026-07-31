@@ -2,8 +2,8 @@
  *@NApiVersion 2.1
  *@NScriptType Portlet
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js'],
-    function (core, cored, coreSql, uis, twcBaseView) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView_ue.js', './views/oTWC_baseView.js'],
+    function (core, cored, coreSql, uis, twcBaseViewUE, twcBaseView) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -15,7 +15,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var pageData = twcBaseView.initPageData('otwc_dashboards_sl');
             pageData.portlet = true;
 
-            var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_dashBoards');
+            var html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_dashBoards');
 
             var newField = params.portlet.addField({ id: 'htmlfield', type: 'INLINEHTML', label: 'html' });
             newField.defaultValue = html;

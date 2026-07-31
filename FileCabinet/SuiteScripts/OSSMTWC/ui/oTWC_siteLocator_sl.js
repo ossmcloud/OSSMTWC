@@ -3,8 +3,8 @@
  * @NScriptType Suitelet
  
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', './modules/oTWC_siteLocatorUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../data/oTWC_utils.js', '../data/oTWC_site.js'],
-    function (core, cored, coreSql, uis, twcBaseView, twcConfig, twcSiteLocatorUtils, twcUI, twcUtils, twcSite) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView_ue.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', './modules/oTWC_siteLocatorUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../data/oTWC_utils.js', '../data/oTWC_site.js'],
+    function (core, cored, coreSql, uis, twcBaseViewUE, twcBaseView, twcConfig, twcSiteLocatorUtils, twcUI, twcUtils, twcSite) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -15,7 +15,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             pageData.data.sitesInfo = twcSiteLocatorUtils.getSites(null, pageData.userInfo);
 
-            var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
+            var html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
             html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteLocatorUtils.renderSiteLocatorPanel(pageData.userInfo, pageData.permission.featureId));
 
             s.form.fieldHtml(html);

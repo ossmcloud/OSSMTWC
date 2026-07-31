@@ -135,7 +135,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         var f = getDataFieldInfo(field, k);
 
                         // @@NOTE: getFieldAccess for columns visibility
-                        var accessType = getFieldAccess(dataObj, k);
+                        
+                        var accessType = getFieldAccess(dataObj || { Type: field.recordType }, k);
                         if (accessType) {
                             if (accessType.access == FIELD_ACCESS_TYPE.TL && !_userInfo.isEmployee) { continue; }
                             // @@NOTE: the read-only does not make sense here

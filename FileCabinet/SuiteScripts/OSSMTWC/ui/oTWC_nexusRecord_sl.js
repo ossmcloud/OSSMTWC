@@ -3,8 +3,8 @@
  * @NScriptType Suitelet
 
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_nexusRecordUtils.js', '../O/controls/oTWC_ui_fieldPanel.js'],
-    function (core, cored, coreSql, uis, twcBaseView, twcConfig, twcNexusRecordUtils, twcUIPanel) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView_ue.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_nexusRecordUtils.js', '../O/controls/oTWC_ui_fieldPanel.js'],
+    function (core, cored, coreSql, uis, twcBaseViewUE, twcBaseView, twcConfig, twcNexusRecordUtils, twcUIPanel) {
         var PAGE_VERSION = 'v0.01';
 
         var suiteLet = uis.new({ title: 'TL Nexus Record', script: 'SuiteScripts/OSSMTWC/ui/oTWC_nexusRecord_cs.js' });
@@ -24,7 +24,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 id: nxData.id
             };
 
-            var html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_nexusRecord');
+            var html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_nexusRecord');
             html = html.replace('{NEXUS_RECORD_DETAILS}', nxData.html);
 
             s.form.fieldHtml(html);

@@ -3,8 +3,8 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_equipmentLibCfg.js', '../data/oTWC_equipmentLib.js', '../data/oTWC_equipment.js', '../data/oTWC_icons.js', '../modules/oTWC_srfWorkflowEngine.js', '../modules/oTWC_sdsRender.js', '../modules/oTWC_sdsEngine.js'],
-    function (render, nsFile, core, cored, coreSql, uis, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcUtils, twcSrf, twcEqLibCfg, twcEqLib, twcEquipment, twcIcons, twcSrfWorkflowEngine, twcSdsRender, twcSdsEngine) {
+define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView_ue.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_equipmentLibCfg.js', '../data/oTWC_equipmentLib.js', '../data/oTWC_equipment.js', '../data/oTWC_icons.js', '../modules/oTWC_srfWorkflowEngine.js', '../modules/oTWC_sdsRender.js', '../modules/oTWC_sdsEngine.js'],
+    function (render, nsFile, core, cored, coreSql, uis, twcBaseViewUE, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcUtils, twcSrf, twcEqLibCfg, twcEqLib, twcEquipment, twcIcons, twcSrfWorkflowEngine, twcSdsRender, twcSdsEngine) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -49,7 +49,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     pageData.isWorkflowView = true;
 
 
-                    html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_spaceRequest');
+                    html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_spaceRequest');
                     html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
                     html = html.replaceAll('{SITE_REQUEST_DETAILS}', `<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 64)}</span>`);
 
@@ -68,7 +68,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                         pageData.forceViewOnly = true;
                     }
 
-                    html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_spaceRequest');
+                    html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_spaceRequest');
                     html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
 
                     var readOnly = context.request.parameters.edit != 'T';
@@ -140,7 +140,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
 
             } else {
                 pageData.data.srfInfo = twcSiteLocatorUtils.getSiteSrf(null, pageData.userInfo);
-                html = twcBaseView.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
+                html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
                 html = html.replace('{SITE_LOCATOR_PANEL}', twcSiteRequestUtils.renderSiteLocatorPanel(pageData.userInfo, pageData.permission.featureId));
 
             }

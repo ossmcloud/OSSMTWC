@@ -4,37 +4,40 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['N/record', 'N/runtime', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'O/form', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', './O/oTWC_themes.js'],
-    (record, runtime, file, core, coreSql, oui, recu, htmlStyles, twcThemes) => {
+define(['N/record', 'N/runtime', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'O/form', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/client/html.styles.js', './O/oTWC_themes_ue.js', './data/oTWC_utils.js'],
+    (record, runtime, file, core, coreSql, oui, recu, htmlStyles, twcThemesUE, twcUtils) => {
 
         function beforeLoad(context) {
-            if (context.type == context.UserEventType.VIEW) {
+            
                 try {
 
                     var form = oui.get(context.form);
-                    try {
-                        form.pageInitView('OSSMTWC', 'oTWC_profile');
-                    } catch (error) {
-                        // ignore
-                    }
+                    form.fieldIdCount = 99;
+
+                    // form.pageInitView('OSSMTWC', 'oTWC_profile');
                     form.f.clientScriptModulePath = './oTWC_profile_cs.js';
-                    form.buttonAdd('View Certs History', 'viewCertsHistory');
+                    twcThemesUE.setForm(form);
 
-                    form.fieldHtml(htmlStyles.all(''));
-                    var styles = twcThemes.css('default')
-                    styles += file.load('SuiteScripts/OSSMTWC/O/css/html.styles.css').getContents();
-                    form.fieldHtml(`<style>${styles}</style>`)
-
+                    if (context.type == context.UserEventType.VIEW) {
+                        form.buttonAdd('View Certs History', 'viewCertsHistory');
+                        form.buttonAdd('Open Company', 'openCompany');
+                    } else if (context.type == context.UserEventType.EDIT || context.type == context.UserEventType.CREATE) {
+                        for (var k in twcUtils.Certs) {
+                            form.fieldReadOnly(twcUtils.Certs[k].fieldFile);
+                        }
+                    }
+                    
+                    
                 } catch (error) {
                     core.logError('beforeSubmit', error.message);
                     throw error
                 }
-                return;
-            }
+            
         }
 
         function beforeSubmit(context) {
 
+            /*
             // Only run on edit and inline edit
             if (context.type !== context.UserEventType.EDIT && context.type !== context.UserEventType.XEDIT) {
                 return;
@@ -53,6 +56,7 @@ define(['N/record', 'N/runtime', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js
             } else if (oldSafePassStatus == 3 && newSafePassStatus != 3) {
                 newRec.setValue({ fieldId: ACCRED_FIELD, value: oldAccredStatus });
             }
+            */
         }
 
         return {
