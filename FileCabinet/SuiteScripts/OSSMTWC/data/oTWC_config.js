@@ -345,6 +345,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             CUSTOMER_FLAG: CUSTOMER_FLAG,
             PERMISSION_LEVEL: permissions.LEVEL,
             PERMISSION_FEATURE: permissions.FEATURE,
+            PORTLET_STYLES_PROPS: { Height: '600px' },
+
             userInfo: getUserInfo,
             getUserPref: getUserPref,
             setUserPref: setUserPref,

@@ -21,6 +21,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
             }
             initFileFormatValueColumns(table) {
+                if (!table.getColumn(twcFile.Fields.STATUS + '_name')) { return; }
                 const formatValue = (v, fv, d) => {
                     return twcUtils.getFileStatusHtml(d[twcFile.Fields.STATUS], 'twc-record-status-row')
                 }
@@ -30,9 +31,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             initACLFormatValueColumns(table) {
                 if (!table) { return; }
+                if (!table.getColumn('accreditation_status')) { return; }
                 const formatValue = (v, fv, d) => {
                     return twcUtils.getCompAccredStatusHtml(d.accreditation_status_id, 'twc-record-status-row')
                 }
+                
                 table.getColumn('accreditation_status').formatValue = formatValue;
                 table.getColumnOption('accreditation_status').formatValue = formatValue;
             }

@@ -54,8 +54,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var backgroundColor = 'silver'; var color = 'white';
 
                 if (status == 'Inactive') {
-                    color = 'var(--main-color)';
-                    backgroundColor = 'transparent';
+                    color = 'silver';
+                    backgroundColor = 'rgb(235,235,235)';
                 } else if (status == 'Accredited') {
                     color = 'white';
                     backgroundColor = 'green';

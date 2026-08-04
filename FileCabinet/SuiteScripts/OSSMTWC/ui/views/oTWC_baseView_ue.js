@@ -50,7 +50,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
             html = html.replaceAll('{NAVIGATION_DROP_DOWN}', twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, id: 'twc-navigation-select', value: userInfo.permission.id, noEmpty: true, dataSource: userInfo.permission.menuItems }));
 
             if (pageData.portlet) {
-                html = html.replace('{TWC_PAGE_STYLE}', `style="height: ${PORTLET_STYLES_PROPS.Height}; width: 100%;" `);
+                html = html.replace('{TWC_PAGE_STYLE}', `style="height: ${twcConfig.PORTLET_STYLES_PROPS.Height}; width: 100%;" `);
                 html = html.replace('{TWC_PAGE_CLASS}', 'twc_page_loading');
             } else {
                 html = html.replace('{TWC_PAGE_STYLE}', '');
