@@ -235,8 +235,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (e === undefined) {
                     this.setFormEqState();
                     this.setFormTmeEqState();
+                }
+                if (e === undefined || e?.id == twcSrfItem.Fields.ITEM_TYPE) {
+                    // @@NOTE: this needs to fire if we change the item type
                     this.setFormEqLibState();
-
                 }
             }
 
