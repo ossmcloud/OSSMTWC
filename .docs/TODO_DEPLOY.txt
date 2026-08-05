@@ -55,8 +55,15 @@ SCHEMA:
 
 
 	TODO:
-		Eq. Table: Type Opt is missing (for feeders)
 		REMOVE: customrecord_twc_srf.custrecord_twc_srf_sds_form_data
+
+        DELETE: 
+            customrecord_twc_srf_itm_v_range
+            customrecord_twc_srf_itm_v_type
+
+        CONVERT TO CUSTOM RECORD (and rename):
+            customlist_twc_equip_voltage_type
+            customlist_twc_equip_voltage_range
 
 
 
