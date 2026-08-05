@@ -155,7 +155,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             copyFromObject(obj) {
                 for (var k in obj) {
-                    if (k == 'id') { continue; }
+                    if (k == 'id' || k == 'isinactive') { continue; }
                     // @@NOTE: if we are copying from an object we could have fields that do not map to a persistent field, we just ignore these
                     if (!this.findField(k, true)) { continue; }
                     this.set(k, obj[k]);
@@ -194,9 +194,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     }
                 } else if (field.type == FIELD_TYPE.BOOL) {
-                    if (value === 'T' || value === 'F') {
+                    //if (value === 'T' || value === 'F' || value ) {
                         value = (value === 'T');
-                    }
+                    //}
                 }
                 // @@TODO: validate other types
 

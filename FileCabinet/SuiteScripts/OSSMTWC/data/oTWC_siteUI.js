@@ -28,13 +28,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var mainInfoFieldGroups = [];
 
-            var infraFilters = [
-                { field: twcInfra.Fields.INFRASTRUCTURE_TYPE, value: twcUtils.InfraType.Structure },
-                
-            ]
-            if (!userInfo.isEmployee) {
-                infraFilters.push({ field: twcInfra.Fields.INFRASTRUCTURE_PUBLIC, value: twcUtils.PUBLIC_FLAG.Yes })
-            }
+            var infraFilters = [{ field: twcInfra.Fields.INFRASTRUCTURE_TYPE, value: twcUtils.InfraType.Structure },]
+            if (!userInfo.isEmployee) { infraFilters.push({ field: twcInfra.Fields.INFRASTRUCTURE_PUBLIC, value: twcUtils.PUBLIC_FLAG.Yes }) }
 
             var overview = { id: 'site-overview', title: 'Overview', fields: [] };
             overview.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Site Code' })
@@ -49,12 +44,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         { id: twcInfra.Fields.STRUCTURE_TYPE, isForeignKey: true, nullText: 'no struct type' },
                         { id: twcInfra.Fields.STRUCTURE_HEIGHT_M, nullText: '', mask: `<span style="color: var(--accent-fore-color);">(${twcInfra.Fields.STRUCTURE_HEIGHT_M}m)</span>` },
                     ],
-                    filters:infraFilters,
+                    filters: infraFilters,
                     mask: `[${twcInfra.Fields.INFRASTRUCTURE_ID}] <b>${twcInfra.Fields.STRUCTURE_TYPE}</b> ${twcInfra.Fields.STRUCTURE_HEIGHT_M}`
                 },
                 label: 'Structure'
             })
 
+            var infraFiltersAcc = [{ field: twcInfra.Fields.INFRASTRUCTURE_TYPE, value: twcUtils.InfraType.Accommodation },]
+            if (!userInfo.isEmployee) { infraFiltersAcc.push({ field: twcInfra.Fields.INFRASTRUCTURE_PUBLIC, value: twcUtils.PUBLIC_FLAG.Yes }) }
 
             overview.fields.push({
                 id: `${twcInfra.Fields.STRUCTURE_TYPE}_${twcUtils.InfraType.Accommodation}`,
@@ -65,7 +62,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         { id: twcInfra.Fields.INFRASTRUCTURE_ID, nullText: 'no infra id' },
                         { id: twcInfra.Fields.ACCOMMODATION_TYPE, isForeignKey: true, nullText: 'no accommodation type', mask: `<span style="color: var(--accent-fore-color);">(${twcInfra.Fields.ACCOMMODATION_TYPE})</span>` },
                     ],
-                    filters: [{ field: twcInfra.Fields.INFRASTRUCTURE_TYPE, value: twcUtils.InfraType.Accommodation }],
+                    filters: infraFiltersAcc,
                     mask: `[${twcInfra.Fields.INFRASTRUCTURE_ID}] ${twcInfra.Fields.ACCOMMODATION_TYPE}`
                 },
                 label: 'Accommodation',
@@ -148,7 +145,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             locations.fields.push({ id: twcSite.Fields.SITE_LONGITUDE, label: 'Longitude' })
             locations.fields.push({ id: twcSite.Fields.SITE_EASTING, label: 'Easting' })
             locations.fields.push({ id: twcSite.Fields.SITE_NORTHING, label: 'Northing' })
-            
+
             var locations = { id: 'site-summary-access', title: 'Access Track / Safety Info', fields: [] };
             fieldGroup.controls.push(locations);
             locations.fields.push({ id: twcSite.Fields.TRACK_TYPE, label: 'Track Type' })

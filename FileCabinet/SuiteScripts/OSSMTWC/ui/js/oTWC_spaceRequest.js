@@ -232,12 +232,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 }
 
-                if (e === undefined) {
-                    this.setFormEqState();
-                    this.setFormTmeEqState();
-                }
                 if (e === undefined || e?.id == twcSrfItem.Fields.ITEM_TYPE) {
                     // @@NOTE: this needs to fire if we change the item type
+                    this.setFormEqState();
+                    this.setFormTmeEqState();
                     this.setFormEqLibState();
                 }
             }
@@ -386,6 +384,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             pickEquipment(eqClass, callback) {
                 try {
+                    if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER]) {
+                        // @@NOTE: this is in case we open the form with pre-selected customer
+                        // @@TODO: we should not have to do this but populate this.data.siteRequestInfo on load
+                        this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER] = this.#page.ui.getControl(twcSrf.Fields.CUSTOMER).value
+                    }
+
                     if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER]) { throw new Error('You need to specify a customer'); }
 
                     var res = this.#page.postSync({ action: 'get-equipment' }, { site: this.data.siteInfo.site.id, customer: this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER], eqClass: eqClass })
@@ -475,6 +479,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             this.#workflowForm.popUp();
                         })
 
+                        //
+                        this.ui.getControl('save-srf-button')?.on('click', e => {
+                            this.onSave(e);
+                        })
+
                         this.ui.getControl('submit-button')?.on('click', e => {
                             dialog.confirmAsync('Are you sure you want to submit this request?').then(() => {
                                 this.wait();
@@ -487,6 +496,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     });
                             });
 
+                        });
+                        this.ui.getControl('submit-srf-button')?.on('click', e => {
+                            dialog.confirmAsync('Are you sure you wish to submit this SRF?').then(() => {
+                                this.data.siteRequestInfo.submitOnSave = true;
+                                this.data.siteRequestInfo.dirty = true;
+                                this.dirty = true;
+                                this.onSave(e);
+                            });
                         });
                         this.ui.getControl('accept-srf-approval')?.on('click', e => {
                             dialog.confirmAsync('Are you sure you want to accept this request?').then(() => {
@@ -548,6 +565,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             }
                         })
 
+                        if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER] && this.ui.getControl(twcSrf.Fields.CUSTOMER).value) {
+                            // @@NOTE: this is in case we open the form with pre-selected customer
+                            this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER] = this.ui.getControl(twcSrf.Fields.CUSTOMER).value
+                        }
 
                         // @@TODO: test only
                         if (core.ossm()) {
@@ -635,7 +656,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             manageSRFItem(srfItem, table) {
                 try {
-                    if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER]) { throw new Error('You need to specify a customer'); }
+                    if (!this.ui.getControl(twcSrf.Fields.CUSTOMER).value) { throw new Error('You need to specify a customer'); }
 
                     if (!srfItem) { srfItem = {}; }
                     if (this.deleteRecord(srfItem, table)) { return; }

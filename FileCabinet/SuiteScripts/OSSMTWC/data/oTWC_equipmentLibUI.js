@@ -31,19 +31,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var map = [
                 { libField: twcEqLib.Fields.DESCRIPTION, eqField: twcSrfItem.Fields.DESCRIPTION, canEdit: true, notMandatory: true },
 
-                { libField: twcEqLib.Fields.MAKE, eqField: twcSrfItem.Fields.MAKE },
-                { libField: twcEqLib.Fields.MODEL, eqField: twcSrfItem.Fields.MODEL },
-                { libField: twcEqLib.Fields.LENGTH_MM, eqField: twcSrfItem.Fields.LENGTH_MM },
-                { libField: twcEqLib.Fields.WIDTH_MM, eqField: twcSrfItem.Fields.WIDTH_MM },
-                { libField: twcEqLib.Fields.HEIGHTDEPTH_MM, eqField: twcSrfItem.Fields.DEPTH_MM },
-                { libField: null, eqField: twcSrfItem.Fields.HEIGHT_ON_TOWER },
-                { libField: twcEqLib.Fields.WEIGHT_KG, eqField: twcSrfItem.Fields.WEIGHT_KG },
+                { libField: twcEqLib.Fields.MAKE, eqField: twcSrfItem.Fields.MAKE, canEdit: true },
+                { libField: twcEqLib.Fields.MODEL, eqField: twcSrfItem.Fields.MODEL, canEdit: true },
+                { libField: twcEqLib.Fields.LENGTH_MM, eqField: twcSrfItem.Fields.LENGTH_MM, canEdit: true },
+                { libField: twcEqLib.Fields.WIDTH_MM, eqField: twcSrfItem.Fields.WIDTH_MM, canEdit: true },
+                { libField: twcEqLib.Fields.HEIGHTDEPTH_MM, eqField: twcSrfItem.Fields.DEPTH_MM, canEdit: true },
+                { libField: null, eqField: twcSrfItem.Fields.HEIGHT_ON_TOWER, canEdit: true },
+                { libField: twcEqLib.Fields.WEIGHT_KG, eqField: twcSrfItem.Fields.WEIGHT_KG, canEdit: true },
 
-                { libField: twcEqLib.Fields.VOLTAGE_TYPE, eqField: twcSrfItem.Fields.VOLTAGE_TYPE, tmeOnly: true },
-                { libField: twcEqLib.Fields.VOLTAGE_RANGE, eqField: twcSrfItem.Fields.VOLTAGE_RANGE, tmeOnly: true },
-                { libField: null, eqField: twcSrfItem.Fields.AZIMUTH, tmeOnly: true },
-                { libField: null, eqField: twcSrfItem.Fields.B_END, tmeOnly: true },
-                { libField: null, eqField: twcSrfItem.Fields.CUSTOMER_REF, tmeOnly: true },
+                { libField: twcEqLib.Fields.VOLTAGE_TYPE, eqField: twcSrfItem.Fields.VOLTAGE_TYPE, tmeOnly: true, canEdit: true },
+                { libField: twcEqLib.Fields.VOLTAGE_RANGE, eqField: twcSrfItem.Fields.VOLTAGE_RANGE, tmeOnly: true, canEdit: true },
+                { libField: null, eqField: twcSrfItem.Fields.AZIMUTH, tmeOnly: true, canEdit: true },
+                { libField: null, eqField: twcSrfItem.Fields.B_END, tmeOnly: true, canEdit: true },
+                { libField: null, eqField: twcSrfItem.Fields.CUSTOMER_REF, tmeOnly: true, canEdit: true },
                 
             ];
             return map;

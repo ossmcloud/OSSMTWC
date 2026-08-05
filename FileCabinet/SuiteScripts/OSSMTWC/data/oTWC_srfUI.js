@@ -39,7 +39,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     return;
                 }
 
-                
+
                 var srfReviewInfo = { id: 'site-req-review', title: title, fields: [] };
                 var reviewInfoHtml = `
                     <div style="display: flex; padding-bottom: 5px;">
@@ -51,7 +51,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         </div>
                 `
 
-                
+
                 if (userInfo.isEmployee || userInfo.companyProfile?.id == srf[twcSrf.Fields.CUSTOMER]) {
                     reviewInfoHtml += `
                         <div style="margin-left: 11px; border-left: 1px dotted silver; padding-left: 11px;">
@@ -129,13 +129,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var basicInfo = { id: 'site-request-struct', title: 'Customer Information', fields: [] };
             fieldGroup.controls.push(basicInfo);
 
-            
 
-            var customers = null;
-            // if (userInfo.isVendor) {
-                customers = twcUtils.getCustomers(userInfo, { srf: true });
-            // }
-            basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: userInfo.isCustomer, dataSource: customers, allowAll: false })
+
+            var customers = twcUtils.getCustomers(userInfo, { srf: dataSource });
+            var selectedCustomer = (!dataSource.id && userInfo.isCustomer) ? userInfo.companyProfile.id : null;
+
+            basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: false, dataSource: customers, value: selectedCustomer, allowAll: false })
+
             basicInfo.fields.push({ id: twcSrf.Fields.OPERATOR_SITE_ID, label: 'Operator Site ID', mandatory: true })
             if (userInfo.isEmployee) { basicInfo.fields.push({ id: twcSrf.Fields.SRF_TYPE, label: 'SRF Type', dataSource: twcUtils.getSrfTypes(), allowAll: false }) }
 
@@ -167,11 +167,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push(step5);
 
             if (!readOnly) {
-                fieldGroup.controls.push({
-                    id: 'site-request-step-7', fields: [
-                        { type: twcUI.CTRL_TYPE.BUTTON, id: 'save-button', value: 'Save SRF' }
-                    ]
-                });
+                var buttons = [{ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-button', value: 'Save SRF' }]
+                if (dataSource[twcSrf.Fields.SRF_STATUS] == twcUtils.SrfStatus.Draft) {
+                    buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'submit-srf-button', value: 'Submit SRF' })
+                }
+                fieldGroup.controls.push({ id: 'site-request-step-7', fields: buttons });
             }
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);

@@ -67,7 +67,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function saveSiteSrf(userInfo, payload) {
             // @@TODO: SRF: error handling????
 
-            var srfCancelled = false;
+            var srfCancelled = false; 
             var submitInfo = {};
             submitInfo[twcSrf.Type] = { id: payload.id, fields: [], values: [] };
             for (var k in payload) {
@@ -114,6 +114,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             if (srfCancelled) {
                 twcSrfWorkflowEngine.cancelWorkflow({ srf: payload.id });
+            } else if (payload.submitOnSave) {
+                submitSiteSrf(userInfo, { srf: payload.id });
             }
 
             return payload.id;
@@ -409,7 +411,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 } else {
                     // this is a new SRF, if the logged in user is a customer then set the customer field
-                    if (pageData.userInfo.isCustomer) { srf[twcSrf.Fields.CUSTOMER] = pageData.userInfo.id; }
+                    if (pageData.userInfo.isCustomer) { srf[twcSrf.Fields.CUSTOMER] = pageData.userInfo.companyProfile.id; }
                     srf[twcSrf.Fields.SITE] = pageData.siteId;
 
                 }

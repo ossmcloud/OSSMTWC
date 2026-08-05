@@ -140,7 +140,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSds(srf) {
             var sdsId = coreSql.first(`select id from ${twcSds.Type} where ${twcSds.Fields.SRF} = ${srf.id}`)?.id;
             var sds = twcSds.get(sdsId);
-            var includeLicenseMap = recu.lookUp(twcCompany.Type, sds.customer, twcCompany.Fields.SDS_INCLUDE_LICENSE_MAP);
+
+            var customer = sds.customer;
+            if (!sdsId) {
+                customer = coreSql.first(`select ${twcSrf.Fields.CUSTOMER} as cust from ${twcSrf.Type} where id = ${srf.id}`)?.cust;
+            }
+
+            var includeLicenseMap = recu.lookUp(twcCompany.Type, customer, twcCompany.Fields.SDS_INCLUDE_LICENSE_MAP);
             if (!sdsId) {
                 sds.name = srf[twcSrf.Fields.NAME].replace('SRF', 'SDS');
                 sds.sRF = srf.id;
