@@ -26,7 +26,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 })
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
-                    id: 'omt_site_srf',
+                    id: 'omt_sites',
                     unboundCols: unboundCols,
                 });
             }
@@ -470,13 +470,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.#workflowForm = twcSrfWorkflowEngineUI.getForm(this, { srf: this.data.siteRequestInfo.id })
                         this.#workflowForm.render(this.page.find('#twc-site-request-details-panel'));
 
+                        this.ui.getControl('open-srf').on('click', e => {
+                            location.href = core.url.script('otwc_spacerequest_sl', { recId: this.data.siteRequestInfo.id });
+                        })
+
                     } else {
                         this.ui.getControl('open-workflow-button')?.on('click', e => {
                             location.href = core.url.script('otwc_spacerequest_sl', { recId: this.data.siteRequestInfo.id, wkf: 'T' });
                         });
+
                         this.ui.getControl('view-workflow-button')?.on('click', e => {
                             this.#workflowForm = twcSrfWorkflowEngineUI.getForm(this, { srf: this.data.siteRequestInfo.id })
                             this.#workflowForm.popUp();
+                        })
+
+                        this.ui.getControl('attach-file').on('click', e => {
+                            this.uploadFile({ showParent: true, recordType: twcSrf.Type, recordId: this.data.siteRequestInfo.id }, (file, res) => {
+                                location.reload();
+                            })
                         })
 
                         //

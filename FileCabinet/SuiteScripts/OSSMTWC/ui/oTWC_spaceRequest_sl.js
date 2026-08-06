@@ -47,11 +47,17 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 if (context.request.parameters.wkf == 'T') {
                     if (!pageData.userInfo.isEmployee) { throw new Error("You do not have permissions to see this page"); }
                     pageData.isWorkflowView = true;
-
+                    pageData.forceViewOnly = true;
 
                     html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_spaceRequest');
                     html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
                     html = html.replaceAll('{SITE_REQUEST_DETAILS}', `<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 64)}</span>`);
+
+                    html = html.replaceAll('<div id="custom-actions"></div>', `
+                        <div id="custom-actions">
+                            ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Open SRF', id: 'open-srf' })}
+                        </div>
+                    `);
 
                 } else {
                     pageData.libCfg = twcEqLibCfg.select();
@@ -116,9 +122,12 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                         cancelSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SRF', id: 'cancel-srf-button' });
                     }
 
+                    var attachFileButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Attach File', id: 'attach-file' });
+
                     if (!readOnly) {
                         submitSrfButton = '';
                         acceptApprovalButton = '';
+                        attachFileButton = '';
                     }
 
 
@@ -134,6 +143,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                             ${acceptApprovalButton}
                             ${submitSrfButton}
                             ${cancelSrfButton}
+                            ${attachFileButton}
                         </div>
                     `);
                 }

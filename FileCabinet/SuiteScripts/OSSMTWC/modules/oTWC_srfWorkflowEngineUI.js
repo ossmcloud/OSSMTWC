@@ -52,8 +52,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             render(callback) {
-
-
                 var statusLabel = '';
                 if (this.#item.set_status_name) {
                     statusLabel = `
@@ -72,7 +70,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 ${statusLabel}
                             </div>
                         </div>
-                        
                     </div>
                 `);
 
@@ -323,6 +320,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@NOTE: this is a bit dirty but will do for now
                 this.#form.getControl('print_sds')?.on('click', e => {
                     twcSdsEngineUI.printSDS(this.#workflowForm.page, this.#workflowForm.data.siteRequestInfo, true);
+                })
+
+                this.#form.getControl('upload_file')?.on('click', e => {
+                    this.#workflowForm.uploadFile();
                 })
 
 
@@ -613,7 +614,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.render(jQuery('<div></div>'));
                 dialog.open({ title: 'manage item', content: this.#container, size: { width: '1000px', height: '90vh' } });
             }
+
+
+            async uploadFile() {
+                await this.page.uploadFile({ showParent: true, recordType: twcSrf.Type, recordId: this.data.siteRequestInfo.id }, (file, res) => {
+                    // console.log(file, res);
+                    // location.reload();
+                })
+            }
         }
+
 
 
 

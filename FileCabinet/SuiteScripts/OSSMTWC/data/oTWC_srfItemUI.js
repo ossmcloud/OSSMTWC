@@ -114,7 +114,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
                 relatedEqPanel.fields.push(relatedEqTableControl);
 
-                
+
 
             }
 
@@ -158,7 +158,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             }
 
-            
+
             var label = '';
             if (stepType == twcSrfItem.StepType.TME) {
                 label = 'Request Tower Mounted Equipment (TME) Installation / Removal';
@@ -209,24 +209,29 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         target: '_self'
                     }
                 },
-                [twcFile.Fields.DESCRIPTION]: 'Description',
-                [twcFile.Fields.REVISION]: 'Revision',
+                [twcFile.Fields.R_TYPE + '_name']: 'Type',
+                [twcFile.Fields.STATUS + '_name']: 'Status',
+                [twcFile.Fields.DESCRIPTION]: { title: 'Description', nullText: '' },
+                [twcFile.Fields.REVISION]: { title: 'Revision', nullText: '' },
+                [twcFile.Fields.CREATED]: { title: 'Upload Date', nullText: '', type: 'datetime', styles: { width: '160px', 'text-align': 'center' } },
+                
 
             };
 
             var files = twcFile.select({
-                fields: fields,
                 where: {
                     [twcFile.Fields.RECORD_TYPE]: twcSrf.Type,
                     [twcFile.Fields.RECORD_ID]: srf.id || 0,
                 },
+                orderBy: { [twcFile.Fields.CREATED]: 'desc' },
                 useNames: true
             })
 
             srf.files = files;
 
             return {
-                id: `${twcFile.Type}`, label: 'Step 4 of 5: Drawings/GAD & Documents',
+                id: `${twcFile.Type}`,
+                label: 'Drawings/GAD & Documents',
                 fields: fields,
                 dataSource: files
             }

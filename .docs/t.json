@@ -1,0 +1,69 @@
+{
+    "options": {
+        "label": "Drawings/GAD & Documents",
+        "type": "table",
+        "id": "customrecord_twc_file",
+        "columns": [
+            {
+                "id": "name",
+                "title": "Name",
+                "link": {
+                    "url": "onclick=\"twc.page.previewFile({ twcFile: ${id}} )\"",
+                    "valueField": "id",
+                    "target": "_self"
+                }
+            },
+            {
+                "id": "custrecord_twc_file_type",
+                "title": "Type"
+            },
+            {
+                "id": "custrecord_twc_file_description",
+                "title": "Description"
+            },
+            {
+                "id": "custrecord_twc_file_revision",
+                "title": "Revision"
+            }
+        ],
+        "dataSource": [
+            {
+                "id": 298,
+                "name": "Certificate-No.-1-Sample.pdf",
+                "custrecord_twc_file_type": 11,
+                "custrecord_twc_file_type_name": "TL Drawings",
+                "custrecord_twc_file_description": null,
+                "custrecord_twc_file_revision": null
+            },
+            {
+                "id": 291,
+                "name": "Certificate-No.-1-Sample.pdf",
+                "custrecord_twc_file_type": 12,
+                "custrecord_twc_file_type_name": "SRF Attachment",
+                "custrecord_twc_file_description": null,
+                "custrecord_twc_file_revision": 1
+            }
+        ],
+        "showToolbar": true,
+        "showEditDelete": true,
+        "readOnly": true
+    },
+    "data": [
+        {
+            "id": 298,
+            "name": "Certificate-No.-1-Sample.pdf",
+            "custrecord_twc_file_type": 11,
+            "custrecord_twc_file_type_name": "TL Drawings",
+            "custrecord_twc_file_description": null,
+            "custrecord_twc_file_revision": null
+        },
+        {
+            "id": 291,
+            "name": "Certificate-No.-1-Sample.pdf",
+            "custrecord_twc_file_type": 12,
+            "custrecord_twc_file_type_name": "SRF Attachment",
+            "custrecord_twc_file_description": null,
+            "custrecord_twc_file_revision": 1
+        }
+    ]
+}

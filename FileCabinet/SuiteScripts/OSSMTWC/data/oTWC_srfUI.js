@@ -92,10 +92,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getSrfItems(dataSource, userInfo, readOnly) {
-            //throw new Error('ro: '+readOnly)
             var items = twcSrfItem.select(
                 {
-                    //fields: fields,
                     where: { [twcSrfItem.Fields.SRF]: dataSource.id || 0, },
                     useNames: true
                 }
@@ -122,6 +120,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getSRFInfoPanels(dataSource, userInfo, readOnly) {
+
+            var customers = twcUtils.getCustomers(userInfo, { srf: dataSource });
+            var selectedCustomer = (!dataSource.id && userInfo.isCustomer) ? userInfo.companyProfile.id : null;
+
             var fieldGroup = { id: 'site-request', title: (dataSource.id) ? `Space Request [${dataSource.name}]` : 'Create New Space Request', collapsed: false, controls: [] };
 
             getFeedbackReviewRecords(fieldGroup, dataSource, userInfo);
@@ -129,29 +131,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var basicInfo = { id: 'site-request-struct', title: 'Customer Information', fields: [] };
             fieldGroup.controls.push(basicInfo);
 
-
-
-            var customers = twcUtils.getCustomers(userInfo, { srf: dataSource });
-            var selectedCustomer = (!dataSource.id && userInfo.isCustomer) ? userInfo.companyProfile.id : null;
-
             basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: false, dataSource: customers, value: selectedCustomer, allowAll: false })
-
             basicInfo.fields.push({ id: twcSrf.Fields.OPERATOR_SITE_ID, label: 'Operator Site ID', mandatory: true })
             if (userInfo.isEmployee) { basicInfo.fields.push({ id: twcSrf.Fields.SRF_TYPE, label: 'SRF Type', dataSource: twcUtils.getSrfTypes(), allowAll: false }) }
 
             var items = getSrfItems(dataSource, userInfo, readOnly);
-
-            // dataSource[`items_${twcSrf.StepType.TME}`] = items.filter(i => { return i[twcSrfItem.Fields.STEP_TYPE] == twcSrf.StepType.TME; })
-            // dataSource[`items_${twcSrf.StepType.ATME}`] = items.filter(i => { return i[twcSrfItem.Fields.STEP_TYPE] == twcSrf.StepType.ATME; })
-            // dataSource[`items_${twcSrf.StepType.GIE}`] = items.filter(i => { return i[twcSrfItem.Fields.STEP_TYPE] == twcSrf.StepType.GIE; })
-            // dataSource[`items_${twcSrf.StepType.FEEDER}`] = items.filter(i => { return i[twcSrfItem.Fields.STEP_TYPE] == twcSrf.StepType.FEEDER; })
-
             fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 6 (TME)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.TME, items)] });
             fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 6 (ATME)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.ATME, items)] });
             fieldGroup.controls.push({ id: 'site-request-step-4', title: 'Step 3 of 6 (Feeders)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.FEEDER, items)] });
             fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 4 of 6 (GIE)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.GIE, items)] });
             fieldGroup.controls.push({ id: 'site-request-step-5', title: 'Step 5 of 6 (Attachments)', fields: [twcSrfItemUI.getFileTableUIControl(userInfo, dataSource)] });
-
 
             var step5 = {
                 id: 'site-request-step-6', title: 'Step 6 of 6: (Power Supply)', fields: [

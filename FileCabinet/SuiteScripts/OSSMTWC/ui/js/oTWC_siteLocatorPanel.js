@@ -167,16 +167,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     this.#sitesTable.refresh(this.#dataFiltered);
                 }
-
-                // if (this.#tableData) {
-                //     this.#tableDataFiltered = this.#tableData.filter(s => {
-                //         return siteIds.indexOf(s.site_id) >= 0;
-                //     });
-                //     this.#sitesTable.refresh(this.#tableDataFiltered);
-                // } else {
-
-                //     this.#sitesTable.refresh(this.#dataFiltered);
-                // }
+             
                 this.updateGoogleMap(null);
             }
 
