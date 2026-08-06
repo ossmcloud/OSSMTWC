@@ -13,6 +13,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 super({ scriptId: 'otwc_dashboards_sl' });
 
 
+
+            }
+
+            initPage() {
+                this.page.find('.twc-dashboard').each((i, e) => {
+                    this.post({ action: 'get-dashboard' }, {id: jQuery(e).data('id')}).then(res => {
+                        jQuery(e).find('.twc-dashboard-content').html(res.html)
+                    })    
+                })
+                
             }
 
 

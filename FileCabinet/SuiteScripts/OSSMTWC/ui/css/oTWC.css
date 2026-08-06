@@ -2528,7 +2528,7 @@ div.twc_toggle_inner_selected {
 
 div.twc_toggle_inner_null {
     background-color: transparent !important;
-    border: 1px solid var(--grid-color)!important;
+    border: 1px solid var(--grid-color) !important;
     /* background-color: silver !important; */
 }
 
@@ -2698,4 +2698,41 @@ div.omt-ui-flex-panel>ossm {
 .ktl-highlight-red {
     background-color: red !important;
     color: white !important;
+}
+
+
+div.twc-dashboards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+div.twc-dashboard {
+    width: 300px;
+    min-width: 300px;
+    max-width: 300px;
+    text-align: center;
+    margin: 7px;
+    cursor: pointer;
+    
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    border: 1px solid var(--grid-color);
+}
+
+div.twc-dashboard:hover {
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+div.twc-dashboard-title {
+    padding: 17px;
+    background-color: var(--accent-bkgd-color);
+    color: var(--accent-fore-color);
+    cursor: pointer;
+}
+
+div.twc-dashboard-content {
+    padding: 17px;
+    font-weight: bold;
+    font-size: 2em;
+    cursor: pointer;
 }

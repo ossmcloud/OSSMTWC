@@ -121,7 +121,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     relatedEqTable.onToolbarClick = e => {
                         var srfNewRelatedItem = null;
                         if (e.action == 'add-new') {
-                            var eqClass = jQuery(e.evt.target).parent().data('eq-class');
+                            var eqClass = jQuery(e.evt.target).closest('.twc-table-toolbar-button').data('eq-class');
                             srfNewRelatedItem = {};
                             srfNewRelatedItem.dirty = true;
                             srfNewRelatedItem.child = true;
@@ -484,7 +484,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             this.#workflowForm.popUp();
                         })
 
-                        this.ui.getControl('attach-file').on('click', e => {
+                        this.ui.getControl('attach-file')?.on('click', e => {
                             this.uploadFile({ showParent: true, recordType: twcSrf.Type, recordId: this.data.siteRequestInfo.id }, (file, res) => {
                                 location.reload();
                             })
