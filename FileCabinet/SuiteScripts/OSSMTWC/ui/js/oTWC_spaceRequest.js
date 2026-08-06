@@ -157,6 +157,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     try {
                         var reqType = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
 
+                        if (this.getLLibCfg(this.#srfItem[twcSrfItem.Fields.STEP_TYPE], this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).value)?.pick_from_library == 'T') {
+                            if (!this.#form.getControl(twcSrfItem.Fields.EQUIPMENT_LIBRARY).value) {
+                                throw new Error(`You must pick an item from the library`)
+                            }
+                        }
+
                         // @@NOTE: if we have a remove the other panels with controls re not show but if we enforce the validations we'll get all the error about mandatory fields
                         //         this is because the UI mandatory validation checks if the field is hidden, readonly or disabled to avoid validating a field that cannot be edited
                         //         however, it does not check whether the 'container' is visible or not so in this case we skip validation and implement it manually
@@ -250,9 +256,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var cfg = this.getLLibCfg(this.#srfItem[twcSrfItem.Fields.STEP_TYPE], itemType);
                 if (!cfg) { return; }
 
-                this.#form.ui.find('#srf-item-dimension').css('display', 'block');
-                this.#form.ui.find('#srf-item-spec').css('display', 'block');
-                this.#form.ui.find('#srf-related-eq').css('display', 'block');
+                if (pickedEqLib) {
+                    this.#form.ui.find('#srf-item-dimension').css('display', 'block');
+                    this.#form.ui.find('#srf-item-spec').css('display', 'block');
+                    this.#form.ui.find('#srf-related-eq').css('display', 'block');
+                }
 
                 var fieldMaps = twcEqLibUI.getLibToEquipmentFieldMap();
                 cfg = JSON.parse(cfg.configurations || '[]');
@@ -272,11 +280,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         }
 
                         if (fieldCfg?.label) { eqField.label = fieldCfg?.label; }
+                        
+                        if (fieldCfg?.readOnly !== undefined) {
+                            eqField.readOnly = fieldCfg?.readOnly;
+                        } 
+
                     } else {
                         eqField.mandatory = fieldMap.canEdit ? !fieldMap.notMandatory : false;
                         eqField.readOnly = !fieldMap.canEdit;
-                        if (pickedEqLib) { eqField.value = pickedEqLib[fieldMap.libField]; }
+                        
                     }
+                    if (pickedEqLib) { eqField.value = pickedEqLib[fieldMap.libField]; }
                 })
             }
 
