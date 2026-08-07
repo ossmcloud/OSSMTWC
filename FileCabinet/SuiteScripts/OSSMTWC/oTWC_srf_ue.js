@@ -13,8 +13,12 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
 
                 var form = oui.get(context.form);
                 form.f.clientScriptModulePath = './oTWC_srf_cs.js';
+                form.fieldIdCount = 199;
+                
                 form.pageInitView('OSSMTWC', 'oTWC_srf');
                 if (context.type == 'view') {
+                    
+
                     form.buttonAdd('Open SRF', 'openSrf');
                     if (twcConfig.isPowerUser()) {
                         form.buttonAdd('Delete SRF', 'deleteSrf');
@@ -22,6 +26,7 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
                 }
             } catch (error) {
                 core.logDebug('BEFORE-LOAD', error.message);
+                if (core.me()){throw error}
             }
         }
 

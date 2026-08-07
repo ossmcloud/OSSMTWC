@@ -138,8 +138,8 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                         <div id="custom-actions">
                             ${signSrfButton}
                             ${printSDSButton}
-                            ${viewWorkFlowButton}
                             ${openWorkFlowButton}
+                            ${viewWorkFlowButton}
                             ${acceptApprovalButton}
                             ${submitSrfButton}
                             ${cancelSrfButton}

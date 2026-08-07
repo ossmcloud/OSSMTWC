@@ -195,7 +195,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 } else if (field.type == FIELD_TYPE.BOOL) {
                     //if (value === 'T' || value === 'F' || value ) {
-                        value = (value === 'T');
+                    value = (value === 'T' || value === true);
                     //}
                 }
                 // @@TODO: validate other types

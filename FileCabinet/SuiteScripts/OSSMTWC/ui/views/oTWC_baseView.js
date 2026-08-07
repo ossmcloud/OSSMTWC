@@ -2,7 +2,7 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', '../../O/oTWC_themes.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_permissions.js', '../../data/oTWC_file.js', '../../O/controls/oTWC_ui_fieldPanel.js' ],
+define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', '../../O/oTWC_themes.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../O/oTWC_dialogEx.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_permissions.js', '../../data/oTWC_file.js', '../../O/controls/oTWC_ui_fieldPanel.js'],
     (email, url, core, https, b64, twcThemes, twcIcons, twcConfig, dialog, twcUI, uiTable, permissions, twcFile, twcUIPanel) => {
 
         function base64ToBlob(base64, mimeType) {
@@ -361,9 +361,13 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
                                 form.getControl('name').value = file.name;
                             })
                         } else if (e.id == twcFile.Fields.R_TYPE) {
-                            form.getControl(twcFile.Fields.STATUS).setDataSource(e.target.valueObj.allowedStatues);
-                            if (e.target.valueObj.defaultStatus) {
+                            form.getControl(twcFile.Fields.STATUS).setDataSource(e.target.valueObj?.allowedStatues || []);
+                            if (e.target.valueObj?.defaultStatus) {
                                 form.getControl(twcFile.Fields.STATUS).value = e.target.valueObj.defaultStatus;
+                            } else if (e.target.valueObj?.allowedStatues.length == 1) {
+                                form.getControl(twcFile.Fields.STATUS).value = e.target.valueObj.allowedStatues[0].value;
+                            } else {
+                                form.getControl(twcFile.Fields.STATUS).value = null;
                             }
                         }
 
@@ -431,7 +435,7 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
             }
         }
 
-      
+
         return {
             TWCPageBase: TWCPageBase,
             initPageData: initPageData,

@@ -90,6 +90,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 recu.submit(twcSrf.Type, payload.id, submitInfo[twcSrf.Type].fields, submitInfo[twcSrf.Type].values);
 
             } else {
+
+              
+
                 var newSrf = twcSrf.get();
                 newSrf.sRFStatus = twcSrf.Status.Draft;
                 newSrf.sRFRequestedDate = (new Date()).addHours(12);    // @@NOTE: to account for the GMT difference of US servers
@@ -98,6 +101,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (!newSrf.hasField(field)) { return; }
                     newSrf.set(field, submitInfo[twcSrf.Type].values[idx]);
                 })
+
                 payload.id = newSrf.save();
             }
 
@@ -284,7 +288,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     </div>
                     <div class="twc-border">
                         <div id="twc-google-map-filters"  class="twc-animate-height" style="max-height: 59vh; overflow: auto;">
-                            <h3 class="twc">Site Locator</h3>
+                            <h3 class="twc">Space Request</h3>
                             <div class="twc-div-table-r">
                                 <div>
                                     {FILTER_NAME}
@@ -311,7 +315,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             </div>
 
 
-                            <h3 class="twc">Site Actions</h3>
+                            <h3 class="twc">Actions</h3>
                             <div class="twc-div-table-r">
                                 <div>
                                     {ACTION_CLEAR_FILTERS}

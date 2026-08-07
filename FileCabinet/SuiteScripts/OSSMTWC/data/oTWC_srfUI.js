@@ -122,8 +122,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSRFInfoPanels(dataSource, userInfo, readOnly) {
 
             var customers = twcUtils.getCustomers(userInfo, { srf: dataSource });
-            var selectedCustomer = (!dataSource.id && userInfo.isCustomer) ? userInfo.companyProfile.id : null;
-
+            var selectedCustomer = (!dataSource.id && userInfo.isCustomer) ? userInfo.companyProfile.id : dataSource[twcSrf.Fields.CUSTOMER];
             var fieldGroup = { id: 'site-request', title: (dataSource.id) ? `Space Request [${dataSource.name}]` : 'Create New Space Request', collapsed: false, controls: [] };
 
             getFeedbackReviewRecords(fieldGroup, dataSource, userInfo);
@@ -131,7 +130,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var basicInfo = { id: 'site-request-struct', title: 'Customer Information', fields: [] };
             fieldGroup.controls.push(basicInfo);
 
-            basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: false, dataSource: customers, value: selectedCustomer, allowAll: false })
+            basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: !core.utils.isEmpty(dataSource.id), dataSource: customers, value: selectedCustomer, allowAll: false })
             basicInfo.fields.push({ id: twcSrf.Fields.OPERATOR_SITE_ID, label: 'Operator Site ID', mandatory: true })
             if (userInfo.isEmployee) { basicInfo.fields.push({ id: twcSrf.Fields.SRF_TYPE, label: 'SRF Type', dataSource: twcUtils.getSrfTypes(), allowAll: false }) }
 
@@ -144,7 +143,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var step5 = {
                 id: 'site-request-step-6', title: 'Step 6 of 6: (Power Supply)', fields: [
-                    { id: twcSrf.Fields.POWER_SUPPLY_REQUESTED_FROM_TL, label: 'Power Requested from TC', labelNoWrap: true, lineBreak: true },
+                    { id: twcSrf.Fields.POWER_SUPPLY_REQUESTED_FROM_TL, label: 'Power Required from Towercom', labelNoWrap: true, lineBreak: true },
                     { id: twcSrf.Fields.ALTERNATE_POWER_SUPPLIER, label: 'Alternate Supplier', lineBreak: true },
                     { id: twcSrf.Fields.POWER_NOTES, label: 'Notes / Comments', width: '75%', rows: 3, lineBreak: true },
                     { id: twcSrf.Fields.APPLICATION_FOR_OWN_SUPPLY_MADE_TO_ESB, label: 'Application for own supply made to ESB', labelNoWrap: true, lineBreak: true },
@@ -156,9 +155,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push(step5);
 
             if (!readOnly) {
-                var buttons = [{ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-button', value: 'Save SRF' }]
-                if (dataSource[twcSrf.Fields.SRF_STATUS] == twcUtils.SrfStatus.Draft) {
+                var buttons = [{ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-button', value: 'Save As Draft' }]
+                if (!dataSource[twcSrf.Fields.SRF_STATUS] || dataSource[twcSrf.Fields.SRF_STATUS] == twcUtils.SrfStatus.Draft) {
                     buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'submit-srf-button', value: 'Submit SRF' })
+                    buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'cancel-srf-button', value: 'Cancel SRF' })
                 }
                 fieldGroup.controls.push({ id: 'site-request-step-7', fields: buttons });
             }

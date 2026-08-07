@@ -68,6 +68,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         if (s == 'width') { styles = 'width: 100%;' }
                     }
                 }
+
                 var html = `
                     <div class="twc_ctrl" data-type="button" data-id="${this.#options.id}" style="${styles}">
                         ${label}

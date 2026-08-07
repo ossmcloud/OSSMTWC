@@ -675,7 +675,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 recu.submit(twcSrfWorkflowItem.Type, wi.id, twcSrfWorkflowItem.Fields.STATUS, WORKFLOW_STATUS.CANCELLED);
             })
 
-            recu.submit(twcSrfWorkflow.Type, wkf, twcSrfWorkflow.Fields.STATUS, WORKFLOW_STATUS.CANCELLED);
+            if (wkf) {
+                recu.submit(twcSrfWorkflow.Type, wkf, twcSrfWorkflow.Fields.STATUS, WORKFLOW_STATUS.CANCELLED);
+            }
         }
 
         function deleteWorkflow(options) {

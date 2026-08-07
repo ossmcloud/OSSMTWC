@@ -13,6 +13,8 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
 
                 var form = oui.get(context.form);
                 form.f.clientScriptModulePath = './oTWC_saf_cs.js';
+                form.fieldIdCount = 199;
+                
                 form.pageInitView('OSSMTWC', 'oTWC_saf');
                 if (context.type == 'create') {
                     form.fieldHide(twcSaf.Fields.CONDITIONS_OF_ACCESS);

@@ -61,7 +61,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
             if ((pageData.recId !== undefined || pageData.editMode) && userInfo.permission.lvl > twcConfig.PERMISSION_LEVEL.VIEW) {
                 buttons += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: pageData.editMode ? 'Save' : 'Edit', id: pageData.editMode ? 'save-srf-button' : 'edit-button' })
                 if (pageData.editMode) {
-                    buttons += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel', id: 'cancel-button' })
+                    buttons += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Close', id: 'cancel-button' })
                 }
             }
 

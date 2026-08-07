@@ -35,7 +35,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
             basicInfo.fields.push({ id: twcSrfItem.Fields.ITEM_TYPE, label: 'Item Type', mandatory: true, hide: true, dataSource: twcEquipmentType.lookUp(srfItem.stepType) })
-            basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-from-library', label: '', value: 'Pick From Library', disabled: isNewRecord, lineBreak: true });
+            basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-from-library', label: '', value: 'Pick From Library', lineBreak: true });
             basicInfo.fields.push({ type: twcUI.CTRL_TYPE.PANEL, id: 'srf-pick-from-library-msg', styles: { color: 'var(--accent-fore-color)', padding: '7px', display: 'none' } })
             basicInfo.fields.push({ id: twcSrfItem.Fields.DESCRIPTION, label: 'Description', width: '100%' })
 
@@ -86,9 +86,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     type: twcUI.CTRL_TYPE.TABLE,
                     label: 'related equipment (ATME / FEEDERS)',
                     columns: [
-                        { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
-                        { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Type' },
-                        { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description' },
+                        { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class', nullText: '' },
+                        { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Type', nullText: '' },
+                        { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description', nullText: '' },
+                        { id: twcSrfItem.Fields.MAKE, title: 'Make', nullText: '' },
+                        { id: twcSrfItem.Fields.MODEL, title: 'Model', nullText: '' },
+                        { id: twcSrfItem.Fields.HEIGHT_ON_TOWER, title: 'Height on Tower', nullText: '' },
+                        // { id: twcSrfItem.Fields.LENGTH_MM, title: 'Length (mm)', nullText: '' },
+                        // { id: twcSrfItem.Fields.WIDTH_MM, title: 'Width (mm)', nullText: '' },
+                        // { id: twcSrfItem.Fields.DEPTH_MM, title: 'Depth (mm)', nullText: '' },
+                        // { id: twcSrfItem.Fields.WEIGHT_KG, title: 'Weight (kg)}', nullText: '' },
+                        // { id: twcSrfItem.Fields.INVENTORY_FLAG, title: 'Flag', styles: { width: '75px' }, hide: !userInfo.isEmployee, nullText: '' },
+                        { id: twcSrfItem.Fields.TYPE_OPT + '_name', title: 'Type Opt', nullText: '' },
+
                     ],
                     dataSource: getSrfAdditionalEquipment(srf, srfItem, userInfo),
                     showToolbar: true,
@@ -122,10 +132,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function getSrfAdditionalEquipment(srf, srfItem, userInfo) {
-
             return srfItem.relatedItems || [];
-
-            return [];
         }
 
 
@@ -214,7 +221,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 [twcFile.Fields.DESCRIPTION]: { title: 'Description', nullText: '' },
                 [twcFile.Fields.REVISION]: { title: 'Revision', nullText: '' },
                 [twcFile.Fields.CREATED]: { title: 'Upload Date', nullText: '', type: 'datetime', styles: { width: '160px', 'text-align': 'center' } },
-                
+
 
             };
 
