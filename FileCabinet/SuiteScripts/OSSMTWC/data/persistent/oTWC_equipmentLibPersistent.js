@@ -24,7 +24,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WIND_LOADING_NM2_MAX: 'custrecord_twc_eq_lib_wind_ldg_nm2_max',
             WIND_REGIME: 'custrecord_twc_eq_lib_wind_regime',
             VOLTAGE_TYPE: 'custrecord_twc_eq_lib_voltage',
-            VOLTAGE_RANGE: 'custrecord_twc_eq_lib_voltage_range',
             ALIAS: 'custrecord_twc_eq_lib_alias',
             PUBLIC: 'custrecord_twc_eq_lib_public',
             TL_NOTE: 'custrecord_twc_eq_lib_tl_note',
@@ -52,7 +51,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WIND_LOADING_NM2_MAX: { name: 'custrecord_twc_eq_lib_wind_ldg_nm2_max', type: 'integer', alias: 'windLoadingNm2Max', display: 'normal', mandatory: false },
             WIND_REGIME: { name: 'custrecord_twc_eq_lib_wind_regime', type: 'text', alias: 'windRegime', display: 'normal', mandatory: false },
             VOLTAGE_TYPE: { name: 'custrecord_twc_eq_lib_voltage', type: 'select', alias: 'voltageType', display: 'normal', mandatory: false, recordType: 'customlist_twc_equip_voltage_type' },
-            VOLTAGE_RANGE: { name: 'custrecord_twc_eq_lib_voltage_range', type: 'select', alias: 'voltageRange', display: 'normal', mandatory: false, recordType: 'customlist_twc_equip_voltage_range' },
             ALIAS: { name: 'custrecord_twc_eq_lib_alias', type: 'text', alias: 'alias', display: 'normal', mandatory: false },
             PUBLIC: { name: 'custrecord_twc_eq_lib_public', type: 'text', alias: 'public', display: 'normal', mandatory: false },
             TL_NOTE: { name: 'custrecord_twc_eq_lib_tl_note', type: 'text', alias: 'tLNote', display: 'normal', mandatory: false },
@@ -178,12 +176,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get voltageTypeName() { return this.getText(_recordFields.VOLTAGE_TYPE); }
             
-            get voltageRange() {
-                return this.get(_recordFields.VOLTAGE_RANGE);
-            } set voltageRange(value) {
-                this.set(_recordFields.VOLTAGE_RANGE, value)
-            }
-            get voltageRangeName() { return this.getText(_recordFields.VOLTAGE_RANGE); }
             
             get alias() {
                 return this.get(_recordFields.ALIAS);

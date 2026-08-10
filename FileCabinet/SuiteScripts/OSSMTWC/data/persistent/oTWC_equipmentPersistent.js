@@ -34,7 +34,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WIND_LOADING_NM2_MAX: 'custrecord_twc_equip_wind_ldg_nm2_max',
             WIND_REGIME: 'custrecord_twc_equip_wind_regime',
             VOLTAGE_TYPE: 'custrecord_twc_equip_voltage_type',
-            VOLTAGE_RANGE: 'custrecord_twc_equip_voltage_range',
             CUSTOMER_NOTE: 'custrecord_twc_cus_note',
             TL_NOTE: 'custrecord_twc_equip_tl_note',
             ASSOCIATED_EQUIP_ACTIONS: 'custrecord_twc_equip_assoc_eq_action',
@@ -86,7 +85,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WIND_LOADING_NM2_MAX: { name: 'custrecord_twc_equip_wind_ldg_nm2_max', type: 'integer', alias: 'windLoadingNm2Max', display: 'normal', mandatory: false },
             WIND_REGIME: { name: 'custrecord_twc_equip_wind_regime', type: 'select', alias: 'windRegime', display: 'normal', mandatory: false, recordType: 'customlist_twc_equip_wind_regime' },
             VOLTAGE_TYPE: { name: 'custrecord_twc_equip_voltage_type', type: 'select', alias: 'voltageType', display: 'normal', mandatory: false, recordType: 'customlist_twc_equip_voltage_type' },
-            VOLTAGE_RANGE: { name: 'custrecord_twc_equip_voltage_range', type: 'select', alias: 'voltageRange', display: 'normal', mandatory: false, recordType: 'customlist_twc_equip_voltage_range' },
             CUSTOMER_NOTE: { name: 'custrecord_twc_cus_note', type: 'text', alias: 'customerNote', display: 'normal', mandatory: false },
             TL_NOTE: { name: 'custrecord_twc_equip_tl_note', type: 'text', alias: 'tLNote', display: 'normal', mandatory: false },
             ASSOCIATED_EQUIP_ACTIONS: { name: 'custrecord_twc_equip_assoc_eq_action', type: 'select', alias: 'associatedEQUIP_ACTIONs', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action' },
@@ -295,12 +293,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get voltageTypeName() { return this.getText(_recordFields.VOLTAGE_TYPE); }
             
-            get voltageRange() {
-                return this.get(_recordFields.VOLTAGE_RANGE);
-            } set voltageRange(value) {
-                this.set(_recordFields.VOLTAGE_RANGE, value)
-            }
-            get voltageRangeName() { return this.getText(_recordFields.VOLTAGE_RANGE); }
             
             get customerNote() {
                 return this.get(_recordFields.CUSTOMER_NOTE);

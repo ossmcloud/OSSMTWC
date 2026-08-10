@@ -79,7 +79,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 eq.inventoryFlag = action[twcSrfItem.Fields.INVENTORY_FLAG];
                 eq.optType = action[twcSrfItem.Fields.TYPE_OPT];
                 eq.voltageType = action[twcSrfItem.Fields.VOLTAGE_TYPE];
-                eq.voltageRange = action[twcSrfItem.Fields.VOLTAGE_RANGE];
                 eq.associatedEQUIP_ACTIONs = action.act_id;
 
                 // get the parent equipment

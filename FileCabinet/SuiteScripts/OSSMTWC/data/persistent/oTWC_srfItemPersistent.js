@@ -25,7 +25,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             HEIGHT_ON_TOWER: 'custrecord_twc_srf_itm_ht_on_twr',
             WEIGHT_KG: 'custrecord_twc_srf_itm_weight_kg',
             VOLTAGE_TYPE: 'custrecord_twc_srf_itm_volt_type',
-            VOLTAGE_RANGE: 'custrecord_twc_srf_itm_volt_range',
             AZIMUTH: 'custrecord_twc_srf_itm_azimuth',
             B_END: 'custrecord_twc_srf_itm_b_end',
             CUSTOMER_REF: 'custrecord_twc_srf_itm_cust_ref',
@@ -67,7 +66,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             HEIGHT_ON_TOWER: { name: 'custrecord_twc_srf_itm_ht_on_twr', type: 'float', alias: 'heightonTower', display: 'normal', mandatory: false },
             WEIGHT_KG: { name: 'custrecord_twc_srf_itm_weight_kg', type: 'float', alias: 'weightkg', display: 'normal', mandatory: false },
             VOLTAGE_TYPE: { name: 'custrecord_twc_srf_itm_volt_type', type: 'select', alias: 'voltageType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_voltage_type' },
-            VOLTAGE_RANGE: { name: 'custrecord_twc_srf_itm_volt_range', type: 'select', alias: 'voltageRange', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_voltage_range' },
             AZIMUTH: { name: 'custrecord_twc_srf_itm_azimuth', type: 'integer', alias: 'azimuth', display: 'normal', mandatory: false },
             B_END: { name: 'custrecord_twc_srf_itm_b_end', type: 'text', alias: 'b_End', display: 'normal', mandatory: false },
             CUSTOMER_REF: { name: 'custrecord_twc_srf_itm_cust_ref', type: 'text', alias: 'customerRef', display: 'normal', mandatory: false },
@@ -218,12 +216,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get voltageTypeName() { return this.getText(_recordFields.VOLTAGE_TYPE); }
             
-            get voltageRange() {
-                return this.get(_recordFields.VOLTAGE_RANGE);
-            } set voltageRange(value) {
-                this.set(_recordFields.VOLTAGE_RANGE, value)
-            }
-            get voltageRangeName() { return this.getText(_recordFields.VOLTAGE_RANGE); }
             
             get azimuth() {
                 return this.get(_recordFields.AZIMUTH);
