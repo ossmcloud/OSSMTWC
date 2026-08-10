@@ -53,6 +53,8 @@ SCHEMA:
     customrecord_twc_equip_licence_status
         custrecord_twc_equip_licence_status_sds
 
+    customrecord_twc_srf_itm_typ_opt
+        custrecord_twc_srf_itm_typ_opt_tl_only
 
 	TODO:
 		REMOVE: customrecord_twc_srf.custrecord_twc_srf_sds_form_data
@@ -75,7 +77,8 @@ SCHEMA:
             customlist_twc_equip_voltage_range
 
             
-
+        RENAME TABLE:
+            customrecord_twc_srf_itm_typ_opt
 
 disabled:
 C:\e_drive\OSSM Developments\OSSMTWC\FileCabinet\SuiteScripts\OSSMTWC\oTWC_power_supply_ue.js

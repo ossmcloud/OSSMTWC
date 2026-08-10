@@ -182,7 +182,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     inv.type = twcInventory.Type;
 
                     if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, inv[twcInventory.Fields.CUSTOMER])) {
-                        throw new Error('You do not have access to see this Inventory record');
+                        throw new Error('You do not have access to see this Equipment record');
                     }
 
                 } else {

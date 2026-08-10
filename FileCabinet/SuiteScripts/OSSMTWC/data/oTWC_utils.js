@@ -687,8 +687,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getLookUpTableValues('customrecord_twc_srf_type');
         }
 
-        function getSrfItemTypeOpts() {
-            return getLookUpTableValues('customrecord_twc_srf_itm_typ_opt');
+        function getSrfItemTypeOpts(userInfo) {
+            if (userInfo.isEmployee) { return getLookUpTableValues('customrecord_twc_srf_itm_typ_opt'); }
+            return coreSQL.run(`select id as value, name as text from customrecord_twc_srf_itm_typ_opt where isinactive = 'F' and NVL(custrecord_twc_srf_itm_typ_opt_tl_only, 'F') = 'F' order by name`)
         }
 
         function getSafStatus() {

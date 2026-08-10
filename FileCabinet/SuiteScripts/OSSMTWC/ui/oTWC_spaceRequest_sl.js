@@ -120,6 +120,10 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.SRFApproved) {
                         acceptApprovalButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Accept and Request License', id: 'accept-srf-approval' });
                         cancelSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SRF', id: 'cancel-srf-button' });
+
+                        if (pageData.userInfo.isEmployee && !pageData.userInfo.powerUser) {
+                            acceptApprovalButton = '';
+                        }
                     }
 
                     var attachFileButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Attach File', id: 'attach-file' });
