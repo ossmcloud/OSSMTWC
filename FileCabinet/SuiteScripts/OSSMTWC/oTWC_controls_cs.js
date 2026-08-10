@@ -202,7 +202,6 @@ define(['N/xml','/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'S
                     //     "custrecord_twc_srf_itm_ht_on_twr": "5",
                     //     "custrecord_twc_srf_itm_weight_kg": "1",
                     //     "custrecord_twc_srf_itm_volt_type": "1",
-                    //     "custrecord_twc_srf_itm_volt_range": "1",
                     //     "custrecord_twc_srf_itm_azimuth": "0",
                     //     "custrecord_twc_srf_itm_b_end": "0",
                     //     "custrecord_twc_srf_itm_cust_ref": "XXX",

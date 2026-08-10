@@ -35,7 +35,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 const formatValue = (v, fv, d) => {
                     return twcUtils.getCompAccredStatusHtml(d.accreditation_status_id, 'twc-record-status-row')
                 }
-                
+
                 table.getColumn('accreditation_status').formatValue = formatValue;
                 table.getColumnOption('accreditation_status').formatValue = formatValue;
             }
@@ -94,25 +94,27 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 }
 
-                this.ui.getControl(twcFile.Type).onToolbarClick = e => {
-
-                    if (e.action == 'add-new') {
-                        this.manageFile(null, e.table);
-                    } else if (e.action == 'edit') {
-                        var editSpan = e.row.find('[data-action="edit"]');
-                        var editIcon = editSpan.html();
-                        editSpan.html(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 16)}</span>`);
-                        window.setTimeout(() => {
-                            this.manageFile(e.rowData, e.table);
-                            editSpan.html(editIcon);
-                        }, 100)
-                    } else if (e.action == 'delete') {
-                        dialog.confirm('Are you sure you wish to delete this record', () => {
-                            e.rowData.delete = true;
-                            this.manageFile(e.rowData, e.table);
-                        })
+                var fileTables = this.ui.controls.filter(c => { return c.id == twcFile.Type; });
+                core.array.each(fileTables, fileTable => {
+                    fileTable.onToolbarClick = e => {
+                        if (e.action == 'add-new') {
+                            this.manageFile(null, e.table);
+                        } else if (e.action == 'edit') {
+                            var editSpan = e.row.find('[data-action="edit"]');
+                            var editIcon = editSpan.html();
+                            editSpan.html(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 16)}</span>`);
+                            window.setTimeout(() => {
+                                this.manageFile(e.rowData, e.table);
+                                editSpan.html(editIcon);
+                            }, 100)
+                        } else if (e.action == 'delete') {
+                            dialog.confirm('Are you sure you wish to delete this record', () => {
+                                e.rowData.delete = true;
+                                this.manageFile(e.rowData, e.table);
+                            })
+                        }
                     }
-                }
+                })
 
                 this.ui.on('change', e => {
                     this.#changes[e.id] = e.value;
@@ -264,7 +266,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         return;
                     }
 
-                    var res = this.postSync({ action: 'child-record' }, { company: this.data.profileInfo, document: companyFile })
+                    var res = this.postSync({ action: 'child-record' }, { company: this.data.profileInfo, document: companyFile, isInsurance: table.options.label.toLowerCase().indexOf('insurance') >= 0 })
                     var form = twcUIPanel.ui(res.ui);
                     form.getControl('upload-file').on('change', e => {
                         e.target.readFile(file => {

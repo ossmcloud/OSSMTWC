@@ -41,7 +41,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             if (srfItem.stepType != twcSrfItem.StepType.FEEDER) {
 
-                var dimensionInfo = { id: 'srf-item-dimension', title: 'Equipment Details', hide: isNewRecord, fields: [] };
+                var dimensionInfo = { id: 'srf-item-dimension', title: 'Equipment Specifications', hide: isNewRecord, fields: [] };
                 fieldGroup.controls.push(dimensionInfo);
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteStructures, mandatory: (srfItem.stepType != twcSrfItem.StepType.GIE), noAutoSelect: (srfItem.stepType == twcSrfItem.StepType.GIE) });
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.MAKE, label: 'Make', mandatory: true })
@@ -51,15 +51,18 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.DEPTH_MM, label: 'Depth (mm)', mandatory: true })
                 if (srfItem.stepType != twcSrfItem.StepType.GIE) {
                     dimensionInfo.fields.push({ id: twcSrfItem.Fields.WEIGHT_KG, label: 'Weight (kg)', mandatory: true })
-                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.HEIGHT_ON_TOWER, label: 'Height on Tower', mandatory: true })
+                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_TYPE, label: 'Voltage Type', mandatory: true })
+                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_RANGE, label: 'Voltage Range', mandatory: true })
+                    //dimensionInfo.fields.push({ id: twcSrfItem.Fields.HEIGHT_ON_TOWER, label: 'Height on Tower', mandatory: true })
                 }
                 dimensionInfo.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: twcSrfItem.Fields.EQUIPMENT_LIBRARY, label: 'Eq. Lib', hide: true })
             }
 
-            var specInfo = { id: 'srf-item-spec', title: 'Specifications', hide: isNewRecord, fields: [] };
-            if (srfItem.stepType == twcSrfItem.StepType.TME) {
-                specInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_TYPE, label: 'Voltage Type', mandatory: true })
-                specInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_RANGE, label: 'Voltage Range', mandatory: true })
+            var specInfo = { id: 'srf-item-spec', title: 'Deployment Details', hide: isNewRecord, fields: [] };
+            if (srfItem.stepType == twcSrfItem.StepType.TME || srfItem.stepType == twcSrfItem.StepType.ATME) {
+                // specInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_TYPE, label: 'Voltage Type', mandatory: true })
+                // specInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_RANGE, label: 'Voltage Range', mandatory: true })
+                specInfo.fields.push({ id: twcSrfItem.Fields.HEIGHT_ON_TOWER, label: 'Height on Tower', mandatory: true })
                 specInfo.fields.push({ id: twcSrfItem.Fields.AZIMUTH, label: 'Azimuth', min: 0, max: 360, mandatory: true })
                 specInfo.fields.push({ id: twcSrfItem.Fields.B_END, label: 'B-End', mandatory: true })
                 specInfo.fields.push({ id: twcSrfItem.Fields.CUSTOMER_REF, label: 'Customer Ref.', mandatory: true })
@@ -217,13 +220,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     }
                 },
                 [twcFile.Fields.R_TYPE + '_name']: 'Type',
-                [twcFile.Fields.STATUS + '_name']: 'Status',
-                [twcFile.Fields.DESCRIPTION]: { title: 'Description', nullText: '' },
-                [twcFile.Fields.REVISION]: { title: 'Revision', nullText: '' },
-                [twcFile.Fields.CREATED]: { title: 'Upload Date', nullText: '', type: 'datetime', styles: { width: '160px', 'text-align': 'center' } },
-
-
             };
+
+            if (userInfo.isEmployee) {
+                fields[twcFile.Fields.STATUS + '_name'] = 'Status';
+                fields[twcFile.Fields.REVISION] = { title: 'Revision', nullText: '' };
+            }
+
+            fields[twcFile.Fields.DESCRIPTION] = { title: 'Description', nullText: '' };
+            fields[twcFile.Fields.CREATED] = { title: 'Upload Date', nullText: '', type: 'datetime', styles: { width: '160px', 'text-align': 'center' } };
 
             var files = twcFile.select({
                 where: {

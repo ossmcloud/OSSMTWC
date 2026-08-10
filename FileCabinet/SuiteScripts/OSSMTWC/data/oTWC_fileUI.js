@@ -19,8 +19,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 fileTypeOptions.filters = { [`t.${twcFileType.Fields.USE_IN_SRF}`]: 'T' }
                 showTypeRelatedFields = userInfo.isEmployee;
             } else if (options?.company) {
-                fileTypeOptions.filters = `and (
-                       t.${twcFileType.Fields.HEALTH__AND__SAFETY} = 'T' 
+                fileTypeOptions.filters = options.filters || `and (
+                    t.${twcFileType.Fields.HEALTH__AND__SAFETY} = 'T' 
                     or t.${twcFileType.Fields.METHOD_STATEMENTS} = 'T' 
                     or t.${twcFileType.Fields.INSURANCE} = 'T'
                 )`

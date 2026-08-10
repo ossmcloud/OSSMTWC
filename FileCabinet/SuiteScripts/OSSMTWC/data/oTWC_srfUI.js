@@ -155,10 +155,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push(step5);
 
             if (!readOnly) {
-                var buttons = [{ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-button', value: 'Save As Draft' }]
+                var buttons = []
                 if (!dataSource[twcSrf.Fields.SRF_STATUS] || dataSource[twcSrf.Fields.SRF_STATUS] == twcUtils.SrfStatus.Draft) {
+                    buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-button', value: 'Save As Draft' });
                     buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'submit-srf-button', value: 'Submit SRF' })
                     buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'cancel-srf-button', value: 'Cancel SRF' })
+                } else {
+                    buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-button', value: 'Save' });
                 }
                 fieldGroup.controls.push({ id: 'site-request-step-7', fields: buttons });
             }

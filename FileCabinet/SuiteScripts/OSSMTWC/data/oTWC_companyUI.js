@@ -55,7 +55,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
         function getCompanyInfoPanels_insuranceInfo(dataSource, userInfo, editMode) {
-            var fieldGroup = { id: 'company-insurance', title: 'Insurance Info', renderAsTable: { width: '100%', 'table-layout': 'fixed' }, collapsed: !editMode, controls: [] };
+            var fieldGroup = { id: 'company-insurance', title: 'Insurance Info', collapsed: !editMode, controls: [] };
 
             var basicInfo = { id: 'company-insurance-info', fields: [] };
             fieldGroup.controls.push(basicInfo);
@@ -83,6 +83,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push(basicInfo2);
             basicInfo2.fields.push({ id: twcCompany.Fields.RESTRICTIONS, label: 'Restriction', width: '100%', rows: 7, lineBreak: true })
 
+            var basicInfo3 = { id: 'company-insurance-info-3', fields: [] };
+            fieldGroup.controls.push(basicInfo3);
+            basicInfo3.fields.push(
+                getCompanyInfoPanels_documentTable({
+                    label: 'Insurance Files',
+                    filters: {
+                        'custrecord_twc_file_rectype': 'customrecord_twc_company',
+                        'custrecord_twc_file_recid': dataSource.id,
+                        'custrecord_twc_file_type_insurance': 'T',
+                        'custrecord_twc_file_status': { op: '!=', value: twcUtils.FileStatus.Superseded }
+                    }
+                }, userInfo, editMode)
+            );
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
@@ -96,13 +109,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             basicInfo.fields.push({ id: twcCompany.Fields.ACCREDITATION_STATUS, width: '150px', label: 'Status', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.ACCREDITATION_SUBMITTED, label: 'Submitted', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.ACCREDITATION_APPROVED, label: 'Approved', readOnly: true })
-
             basicInfo.fields.push({ id: twcCompany.Fields.ACCREDITED_CONTRACTOR_COMMENCEMENT, label: 'Commencement', readOnly: true })
             basicInfo.fields.push({ id: twcCompany.Fields.ACCREDITED_CONTRACTOR_EXPIRY, label: 'Expiry', readOnly: true })
-            //basicInfo.fields.push({ id: twcCompany.Fields.ACCREDITED_CONTRACTOR_FEE, label: 'Fee', readOnly: true, lineBreak: true })
-
             basicInfo.fields.push({ id: twcCompany.Fields.ACCREDITATION_STATUS_COMMENT, label: 'Comment', width: '100%', readOnly: true, lineBreak: true })
-
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
@@ -110,42 +119,52 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
         function getCompanyInfoPanels_documents(dataSource, userInfo, editMode) {
-            var fieldGroup = { id: 'company-document', title: 'Documents', collapsed: true, controls: [] };
+            var fieldGroup = { id: 'company-document', title: 'H&S / Method Statements', collapsed: true, controls: [] };
 
             var basicInfo = { id: 'company-document-list', fields: [] };
             fieldGroup.controls.push(basicInfo);
 
-            //basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'upload-file', value: 'Upload Document', lineBreak: true })
-
-            basicInfo.fields.push({
-                id: `${twcFile.Type}`, label: 'Contractor Files',
-                fields: {
-                    ['preview_link']: { title: '', noFilter: true, noSort: true, styles: { width: '50px' } },
-                    [twcFile.Fields.CREATED]: { title: 'Uploaded', type: 'date', styles: { width: '120px' } },
-                    [twcFile.Fields.STATUS + '_name']: { title: 'Status', styles: { width: '120px', 'padding': '3px' } },
-                    [twcFile.Fields.R_TYPE + '_name']: { title: 'Type', styles: { width: '150px' } },
-                    [twcFile.Fields.NAME]: { title: 'File Name', styles: { width: '350px' } },
-                    [twcFile.Fields.REVISION]: { title: 'Rev.', nullText: '', noFilter: true, styles: { width: '70px', 'text-align': 'center' } },
-                    [twcFile.Fields.DESCRIPTION]: { title: 'Description', nullText: '' },
-
-                },
-                dataSource: twcUtils.getFiles({
+            basicInfo.fields.push(
+                getCompanyInfoPanels_documentTable({
+                    label: 'Contractor Files',
                     filters: {
                         'custrecord_twc_file_rectype': 'customrecord_twc_company',
                         'custrecord_twc_file_recid': dataSource.id,
+                        'custrecord_twc_file_type_insurance': 'F',
+                        'custrecord_twc_file_status': { op: '!=', value: twcUtils.FileStatus.Superseded }
                     }
-                }),
-                FieldsInfo: twcFile.FieldsInfo,
-                showToolbar: true,
-                readOnly: editMode || (userInfo.permission.lvl < 3),
-                onColumnInit: (tbl, col) => {
-                    if (col.id == (twcFile.Fields.STATUS + '_name')) {
-                        col.formatValue = (v, fv, d) => {
-                            return twcUtils.getFileStatusHtml(d[twcFile.Fields.STATUS], 'twc-record-status-row')
-                        }
-                    }
-                }
-            });
+                }, userInfo, editMode)
+            );
+            // basicInfo.fields.push({
+            //     id: `${twcFile.Type}`, label: 'Contractor Files',
+            //     fields: {
+            //         ['preview_link']: { title: '', noFilter: true, noSort: true, styles: { width: '50px' } },
+            //         [twcFile.Fields.CREATED]: { title: 'Uploaded', type: 'date', styles: { width: '120px' } },
+            //         [twcFile.Fields.STATUS + '_name']: { title: 'Status', styles: { width: '120px', 'padding': '3px' } },
+            //         [twcFile.Fields.R_TYPE + '_name']: { title: 'Type', styles: { width: '150px' } },
+            //         [twcFile.Fields.NAME]: { title: 'File Name', styles: { width: '350px' } },
+            //         [twcFile.Fields.REVISION]: { title: 'Rev.', nullText: '', noFilter: true, styles: { width: '70px', 'text-align': 'center' } },
+            //         [twcFile.Fields.DESCRIPTION]: { title: 'Description', nullText: '' },
+
+            //     },
+            //     dataSource: twcUtils.getFiles({
+            //         filters: {
+            //             'custrecord_twc_file_rectype': 'customrecord_twc_company',
+            //             'custrecord_twc_file_recid': dataSource.id,
+            //             'custrecord_twc_file_type_insurance': 'F'
+            //         }
+            //     }),
+            //     FieldsInfo: twcFile.FieldsInfo,
+            //     showToolbar: true,
+            //     readOnly: editMode || (userInfo.permission.lvl < 3),
+            //     onColumnInit: (tbl, col) => {
+            //         if (col.id == (twcFile.Fields.STATUS + '_name')) {
+            //             col.formatValue = (v, fv, d) => {
+            //                 return twcUtils.getFileStatusHtml(d[twcFile.Fields.STATUS], 'twc-record-status-row')
+            //             }
+            //         }
+            //     }
+            // });
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
@@ -321,15 +340,49 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
-        function getCompanyChildRecord(company, childRecord, userInfo) {
+        function getCompanyInfoPanels_documentTable(options, userInfo, editMode) {
+            return {
+                id: `${twcFile.Type}`,
+                label: options.label,
+                fields: {
+                    ['preview_link']: { title: '', noFilter: true, noSort: true, styles: { width: '50px' } },
+                    [twcFile.Fields.CREATED]: { title: 'Uploaded', type: 'date', styles: { width: '120px' } },
+                    [twcFile.Fields.STATUS + '_name']: { title: 'Status', styles: { width: '120px', 'padding': '3px' } },
+                    [twcFile.Fields.R_TYPE + '_name']: { title: 'Type', styles: { width: '150px' } },
+                    [twcFile.Fields.NAME]: { title: 'File Name', styles: { width: '350px' } },
+                    [twcFile.Fields.REVISION]: { title: 'Rev.', nullText: '', noFilter: true, styles: { width: '70px', 'text-align': 'center' } },
+                    [twcFile.Fields.DESCRIPTION]: { title: 'Description', nullText: '' },
+
+                },
+                dataSource: twcUtils.getFiles({ filters: options.filters }),
+                FieldsInfo: twcFile.FieldsInfo,
+                showToolbar: true,
+                readOnly: editMode || (userInfo.permission.lvl < 3),
+                onColumnInit: (tbl, col) => {
+                    if (col.id == (twcFile.Fields.STATUS + '_name')) {
+                        col.formatValue = (v, fv, d) => {
+                            return twcUtils.getFileStatusHtml(d[twcFile.Fields.STATUS], 'twc-record-status-row')
+                        }
+                    }
+                }
+            }
+        }
+
+        function getCompanyChildRecord(company, childRecord, userInfo, isInsurance) {
             var fieldGroup = [];
             if (childRecord.type == twcProfile.Type) {
                 fieldGroup = twcProfileUI.getUIFields(childRecord, userInfo);
             } else if (childRecord.type == twcFile.Type) {
+                var filters = '';
+                if (isInsurance) {
+                    filters = "and t.custrecord_twc_file_type_insurance = 'T'"
+                } else {
+                    filters = "and (t.custrecord_twc_file_type_hs= 'T' or t.custrecord_twc_file_type_method = 'T')"
+                }
                 fieldGroup = twcFileUI.getUIFields(childRecord, userInfo,
                     {
                         company: true,
-                        filters: "and (t.custrecord_twc_file_type_hs= 'T' or t.custrecord_twc_file_type_method = 'T' or t.custrecord_twc_file_type_insurance = 'T')"
+                        filters: filters
                     }
                 );
             } else {

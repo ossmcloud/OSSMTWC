@@ -101,7 +101,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#form = twcUIPanel.ui(res);
                 this.#form.on('change', e => { this.setFormState(e); })
                 this.setFormState();
-                
+
                 this.#form.getControl('srf-pick-from-library').on('click', e => {
                     var itemType = this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).value;
                     this.pickFromLibrary(this.#srfItem[twcSrfItem.Fields.STEP_TYPE], itemType, (pickedEqLib) => { this.setFormEqLibState(pickedEqLib.e.rowsData[0]) })
@@ -116,7 +116,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
 
                 var relatedEqTable = this.#form.getControl('srf-related-eq-table');
+                
                 if (relatedEqTable) {
+                    // @@NOTE: we call the render now because we want to make sure the .data property of table "relatedEqTable" is populated with a "reference" to this.#srfItem.relatedItems
+                    //         this is because, for an exiting SRF, the 1st time this pop-up is loaded the table is rendered on the server so the 'table.data' collection is not the same s what's in memory
+                    relatedEqTable.render(this.#srfItem.relatedItems, true)
+
                     relatedEqTable.onToolbarClick = e => {
                         var srfNewRelatedItem = null;
                         if (e.action == 'add-new') {
@@ -226,8 +231,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
 
                     var pickFromLb = cfg?.pick_from_library == 'T';
-                    jQuery('#srf-pick-from-library-msg').html(cfg?.user_notes || '')
-                    jQuery('#srf-pick-from-library-msg').parent().css('display', cfg?.user_notes ? 'block' : 'none');
+                    this.#form.ui.find('#srf-pick-from-library-msg').html(cfg?.user_notes || '')
+                    this.#form.ui.find('#srf-pick-from-library-msg').parent().css('display', cfg?.user_notes ? 'block' : 'none');
 
                     this.#form.getControl('srf-pick-from-library').hide = !pickFromLb || (reqType == twcSrfItem.RequestType.REMOVE);
 
@@ -494,13 +499,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     } else {
                         this.ui.getControl('open-workflow-button')?.on('click', e => {
-                            window.open(core.url.script('otwc_spacerequest_sl', { recId: this.data.siteRequestInfo.id, wkf: 'T' }));
+                            this.#workflowForm = twcSrfWorkflowEngineUI.getForm(this, { srf: this.data.siteRequestInfo.id })
+                            this.#workflowForm.popUp();
                         });
 
                         this.ui.getControl('view-workflow-button')?.on('click', e => {
-                            this.#workflowForm = twcSrfWorkflowEngineUI.getForm(this, { srf: this.data.siteRequestInfo.id })
-                            this.#workflowForm.popUp();
-                            
+                            window.open(core.url.script('otwc_spacerequest_sl', { recId: this.data.siteRequestInfo.id, wkf: 'T' }));
                         })
 
                         this.ui.getControl('attach-file')?.on('click', e => {

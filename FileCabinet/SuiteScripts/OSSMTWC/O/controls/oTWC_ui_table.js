@@ -771,7 +771,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             }
 
 
-
+            get options() { return this.#options; }
             get type() { return ctrlBase.CTRL_TYPE.TABLE; }
             get id() { return this.#tableId; }
 

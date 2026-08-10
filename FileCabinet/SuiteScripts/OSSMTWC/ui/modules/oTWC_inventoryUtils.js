@@ -17,7 +17,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     </div>
                     <div class="twc-border">
                         <div id="twc-google-map-filters"  class="twc-animate-height" style="max-height: 59vh; overflow: auto;">
-                            <h3 class="twc">Site Inventory</h3>
+                            <h3 class="twc">Equipment</h3>
                             <div class="twc-div-table-r">
                                 <div>
                                     {FILTER_NAME}

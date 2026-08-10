@@ -154,7 +154,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 var company = twcCompany.get(options.company.id);
                 company.copyFromObject(options.company);
                 var childRecord = getCompanyChildRecord(options, userInfo);
-                return twcCompanyUI.getCompanyChildRecord(company, childRecord, userInfo);
+                return twcCompanyUI.getCompanyChildRecord(company, childRecord, userInfo, options.isInsurance);
             },
 
             saveCompanyProfile(payload) {
