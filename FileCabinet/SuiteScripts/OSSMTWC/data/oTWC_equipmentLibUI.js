@@ -19,7 +19,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 { field: twcEqLib.Fields.WIDTH_MM, title: 'Width<br />(mm)', type: 'int' },
                 { field: twcEqLib.Fields.HEIGHTDEPTH_MM, title: 'Depth<br />(mm)', type: 'int' },
                 { field: twcEqLib.Fields.WEIGHT_KG, title: 'Weight<br />(Kg)', type: 'float' },
-                { field: twcEqLib.Fields.VOLTAGE_TYPE + '_name', title: 'Voltage<br />Type', styles: {'text-align': 'center'} },
+                { field: twcEqLib.Fields.VOLTAGE_TYPE + '_name', title: 'Voltage<br />Type', styles: { 'text-align': 'center' } },
                 { field: twcEqLib.Fields.ALIAS, title: 'Alias' },
             ];
             return eqLibFields;
@@ -38,11 +38,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 { libField: null, eqField: twcSrfItem.Fields.HEIGHT_ON_TOWER, canEdit: true },
                 { libField: twcEqLib.Fields.WEIGHT_KG, eqField: twcSrfItem.Fields.WEIGHT_KG, canEdit: true },
 
-                { libField: twcEqLib.Fields.VOLTAGE_TYPE, eqField: twcSrfItem.Fields.VOLTAGE_TYPE, tmeOnly: true, canEdit: true },
-                { libField: null, eqField: twcSrfItem.Fields.AZIMUTH, tmeOnly: true, canEdit: true },
-                { libField: null, eqField: twcSrfItem.Fields.B_END, tmeOnly: true, canEdit: true },
-                { libField: null, eqField: twcSrfItem.Fields.CUSTOMER_REF, tmeOnly: true, canEdit: true },
-                
+                { libField: twcEqLib.Fields.VOLTAGE_TYPE, eqField: twcSrfItem.Fields.VOLTAGE_TYPE, canEdit: true },
+                { libField: null, eqField: twcSrfItem.Fields.AZIMUTH, canEdit: true },
+                { libField: null, eqField: twcSrfItem.Fields.B_END, canEdit: true },
+                { libField: null, eqField: twcSrfItem.Fields.CUSTOMER_REF, canEdit: true },
+
             ];
             return map;
         }

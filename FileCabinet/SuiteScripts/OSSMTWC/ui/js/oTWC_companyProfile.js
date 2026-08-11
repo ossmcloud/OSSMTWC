@@ -117,6 +117,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
 
                 this.ui.on('change', e => {
+                    if (e.id == 'twc-navigation-select') { return; }
                     this.#changes[e.id] = e.value;
                     this.dirty = true
                     if (e.id.startsWith('custrecord_twc_co_el_') || e.id.startsWith('custrecord_twc_co_pl_') || e.id.startsWith('custrecord_twc_co_pi_')) {
