@@ -632,7 +632,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return twcConfig.getFields(recordType);
         }
 
-        function getLookUpTableValues(recordType, additionalFilters) {
+        function getLookUpTableValues(recordType, additionalFilters, orderByField) {
             var idField = 'id'; var nameField = 'name'; var isInactive = "and isinactive = 'F'";
             if (!recordType.startsWith('customrecord')) {
                 var nsTable = getNsTable(recordType);
@@ -640,7 +640,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 nameField = nsTable.nameField;
                 if (!nsTable.isInactive) { isInactive = ''; }
             }
-            return coreSQL.run(`select ${idField} as value, ${nameField} as text from ${recordType} where 1 = 1 ${isInactive} ${additionalFilters || ''} order by ${nameField}`);
+            return coreSQL.run(`select ${idField} as value, ${nameField} as text from ${recordType} where 1 = 1 ${isInactive} ${additionalFilters || ''} order by ${orderByField || nameField}`);
         }
 
         function getSiteNames(userInfo) {
@@ -672,6 +672,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getCurrencies() {
             return getLookUpTableValues('currency');
+        }
+
+        function getVoltageTypes() {
+            return getLookUpTableValues('customrecord_twc_equip_voltage_type', null, 'custrecord_twc_equip_voltage_type_sort');
         }
 
 
@@ -1568,6 +1572,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getCompanyInsuranceDetails: getCompanyInsuranceDetails,
             getOperatorSiteId: getOperatorSiteId,
 
+            getVoltageTypes: getVoltageTypes,
+            
             formatLongDate: formatLongDate,
             fromJsToNs: fromJsToNs,
             fromNsToJs: fromNsToJs,

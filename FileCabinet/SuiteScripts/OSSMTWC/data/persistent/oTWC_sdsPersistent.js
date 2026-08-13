@@ -18,7 +18,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ADDITIONAL_SRF_CONIDITONS: 'custrecord_twc_sds_add_cond',
             POWER_SUPPLY_COMMENTS: 'custrecord_twc_sds_power_supply_notes',
             FIBRE_RIGHTS: 'custrecord_twc_sds_fibre_rights',
-            FIBRE_DUCT_ROUTE: 'custrecord_twc_sds_fibre_drawing',
             FIBRE_DUCT_ROUTE_REFERENCE: 'custrecord_twc_sds_fibre_drawing_ref',
             FIBRE_PROVIDER: 'custrecord_twc_sds_fibre_provider',
             FIBRE_OTHER_PROVIDER: 'custrecord_twc_sds_fibre_provider_other',
@@ -50,7 +49,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ADDITIONAL_SRF_CONIDITONS: { name: 'custrecord_twc_sds_add_cond', type: 'text', alias: 'additionalSRFConiditons', display: 'normal', mandatory: false },
             POWER_SUPPLY_COMMENTS: { name: 'custrecord_twc_sds_power_supply_notes', type: 'text', alias: 'powerSupplyComments', display: 'normal', mandatory: false },
             FIBRE_RIGHTS: { name: 'custrecord_twc_sds_fibre_rights', type: 'checkbox', alias: 'fibreRights', display: 'normal', mandatory: false },
-            FIBRE_DUCT_ROUTE: { name: 'custrecord_twc_sds_fibre_drawing', type: 'select', alias: 'fibreDuctRoute', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
             FIBRE_DUCT_ROUTE_REFERENCE: { name: 'custrecord_twc_sds_fibre_drawing_ref', type: 'text', alias: 'fibreDuctRouteReference', display: 'normal', mandatory: false },
             FIBRE_PROVIDER: { name: 'custrecord_twc_sds_fibre_provider', type: 'select', alias: 'fibreProvider', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_svc_provide' },
             FIBRE_OTHER_PROVIDER: { name: 'custrecord_twc_sds_fibre_provider_other', type: 'text', alias: 'fibreOtherProvider', display: 'normal', mandatory: false },
@@ -150,13 +148,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set fibreRights(value) {
                 this.set(_recordFields.FIBRE_RIGHTS, value)
             }
-            
-            get fibreDuctRoute() {
-                return this.get(_recordFields.FIBRE_DUCT_ROUTE);
-            } set fibreDuctRoute(value) {
-                this.set(_recordFields.FIBRE_DUCT_ROUTE, value)
-            }
-            get fibreDuctRouteName() { return this.getText(_recordFields.FIBRE_DUCT_ROUTE); }
             
             get fibreDuctRouteReference() {
                 return this.get(_recordFields.FIBRE_DUCT_ROUTE_REFERENCE);

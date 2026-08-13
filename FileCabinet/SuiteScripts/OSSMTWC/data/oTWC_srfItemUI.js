@@ -15,7 +15,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var siteInfraStructures = twcUtils.getInfraStructures({ siteId: srf.site }, userInfo.isEmployee);
             var siteStructures = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Structure })
-
+            var voltageTypes= twcUtils.getVoltageTypes( userInfo);
 
             var basicInfo = { id: 'srf-item-info', title: 'Basic Info', fields: [] };
             fieldGroup.controls.push(basicInfo);
@@ -51,15 +51,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.DEPTH_MM, label: 'Depth (mm)', mandatory: true })
                 if (srfItem.stepType != twcSrfItem.StepType.GIE) {
                     dimensionInfo.fields.push({ id: twcSrfItem.Fields.WEIGHT_KG, label: 'Weight (kg)', mandatory: true })
-                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_TYPE, label: 'Voltage Type', mandatory: true })
-                    //dimensionInfo.fields.push({ id: twcSrfItem.Fields.HEIGHT_ON_TOWER, label: 'Height on Tower', mandatory: true })
+                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_TYPE, label: 'Voltage Type', dataSource: voltageTypes, mandatory: true })
                 }
                 dimensionInfo.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: twcSrfItem.Fields.EQUIPMENT_LIBRARY, label: 'Eq. Lib', hide: true })
             }
 
             var specInfo = { id: 'srf-item-spec', title: 'Deployment Details', hide: isNewRecord, fields: [] };
             if (srfItem.stepType == twcSrfItem.StepType.TME || srfItem.stepType == twcSrfItem.StepType.ATME) {
-                // specInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_TYPE, label: 'Voltage Type', mandatory: true })
                 specInfo.fields.push({ id: twcSrfItem.Fields.HEIGHT_ON_TOWER, label: 'Height on Tower', mandatory: true })
                 specInfo.fields.push({ id: twcSrfItem.Fields.AZIMUTH, label: 'Azimuth', min: 0, max: 360, mandatory: true })
                 specInfo.fields.push({ id: twcSrfItem.Fields.B_END, label: 'B-End', mandatory: true })

@@ -40,8 +40,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `);
 
             var srfDrawingFiles = twcSdsEngine.getSrfDrawingFiles(srf.id);
-            var drawingFiles = twcSdsEngine.getSiteDrawingFiles(srf[twcSrf.Fields.SITE]);
-
+            
             return jQuery(`
                 <div>
                     <div style=" display:flex; align-items:flex-start;">
@@ -86,8 +85,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 </div>
                             </div>
                             <div>
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, label: 'Fibre Duct Route', id: twcSds.Fields.FIBRE_DUCT_ROUTE, dataSource: drawingFiles, width: 'calc(50% - 5px)' })}
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, label: 'Drawing Reference', id: twcSds.Fields.FIBRE_DUCT_ROUTE_REFERENCE, width: 'calc(50% - 5px)' })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, label: 'Fibre Duct Route', id: twcSds.Fields.FIBRE_DUCT_ROUTE_REFERENCE, width: '100%' })}
                             </div>
                             <div>
                                 ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Notes / Conditions', id: twcSds.Fields.FIBRE_NOTES, width: '100%', rows: 7 })}
@@ -148,7 +146,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
 
                 form.getControl(twcSds.Fields.FIBRE_RIGHTS).on('change', e => {
-                    form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE).disabled = !e.value;
                     form.getControl(twcSds.Fields.FIBRE_DUCT_ROUTE_REFERENCE).disabled = !e.value;
                     form.getControl(twcSds.Fields.FIBRE_PROVIDER).disabled = !e.value;
                     form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).disabled = !e.value;

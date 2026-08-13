@@ -147,8 +147,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 <script async defer src="https://maps.googleapis.com/maps/api/js?key=${twcConfig.cfg().GOOGLE_API_KEY}&loading=async"></script>
                 <div style="width: 20%; min-width: 450px; border: 1px solid var(--grid-color);">
                     <div id="twc-site-info-panel" style="overflow: auto;">
-                        <div style="position: sticky; top: 0px; z-index: 1099; background-color: var(--main-bkgd-color);">
-                            <h1 style="margin: 0px;">{SITE_NAME}</h1>
+                        <div style="position: sticky; top: 0px; z-index: 1099; background-color: var(--main-bkgd-color); display: table; width: 100%;">
+                            <h1 style="margin: 0px; display: table-cell;">{SITE_NAME}</h1>
+                            <span style="vertical-align: middle; display: table-cell; width: 20px; text-align: center; cursor: pointer;" id="twc-site-info-panel-collapse">${twcIcons.get('arrowLeftBox', 24)}</span>
                         </div>
 
                         <div id="twc-google-map-container" class="twc-border" style="height: 250px; width: 100%; text-align: center;">
@@ -161,7 +162,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             {SITE_MAIN_INFO}
                         </div>
                     </div>
+                    <div id="twc-site-info-panel-hidden" style="display: none;">
+                        <span style="vertical-align: middle; display: table-cell; width: 20px; text-align: center; cursor: pointer;" id="twc-site-info-panel-uncollapse">${twcIcons.get('arrowRightBox', 24)}</span>
+                        <br />
+                        <span class="twc-vertical-label" style="margin-left: -60px;  margin-right: -60px;  margin-top: 50px; font-weight: bold;}">{SITE_NAME}</span>                
+                    </div>
                 </div>
+
                 <script>
                     jQuery('#twc-site-info-panel').height(jQuery('.twc-container-outer').height() - 14)
                 </script>

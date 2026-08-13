@@ -957,7 +957,7 @@ div.twc-vertical-pane:hover {
 }
 
 span.twc-vertical-label {
-    transform: rotate(90deg);
+    transform: rotate(-90deg);
     display: block;
     white-space: nowrap;
     padding-left: 17px;
@@ -2736,3 +2736,5 @@ div.twc-dashboard-content {
     font-size: 2em;
     cursor: pointer;
 }
+
+
