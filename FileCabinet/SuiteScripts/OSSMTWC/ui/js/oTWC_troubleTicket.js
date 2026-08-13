@@ -185,6 +185,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.getControl('tk-add-file')?.on('click', e => {
                     this.uploadPhotos();
                 })
+                this.ui.getControl('open-support-case')?.on('click', e => {
+                    window.open(core.url.record('supportcase', this.data.trblTktInfo[twcTkt.Fields.CASE_REFERENCE]));
+                })
 
             }
 

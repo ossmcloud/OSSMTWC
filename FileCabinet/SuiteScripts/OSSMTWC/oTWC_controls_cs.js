@@ -38,13 +38,13 @@ define(['N/xml','/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'S
 
 
 
-        function deleteSrf(id) {
+        function deleteSds(id) {
 
-            coreSQL.each(`select id from customrecord_twc_srf_itm where custrecord_twc_srf_itm_srf = ${id}`, srfItem => {
-                recu.del('customrecord_twc_srf_itm', srfItem.id)
+            coreSQL.each(`select id from customrecord_twc_sds_item where custrecord_twc_sds_item_parent = ${id}`, sdsItem => {
+                recu.del('customrecord_twc_sds_item', sdsItem.id)
             })
 
-            recu.del('customrecord_twc_srf', id)
+            recu.del('customrecord_twc_sds', id)
 
         }
 
@@ -53,7 +53,10 @@ define(['N/xml','/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'S
             pageInit: pageInit,
             deleteAllSrf: deleteAllSrf,
             testFunction() {
+
                 try {
+
+                    deleteSds(30)
                     //recu.submit('customrecord_twc_srf', 28, 'custrecord_twc_srf_sds_form_data', null);
 
                     //twcSiteAccessUtils.deleteSaf(147);
@@ -67,7 +70,7 @@ define(['N/xml','/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'S
                     //console.log(twcSdsEngine.getSrfInfo(39))
                     //twcSdsEngine.getSdsEquipments(25)
 
-                    console.log(xml.escape({ xmlText: '/core/media/media.nl?id=25190&c=9061443_SB1&h=0x8UEtEYj_WI0zAlZrm7m_qYnvhXfgsOCm6N2VuCknGLV6DH&_xt=.pdf' }));
+                    // console.log(xml.escape({ xmlText: '/core/media/media.nl?id=25190&c=9061443_SB1&h=0x8UEtEYj_WI0zAlZrm7m_qYnvhXfgsOCm6N2VuCknGLV6DH&_xt=.pdf' }));
 
                     // console.log(
                     //     twcSiteRequestUtils.initEquipment({

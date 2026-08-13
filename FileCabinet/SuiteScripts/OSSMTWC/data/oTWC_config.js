@@ -8,11 +8,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         const CUSTOM_FIELDS = {
             EMP: {
                 TWC_POWER_USER: 'custentity_twc_prj_power_user'
+            },
+            CASE: {
+                TKT_RECORD: 'custevent_twc_trbl_tkt'
             }
         }
 
-        // @@HARDCODED: 
+        // @@HARDCODED: @@GO-LIVE :: these map to internal ids
         const TOWERCOM_ENTITY = 822;
+        const TKT_CASE_PROFILE = 1;
+        const TKT_CASE_STATUS = 1;
 
         const FIELD_ENTITY_USER_PREF = 'custentity_twc_userpref';
 
@@ -340,12 +345,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         return {
+            Fields: CUSTOM_FIELDS,
+            
             ROOT_FILE_FOLDER: 'TL Files', // @@NOTE: this is duplicated on twc_utils.js
             CONTRACTOR_FLAG: CONTRACTOR_FLAG,
             CUSTOMER_FLAG: CUSTOMER_FLAG,
             PERMISSION_LEVEL: permissions.LEVEL,
             PERMISSION_FEATURE: permissions.FEATURE,
             PORTLET_STYLES_PROPS: { Height: '600px' },
+            TOWERCOM_ENTITY: TOWERCOM_ENTITY,
+            TKT_CASE_PROFILE: TKT_CASE_PROFILE,
+            TKT_CASE_STATUS: TKT_CASE_STATUS,
+
+            
 
             userInfo: getUserInfo,
             getUserPref: getUserPref,

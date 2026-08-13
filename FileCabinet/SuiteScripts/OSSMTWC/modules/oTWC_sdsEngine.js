@@ -153,6 +153,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 sds.site = srf[twcSrf.Fields.SITE];
                 sds.customer = srf[twcSrf.Fields.CUSTOMER];
                 sds.status = twcUtils.SdsStatus.Draft;
+                sds.powerSupplyComments = srf[twcSrf.Fields.POWER_NOTES];
 
                 var srfReview = twcUtils.getSrfReviewRecord({ srf: srf.id });
                 if (srfReview) {

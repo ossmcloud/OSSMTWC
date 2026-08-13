@@ -279,10 +279,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         // @@NOTE: this is a bit dirty but will do for now
                         generateSdsButton.input.on('click', async e => {
                             try {
+                                generateSdsButton.disabled = true;
                                 await twcSdsEngineUI.openDialog(this.#workflowForm.page, this.#workflowForm.data.siteRequestInfo, () => {
                                     this.#form.getControl('custrecord_twc_srf_lic_pack_prod').value = TODAY;
+                                    generateSdsButton.disabled = false;
                                 })
                             } catch (error) {
+                                generateSdsButton.disabled = false;
                                 dialog.error(error)
                             }
                         })

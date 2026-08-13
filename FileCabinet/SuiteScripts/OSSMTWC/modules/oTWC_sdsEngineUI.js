@@ -167,6 +167,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 form.getControl(twcSds.Fields.AGREEMENT_CONDITIONS).on('change', e => {
                     formData.set(twcSds.Fields.AGREEMENT_CONDITIONS_DATA, '')
+                    manageAgreementConditions(form.getControl(twcSds.Fields.AGREEMENT_CONDITIONS).valueObj, formData)
                 });
                 form.getControl('set-conditions').on('click', e => {
                     try {

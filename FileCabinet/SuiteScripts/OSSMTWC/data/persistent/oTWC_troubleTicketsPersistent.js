@@ -24,6 +24,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CORRECTIVE_ACTION: 'custrecord_twc_trbl_tkt_corrective_act',
             SCHEDULED_COMPLETION_DATE: 'custrecord_twc_trbl_tkt_sch_compltn_date',
             CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE: 'custrecord_twc_trbl_tkt_cor_act_tkn_root',
+            CASE_REFERENCE: 'custrecord_twc_trbl_tkt_case',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -48,6 +49,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CORRECTIVE_ACTION: { name: 'custrecord_twc_trbl_tkt_corrective_act', type: 'date', alias: 'correctiveAction', display: 'normal', mandatory: false },
             SCHEDULED_COMPLETION_DATE: { name: 'custrecord_twc_trbl_tkt_sch_compltn_date', type: 'date', alias: 'scheduledCompletionDate', display: 'normal', mandatory: false },
             CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE: { name: 'custrecord_twc_trbl_tkt_cor_act_tkn_root', type: 'clobtext', alias: 'correctiveActionTakeninclRootCause', display: 'normal', mandatory: false },
+            CASE_REFERENCE: { name: 'custrecord_twc_trbl_tkt_case', type: 'select', alias: 'caseReference', display: 'normal', mandatory: false, recordType: '-23' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -174,6 +176,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set correctiveActionTakeninclRootCause(value) {
                 this.set(_recordFields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE, value)
             }
+            
+            get caseReference() {
+                return this.get(_recordFields.CASE_REFERENCE);
+            } set caseReference(value) {
+                this.set(_recordFields.CASE_REFERENCE, value)
+            }
+            get caseReferenceName() { return this.getText(_recordFields.CASE_REFERENCE); }
             
             get created() {
                 return this.get(_recordFields.CREATED);
