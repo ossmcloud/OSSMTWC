@@ -262,7 +262,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (stepNotRequired) { return; }
 
                     if (item.formData) {
+                        var recordType = ''; var fields = []; var values = [];
                         if (item.formData.record == twcSrfReview.Type) {
+                            
                             var reviewRecordInfo = twcUtils.getSrfReviewRecord(options);
                             var reviewRecord = twcSrfReview.get(reviewRecordInfo.id);
                             reviewRecord.name = `R${reviewRecordInfo.srf_name}_${reviewRecordInfo.feedback_loop_count}`;
@@ -271,6 +273,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 reviewRecord.reviewIteration = reviewRecordInfo.feedback_loop_count;
                             }
                             for (var k in item.formData) {
+                                // @@NOTE: the form is generally associated to one record but one or more field could relate to a different record (srf or workflow)
+                                //         these fields are identified by the fact that the id will be [table_name]-[field_name]
+                                // @@IMPORTANT: @@REVIEW: this only supports one 'other' record type
+                                if (k.indexOf('-') > 0) {
+                                    recordType = k.split('-');
+                                    fields.push(recordType[1]);
+                                    values.push(item.formData[k]);
+                                    recordType = recordType[0];
+                                    continue;
+                                }
+                                
                                 if (!reviewRecord.hasField(k)) { continue; }
                                 reviewRecord.set(k, item.formData[k]);
                             }
@@ -284,7 +297,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                             recu.submit(twcSrfWorkflowItem.Type, item.id, [twcSrfWorkflowItem.Fields.REVIEW, twcSrfWorkflowItem.Fields.REVIEW_PASSED], [reviewRecord.id, item.formData[item.formData.passField]]);
                         } else {
-                            var fields = []; var values = [];
+                            recordType = item.formData.record;
                             for (var k in item.formData) {
                                 if (!k.startsWith('cust')) { continue; }
                                 fields.push(k);
@@ -298,12 +311,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     values.push(val);
                                 }
                             }
-                            var recordId = null;
-                            if (item.formData.record == twcSrf.Type) { recordId = options.srf; }
-                            if (item.formData.record == twcSrfWorkflow.Type) { recordId = options.wkf; }
-                            recu.submit(item.formData.record, recordId, fields, values)
+                            
                         }
 
+                        if (recordType && fields.length > 0) {
+                            var recordId = null;
+                            if (recordType == twcSrf.Type) { recordId = options.srf; }
+                            if (recordType == twcSrfWorkflow.Type) { recordId = options.wkf; }
+                            recu.submit(recordType, recordId, fields, values)
+                        }
                     }
 
                 })
@@ -427,6 +443,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         srf.custrecord_twc_srf_lic_pack_sign_by,
                         TO_CHAR(srf.custrecord_twc_srf_lic_pack_exec, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_exec,
                         srf.custrecord_twc_srf_lic_pack_exec_by,
+                        srf.custrecord_twc_srf_type, srf.custrecord_twc_srf_reveue_impact
                         
                     
                 from    ${twcSrfWorkflow.Type} w
@@ -450,7 +467,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         ws.custrecord_twc_srf_wks_next as next_stage, ws.custrecord_twc_srf_wks_next_pick as next_stage_pick,
                         ws.custrecord_twc_srf_wks_status_to as set_status, BUILTIN.DF(ws.custrecord_twc_srf_wks_status_to) as set_status_name,
                         ws.custrecord_twc_srf_wks_form as form_data, ws.custrecord_twc_srf_wks_is_review as is_review, ws.custrecord_twc_srf_wks_is_review_passf review_pass_field,
-                        ws.custrecord_twc_srf_wks_assign as can_assign, ws.custrecord_twc_srf_wks_can_skip as can_skip,
+                        ws.custrecord_twc_srf_wks_can_edit as can_edit, ws.custrecord_twc_srf_wks_assign as can_assign, ws.custrecord_twc_srf_wks_can_skip as can_skip,
                         ws.custrecord_twc_srf_wks_hide as stage_hidden, ws.custrecord_twc_srf_wks_loop as stage_loop, 
                         ws.custrecord_twc_srf_wks_is_last as is_last_stage,
 

@@ -22,6 +22,10 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 var safIsInThePast = context.request.parameters.recId ? pageData.siteAccessInfo[twcSaf.Fields.START_TIME_BLOCK].split(' ')[0] < twcUtils.today() : false;
                 var safRequiresSrf = twcUtils.getSafType(pageData.siteAccessInfo[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';
 
+                if (core.me()) {
+                    safIsInThePast=false
+                }
+
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteAccessInfo.siteId || context.request.parameters.siteId, pageData.userInfo);
                 
                 pageData.timeBlocks = twcUtils.getSafTimeBlocks();
@@ -51,7 +55,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 if (pageData.editMode) { pageData.forceViewOnly = true; }
 
                 //
-                var canChangeStatus = (pageData.userInfo.isEmployee) ? safStatus != twcSaf.Status.Complete : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Rejected);
+                var canChangeStatus = (pageData.userInfo.isEmployee) ? safStatus != twcSaf.Status.Complete : false;
                 if (core.me()) { canChangeStatus = true; }
                 if (canChangeStatus) {
                     pageData.allowedStatues = [];

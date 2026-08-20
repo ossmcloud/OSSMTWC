@@ -114,22 +114,42 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     from customrecord_twc_site 
                     where id = ${siteID}`)
 
-            srfInfo.srfItems = coreSql.run(`
-                select  eq.id, BUILTIN.DF(sds.custrecord_twc_sds_srf) as srf_id, eq.custrecord_twc_equip_class as equip_class,
-                        NVL(lsts.custrecord_twc_equip_licence_status_sds, lsts.name) as status, BUILTIN.DF(custrecord_twc_equip_type) as type,
-                        eq.custrecord_twc_equip_description as description, eq.custrecord_twc_equip_length_mm as length,
-                        eq.custrecord_twc_equip_width_mm as width, eq.custrecord_twc_equip_ht_depth_mm as depth,
-                        eq.custrecord_twc_equip_ht_on_twr_m as equip_height, eq.custrecord_twc_equip_weight_kg as weight,
-                        eq.custrecord_twc_equip_azimuth as azimuth, eq.custrecord_twc_equip_b_end as b_end, 
+
+
+            var srfItems = coreSql.run(`
+                select  eq.id, eq.custrecord_twc_equip_parent_tme_id as parent_tme, BUILTIN.DF(sds.custrecord_twc_sds_srf) as srf_id, sdsi.custrecord_twc_sds_item_equipment_class as equip_class,
+                        NVL(lsts.custrecord_twc_equip_licence_status_sds, lsts.name) as status, BUILTIN.DF(sdsi.custrecord_twc_sds_item_equipment_type) as type,
+                        sdsi.custrecord_twc_sds_item_description as description, sdsi.custrecord_twc_sds_item_length as length,
+                        sdsi.custrecord_twc_sds_item_width as width, sdsi.custrecord_twc_sds_item_depth as depth,
+                        sdsi.custrecord_twc_sds_item_height_on_tower as equip_height, sdsi.custrecord_twc_sds_item_weight as weight,
+                        sdsi.custrecord_twc_sds_item_azimuth as azimuth, sdsi.custrecord_twc_sds_item_b_end as b_end, 
                         BUILTIN.DF(eq.custrecord_twc_equip_str) as location,
-                        BUILTIN.DF(eq.custrecord_twc_equip_inv_flag) as inventory_flag
+                        BUILTIN.DF(sdsi.custrecord_twc_sds_item_inventory_flag) as inventory_flag
                 from    customrecord_twc_sds_item sdsi
                 join    customrecord_twc_sds sds on sds.id = sdsi.custrecord_twc_sds_item_parent 
                 join    customrecord_twc_equip eq on eq.id = sdsi.custrecord_twc_sds_item_eq
                 join    customrecord_twc_equip_licence_status lsts on lsts.id = sdsi.custrecord_twc_sds_item_license_status
                 where   sds.custrecord_twc_sds_srf = ${recId}
+                and     sdsi.custrecord_twc_sds_item_include = 'T'
+                order by eq.custrecord_twc_equip_class, sdsi.created
             `)
-            
+
+
+            srfInfo.srfItems = [];
+            core.array.each(srfItems, i => {
+                if (i.equip_class == twcUtils.SrfStepType.TME || i.equip_class == twcUtils.SrfStepType.GIE) {
+                    srfInfo.srfItems.push(i);
+                    i.status = i.status.replaceAll(' ', '<br />')
+                    if (i.equip_class == twcUtils.SrfStepType.TME) {
+                        i.items = srfItems.filter(si => { return si.parent_tme == i.id && si.equip_class == twcUtils.SrfStepType.ATME });
+                        i.feeders = srfItems.filter(si => { return si.parent_tme == i.id && si.equip_class == twcUtils.SrfStepType.FEEDER });
+                        i.atme_count = i.items.length;
+                        i.feeder_count = i.feeders.length;
+                    }
+                    
+                }
+            })
+
 
             return srfInfo;
         }
@@ -179,31 +199,67 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getSdsEquipments(sdsId) {
 
+            var copyFields = {
+                'custrecord_twc_sds_item_equipment_id': 'name',
+                'custrecord_twc_sds_item_site': 'custrecord_twc_equip_site',
+                'custrecord_twc_sds_item_infra': 'custrecord_twc_equip_str',
+                'custrecord_twc_sds_item_install_status': 'custrecordtwc_eq_install_status',
+                'custrecord_twc_sds_item_license_status': 'custrecord_twc_eq_licence_status',
+                'custrecord_twc_sds_item_cust': 'custrecord_twc_equip_customer',
+                'custrecord_twc_sds_item_equipment_class': 'custrecord_twc_equip_class',
+                'custrecord_twc_sds_item_equipment_type': 'custrecord_twc_equip_type',
+                'custrecord_twc_sds_item_make': 'custrecord_twc_equip_make',
+                'custrecord_twc_sds_item_model': 'custrecord_twc_equip_model',
+                'custrecord_twc_sds_item_description': 'custrecord_twc_equip_description',
+                'custrecord_twc_sds_item_length': 'custrecord_twc_equip_length_mm',
+                'custrecord_twc_sds_item_width': 'custrecord_twc_equip_width_mm',
+                'custrecord_twc_sds_item_depth': 'custrecord_twc_equip_ht_depth_mm',
+                'custrecord_twc_sds_item_weight': 'custrecord_twc_equip_weight_kg',
+                'custrecord_twc_sds_item_height_on_tower': 'custrecord_twc_equip_ht_on_twr_m',
+                'custrecord_twc_sds_item_azimuth': 'custrecord_twc_equip_azimuth',
+                'custrecord_twc_sds_item_b_end': 'custrecord_twc_equip_b_end',
+                'custrecord_twc_sds_item_cust_ref': 'custrecord_twc_equip_cust_ref',
+                'custrecord_twc_sds_item_inventory_flag': 'custrecord_twc_equip_inv_flag',
+                'custrecord_twc_sds_item_package': 'custrecord_twc_equip_package',
+            }
+
+            var sqlFields = '';
+            for (var k in copyFields) {
+                sqlFields += `eq.${copyFields[k]}, `;
+            }
+
+
             coreSql.each(`
-                select  eq.id as eq_id, sdsi.id as sds_eq_id,
-                        eq.custrecordtwc_eq_install_status as eq_install_status,
-                        eq.custrecord_twc_eq_licence_status as eq_license_status,
-                        sdsi.custrecord_twc_sds_item_install_status as sds_eq_install_status,
-                        sdsi.custrecord_twc_sds_item_license_status as sds_eq_license_status,
+                select  eq.id as eq_id, sdsi.id as sds_eq_id, srfi.id as srf_eq_id, ${sqlFields}
+                
                 from    customrecord_twc_sds sds 
+                
                 join    customrecord_twc_equip eq on  eq.custrecord_twc_equip_customer = sds.custrecord_twc_sds_cust
                                                 and eq.custrecord_twc_equip_site = sds.custrecord_twc_sds_site
 
                 left join customrecord_twc_sds_item sdsi on  sdsi.custrecord_twc_sds_item_parent = sds.id
                                                         and sdsi.custrecord_twc_sds_item_eq = eq.id
 
+                left join customrecord_twc_srf_itm srfi on srfi.custrecord_twc_srf_itm_srf = sds.custrecord_twc_sds_srf
+                                                       and srfi.custrecord_twc_srf_itm_equip_id = eq.id
+
                 where   sds.id = ${sdsId}
                 order by eq.created, BUILTIN.DF(eq.custrecord_twc_equip_class)
             `, eq => {
 
-                // @@TODO: we should check if something has changed and update the sds eq. table
-                if (eq.sds_eq_id) { return; }
+                // @@TODO: we should check if something has changed and update the sds eq. table???
+                //if (eq.sds_eq_id) { return; }
 
                 var sdsEq = twcSdsEquipment.get(eq.sds_eq_id);
                 sdsEq.sDS = sdsId;
                 sdsEq.equipment = eq.eq_id;
-                sdsEq.installStatus = eq.eq_install_status;
-                sdsEq.licenseStatus = eq.eq_license_status;
+                sdsEq.partofSDS = (eq.srf_eq_id) != null;
+                sdsEq.includeinSDS = true;  // @@TODO:
+
+                for (var k in copyFields) {
+                    sdsEq.set(k, eq[copyFields[k]])
+                }
+            
                 sdsEq.save();
 
             })

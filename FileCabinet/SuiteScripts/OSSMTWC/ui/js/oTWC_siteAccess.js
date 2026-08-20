@@ -370,11 +370,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
                 var requiresSrf = this.ui.getControl('saf-type').valueObj?.requires_srf == 'T';
-                // this.ui.getControl('saf-srf').hide = !requiresSrf;
-                // this.ui.getControl('saf-srf-equip').hide = !requiresSrf;
-                this.ui.getControl('saf-photo-delay').hide = !requiresSrf;
+                var photoDelay = this.ui.getControl('saf-photo-delay');
+                if (photoDelay) { photoDelay.hide = !requiresSrf }
                 this.ui.find('#site-access-step-3c').css('display', requiresSrf ? 'block' : 'none');
-
                 this.ui.find('#site-access-step-3').css('display', showStep3 ? 'block' : 'none');
                 this.ui.find('#site-access-step-4').css('display', showStep3 ? 'block' : 'none');
                 this.ui.find('#site-access-step-5').css('display', showStep3 ? 'block' : 'none');

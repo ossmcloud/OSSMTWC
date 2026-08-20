@@ -11,19 +11,27 @@
                 font-family: Helvetica, sans-serif;
                 color: #333333;
                 font-size: 11px;
+                text-align: left !important;
             }
 
             table {
                 width: 100%;
-                border-collapse: collapse;
+                border-spacing: 0;
             }
 
             td {
-                border: 1px solid #666666;
+                border-bottom: 1px solid #666666;
+                border-right: 1px solid #666666;
                 padding: 4px;
                 vertical-align: top;
+                overflow: hidden;
             }
-
+            td:first-child {
+                border-left: 1px solid #666666;
+            }
+            tr:first-child>td {
+                border-top: 1px solid #666666;
+            }
             
             .sectionHeader {
                 background-color: #AADCFF;
@@ -159,7 +167,7 @@
 
         <!-- TOWER MOUNTED EQUIPMENT -->
         <table style="width:100%; margin-top:14px; font-family:Arial, sans-serif; font-size:10px;">
-
+            <thead>
             <!-- Section Header -->
             <tr>
                 <td class="sectionHeader" colspan="16" align="center" style="text-align:center; font-weight:bold; padding:5px;"> Tower Mounted Equipment </td>
@@ -167,88 +175,128 @@
 
             <!-- Column Headers -->
             <tr class="subHeader" style="text-align:center; font-weight:bold;">
-                <td style="padding:4px;">Status</td>
-                <td style="padding:4px;">SRF ID</td>
-                <td style="padding:4px;">ID</td>
-                <td style="padding:4px;">Type</td>
-                <td style="padding:4px;">Description</td>
-                <td style="padding:4px;">Length<br />(mm)</td>
-                <td style="padding:4px;">Width<br />(mm)</td>
-                <td style="padding:4px;">Depth<br />(mm)</td>
-                <td style="padding:4px;">Equipment<br />Height (m)</td>
-                <td style="padding:4px;">Weight<br />(kg)</td>
-                <td style="padding:4px;">Azimuth</td>
-                <td style="padding:4px;">B-End</td>
-                <td style="padding:4px;">Location</td>
-                <td style="padding:4px;">Inventory<br />Flag</td>
-                <td style="padding:4px;">Atme<br />Count</td>
-                <td style="padding:4px;">Feeder<br />Count</td>
+                <td>Status</td>
+                <td>SRF ID</td>
+                <td>ID</td>
+                <td>Type</td>
+                <td>Description</td>
+                <td>Length<br />(mm)</td>
+                <td>Width<br />(mm)</td>
+                <td>Depth<br />(mm)</td>
+                <td>Equipment<br />Height (m)</td>
+                <td>Weight<br />(kg)</td>
+                <td>Azimuth</td>
+                <td>B-End</td>
+                <td>Location</td>
+                <td>Inventory<br />Flag</td>
+                <td>Atme<br />Count</td>
+                <td>Feeder<br />Count</td>
             </tr>
+            </thead>
 
+            <tbody>
             <#list requestJSON.srfItems as srfItems> 
-            <tr>
                 <#if srfItems.equip_class != "3">
-                    <td style="padding:4px; white-space: nowrap;">${srfItems.status}</td>
-                    <td style="padding:4px;">${srfItems.srf_id}</td>
-                    <td style="padding:4px;">${srfItems.id}</td>
-                    <td style="padding:4px;">${srfItems.type}</td>
-                    <td style="padding:4px;">${srfItems.description}</td>
-                    <td style="padding:4px;">${(srfItems.length!"")?replace("null", "")}</td>
-                    <td style="padding:4px;">${(srfItems.width!"")?replace("null", "")}</td>
-                    <td style="padding:4px;">${(srfItems.depth!"")?replace("null", "")}</td>
-                    <td style="padding:4px;">${(srfItems.equip_height!"")?replace("null", "")}</td>
-                    <td style="padding:4px;">${(srfItems.weight!"")?replace("null", "")}</td>
-                    <td style="padding:4px;">${(srfItems.azimuth!"")?replace("null", "")}</td>
-                    <td style="padding:4px;">${(srfItems.b_end!"")?replace("null", "")}</td>
-                    <td style="padding:4px;">${(srfItems.location!"")?replace("null", "")}</td>
-                    <td style="padding:4px;">${(srfItems.inventory_flag!"")?replace("null", "")}</td>
-                    <td style="padding:4px;">
-                    <#if srfItems.equip_class == "2" > 
-                        1
-                    <#else>
-                        0
-                    </#if>
-                    </td>
-                    <td style="padding:4px;">${(srfItems.feeder_count!"")?replace("null", "")}</td>
+                    <tr style="font-weight: bold;">
+                        <td><p style="text-align: left;">${srfItems.status}</p></td>
+                        <td>${srfItems.srf_id}</td>
+                        <td>${srfItems.id}</td>
+                        <td>${srfItems.type}</td>
+                        <td><p style="text-align: left;padding-left: 4px;">${(srfItems.description!"")?replace("null", "")}</p></td>
+                        <td>${(srfItems.length!"")?replace("null", "")}</td>
+                        <td>${(srfItems.width!"")?replace("null", "")}</td>
+                        <td>${(srfItems.depth!"")?replace("null", "")}</td>
+                        <td>${(srfItems.equip_height!"")?replace("null", "")}</td>
+                        <td>${(srfItems.weight!"")?replace("null", "")}</td>
+                        <td>${(srfItems.azimuth!"")?replace("null", "")}</td>
+                        <td>${(srfItems.b_end!"")?replace("null", "")}</td>
+                        <td>${(srfItems.location!"")?replace("null", "")}</td>
+                        <td>${(srfItems.inventory_flag!"")?replace("null", "")}</td>
+                        <td>${(srfItems.atme_count!"")?replace("null", "")}</td>
+                        <td>${(srfItems.feeder_count!"")?replace("null", "")}</td>
+                    </tr>
+                    <#list srfItems.items as srfSubItem> 
+                        <tr>
+                            <td><p style="text-align: left; padding-left: 4px;">${srfSubItem.status}</p></td>
+                            <td>${srfSubItem.srf_id}</td>
+                            <td>${srfSubItem.id}</td>
+                            <td>${srfSubItem.type}</td>
+                            <td><p style="text-align: left;padding-left: 4px;">${(srfSubItem.description!"")?replace("null", "")}</p></td>
+                            <td>${(srfSubItem.length!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.width!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.depth!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.equip_height!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.weight!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.azimuth!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.b_end!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.location!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.inventory_flag!"")?replace("null", "")}</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </#list>
+                    <#list srfItems.feeders as srfSubItem>
+                        <tr>
+                            <td><p style="text-align: left;padding-left: 4px;">${srfSubItem.status}</p></td>
+                            <td>${srfSubItem.srf_id}</td>
+                            <td>${srfSubItem.id}</td>
+                            <td>${srfSubItem.type}</td>
+                            <td><p style="text-align: left;padding-left: 4px;">${(srfSubItem.description!"")?replace("null", "")}</p></td>
+                            <td>${(srfSubItem.length!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.width!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.depth!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.equip_height!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.weight!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.azimuth!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.b_end!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.location!"")?replace("null", "")}</td>
+                            <td>${(srfSubItem.inventory_flag!"")?replace("null", "")}</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </#list>
                 </#if>
-            </tr>
             </#list>
-
+            </tbody>
         </table>
 
         <!-- GROUND / INDOOR EQUIPMENT -->
         <table style="width:100%; border-collapse:collapse; margin-top:14px; font-family:Arial, sans-serif; font-size:10px; ">
-            <tr>
-                <td class="sectionHeader" align="center" colspan="10" style="text-align:center; font-weight:bold; padding:5px;"> Ground/Indoor Equipment </td>
-            </tr>
-            <tr class="subHeader" style="text-align:center; font-weight:bold;">
-                <td style="padding:4px;">Status</td>
-                <td style="padding:4px;">SRF ID</td>
-                <td style="padding:4px;">ID</td>
-                <td style="padding:4px;">Type</td>
-                <td style="padding:4px;">Description</td>
-                <td style="padding:4px;">Length</td>
-                <td style="padding:4px;">Width</td>
-                <td style="padding:4px;">Height</td>
-                <td style="padding:4px;">Location</td>
-                <td style="padding:4px;">Inventory Flag</td>
-            </tr>
-            <#list requestJSON.srfItems as srfItems>
+            <thead>
                 <tr>
-                    <#if srfItems.equip_class == "3">
-                        <td style="padding:4px; white-space: nowrap;">${srfItems.status}</td>
-                        <td style="padding:4px;">${srfItems.srf_id}</td>
-                        <td style="padding:4px;">${srfItems.id}</td>
-                        <td style="padding:4px;">${srfItems.type}</td>
-                        <td style="padding:4px;">${srfItems.description}</td>
-                        <td style="padding:4px;">${(srfItems.length!"")?replace("null", "")}</td>
-                        <td style="padding:4px;">${(srfItems.width!"")?replace("null", "")}</td>
-                        <td style="padding:4px;">${(srfItems.equip_height!"")?replace("null", "")}</td>
-                        <td style="padding:4px;">${(srfItems.location!"")?replace("null", "")}</td>
-                        <td style="padding:4px;">${(srfItems.inventory_flag!"")?replace("null", "")}</td>
-                    </#if>
+                    <td class="sectionHeader" align="center" colspan="10" style="text-align:center; font-weight:bold; padding:5px;"> Ground/Indoor Equipment </td>
                 </tr>
-            </#list>
+                <tr class="subHeader" style="text-align:center; font-weight:bold;">
+                    <td>Status</td>
+                    <td>SRF ID</td>
+                    <td>ID</td>
+                    <td>Type</td>
+                    <td>Description</td>
+                    <td>Length</td>
+                    <td>Width</td>
+                    <td>Height</td>
+                    <td>Location</td>
+                    <td>Inventory Flag</td>
+                </tr>
+            </thead>
+            <tbody>
+                <#list requestJSON.srfItems as srfItems>
+                    <tr>
+                        <#if srfItems.equip_class == "3">
+                            <td>${srfItems.status}</td>
+                            <td>${srfItems.srf_id}</td>
+                            <td>${srfItems.id}</td>
+                            <td>${srfItems.type}</td>
+                            <td><p style="text-align: left;padding-left: 4px;">${srfItems.description}</p></td>
+                            <td>${(srfItems.length!"")?replace("null", "")}</td>
+                            <td>${(srfItems.width!"")?replace("null", "")}</td>
+                            <td>${(srfItems.equip_height!"")?replace("null", "")}</td>
+                            <td>${(srfItems.location!"")?replace("null", "")}</td>
+                            <td>${(srfItems.inventory_flag!"")?replace("null", "")}</td>
+                        </#if>
+                    </tr>
+                </#list>
+            </tbody>
         </table>
 
         <!-- POWER SUPPLY -->
@@ -308,7 +356,7 @@
                     €${(requestJSON.sds.custrecord_twc_sds_fee_prev!"")?replace("null", "")}
                 </td>
                 <td style="border:1px solid #666; padding:7px; width:15%; background-color:gainsboro;">
-                    Fee Reduction:
+                    <p style="text-align: left;">Fee Reduction:</p>
                 </td>
                 <td style="border:1px solid #666; padding:7px; width:10%;">
                     €${(requestJSON.sds.custrecord_twc_sds_fee_reduction!"")?replace("null", "")}
@@ -388,11 +436,10 @@
             <!-- White Section -->
             <tr>
                 <td style="padding:8px; border:1px solid #666; border-top:none;">
-
+                    <p style="font-weight:bold; padding-bottom: 3px;">
+                        Additional SRF Specific Conditions
+                    </p>
                     <#if requestJSON.sdsCondition_2?has_content>
-                        <p style="font-weight:bold; padding-bottom: 3px;">
-                            Additional SRF Specific Conditions
-                        </p>
                         <#list requestJSON.sdsCondition_2.conditions as condition>
                             <p style="padding-bottom: 0px; margin-bottom: 0px;">${condition.description}</p>
                             <ul>

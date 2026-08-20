@@ -67,8 +67,8 @@ define(['N/xml','/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'S
                     //console.log(twcSdsEngine.setAsCurrent({ id: 36 }))
 
                     //console.log(twcSiteLocatorUtils.getSites(null, twcConfig.userInfo()))
-                    //console.log(twcSdsEngine.getSrfInfo(39))
-                    //twcSdsEngine.getSdsEquipments(25)
+                    //console.log(twcSdsEngine.getSrfInfo(58).srfItems)
+                    twcSdsEngine.getSdsEquipments(31)
 
                     // console.log(xml.escape({ xmlText: '/core/media/media.nl?id=25190&c=9061443_SB1&h=0x8UEtEYj_WI0zAlZrm7m_qYnvhXfgsOCm6N2VuCknGLV6DH&_xt=.pdf' }));
 

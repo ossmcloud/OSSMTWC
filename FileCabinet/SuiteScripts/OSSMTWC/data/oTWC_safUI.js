@@ -271,6 +271,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
         function getSAFInfoPanels_Builder_Step_3(dataSource, userInfo, options) {
             var isExistingSaf = dataSource.id !== undefined;
+            var requiresSrf = isExistingSaf ? twcUtils.getSafType(dataSource[twcSaf.Fields.R_TYPE])?.requires_srf == 'T' : false;
             var fieldGroup = { id: 'site-access-step-3', title: 'Step 3 of 5 : Access Details', hide: !isExistingSaf, controls: [] };
 
             var customers = twcUtils.getCustomers(userInfo);
@@ -284,8 +285,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-customer', label: 'Customer', allowAll: false, value: customer, dataSource: customers });
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-vendor', label: 'Primary Contractor', allowAll: false, value: primaryContractor, dataSource: primaryContractors, lineBreak: true });
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'saf-work-summary', label: 'Summary of Work', rows: 3, value: dataSource[twcSaf.Fields.SUMMARY_OF_WORKS], width: '100%', lineBreak: true });
-            //step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-key', label: 'Key', allowAll: false, dataSource: [] });
-            step3Info.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: 'saf-photo-delay', label: 'Photo Req. Delay', hide: true, allowAll: false, dataSource: [], lineBreak: true });
+
+            if (userInfo.isEmployee) {
+                step3Info.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: 'saf-photo-delay', label: 'Photo Req. Delay', hide: !requiresSrf, allowAll: false, lineBreak: true });
+            }
 
             var eqActionsVisible = false;
             if (isExistingSaf) {
@@ -338,10 +341,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var picwInfo = null; var picwContractorStaff = []; var attendAsText = '';
             if (isExistingSaf && !dataSource.reUse) {
-                
+
                 // @@NOTE: the PICW is cleared on a re-used SAF
                 picwInfo = coreSQL.first('select id, custrecord_twc_prof_company as contractor, custrecord_twc_prof_phone as phone from customrecord_twc_prof where id = ' + dataSource[twcSaf.Fields.PICW]);
-                
+
             } else if (!isExistingSaf && primaryContractors.length == 1) {
                 // @@NOTE: this is to manage SAF entered by clients, they will be the only primary contractor
                 //          so we'll only have 1 primary contractor in the list (pre-selected)
@@ -484,12 +487,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 fieldGroups.push(getSAFInfoPanels_Info(dataSource, userInfo, requiresSrf));
 
                 if (requiresSrf) {
-                    fieldGroups.push(getSAFInfoPanels_WorkFlowInfo(dataSource, userInfo));
+                    if (userInfo.isEmployee) { fieldGroups.push(getSAFInfoPanels_WorkFlowInfo(dataSource, userInfo)); }
                     fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Images(dataSource, userInfo));
                 }
+
                 fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Files(dataSource, userInfo));
 
-                fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo));
+                if (userInfo.isEmployee) { fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo)); }
 
             }
             fieldGroups.push(getSAFInfoPanels_Existing(dataSource, userInfo));
@@ -689,6 +693,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fieldGroup = { id: 'site-access-workflow-images', title: 'Completion Photos', collapsed: false, controls: [] };
             var workFlowLogsInfo = { id: 'site-access-logs', collapsed: false, fields: [] };
             fieldGroup.controls.push(workFlowLogsInfo);
+
+            if (!userInfo.isEmployee) {
+                workFlowLogsInfo.fields.push({ id: twcSaf.Fields.REVIEW_COMMENT, width: '100%', rows: 5, label: 'Review Comment', lineBreak: true })
+            }
+            
             workFlowLogsInfo.fields.push({
                 id: `${twcFile.Type}`, label: 'Completion Photos',
                 fields: {

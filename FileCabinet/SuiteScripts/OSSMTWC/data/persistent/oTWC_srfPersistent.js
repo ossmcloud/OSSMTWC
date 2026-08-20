@@ -8,15 +8,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFields = {
             NAME: 'name',
             SRF_TYPE: 'custrecord_twc_srf_type',
-            PHOTO_ASSESSMENT_CATEGORY: 'custrecord_twc_srf_photo_asses_cat',
+            REVENUE_IMPACTING: 'custrecord_twc_srf_reveue_impact',
             OPERATOR_SITE_ID: 'custrecord_twc_srf_op_site_id',
             SITE: 'custrecord_twc_srf_site',
-            COMPLETION_PHOTOS_REQUESTED: 'custrecord_twc_srf_completion_photo_req',
             CUSTOMER: 'custrecord_twc_srf_cust',
             SRF_SUBMITTED_BY: 'custrecord_twc_srf_sub_by',
-            COMPLETION_PHOTOS_RECEIVED: 'custrecord_twc_srf_completion_photo_rec',
             RELATED_EQUIPMENT_ACTIONS: 'custrecord_twc_srf_related_eqip_actions',
-            COMPLETION_PHOTOS_REVIEWED: 'custrecord_twc_srf_completion_photo_rev',
             APPLICATION_DATE: 'custrecord_twc_srf_app_date',
             SRF_DRAWINGS: 'custrecord_twc_srf_drg',
             APPLICATION_REFERENCE: 'custrecord_twc_srf_app_reference',
@@ -60,15 +57,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             SRF_TYPE: { name: 'custrecord_twc_srf_type', type: 'select', alias: 'sRFType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_type' },
-            PHOTO_ASSESSMENT_CATEGORY: { name: 'custrecord_twc_srf_photo_asses_cat', type: 'select', alias: 'photoAssessmentCategory', display: 'normal', mandatory: false, recordType: 'customrecord_twc_photo_assessment_cat' },
+            REVENUE_IMPACTING: { name: 'custrecord_twc_srf_reveue_impact', type: 'select', alias: 'revenueImpacting', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_revenue_impact' },
             OPERATOR_SITE_ID: { name: 'custrecord_twc_srf_op_site_id', type: 'text', alias: 'operatorSiteID', display: 'normal', mandatory: false },
             SITE: { name: 'custrecord_twc_srf_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
-            COMPLETION_PHOTOS_REQUESTED: { name: 'custrecord_twc_srf_completion_photo_req', type: 'date', alias: 'completionPhotosRequested', display: 'normal', mandatory: false },
             CUSTOMER: { name: 'custrecord_twc_srf_cust', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             SRF_SUBMITTED_BY: { name: 'custrecord_twc_srf_sub_by', type: 'select', alias: 'sRFSubmittedBy', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
-            COMPLETION_PHOTOS_RECEIVED: { name: 'custrecord_twc_srf_completion_photo_rec', type: 'date', alias: 'completionPhotosReceived', display: 'normal', mandatory: false },
             RELATED_EQUIPMENT_ACTIONS: { name: 'custrecord_twc_srf_related_eqip_actions', type: 'select', alias: 'relatedEquipmentActions', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action' },
-            COMPLETION_PHOTOS_REVIEWED: { name: 'custrecord_twc_srf_completion_photo_rev', type: 'date', alias: 'completionPhotosReviewed', display: 'normal', mandatory: false },
             APPLICATION_DATE: { name: 'custrecord_twc_srf_app_date', type: 'date', alias: 'applicationDate', display: 'normal', mandatory: false },
             SRF_DRAWINGS: { name: 'custrecord_twc_srf_drg', type: 'document', alias: 'sRFDrawings', display: 'normal', mandatory: false },
             APPLICATION_REFERENCE: { name: 'custrecord_twc_srf_app_reference', type: 'text', alias: 'applicationReference', display: 'normal', mandatory: false },
@@ -127,12 +121,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get sRFTypeName() { return this.getText(_recordFields.SRF_TYPE); }
             
-            get photoAssessmentCategory() {
-                return this.get(_recordFields.PHOTO_ASSESSMENT_CATEGORY);
-            } set photoAssessmentCategory(value) {
-                this.set(_recordFields.PHOTO_ASSESSMENT_CATEGORY, value)
+            get revenueImpacting() {
+                return this.get(_recordFields.REVENUE_IMPACTING);
+            } set revenueImpacting(value) {
+                this.set(_recordFields.REVENUE_IMPACTING, value)
             }
-            get photoAssessmentCategoryName() { return this.getText(_recordFields.PHOTO_ASSESSMENT_CATEGORY); }
+            get revenueImpactingName() { return this.getText(_recordFields.REVENUE_IMPACTING); }
             
             get operatorSiteID() {
                 return this.get(_recordFields.OPERATOR_SITE_ID);
@@ -146,12 +140,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.SITE, value)
             }
             get siteName() { return this.getText(_recordFields.SITE); }
-            
-            get completionPhotosRequested() {
-                return this.get(_recordFields.COMPLETION_PHOTOS_REQUESTED);
-            } set completionPhotosRequested(value) {
-                this.set(_recordFields.COMPLETION_PHOTOS_REQUESTED, value)
-            }
             
             get customer() {
                 return this.get(_recordFields.CUSTOMER);
@@ -167,24 +155,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get sRFSubmittedByName() { return this.getText(_recordFields.SRF_SUBMITTED_BY); }
             
-            get completionPhotosReceived() {
-                return this.get(_recordFields.COMPLETION_PHOTOS_RECEIVED);
-            } set completionPhotosReceived(value) {
-                this.set(_recordFields.COMPLETION_PHOTOS_RECEIVED, value)
-            }
-            
             get relatedEquipmentActions() {
                 return this.get(_recordFields.RELATED_EQUIPMENT_ACTIONS);
             } set relatedEquipmentActions(value) {
                 this.set(_recordFields.RELATED_EQUIPMENT_ACTIONS, value)
             }
             get relatedEquipmentActionsName() { return this.getText(_recordFields.RELATED_EQUIPMENT_ACTIONS); }
-            
-            get completionPhotosReviewed() {
-                return this.get(_recordFields.COMPLETION_PHOTOS_REVIEWED);
-            } set completionPhotosReviewed(value) {
-                this.set(_recordFields.COMPLETION_PHOTOS_REVIEWED, value)
-            }
             
             get applicationDate() {
                 return this.get(_recordFields.APPLICATION_DATE);

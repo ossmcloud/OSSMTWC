@@ -22,6 +22,7 @@ SCHEMA:
 		custrecord_twc_srf_tl_drg_assinged_to => remove, not used
 
 
+
 	customrecord_twc_equip
 		custrecord_twc_equip_make			=> change to free text but we may need to use tables make/model, in which case we need these tables on eq. library and srf item too
 		custrecord_twc_equip_inv_flag		=> changed to list/record
@@ -55,6 +56,13 @@ SCHEMA:
 
     customrecord_twc_srf_itm_typ_opt
         custrecord_twc_srf_itm_typ_opt_tl_only
+
+    customrecord_twc_srf_revenue_impact
+    
+
+    customrecord_twc_srf_wks
+        custrecord_twc_srf_wks_can_edit
+
 
 	TODO:
 		REMOVE: customrecord_twc_srf.custrecord_twc_srf_sds_form_data

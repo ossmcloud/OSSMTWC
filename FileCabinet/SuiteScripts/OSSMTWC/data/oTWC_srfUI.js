@@ -132,7 +132,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: !core.utils.isEmpty(dataSource.id), dataSource: customers, value: selectedCustomer, allowAll: false })
             basicInfo.fields.push({ id: twcSrf.Fields.OPERATOR_SITE_ID, label: 'Operator Site ID', mandatory: true })
-            if (userInfo.isEmployee) { basicInfo.fields.push({ id: twcSrf.Fields.SRF_TYPE, label: 'SRF Type', dataSource: twcUtils.getSrfTypes(), allowAll: false }) }
+            if (userInfo.isEmployee) {
+                basicInfo.fields.push({ id: twcSrf.Fields.SRF_TYPE, label: 'SRF Type', dataSource: twcUtils.getSrfTypes(), allowAll: false })
+                basicInfo.fields.push({ id: twcSrf.Fields.REVENUE_IMPACTING, label: 'Revenue Impacting', dataSource: twcUtils.getSrfRevenueImpact(), allowAll: false })
+            }
 
             var items = getSrfItems(dataSource, userInfo, readOnly);
             fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 6 (TME)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.TME, items)] });

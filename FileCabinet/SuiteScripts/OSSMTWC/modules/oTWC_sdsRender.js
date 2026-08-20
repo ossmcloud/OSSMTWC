@@ -34,6 +34,9 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
             const requestJSON = twcSdsEngine.getSrfInfo(recId);
 
             requestJSON.sds = twcSdsEngine.getFormData({ id: recId });
+            var dateParts = requestJSON.sds.custrecord_twc_sds_comm_date.split('-');
+            requestJSON.sds.custrecord_twc_sds_comm_date = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+
 
             requestJSON.logo = 'https://9061443-sb1.app.netsuite.com/core/media/media.nl?id=2&amp;c=9061443_SB1&amp;h=DLBF3L9Uup0gbcrPVFiqDAl_MlZywyZdMJO0rzYfa6EtDJn6';
             if (core.env.live()) { requestJSON.logo = 'https://9061443.app.netsuite.com/core/media/media.nl?id=2&amp;c=9061443&amp;h=DLBF3L9Uup0gbcrPVFiqDAl_MlZywyZdMJO0rzYfa6EtDJn6'; }

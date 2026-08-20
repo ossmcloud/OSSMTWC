@@ -678,6 +678,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getLookUpTableValues('customrecord_twc_equip_voltage_type', null, 'custrecord_twc_equip_voltage_type_sort');
         }
 
+        function getSrfRevenueImpact() {
+            return getLookUpTableValues('customrecord_twc_srf_revenue_impact', null, 'custrecord_twc_srf_revenue_impact_sort');
+        }
 
         function getRegions() {
             return getLookUpTableValues('customrecord_twc_region');
@@ -688,7 +691,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getSrfTypes() {
-            return getLookUpTableValues('customrecord_twc_srf_type');
+            return getLookUpTableValues('customrecord_twc_srf_type', null, 'custrecord_twc_srf_type_sort');
         }
 
         function getSrfItemTypeOpts(userInfo) {
@@ -1510,6 +1513,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSrfStatusName: getSrfStatusName,
             getSrfStatusStyle: getSrfStatusStyle,
             getSrfStatusHtml: getSrfStatusHtml,
+            getSrfRevenueImpact: getSrfRevenueImpact,
 
             getSafStatusName: getSafStatusName,
             getSafStatusStyle: getSafStatusStyle,

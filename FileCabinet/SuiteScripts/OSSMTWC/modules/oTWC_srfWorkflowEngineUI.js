@@ -161,7 +161,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     `);
                     for (var k in formData.fields) {
                         if (formData.fields[k].type != 'button') {
-                            var v = this.#item[formData.fields[k].id] || this.#workflow[formData.fields[k].id];
+                            // @@NOTE: the form is generally associated to one record but one or more field could relate to a different record (srf or workflow)
+                            //         these fields are identified by the fact that the id will be [table_name]-[field_name]
+                            var fieldId = formData.fields[k].id;
+                            if (fieldId.indexOf('-') > 0) { fieldId = fieldId.split('-')[1]; }
+
+                            var v = this.#item[fieldId] || this.#workflow[fieldId];
+                            if (v && v.value !== undefined) { v = v.value; }
+
                             if (formData.fields[k].type?.toLowerCase() == 'date' && v) {
                                 // @@NOTE: there can be some inconsistency on the way dates are returned, could be DD/MM/YYYY but control expects YYYY-MM-DD
                                 if (v.indexOf('/') > 0) { v = twcUtils.fromNsToJs(v) }
@@ -173,7 +180,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         }
 
                         if (formData.fields[k].dataSourceConfig) {
-                            formData.fields[k].dataSource = this.#workflowForm.data[formData.fields[k].dataSourceConfig] || [];
+                            if (formData.fields[k].dataSourceConfig.startsWith('utils')) {
+                                formData.fields[k].dataSource = twcUtils[formData.fields[k].dataSourceConfig.split(':')[1]]();
+                            } else {
+                                formData.fields[k].dataSource = this.#workflowForm.data[formData.fields[k].dataSourceConfig] || [];
+                            }
                         }
 
                         formDataContainer.append(twcUi.render(formData.fields[k]))
@@ -227,7 +238,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.#item.profile_name = this.#workflowForm.data.userInfo.profileInfo.name;
                         if (formData) {
                             for (var k in formData.fields) {
-                                this.#item[formData.fields[k].id] = values[formData.fields[k].id];
+                                // @@NOTE: the form is generally associated to one record but one or more field could relate to a different record (srf or workflow)
+                                //         these fields are identified by the fact that the id will be [table_name]-[field_name]
+                                var fieldId = formData.fields[k].id;
+                                if (fieldId.indexOf('-') > 0) { fieldId = fieldId.split('-')[1]; }
+                                
+                                if (this.#workflow[fieldId] === undefined) {
+                                    this.#item[fieldId] = values[formData.fields[k].id];
+                                } else {
+                                    this.#workflow[fieldId] = values[formData.fields[k].id];
+                                }
+                                
                             }
                         }
                         appendItem(this.#item, formData);
@@ -333,8 +354,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             static open(workflowForm, item, callback) {
-                var form = new WorkflowFormItem(workflowForm, item);
-                form.render(callback);
+                try {
+                    var form = new WorkflowFormItem(workflowForm, item);
+                    form.render(callback);
+                } catch (error) {
+                    dialog.error(error);
+                }
             }
         }
 
@@ -600,7 +625,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             canEditWorkflowItem(item, userInfo) {
                 if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {
-                    if (item.is_review == 'T' && item.profile == userInfo.profile) {
+                    if (item.can_edit == 'T' && item.profile == userInfo.profile) {
 
                         return this.#workflow.items.filter(i => { return i.id > item.id && i.next_stage_pick == 'T'; })[0].status != twcSrfWorkflowEngine.WorkflowStatus.COMPLETED;
 

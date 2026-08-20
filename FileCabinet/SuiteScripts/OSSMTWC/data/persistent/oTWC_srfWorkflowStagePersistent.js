@@ -18,6 +18,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             HIDDEN: 'custrecord_twc_srf_wks_hide',
             IS_LOOP: 'custrecord_twc_srf_wks_loop',
             IS_REVIEW: 'custrecord_twc_srf_wks_is_review',
+            CAN_EDIT: 'custrecord_twc_srf_wks_can_edit',
             CAN_SKIP: 'custrecord_twc_srf_wks_can_skip',
             CAN_ASSIGN: 'custrecord_twc_srf_wks_assign',
             IS_LAST_STAGE: 'custrecord_twc_srf_wks_is_last',
@@ -43,6 +44,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             HIDDEN: { name: 'custrecord_twc_srf_wks_hide', type: 'checkbox', alias: 'hidden', display: 'normal', mandatory: false },
             IS_LOOP: { name: 'custrecord_twc_srf_wks_loop', type: 'checkbox', alias: 'isLoop', display: 'normal', mandatory: false },
             IS_REVIEW: { name: 'custrecord_twc_srf_wks_is_review', type: 'checkbox', alias: 'isReview', display: 'normal', mandatory: false },
+            CAN_EDIT: { name: 'custrecord_twc_srf_wks_can_edit', type: 'checkbox', alias: 'canEdit', display: 'normal', mandatory: false },
             CAN_SKIP: { name: 'custrecord_twc_srf_wks_can_skip', type: 'checkbox', alias: 'canSkip', display: 'normal', mandatory: false },
             CAN_ASSIGN: { name: 'custrecord_twc_srf_wks_assign', type: 'checkbox', alias: 'canAssign', display: 'normal', mandatory: false },
             IS_LAST_STAGE: { name: 'custrecord_twc_srf_wks_is_last', type: 'checkbox', alias: 'isLastStage', display: 'normal', mandatory: false },
@@ -132,6 +134,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.IS_REVIEW);
             } set isReview(value) {
                 this.set(_recordFields.IS_REVIEW, value)
+            }
+            
+            get canEdit() {
+                return this.get(_recordFields.CAN_EDIT);
+            } set canEdit(value) {
+                this.set(_recordFields.CAN_EDIT, value)
             }
             
             get canSkip() {
