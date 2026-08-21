@@ -361,15 +361,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             for (var f in options.where) {
                                 var field = this.findField(f);
                                 if (options.where[f].constructor.name == 'Object') {
+                                    var op = options.where[f].op || options.where[f].operator || '=';
                                     var placeholders = '?';
                                     if (Array.isArray(options.where[f].values)) {
                                         placeholders = options.where[f].values.map(() => '?').join(', ');
                                         placeholders = `(${placeholders})`;
                                         params.push(...options.where[f].values);
+                                        op = 'in';
                                     } else {
                                         params.push(options.where[f].values);
                                     }
-                                    sql += `\nand     ${field.name} ${options.where[f].op || options.where[f].operator || '='} ${placeholders}`
+                                    sql += `\nand     ${field.name} ${op} ${placeholders}`
 
                                 } else {
                                     sql += `\nand     ${field.name} = ?`

@@ -165,7 +165,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     <div id="twc-site-info-panel-hidden" style="display: none;">
                         <span style="vertical-align: middle; display: table-cell; width: 20px; text-align: center; cursor: pointer;" id="twc-site-info-panel-uncollapse">${twcIcons.get('arrowRightBox', 24)}</span>
                         <br />
-                        <span class="twc-vertical-label" style="margin-left: -60px;  margin-right: -60px;  margin-top: 50px; font-weight: bold;}">{SITE_NAME}</span>                
+                        <!-- <span class="twc-vertical-label" style="margin-left: -60px;  margin-right: -60px;  margin-top: 50px; font-weight: bold;}">{SITE_NAME}</span> -->
                     </div>
                 </div>
 

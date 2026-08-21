@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_file.js', './oTWC_fileType.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcFile, twcFileType) => {
 
         function getSiteTableFields() {
             // @@IMPORTANT: make sure some fields are there as they are needed by the ui:
@@ -102,12 +102,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push(basicInfo);
             basicInfo.fields.push({ id: twcSite.Fields.SITE_ID, label: 'Site Code' })
             basicInfo.fields.push({ id: twcSite.Fields.SITE_NAME, label: 'Site Name' })
+            basicInfo.fields.push({ id: twcSite.Fields.SITE_STATUS, label: 'Site Status' })
             basicInfo.fields.push({ id: twcSite.Fields.ALIAS, label: 'Alias', lineBreak: true })
             basicInfo.fields.push({ id: twcSite.Fields.SITE_LEVEL, label: 'Site Level' })
             basicInfo.fields.push({ id: twcSite.Fields.SITE_TYPE, label: 'Site Type' })
             basicInfo.fields.push({ id: twcSite.Fields.SITE_PORTFOLIO, label: 'Portfolio', lineBreak: true })
             basicInfo.fields.push({ id: twcSite.Fields.SITE_SAF_AUTO_APPROVE, label: 'SAF Auto Approve' })
             basicInfo.fields.push({ id: twcSite.Fields.SITE_SAF_STATUS, label: 'SAF Status' })
+            basicInfo.fields.push({ id: twcSite.Fields.SITE_SRF_STATUS, label: 'SRF Status' })
             basicInfo.fields.push({ id: twcSite.Fields.HEIGHT_ASL_M, label: 'Height ASL' })
             basicInfo.fields.push({ id: twcSite.Fields.SITE_PUBLIC, label: 'Public' })
             //@NOTE Missing fields - TC Building/Cabin , Indoor Accommodation
@@ -426,8 +428,56 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             return fieldGroup;
         }
-        function getSitePanelFields_files(dataSource) {
-            var fieldGroup = { id: 'site-files', title: 'Files', collapsed: true, controls: [] };
+        function getSitePanelFields_files(dataSource, userInfo) {
+            var fieldGroup = { id: 'site-files-title', title: 'Files', collapsed: true, fields: [] };
+
+            var fields = {
+                [twcFile.Fields.NAME]: {
+                    title: 'Name',
+                    link: {
+                        url: 'onclick="twc.page.previewFile({ twcFile: ${id}} )"',
+                        valueField: 'id',
+                        target: '_self'
+                    }
+                },
+                [twcFile.Fields.R_TYPE + '_name']: 'Type',
+            };
+
+            var fileTypes = [];
+            if (userInfo.isEmployee) {
+                fields[twcFile.Fields.STATUS + '_name'] = 'Status';
+                fields[twcFile.Fields.REVISION] = { title: 'Revision', nullText: '' };
+            } else {
+
+                twcUtils.getFileTypes({ filters: { [`t.${twcFileType.Fields.PUBLIC}`]: 'T' } }).map(i => { fileTypes.push(i.value); })
+                if (fileTypes.length == 0) { fileTypes.push(-1) }
+            }
+
+            
+            fields[twcFile.Fields.DESCRIPTION] = { title: 'Description', nullText: '' };
+            fields[twcFile.Fields.CREATED] = { title: 'Upload Date', nullText: '', type: 'datetime', styles: { width: '160px', 'text-align': 'center' } };
+
+            var where = {
+                [twcFile.Fields.RECORD_TYPE]: twcSite.Type,
+                [twcFile.Fields.RECORD_ID]: dataSource.id || 0,
+            }
+            if (fileTypes.length > 0) {
+                where[twcFile.Fields.R_TYPE] = { values: fileTypes };
+            }
+
+            var files = twcFile.select({
+                where: where,
+                orderBy: { [twcFile.Fields.CREATED]: 'desc' },
+                useNames: true
+            })
+
+            fieldGroup.fields.push({
+                id: `${twcFile.Type}`,
+                label: 'Files',
+                fields: fields,
+                dataSource: files
+            });
+
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
 

@@ -47,6 +47,7 @@ SCHEMA:
         custrecord_twc_file_type_drawing
         custrecord_twc_file_recordtype
         custrecord_twc_file_type_access
+        custrecord_twc_file_type_public
 
     customrecord_twc_company
         custrecord_twc_co_sds_include_licensemap

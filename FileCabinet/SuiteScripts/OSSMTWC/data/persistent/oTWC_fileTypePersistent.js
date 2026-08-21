@@ -22,6 +22,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LICENSE_MAP: 'custrecord_twc_file_type_license_map',
             DRAWING: 'custrecord_twc_file_type_drawing',
             ACCESS_DOCUMENT: 'custrecord_twc_file_type_access',
+            PUBLIC: 'custrecord_twc_file_type_public',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -44,6 +45,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LICENSE_MAP: { name: 'custrecord_twc_file_type_license_map', type: 'checkbox', alias: 'licenseMap', display: 'normal', mandatory: false },
             DRAWING: { name: 'custrecord_twc_file_type_drawing', type: 'checkbox', alias: 'drawing', display: 'normal', mandatory: false },
             ACCESS_DOCUMENT: { name: 'custrecord_twc_file_type_access', type: 'checkbox', alias: 'accessDocument', display: 'normal', mandatory: false },
+            PUBLIC: { name: 'custrecord_twc_file_type_public', type: 'checkbox', alias: 'public', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -150,6 +152,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.ACCESS_DOCUMENT);
             } set accessDocument(value) {
                 this.set(_recordFields.ACCESS_DOCUMENT, value)
+            }
+            
+            get public() {
+                return this.get(_recordFields.PUBLIC);
+            } set public(value) {
+                this.set(_recordFields.PUBLIC, value)
             }
             
             get created() {

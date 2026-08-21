@@ -19,6 +19,8 @@ define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bund
             var pageData = twcBaseView.initPageData(context);
             pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(context.request.parameters.recId, pageData.userInfo);
 
+            s.form.f.title = pageData.siteInfo.site.name;
+
             var html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteInfo');
             html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
 

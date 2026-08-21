@@ -22,10 +22,6 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 var safIsInThePast = context.request.parameters.recId ? pageData.siteAccessInfo[twcSaf.Fields.START_TIME_BLOCK].split(' ')[0] < twcUtils.today() : false;
                 var safRequiresSrf = twcUtils.getSafType(pageData.siteAccessInfo[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';
 
-                if (core.me()) {
-                    safIsInThePast=false
-                }
-
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteAccessInfo.siteId || context.request.parameters.siteId, pageData.userInfo);
                 
                 pageData.timeBlocks = twcUtils.getSafTimeBlocks();
