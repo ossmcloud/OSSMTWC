@@ -101,13 +101,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
 
-                var nextSteps = this.#workflow.items.filter(i => {
+                var nextStepsTemp = this.#workflow.items.filter((i, x, y) => {
                     if (this.#item.next_stage_pick == 'T') {
                         return (this.#item.next_stage.indexOf(i.stage) >= 0 && (i.status == twcSrfWorkflowEngine.WorkflowStatus.NEW || i.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS));
                     } else {
                         return this.#item.next_stage.indexOf(i.stage) >= 0 && this.#item.id < i.id;
                     }
                 })
+
+                // @@NOTE: if one or mre feedback is issued we get all next steps for all other issued feedbacks
+                //          because they are in chronological order we only get the 1st set of next stages
+                var nextSteps = [];
+                core.array.each(nextStepsTemp, nextStepsTemp => {
+                    if (nextSteps.find(ns => { return ns.stage == nextStepsTemp.stage })) { return; }
+                    nextSteps.push(nextStepsTemp);
+                })
+
                 if (nextSteps.length > 0) {
                     var nextStepContainerOuter = jQuery(`<div style="margin-top: 7px; padding: 3px; border: 1px solid var(--grid-color);"><h3 style="margin-bottom: 7px; border-bottom: 1px solid var(--grid-color);">Next Steps Planned Dates</h3></div>`);
                     var nextStepContainer = jQuery(`<div class="twc-div-table-r" style="table-layout: auto;"></div>`);
@@ -562,9 +571,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         plannedDateInput = item.planned ? twcUtils.fromJsToNs(item.planned) : '-';
                     }
 
+                    var stageName = item.stage_name;
                     var styles = getStatusStyles(item.status, true);
                     if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED && item.is_review == 'T' && item.review_passed != 'T') {
                         styles = `background-color: red !important; color: white !important`;
+                    } else if (item.next_stage_pick == 'T') {
+                        if (this.#workflow.items[idx + 1]?.stage_hidden == 'T' && (this.#workflow.items[idx + 1]?.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS || this.#workflow.items[idx + 1]?.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED)) {
+                            styles = `background-color: magenta !important; color: white !important`;
+                            stageName = this.#workflow.items[idx + 1].stage_name;
+                        }
                     }
 
                     var loopTCell = `<td></td>`;
@@ -581,7 +596,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         <tr style="${styles}">
                             ${loopTCell}
                             <td style="text-align: center;">${item.step_no}</td>
-                            <td>${item.stage_name}</td>
+                            <td>${stageName}</td>
                             <td style="text-align: center;">${item.assigned_to_name || ''}</td>
                             <td class="${(item.planned && item.planned < TODAY) ? 'ktl-highlight-red' : ''}" style="text-align: center;">
                                 ${plannedDateInput}

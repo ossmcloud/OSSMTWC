@@ -20,9 +20,6 @@ Workflow:
 		Only changes to planned dates (pull forward, or push out) should affect future planned dates.
             Exception of the 4x check steps after initial review, should not be able to re-forecast these.
 
-	SDS Pack Produced:
-		take snapshot of equipment => take the latest SRF from eq. table
-
 Others:
 	SRF: big files will cause the UI to take time to save
 
