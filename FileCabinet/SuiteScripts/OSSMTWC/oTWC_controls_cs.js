@@ -56,7 +56,16 @@ define(['N/xml','/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'S
 
                 try {
 
-                    deleteSds(30)
+                    try {
+                        core.array.each([1, 2, 3], i => {
+                            throw new Error('HEY_DUDE')
+                        })
+
+
+                    } catch (error) {
+                        console.log(error);
+                    }
+                                        //deleteSds(30)
                     //recu.submit('customrecord_twc_srf', 28, 'custrecord_twc_srf_sds_form_data', null);
 
                     //twcSiteAccessUtils.deleteSaf(147);
@@ -68,7 +77,7 @@ define(['N/xml','/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'S
 
                     //console.log(twcSiteLocatorUtils.getSites(null, twcConfig.userInfo()))
                     //console.log(twcSdsEngine.getSrfInfo(58).srfItems)
-                    twcSdsEngine.getSdsEquipments(31)
+                    //twcSdsEngine.getSdsEquipments(31)
 
                     // console.log(xml.escape({ xmlText: '/core/media/media.nl?id=25190&c=9061443_SB1&h=0x8UEtEYj_WI0zAlZrm7m_qYnvhXfgsOCm6N2VuCknGLV6DH&_xt=.pdf' }));
 

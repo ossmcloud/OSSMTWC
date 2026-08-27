@@ -248,7 +248,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `, eq => {
 
                 // @@TODO: we should check if something has changed and update the sds eq. table???
-                //if (eq.sds_eq_id) { return; }
+                if (eq.sds_eq_id) { return; }
 
                 var sdsEq = twcSdsEquipment.get(eq.sds_eq_id);
                 sdsEq.sDS = sdsId;

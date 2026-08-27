@@ -209,9 +209,9 @@
                         <td>${(srfItems.equip_height!"")?replace("null", "")}</td>
                         <td>${(srfItems.weight!"")?replace("null", "")}</td>
                         <td>${(srfItems.azimuth!"")?replace("null", "")}</td>
-                        <td>${(srfItems.b_end!"")?replace("null", "")}</td>
-                        <td>${(srfItems.location!"")?replace("null", "")}</td>
-                        <td>${(srfItems.inventory_flag!"")?replace("null", "")}</td>
+                        <td><p style="text-align: left;padding-left: 2px;">${(srfItems.b_end!"")?replace("null", "")}</p></td>
+                        <td><p style="text-align: left;padding-left: 2px;">${(srfItems.location!"")?replace("null", "")}</p></td>
+                        <td><p style="text-align: left;padding-left: 2px;">${(srfItems.inventory_flag!"")?replace("null", "")}</p></td>
                         <td>${(srfItems.atme_count!"")?replace("null", "")}</td>
                         <td>${(srfItems.feeder_count!"")?replace("null", "")}</td>
                     </tr>
@@ -228,9 +228,9 @@
                             <td>${(srfSubItem.equip_height!"")?replace("null", "")}</td>
                             <td>${(srfSubItem.weight!"")?replace("null", "")}</td>
                             <td>${(srfSubItem.azimuth!"")?replace("null", "")}</td>
-                            <td>${(srfSubItem.b_end!"")?replace("null", "")}</td>
-                            <td>${(srfSubItem.location!"")?replace("null", "")}</td>
-                            <td>${(srfSubItem.inventory_flag!"")?replace("null", "")}</td>
+                            <td><p style="text-align: left;padding-left: 2px;">${(srfSubItem.b_end!"")?replace("null", "")}</p></td>
+                            <td><p style="text-align: left;padding-left: 2px;">${(srfSubItem.location!"")?replace("null", "")}</p></td>
+                            <td><p style="text-align: left;padding-left: 2px;">${(srfSubItem.inventory_flag!"")?replace("null", "")}</p></td>
                             <td></td>
                             <td></td>
                         </tr>
@@ -248,9 +248,9 @@
                             <td>${(srfSubItem.equip_height!"")?replace("null", "")}</td>
                             <td>${(srfSubItem.weight!"")?replace("null", "")}</td>
                             <td>${(srfSubItem.azimuth!"")?replace("null", "")}</td>
-                            <td>${(srfSubItem.b_end!"")?replace("null", "")}</td>
-                            <td>${(srfSubItem.location!"")?replace("null", "")}</td>
-                            <td>${(srfSubItem.inventory_flag!"")?replace("null", "")}</td>
+                            <td><p style="text-align: left;padding-left: 2px;">${(srfSubItem.b_end!"")?replace("null", "")}</p></td>
+                            <td><p style="text-align: left;padding-left: 2px;">${(srfSubItem.location!"")?replace("null", "")}</p></td>
+                            <td><p style="text-align: left;padding-left: 2px;">${(srfSubItem.inventory_flag!"")?replace("null", "")}</p></td>
                             <td></td>
                             <td></td>
                         </tr>

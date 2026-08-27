@@ -53,7 +53,6 @@ define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
         function saveTwcFile(context, file) {
             var f = twcFile.get();
             f.copyFromObject(file);
-
             f.uploadedBy = twcConfig.userInfo(context).profile;
 
             if (!f.recordType || !f.recordID) { throw new Error(`Cannot save file without both record type and id`); }

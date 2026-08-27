@@ -2,6 +2,7 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
+// define([], () => {
 define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_safCrew.js', '../../data/oTWC_safAction.js', '../../data/oTWC_equipAction.js', '../../data/oTWC_equipment.js', '../../data/oTWC_safTimeBlock.js', '../../data/oTWC_safLog.js', '../../data/oTWC_file.js', '../../data/oTWC_fileType.js', '../../O/oTWC_nsFileUtils.js'],
     (record, core, coreSQL, b64, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew, twcSafAction, twcEqAct, twcEquipment, twcSafTimeBlock, twcSafLog, twcFile, twcFileType, nsFileUtils) => {
 
@@ -282,7 +283,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
 
             const validateCompanyInsurance = (companyId) => {
-                var insuranceInfo = twcUtils.getCompanyInsuranceDetails(companyId);    
+                var insuranceInfo = twcUtils.getCompanyInsuranceDetails(companyId);
                 for (var k in twcUtils.Insurances) {
                     if (insuranceInfo[twcUtils.Insurances[k].field] == twcUtils.NoActiveExpired.Active) {
                         if (insuranceInfo[twcUtils.Insurances[k].fieldEx] < latestDate) {
@@ -297,7 +298,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             if (payload['saf-vendor'] != payload['saf-customer']) {
                 validateCompanyInsurance(payload['saf-vendor']);
             }
-            
+
             var crewIds = [payload['saf-picw-staff']];
             core.array.each(payload.crews, c => {
                 if (payload['saf-picw-staff'] == c['saf-crew-member']) {

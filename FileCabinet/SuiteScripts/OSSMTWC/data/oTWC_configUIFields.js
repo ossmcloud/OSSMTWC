@@ -148,6 +148,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             columnOptions.id += '_name'
                         } else if (f?.type == 'integer') {
                             columnOptions.type = 'int';
+                        } else if (f?.type == 'float') {
+                            columnOptions.type = 'float';
                         } else if (f?.type == 'datetimetz' || f?.type == 'date') {
                             columnOptions.type = 'date';
                         };
@@ -179,7 +181,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                                 if (tbl.data[0][`${col.id}_name`] !== undefined) { return false; }
                             }
                             if (field.onColumnInit) { return field.onColumnInit(tbl, col); }
-                        }
+                        },
+                        onRowInit: field.onRowInit
                     }
 
                     // @@NOTE: getFieldAccess for columns visibility

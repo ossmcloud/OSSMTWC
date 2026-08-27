@@ -11,7 +11,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var fieldsSql = '';
             fields.map(f => {
                 if (f.field == twcEquipment.Fields.INFRASTRUCTURE || f.field == twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS || f.field == twcEquipment.Fields.CUSTOMER) {
-                    fieldsSql += `BUILTIN.DF(eq.${f.field}) as ${f.field}, eq.${f.field} as ${f.field}_id, `   
+                    fieldsSql += `BUILTIN.DF(eq.${f.field}) as ${f.field}, eq.${f.field} as ${f.field}_id, `
                 } else {
                     fieldsSql += `eq.${f.field}, `
                 }
@@ -64,68 +64,117 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             twcSrfWorkflowEngine.initWorkFlow(payload);
         }
 
+        const SAVE_MIN_UNITS = 150;
+        function saveSiteSrf_validateUnits() {
+            if (core.env.units() < SAVE_MIN_UNITS) {
+                throw new Error('KEEP_SAVING');
+            }
+        }
         function saveSiteSrf(userInfo, payload) {
             // @@TODO: SRF: error handling????
+            try {
+                var srfCancelled = false;
+                var submitInfo = {};
+                submitInfo[twcSrf.Type] = { id: payload.id, fields: [], values: [] };
+                for (var k in payload) {
+                    if (k == 'id') { continue; }
+                    // @@NOTE: fields with '___' means they are linked record fields, we first update the site info, then the linked records
+                    var fieldPath = k.split('___');
+                    if (fieldPath.length == 1) {
+                        submitInfo[twcSrf.Type].fields.push(k);
+                        submitInfo[twcSrf.Type].values.push(payload[k])
 
-            var srfCancelled = false; 
-            var submitInfo = {};
-            submitInfo[twcSrf.Type] = { id: payload.id, fields: [], values: [] };
-            for (var k in payload) {
-                if (k == 'id') { continue; }
-                // @@NOTE: fields with '___' means they are linked record fields, we first update the site info, then the linked records
-                var fieldPath = k.split('___');
-                if (fieldPath.length == 1) {
-                    submitInfo[twcSrf.Type].fields.push(k);
-                    submitInfo[twcSrf.Type].values.push(payload[k])
-
-                    if (k == twcSrf.Fields.SRF_STATUS) {
-                        if (payload[k] == twcSrf.Status.SRFCancelled) {
-                            srfCancelled = true;
+                        if (k == twcSrf.Fields.SRF_STATUS) {
+                            if (payload[k] == twcSrf.Status.SRFCancelled) {
+                                srfCancelled = true;
+                            }
                         }
                     }
                 }
+
+
+                if (!payload.keepSaving) {
+                    if (payload.id) {
+                        recu.submit(twcSrf.Type, payload.id, submitInfo[twcSrf.Type].fields, submitInfo[twcSrf.Type].values);
+
+                    } else {
+                        var newSrf = twcSrf.get();
+                        newSrf.sRFStatus = twcSrf.Status.Draft;
+                        newSrf.sRFRequestedDate = (new Date()).addHours(12);    // @@NOTE: to account for the GMT difference of US servers
+                        newSrf.sRFSubmittedBy = userInfo.profile || null;
+                        core.array.each(submitInfo[twcSrf.Type].fields, (field, idx) => {
+                            if (!newSrf.hasField(field)) { return; }
+                            newSrf.set(field, submitInfo[twcSrf.Type].values[idx]);
+                        })
+
+                        payload.id = newSrf.save();
+                    }
+
+                    payload.keepSaving = { stage: 1, stageCount: 8, stageName: 'saving files...' };
+                    return payload;
+                }
+
+                if (payload.keepSaving.stage == 1) {
+                    saveSiteSrfFile(payload);
+                    payload.keepSaving.stage = 2;
+                    payload.keepSaving.stageName = 'preparing to save items...';
+                    return payload;
+                }
+                if (payload.keepSaving.stage == 2) {
+                    deleteSitesSrfItem(payload.items_deleted);
+                    deleteSitesSrfFile(payload);
+                    payload.keepSaving.stage = 3;
+                    payload.keepSaving.stageName = 'saving items (TME)...';
+                    return payload;
+                }
+                if (payload.keepSaving.stage == 3) {
+                    saveSiteSrfItems(payload, payload[`items_${twcSrfItem.StepType.TME}`] || []);
+                    payload.keepSaving.stage = 4;
+                    payload.keepSaving.stageName = 'saving items (ATME)...';
+                    return payload;
+                }
+                if (payload.keepSaving.stage == 4) {
+                    saveSiteSrfItems(payload, payload[`items_${twcSrfItem.StepType.ATME}`] || []);
+                    payload.keepSaving.stage = 5;
+                    payload.keepSaving.stageName = 'saving items (GIE)...';
+                    return payload;
+                }
+                if (payload.keepSaving.stage == 5) {
+                    saveSiteSrfItems(payload, payload[`items_${twcSrfItem.StepType.GIE}`] || []);
+                    payload.keepSaving.stage = 6;
+                    payload.keepSaving.stageName = 'saving items (FEEDERS)...';
+                    return payload;
+                }
+                if (payload.keepSaving.stage == 6) {
+                    saveSiteSrfItems(payload, payload[`items_${twcSrfItem.StepType.FEEDER}`] || []);
+                    payload.keepSaving.stage = 7;
+                    payload.keepSaving.stageName = 'finalizing...';
+                    return payload;
+                }
+                if (payload.keepSaving.stage == 7) {
+                    if (srfCancelled) {
+                        twcSrfWorkflowEngine.cancelWorkflow({ srf: payload.id });
+                    } else if (payload.submitOnSave) {
+                        submitSiteSrf(userInfo, { srf: payload.id });
+                    }
+                    payload.keepSaving.stage = 8;
+                    payload.keepSaving.stageName = 'almost there...';
+                    return payload;
+                }
+
+                return { id: payload.id };
+
+            } catch (error) {
+                core.logError('SAVE-SRF-ERROR', error.message);
+                if (error.message.indexOf('KEEP_SAVING') < 0) {
+                    core.logError('SAVE-SRF-STACK', error.stack);
+                    throw error;
+                }
+                return payload;
             }
-
-            if (payload.id) {
-                recu.submit(twcSrf.Type, payload.id, submitInfo[twcSrf.Type].fields, submitInfo[twcSrf.Type].values);
-
-            } else {
-
-              
-
-                var newSrf = twcSrf.get();
-                newSrf.sRFStatus = twcSrf.Status.Draft;
-                newSrf.sRFRequestedDate = (new Date()).addHours(12);    // @@NOTE: to account for the GMT difference of US servers
-                newSrf.sRFSubmittedBy = userInfo.profile || null;
-                core.array.each(submitInfo[twcSrf.Type].fields, (field, idx) => {
-                    if (!newSrf.hasField(field)) { return; }
-                    newSrf.set(field, submitInfo[twcSrf.Type].values[idx]);
-                })
-
-                payload.id = newSrf.save();
-            }
-
-            //
-            deleteSitesSrfItem(payload.items_deleted);
-            deleteSitesSrfFile(payload);
-
-            //
-            saveSiteSrfItems(payload, payload[`items_${twcSrfItem.StepType.TME}`] || []);
-            saveSiteSrfItems(payload, payload[`items_${twcSrfItem.StepType.ATME}`] || []);
-            saveSiteSrfItems(payload, payload[`items_${twcSrfItem.StepType.GIE}`] || []);
-            saveSiteSrfItems(payload, payload[`items_${twcSrfItem.StepType.FEEDER}`] || []);
-            saveSiteSrfFile(payload);
-
-            if (srfCancelled) {
-                twcSrfWorkflowEngine.cancelWorkflow({ srf: payload.id });
-            } else if (payload.submitOnSave) {
-                submitSiteSrf(userInfo, { srf: payload.id });
-            }
-
-            return payload.id;
-
         }
         function saveSiteSrfItems(payload, items, parentItem) {
+            core.logDebug('SAVE-SRF-ITEMS-START', `Stage: ${payload.keepSaving?.stage || 'NONE'} - Units Starts: ${core.env.units()}`);
             core.array.each(items, item => {
                 saveSiteSrfItem(item, payload, parentItem);
             })
@@ -141,6 +190,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     deleteSitesSrfItem(item.relatedItemsDelete);
                 }
             })
+            core.logDebug('SAVE-SRF-ITEMS-END', `Stage: ${payload.keepSaving?.stage || 'NONE'} - Units End: ${core.env.units()}`);
         }
 
         function saveEqActions(item, payload) {
@@ -151,6 +201,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 //         once submitted / workflow started it cannot be edited either, only status changes
                 if (!item.isNew) { return; }
 
+                if (item.ss_actionSaved) { return; }
+
                 var requestType = item[twcSrfItem.Fields.REQUEST_TYPE];
                 var equipmentId = item[twcSrfItem.Fields.EQUIPMENT_ID] || item[twcSrfItem.Fields.TME_ID];
                 saveEqAction(item, payload, equipmentId, (requestType == twcSrfItem.RequestType.SWAP) ? twcSrfItem.RequestType.REMOVE : requestType)
@@ -158,9 +210,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (requestType == twcSrfItem.RequestType.SWAP) { saveEqAction(item, payload, null, twcSrfItem.RequestType.INSTALL); }
 
             } catch (e) {
+                // @@TODO: this should stored in some log or something
                 log.error('Equip Action Save Failed', e);
                 log.error('Equip Action Save Failed', e.stack);
+            } finally {
+                item.ss_actionSaved = true;
             }
+            saveSiteSrf_validateUnits();
         }
         function saveEqAction(item, payload, equipmentId, requestType) {
             var eqAction = twcEqAct.get();
@@ -175,6 +231,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function saveSiteSrfItem(item, payload, parentItem) {
             if (!item.dirty) { return; }
+            if (item.ss_saved) { return; }
 
             if (parentItem) {
                 item[twcSrfItem.Fields.TMI_ID_SRF] = parentItem.id;
@@ -194,7 +251,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (!item.id) { item.isNew = true; }
             item.id = srfItem.save();
 
-
+            item.ss_saved = true;
+            saveSiteSrf_validateUnits();
         }
 
 
@@ -203,7 +261,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             core.array.each(items, item => {
                 try {
                     if (item.relatedItems) { deleteSitesSrfItem(item.relatedItems); }
-                    
+
+                    if (item.ss_deleted) { return; }
+
                     // @@NOTE: Deleting Eq. Action record first to avoid dependency issue on SRF Item record.
                     var srfItemId = item.id;
                     if (!srfItemId) { return; }
@@ -219,7 +279,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 } catch (e) {
                     log.error('Delete SRF Item Failed', e.message);
                     // @@TODO:
+                } finally {
+                    item.ss_deleted = true;
                 }
+
+                saveSiteSrf_validateUnits();
             });
         }
 
@@ -237,6 +301,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             core.array.each(payload.files, file => {
                 if (!file.dirty) { return; }
+                if (file.ss_saved) { return; }
 
                 if (!file[twcFile.Fields.R_TYPE]) {
                     file[twcFile.Fields.R_TYPE] = twcUtils.SrfDeafultFileType.id;
@@ -265,16 +330,26 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 });
                 recu.submit(twcFile.Type, srfFile.id, twcFile.Fields.FILE, nsFile.fileId);
 
+                file.ss_saved = true;
+                delete file.fileObject;
+                
+                saveSiteSrf_validateUnits();
             })
         }
         function deleteSitesSrfFile(payload) {
             if (!payload.files_deleted) { return; }
             core.array.each(payload.files_deleted, file => {
                 // @@TODO: delete actual file
+                if (file.ss_deleted) { return; }
 
                 recu.del(twcFile.Type, file.id);
+                file.ss_deleted = true;
+                saveSiteSrf_validateUnits();
             })
         }
+
+
+
 
         function renderSiteLocatorPanel(userInfo, featureId) {
             var html = `

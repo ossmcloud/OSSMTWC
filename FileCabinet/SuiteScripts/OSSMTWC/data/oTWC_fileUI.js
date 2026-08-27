@@ -16,8 +16,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var showTypeRelatedFields = true;
             var fileTypeOptions = { isVendor: userInfo.isVendor, showParent: options?.showParent, recordType: options?.recordType }
             if (options?.srf) {
-                fileTypeOptions.filters = { [`t.${twcFileType.Fields.USE_IN_SRF}`]: 'T' }
                 showTypeRelatedFields = userInfo.isEmployee;
+                fileTypeOptions.filters = { [`t.${twcFileType.Fields.USE_IN_SRF}`]: 'T' }
+                if (!showTypeRelatedFields) {
+                    fileTypeOptions.filters[`t.${twcFileType.Fields.PUBLIC}`] = 'T';
+                }
+                
+                
             } else if (options?.company) {
                 fileTypeOptions.filters = options.filters || `and (
                     t.${twcFileType.Fields.HEALTH__AND__SAFETY} = 'T' 
@@ -28,13 +33,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var fileTypes = twcUtils.getFileTypes(fileTypeOptions);
 
+            var fileType = file[twcFile.Fields.R_TYPE];
+            var fileStatus = file[twcFile.Fields.STATUS];
+            if (!showTypeRelatedFields) {
+                fileType = fileTypes[0].value;
+                fileStatus = fileTypes[0]?.statuses[0];
+            }
+
             fieldGroup.fields.push({ id: 'upload-file', label: 'File', width: '100%', type: 'file', accept: '.pdf' })
             fieldGroup.fields.push({ id: twcFile.Fields.NAME, label: 'Name', width: '100%', mandatory: true })
-            if (showTypeRelatedFields) {
-                fieldGroup.fields.push({ id: twcFile.Fields.R_TYPE, label: 'Type', width: 'calc(100% - 233px)', mandatory: true, allowAll: false, dataSource: fileTypes })
-                fieldGroup.fields.push({ id: twcFile.Fields.REVISION, label: 'Revision', readOnly: nonTwcReadOnly, width: '100px' })
-                fieldGroup.fields.push({ id: twcFile.Fields.STATUS, label: 'Status', width: '120px', readOnly: nonTwcReadOnly, mandatory: !nonTwcReadOnly, lineBreak: true })
-            }
+            // if (showTypeRelatedFields) {
+            fieldGroup.fields.push({ id: twcFile.Fields.R_TYPE, label: 'Type', width: 'calc(100% - 233px)', mandatory: true, allowAll: false, dataSource: fileTypes, value: fileType, hide: !showTypeRelatedFields })
+            fieldGroup.fields.push({ id: twcFile.Fields.REVISION, label: 'Revision', readOnly: nonTwcReadOnly, width: '100px', hide: !showTypeRelatedFields })
+            fieldGroup.fields.push({ id: twcFile.Fields.STATUS, label: 'Status', width: '120px', readOnly: nonTwcReadOnly, mandatory: !nonTwcReadOnly, lineBreak: true, value: fileStatus, hide: !showTypeRelatedFields })
+            // }
             fieldGroup.fields.push({ id: twcFile.Fields.DESCRIPTION, label: 'Description', width: '100%', rows: 5 })
 
             configUIFields.formatPanelFields(file, fieldGroup);

@@ -177,7 +177,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
 
             } else if (context.request.parameters.action == 'save') {
                 var payload = JSON.parse(context.request.body);
-                return { id: twcSiteRequestUtils.saveSiteSrf(userInfo, payload) };
+                return twcSiteRequestUtils.saveSiteSrf(userInfo, payload);
 
             } else if (context.request.parameters.action == 'submit') {
                 var payload = JSON.parse(context.request.body);
