@@ -659,10 +659,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER] = this.ui.getControl(twcSrf.Fields.CUSTOMER).value
                         }
 
+
+                        // @@NOTE: this is a bit of a stretch for the ui table control Ihave as that does not support grouping (i.e.: it should but it does not)
+                        //         this bit works only thanks to stuff done on the server side:
+                        //              FileCabinet\SuiteScripts\OSSMTWC\data\oTWC_srfUI.js     : func: getSrfItems             => here we populate the 'expand' field with <span class="twc-srf-item-expand">
+                        //                                                                      : func: getTmeFields            => here we add onRowInit function to initially hide child rows
+                        //              FileCabinet\SuiteScripts\OSSMTWC\data\oTWC_srfItemUI.js : func: getStepTableUIControl   => here we add the 'expand' column to the table
+                        //         here we need a function: initTmeTableExpandCollapse because we need to call this at first load but also every time the table is re-render (filter selected)
                         var tmeTable = this.ui.getControl('customrecord_twc_srf_itm_1');
-                        // core.array.each(tmeTable.rows, row => {
-                        //     if (row.data?.child) { row.cssClass += 'o-row-child'; }
-                        // })
+                        tmeTable.onInitEvents = (table) => { initTmeTableExpandCollapse(); }
 
                         const initTmeTableExpandCollapse = () => {
                             core.array.each(tmeTable.rows, row => {
@@ -716,13 +721,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 }
 
                             })
+
+                            tmeTable.ui.find('.twc-srf-item-create-lib').click(e => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                var rowIndex = jQuery(e.currentTarget).closest('.o-row').data('idx');
+                                var dataRow = tmeTable.getDataRows()[rowIndex];
+                                console.log(dataRow.data);
+                                var url = core.url.record(twcEqLibUI.Type, dataRow.data[twcSrfItem.Fields.EQUIPMENT_LIBRARY]);
+                                window.open(`${url}&srfItem=${dataRow.data.id}`);
+                                
+                            })
                         }
                         initTmeTableExpandCollapse();
 
-                        tmeTable.onInitEvents = (table) => {
-                            initTmeTableExpandCollapse();
-
-                        }
 
 
                         // @@TODO: test only

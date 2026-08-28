@@ -98,6 +98,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var items = twcSrfItem.select(
                 {
                     where: { [twcSrfItem.Fields.SRF]: dataSource.id || 0, },
+                    joins: {
+                        type: 'left',
+                        table: 'customrecord_twc_eq_type',
+                        fx: 'custrecord_twc_srf_itm_type',
+                        fields: [{ name: 'custrecord_twc_eq_type_create_lib_item', alias: 'create_lib_item' }]
+                    },
                     useNames: true
                 }
             );
@@ -105,6 +111,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var tempItems = [];
             core.array.each(items, item => {
                 var parentId = item[twcSrfItem.Fields.TMI_ID_SRF];
+                if (item.create_lib_item == 'T') {
+                    item.create_lib_item = '<span class="twc-clickable twc-srf-item-create-lib" title="create library entry">Lib</span>';
+                }
                 if (parentId) {
                     item.child = true;
                     var parent = items.find(i => { return i.id == parentId; })

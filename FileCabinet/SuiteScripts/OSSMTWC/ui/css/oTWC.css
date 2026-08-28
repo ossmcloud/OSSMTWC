@@ -2779,3 +2779,8 @@ span.twc-srf-item-expand:hover {
     background-color: var(--accent-bkgd-color);
     color: var(--accent-fore-color)
 }
+
+span.twc-srf-item-create-lib {
+    text-decoration: underline;
+    color: var(--accent-fore-color);
+}

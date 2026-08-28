@@ -249,6 +249,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             /*
                 options properties:
                     minimal:    bool                only selects id and name
+                    tableAlias: string              optional (DEFAULT: r if joins specified)
 
                     fields:     string              an sql select statement (can be more than one fields, no starting comma)
                     fields:     Array<string>       a list of rec.Fields.FIELD_NAME to limit the select
@@ -262,41 +263,64 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     orderBy:    Array<string>       a list of rec.Fields.FIELD_NAME to build the order by
                     orderBy:    Object              { FIELD_NAME: 'ASC', FIELD_NAME: 'DESC' }
 
+                    joins:      Object || Array<Object> 
+                                                    {
+                                                        type: string,               MANDATORY [join, left, right]    DEFAULT join
+                                                        table: string,              MANDATORY
+                                                        alias: string,  
+                                                        fk: string,                 MANDATORY
+                                                        fields: Array<String>       
+                                                    }
+
             */
 
             select(options) {
-                var sql = `select  id, \n`;
+                var tableAlias = options?.tableAlias;
+                if (!tableAlias && options?.joins !== undefined) { tableAlias = 'r.'; }
+                if (tableAlias && !tableAlias.endsWith('.')) { tableAlias += '.'; }
+                if (!tableAlias) { tableAlias = ''; }
 
-                var selectFormat = (field, alias) => {
+                var joinTableAliases = 97;  // lower case a
+                const getJoinTableAlias = (join) => {
+                    if (join.alias) { return join.alias; }
+                    // @@NOTE: if we have more than 22 joins this would conflict with default tableAlias (r)
+                    return String.fromCharCode(joinTableAliases++);
+                }
+
+
+
+                const selectFormat = (field, alias) => {
                     var fieldAlias = alias || field.alias;
                     if (fieldAlias) { fieldAlias = sanitizeString(fieldAlias); }
                     var fieldAliasName = `as ${fieldAlias || field.name}_name`;
 
                     var sql = '';
                     if (field.type == FIELD_TYPE.DATE) {
-                        sql += `        TO_CHAR(${field.name}, 'YYYY-MM-DD') as ${fieldAlias}, `
+                        sql += `        TO_CHAR(${tableAlias}${field.name}, 'YYYY-MM-DD') as ${fieldAlias}, `
                     } else if (field.type == FIELD_TYPE.DATE_TIME) {
-                        sql += `        TO_CHAR(${field.name}, 'YYYY-MM-DD HH24:Mi:ss') as ${fieldAlias}, `
+                        sql += `        TO_CHAR(${tableAlias}${field.name}, 'YYYY-MM-DD HH24:Mi:ss') as ${fieldAlias}, `
                     } else {
                         if (field.name == fieldAlias) {
-                            sql += `        ${field.name}, `
+                            sql += `        ${tableAlias}${field.name}, `
                         } else {
-                            sql += `        ${field.name} as ${fieldAlias}, `
+                            sql += `        ${tableAlias}${field.name} as ${fieldAlias}, `
                         }
-                        if (field.type == FIELD_TYPE.SELECT || field.type == FIELD_TYPE.MULTISELECT) { sql += `BUILTIN.DF(${field.name}) ${fieldAliasName}, ` }
+                        if (field.type == FIELD_TYPE.SELECT || field.type == FIELD_TYPE.MULTISELECT) { sql += `BUILTIN.DF(${tableAlias}${field.name}) ${fieldAliasName}, ` }
                     }
                     sql += '\n'
                     return sql;
                 }
 
+                var sql = `select  ${tableAlias}id, \n`;
+
                 if (options?.minimal) {
-                    sql += `name, \n`;
+                    sql += `${tableAlias}name, \n`;
                 } else {
 
                     if (options?.fields) {
 
                         if (typeof (options.fields) == 'string') {
-                            sql += `\n${options.fields}`
+                            sql += `\n${tableAlias}${options.fields}`
                         } else if (typeof (options.fields) == 'object') {
                             if (Array.isArray(options.fields)) {
                                 core.array.each(options.fields, f => {
@@ -329,14 +353,30 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             }
                         }
                         if (!hasStdFields) {
-                            sql += `        TO_CHAR(created, 'YYYY-MM-DD HH24:Mi:ss') as created, TO_CHAR(lastmodified, 'YYYY-MM-DD HH24:Mi:ss') as modified`
+                            sql += `        TO_CHAR(${tableAlias}created, 'YYYY-MM-DD HH24:Mi:ss') as created, TO_CHAR(${tableAlias}lastmodified, 'YYYY-MM-DD HH24:Mi:ss') as modified, `
                         }
                     }
                 }
 
-                var params = ['F'];
-                sql += `\nfrom    ${this.type}\nwhere   isinactive = ? `;
+                if (options?.joins) {
+                    core.array.each(core.utils.toArray(options?.joins), join => {
+                        join.alias = getJoinTableAlias(join);
+                        core.array.each(join.fields, field => {
+                            sql += `        ${join.alias}.${field.name} ${field.alias || ''},\n`;
+                        })
+                    })
+                }
 
+                var params = ['F'];
+                sql += `\nfrom    ${this.type} ${tableAlias?.replace('.', '') || ''}`;
+
+                if (options?.joins) {
+                    core.array.each(core.utils.toArray(options?.joins), join => {
+                        sql += `\n${join.type || ''} join ${join.table} ${join.alias} on ${join.alias}.id = ${tableAlias}${join.fx}`;
+                    })
+                }
+
+                sql += `\nwhere   ${tableAlias}isinactive = ? `
 
                 if (options?.where) {
                     if (typeof (options.where) == 'string') {
@@ -354,7 +394,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     params.push(filter.values);
                                 }
 
-                                sql += `\nand     ${field.name} ${filter.op || filter.operator || '='} ${placeholders}`
+                                sql += `\nand     ${tableAlias}${field.name} ${filter.op || filter.operator || '='} ${placeholders}`
 
                             })
                         } else {
@@ -371,10 +411,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     } else {
                                         params.push(options.where[f].values);
                                     }
-                                    sql += `\nand     ${field.name} ${op} ${placeholders}`
+                                    sql += `\nand     ${tableAlias}${field.name} ${op} ${placeholders}`
 
                                 } else {
-                                    sql += `\nand     ${field.name} = ?`
+                                    sql += `\nand     ${tableAlias}${field.name} = ?`
                                     params.push(options.where[f]);
                                 }
                             }
@@ -392,18 +432,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 if (idx > 0) {
                                     sql += ', ';
                                 }
-                                sql += ` ${orderBy}`;
+                                sql += ` ${tableAlias}${orderBy}`;
                             })
                         } else {
                             for (var f in options.orderBy) {
                                 var field = this.findField(f);
-                                sql += `${field.name} ${options.orderBy[f]}`
+                                sql += `${tableAlias}${field.name} ${options.orderBy[f]}`
                             }
                         }
                     }
 
                 } else {
-                    sql += `\norder by name`
+                    sql += `\norder by ${tableAlias}name`
                 }
 
                 var sql = { query: sql, params: params }

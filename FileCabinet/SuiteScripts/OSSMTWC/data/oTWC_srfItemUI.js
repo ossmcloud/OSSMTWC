@@ -168,8 +168,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             }
 
+            if (readOnly && userInfo.isEmployee) {
+                fields['create_lib_item'] = { title: '', nullText: '', noFilter: true, noSort: true, styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
+            }
+
             for (var k in fields) {
-                if (k == 'expand') { continue; }
+                if (k == 'expand' || k =='create_lib_item') { continue; }
                 if (fields[k].constructor.name == 'String') {
                     fields[k] = { title: fields[k] }
                 }
