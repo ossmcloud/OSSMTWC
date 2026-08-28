@@ -234,6 +234,14 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             return twcSafUI.getSafActionRecord(saf, childRecord, userInfo);
         }
 
+        function getSafActionList(options, userInfo) {
+            // var saf = twcSaf.get(options.saf.id);
+            // saf.copyFromObject(options.saf);
+            // saf.siteId = options.saf.siteId;
+            if (!options.type) { options.type = twcSaf.Type; }
+            return twcSafUI.getSafActionList(options, userInfo);
+        }
+
         function getVendorDocs(options) {
             var files = twcUtils.getFiles({
                 filters: {
@@ -626,7 +634,9 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             })
         }
 
-        function validateAndCompleteActions(saf) {
+        function validateAndCompleteActions(saf, actions) {
+            // throw new Error(JSON.stringify(actions))
+
             var safActions = coreSQL.run(`
                 select  sa.id saf_action_id, ea.id as ea_action_id, ea.name as eq_action, ea.custrecord_twc_eq_action_eq as equip_id, ea.custrecord_twc_eq_action_type as ea_type,
                         sa.custrecord_twc_saf_a_status as saf_status, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as saf_status_name,
@@ -636,8 +646,13 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 where   sa.custrecord_twc_saf_a_saf = ${saf}
             `);
 
+            var actionSkipped = false;
             core.array.each(safActions, sa => {
                 if (sa.saf_status != twcUtils.SafActionStatus.Detached) {
+                    if (actions && actions.indexOf(parseInt(sa.saf_action_id)) < 0) {
+                        actionSkipped = true;
+                        return;
+                    }
                     recu.submit(twcSafAction.Type, sa.saf_action_id, [twcSafAction.Fields.SAF_ACTION_STATUS, twcSafAction.Fields.SAF_ACTION_COMPLETE], [twcUtils.SafActionStatus.Complete, true]);
                     recu.submit(twcEqAct.Type, sa.ea_action_id, twcEqAct.Fields.EA_STATUS, twcUtils.EaActionStatus.Complete);
 
@@ -649,6 +664,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
                 }
             })
+            return !actionSkipped;
         }
 
         function saveSafImage(options) {
@@ -689,9 +705,11 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
         }
 
         function setSafReviewed(options) {
-            recu.submit(twcSaf.Type, options.saf, [twcSaf.Fields.STATUS, twcSaf.Fields.REVIEW_COMMENT], [twcSaf.Status.Complete, options.comment]);
+            //
             twcSafLog.logInfo(options.saf, `Completion photos reviewed`, `Comment: ${options.comment}`);
-            validateAndCompleteActions(options.saf);
+            var completed = validateAndCompleteActions(options.saf, options.actions);
+            recu.submit(twcSaf.Type, options.saf, [twcSaf.Fields.STATUS, twcSaf.Fields.REVIEW_COMMENT], [completed ? twcSaf.Status.Complete : twcSaf.Status.PartiallyComplete, options.comment]);
+
         }
 
         function getSafTimeBlocks(id) {
@@ -787,6 +805,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             renderSiteAccessPanel: renderSiteAccessPanel,
             getSafCrewRecord: getSafCrewRecord,
             getSafActionRecord: getSafActionRecord,
+            getSafActionList: getSafActionList,
             getVendorDocs: getVendorDocs,
 
             saveNewSaf: saveNewSaf,

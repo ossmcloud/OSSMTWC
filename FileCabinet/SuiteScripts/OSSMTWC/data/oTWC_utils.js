@@ -448,7 +448,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Pending: { color: 'white', backgroundColor: 'olive' },
             Approved: { color: 'white', backgroundColor: 'limegreen' },
             Rejected: { color: 'white', backgroundColor: 'red' },
-            PartiallyComplete: { color: 'white', backgroundColor: 'yellow' },
+            PartiallyComplete: { color: 'blue', backgroundColor: 'yellow' },
             Complete: { color: 'white', backgroundColor: 'green' },
             Cancelled: { color: 'white', backgroundColor: 'silver' },
             AwaitingPhotos: { color: 'white', backgroundColor: 'orange' },
@@ -1223,25 +1223,56 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         srfi.custrecord_twc_srf_itm_req_type, BUILTIN.DF(srfi.custrecord_twc_srf_itm_req_type) as custrecord_twc_srf_itm_req_type_name,
                         srfi.custrecord_twc_srf_itm_desc, srfi.custrecord_twc_srf_itm_length_mm, srfi.custrecord_twc_srf_itm_width_mm, srfi.custrecord_twc_srf_itm_depth_mm,
                         srfi.custrecord_twc_srf_itm_ht_on_twr, srfi.custrecord_twc_srf_itm_azimuth, srfi.custrecord_twc_srf_itm_b_end, 
+                        srfi.custrecord_twc_srf_itm_tme_srf as parent_srf_item, srfi.id as srf_item
                 from    customrecord_twc_eq_action a
                 join 	customrecord_twc_srf_itm srfi on srfi.id = a.custrecord_twc_eq_action_srf_item
                 join    customrecord_twc_equip e on e.id = a.custrecord_twc_eq_action_eq
                 where   custrecord_twc_eq_action_srf = ${options.srf}
                 ${safFilter}
-                order by a.id
+                order by srfi.id
+
             `, action => {
+                if (options.thisSaf && options.thisSaf == action['custrecord_twc_eq_action_saf']) { return; }
+
                 if (action['custrecord_twc_eq_action_saf']) {
-                    action.select = `<span data-id="${action.ea_id}" data-saf="${action['custrecord_twc_eq_action_saf']}" class="o-table-action twc-clickable" data-action="detach">detach from<br />${action['custrecord_twc_eq_action_saf_name']}</span>`;
+                    action.select = `<span data-id="${action.ea_id}" data-srf-id="${action.srf_item}" data-srf-parent-id="${action.parent_srf_item || ''}" data-saf="${action['custrecord_twc_eq_action_saf']}" class="o-table-action twc-clickable" data-action="detach">detach from<br />${action['custrecord_twc_eq_action_saf_name']}</span>`;
                 } else {
-                    action.select = `<input data-id="${action.ea_id}" type="checkbox" />`;
+                    action.select = `<input data-id="${action.ea_id}" data-srf-id="${action.srf_item}" data-srf-parent-id="${action.parent_srf_item || ''}" type="checkbox" />`;
                 }
                 action['saf-detach'] = `<span class="o-table-action twc-clickable" data-action="delete">${twcIcons.get('trash', 16, 'red')}</span>`
-                srfActions.push(action);
+
+                if (action.parent_srf_item) {
+                    var parent = srfActions.find(a => { return a.srf_item == action.parent_srf_item })
+                    if (!parent.relatedItems) {
+                        parent.relatedItems = [];
+                        parent.expand = `<span class="twc-srf-item-expand" data-collapsed="true">+</span>`;
+                    }
+                    action.custrecord_twc_srf_itm_srf_name = '';
+                    action.child = true;
+                    parent.relatedItems.push(action);
+                } else {
+                    srfActions.push(action);    
+                }
+                
             })
-            return srfActions;
+
+
+            var tempActions = [];
+            core.array.each(srfActions, action => {
+                tempActions.push(action);
+                if (action.relatedItems) {
+                    tempActions.push(...action.relatedItems);
+                }
+            })
+
+            return tempActions;
         }
         function getSafActions(saf) {
             var safActions = [];
+            var actionStatusFilter = '';
+            if (saf.actionStatus) {
+                actionStatusFilter = `and sa.custrecord_twc_saf_a_status = ${saf.actionStatus}`;
+            }
             coreSQL.each(`
                 select  sa.id, 
                         sa.custrecord_twc_saf_a_status, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as custrecord_twc_saf_a_status_name,
@@ -1254,17 +1285,45 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         srfi.custrecord_twc_srf_itm_req_type, BUILTIN.DF(srfi.custrecord_twc_srf_itm_req_type) as custrecord_twc_srf_itm_req_type_name,
                         srfi.custrecord_twc_srf_itm_desc, srfi.custrecord_twc_srf_itm_length_mm, srfi.custrecord_twc_srf_itm_width_mm, srfi.custrecord_twc_srf_itm_depth_mm,
                         srfi.custrecord_twc_srf_itm_ht_on_twr, srfi.custrecord_twc_srf_itm_azimuth, srfi.custrecord_twc_srf_itm_b_end, 
+                        srfi.custrecord_twc_srf_itm_tme_srf as parent_srf_item, srfi.id as srf_item
                 from    customrecord_twc_saf_action sa
                 join    customrecord_twc_eq_action a on a.id = sa.custrecord_twc_saf_a_ea
                 join 	customrecord_twc_srf_itm srfi on srfi.id = a.custrecord_twc_eq_action_srf_item
                 join    customrecord_twc_equip e on e.id = a.custrecord_twc_eq_action_eq
                 where   sa.custrecord_twc_saf_a_saf = ${saf.id}
+                ${actionStatusFilter}
                 order by sa.created
             `, action => {
                 action['saf-detach'] = (action['custrecord_twc_saf_a_status'] == SAF_ACTION_STATUS.Pending) ? '<span class="o-table-action twc-clickable" data-action="detach">detach</span>' : '';
-                safActions.push(action);
+
+                if (saf.showSelect) {
+                    action.select = `<input data-id="${action.id}" data-srf-id="${action.srf_item}" data-srf-parent-id="${action.parent_srf_item || ''}" type="checkbox" />`;
+                }
+
+                if (action.parent_srf_item) {
+                    var parent = safActions.find(a => { return a.srf_item == action.parent_srf_item })
+                    if (!parent.relatedItems) {
+                        parent.relatedItems = [];
+                        parent.expand = `<span class="twc-srf-item-expand" data-collapsed="true">+</span>`;
+                    }
+                    action.custrecord_twc_srf_itm_srf_name = '';
+                    action.child = true;
+                    parent.relatedItems.push(action);
+                } else {
+                    safActions.push(action);
+                }
+                
             })
-            return safActions;
+
+            var tempActions = [];
+            core.array.each(safActions, action => {
+                tempActions.push(action);
+                if (action.relatedItems) {
+                    tempActions.push(...action.relatedItems);
+                }
+            })
+
+            return tempActions;
         }
 
         function getSafActionDetachReason() {

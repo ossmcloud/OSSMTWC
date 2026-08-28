@@ -65,8 +65,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         const SAVE_MIN_UNITS = 150;
-        function saveSiteSrf_validateUnits() {
-            if (core.env.units() < SAVE_MIN_UNITS) {
+        function saveSiteSrf_validateUnits(customLimit) {
+            if (core.env.units() < (customLimit || SAVE_MIN_UNITS)) {
                 throw new Error('KEEP_SAVING');
             }
         }
@@ -152,6 +152,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     return payload;
                 }
                 if (payload.keepSaving.stage == 7) {
+                    // @@NOTE: this will throw unless it is the 1st step to run on the session
+                    //         we need to make sure functions here have max units allowed
+                    saveSiteSrf_validateUnits(950);
                     if (srfCancelled) {
                         twcSrfWorkflowEngine.cancelWorkflow({ srf: payload.id });
                     } else if (payload.submitOnSave) {
@@ -332,7 +335,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 file.ss_saved = true;
                 delete file.fileObject;
-                
+
                 saveSiteSrf_validateUnits();
             })
         }

@@ -55,31 +55,31 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
             testFunction() {
 
                 try {
-                    var dataSource = { id: 85 }
+                    // var dataSource = { id: 85 }
 
-                    var items = twcSrfItem.select(
-                        {
-                            where: { [twcSrfItem.Fields.SRF]: dataSource.id || 0, },
-                            useNames: true,
-                            // tablePrefix: 'r',
-                            joins: 
-                                {
-                                    type: 'left',
-                                    table: 'customrecord_twc_eq_type',
-                                    fx: 'custrecord_twc_srf_itm_type',
-                                    // alias: 'eqt',
-                                    fields: [
-                                        { name: 'custrecord_twc_eq_type_create_lib_item', alias: 'create_lib_item' },
-                                    ]
-                                }
-                            ,
-                            getSql: true
-                        }
-                    );
+                    // var items = twcSrfItem.select(
+                    //     {
+                    //         where: { [twcSrfItem.Fields.SRF]: dataSource.id || 0, },
+                    //         useNames: true,
+                    //         // tablePrefix: 'r',
+                    //         joins: 
+                    //             {
+                    //                 type: 'left',
+                    //                 table: 'customrecord_twc_eq_type',
+                    //                 fx: 'custrecord_twc_srf_itm_type',
+                    //                 // alias: 'eqt',
+                    //                 fields: [
+                    //                     { name: 'custrecord_twc_eq_type_create_lib_item', alias: 'create_lib_item' },
+                    //                 ]
+                    //             }
+                    //         ,
+                    //         getSql: true
+                    //     }
+                    // );
 
-                    console.log(items.query);
-                    console.log(coreSQL.run(items));
-                    //deleteSds(30)
+                    // console.log(items.query);
+                    // console.log(coreSQL.run(items));
+                    // //deleteSds(30)
                     //recu.submit('customrecord_twc_srf', 28, 'custrecord_twc_srf_sds_form_data', null);
 
                     //twcSiteAccessUtils.deleteSaf(147);
@@ -127,7 +127,7 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
 
                     //twcSrfWorkflowEngineUI.getForm({ srf: 22 }).popUp();
                     // twcSrfWorkflowEngine.deleteWorkflow({ srf: 22 })
-                    //twcSrfWorkflowEngine.initWorkFlow({ srf: 22 });
+                    twcSrfWorkflowEngine.initWorkFlow({ srf: 83, profile: 4201 });
 
                     //var eqAction = twcEquipAction.get();
 

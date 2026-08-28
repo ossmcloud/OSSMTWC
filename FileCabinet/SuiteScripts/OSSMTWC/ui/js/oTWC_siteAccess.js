@@ -330,8 +330,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             initExisting() {
                 if (!this.data.siteAccessInfo.id) { return; }
                 this.#accessRequirements = {};
+                this.#accessRequirements.conditions = [];
                 this.#accessRequirements.timeBlocks = this.data.siteTimeBlocks;
                 this.#accessRequirements.timeBlocksAllocated = 0;
+
                 for (var d in this.data.siteTimeBlocks) {
                     for (var saf in this.data.siteTimeBlocks[d]) {
                         if (saf == 't') {
@@ -339,6 +341,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         }
                     }
                 }
+                if (!this.data.siteAccessInfo.actions) { this.data.siteAccessInfo.actions = this.#page.ui.getControl('saf-eq-action-table').data; }
 
                 //this.ui.getControl('saf-vendor').on('change');
                 //this.ui.getControl('saf-type').value = this.data.siteAccessInfo[twcSaf.Fields.R_TYPE];
@@ -745,6 +748,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
+
         class TWCEqActionForm {
             #safBuilder = null;
             #form = null;
@@ -779,10 +783,41 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#safActionsTable.ui.css('display', 'block');
             }
 
+            initSrfTable() {
+                this.#safActionsTable = this.#form.getControl('srf-actions');
+                this.#safActionsTable.onRowInit = (table, row) => {
+                    if (row.data.child) { row.cssClass += 'o-row-child o-row-hidden'; }
+                }
+            }
             selectSrf() {
                 this.waitShow();
-                this.page.post({ action: 'get-srf-actions' }, { srf: this.#form.getControl('saf-action-srf').value }).then(res => {
+                this.page.post({ action: 'get-srf-actions' }, { srf: this.#form.getControl('saf-action-srf').value, thisSaf: this.data.siteAccessInfo?.id }).then(res => {
                     this.#safActionsTable.render(res.data, true);
+                    this.#safActionsTable.ui.find('.twc-srf-item-expand').click(e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        var rowIndex = jQuery(e.currentTarget).closest('.o-row').data('idx');
+                        var collapse = !(jQuery(e.currentTarget).data('collapsed') || false);
+                        jQuery(e.currentTarget).data('collapsed', collapse);
+                        jQuery(e.currentTarget).html(collapse ? '+' : '-');
+
+                        var dataRows = this.#safActionsTable.getDataRows();
+                        for (var x = (rowIndex + 1); x < dataRows.length; x++) {
+                            if (!dataRows[x].data.child) { return; }
+                            if (collapse) {
+                                dataRows[x].ui().addClass('o-row-hidden')
+                            } else {
+                                dataRows[x].ui().removeClass('o-row-hidden')
+                            }
+                        }
+
+                    })
+                    this.#safActionsTable.ui.find('input[type="checkbox"]').on('click', e => {
+                        var checkBox = jQuery(e.currentTarget);
+                        var checked = checkBox.is(':checked') ? 'checked' : '';
+                        this.#safActionsTable.ui.find(`input[data-srf-parent-id=${checkBox.data('srf-id')}]`).prop('checked', checked);
+                    })
                     this.#safActionsTable.ui.find('#srf-actions-check-all').on('click', e => {
                         var checked = jQuery(e.currentTarget).is(':checked') ? 'checked' : '';
                         this.#safActionsTable.ui.find('input[type="checkbox"]').prop('checked', checked);
@@ -837,9 +872,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
 
                     this.#form = twcUIPanel.ui(safActions.ui);
-                    this.#safActionsTable = this.#form.getControl('srf-actions');
                     this.#form.getControl('saf-action-srf').on('change', e => { this.selectSrf(); })
-                    //if (form.getControl('saf-action-srf').value) { form.getControl('saf-action-srf').on('change'); }
+
+                    this.initSrfTable();
 
                     dialog.confirm({ title: 'manage action', message: this.#form.ui, width: '1250px', height: '750px' }, () => {
                         try {
@@ -878,6 +913,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
         }
 
+        class TWCEqActionCompleteForm {
+
+        }
+
         class TWCSiteAccessPage extends twcPageBase.TWCPageBase {
             #sitesTable = null;
             #sitePanel = null;
@@ -914,6 +953,30 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.getControl('change-status-button')?.on('click', e => { this.changeStatus(); })
                 this.ui.getControl('assign-reviewer-button')?.on('click', e => { this.assignReviewer(); })
                 this.ui.getControl('review-completion-button')?.on('click', e => { this.photosReviewed(); })
+
+                var safActionsTable = this.ui.getControl(twcSafAction.Type);
+                if (safActionsTable) {
+                    safActionsTable.ui.find('.twc-srf-item-expand').click(e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        var rowIndex = jQuery(e.currentTarget).closest('.o-row').data('idx');
+                        var collapse = !(jQuery(e.currentTarget).data('collapsed') || false);
+                        jQuery(e.currentTarget).data('collapsed', collapse);
+                        jQuery(e.currentTarget).html(collapse ? '+' : '-');
+
+                        var dataRows = safActionsTable.getDataRows();
+                        for (var x = (rowIndex + 1); x < dataRows.length; x++) {
+                            if (!dataRows[x].data.child) { return; }
+                            if (collapse) {
+                                dataRows[x].ui().addClass('o-row-hidden')
+                            } else {
+                                dataRows[x].ui().removeClass('o-row-hidden')
+                            }
+                        }
+
+                    })
+                }
             }
 
             changeStatus() {
@@ -1095,32 +1158,50 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             photosReviewed() {
-                var formConfig = {
-                    controls: [
-                        { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Review Comment', width: '100%', rows: 5, mandatory: true, lineBreak: true },
-                    ]
-                }
-                var form = twcUI.init(formConfig);
-                dialog.open({
-                    title: 'Completion photo reviewed',
-                    content: form.ui,
-                    size: { width: '350px', height: '250px' },
-                    ok: () => {
-                        try {
-                            var values = form.getValues();
-
-                            this.postSync({ action: 'saf-set-reviewed' }, { saf: this.data.siteAccessInfo.id, comment: values.comment });
-
-                            location.reload();
-
-                            return true;
-                        } catch (error) {
-                            dialog.error(error);
-                            return false;
-                        }
-
+                try {
+                    var list = this.postSync({ action: 'saf-action-list' }, { id: this.data.siteAccessInfo.id, actionStatus: twcUtils.SafActionStatus.Pending, showSelect: true });
+                    var formConfig = {
+                        controls: [
+                            { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Review Comment', width: '100%', rows: 5, mandatory: true, lineBreak: true },
+                            list
+                        ]
                     }
-                });
+
+                    var form = twcUI.init(formConfig);
+
+                    var safActionsTable = form.getControl(twcSafAction.Type);
+                    safActionsTable.ui.find('input[type="checkbox"]').on('click', e => {
+                        var checkBox = jQuery(e.currentTarget);
+                        var checked = checkBox.is(':checked') ? 'checked' : '';
+                        safActionsTable.ui.find(`input[data-srf-parent-id=${checkBox.data('srf-id')}]`).prop('checked', checked);
+                    })
+
+                    dialog.open({
+                        title: 'Completion photo reviewed',
+                        content: form.ui,
+                        size: { width: '1000px', height: '70vh' },
+                        ok: () => {
+                            try {
+                                var values = form.getValues();
+
+                                var actions = safActionsTable.ui.find('input[data-id]:checked');
+                                if (actions.length == 0) { throw new Error('No action selected'); }
+                                actions = actions.map(function () { return jQuery(this).data('id'); }).get();
+
+                                this.postSync({ action: 'saf-set-reviewed' }, { saf: this.data.siteAccessInfo.id, comment: values.comment, actions: actions });
+                                location.reload();
+                                return true;
+                            } catch (error) {
+                                dialog.error(error);
+                                return false;
+                            }
+
+                        }
+                    });
+
+                } catch (error) {
+                    dialog.error(error);
+                }
             }
         }
 

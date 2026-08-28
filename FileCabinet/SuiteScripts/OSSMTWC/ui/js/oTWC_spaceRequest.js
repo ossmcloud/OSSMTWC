@@ -872,9 +872,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.ui.getValues();
 
                         if (!DEV) {
-
                             if (!this.ui.getControl(twcFile.Type)?.data.length) { throw new Error('You need to attach at least one file'); }
-
                         }
 
                         var srfItemsCount = 0;

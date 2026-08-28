@@ -89,14 +89,16 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                     if (pageData.editMode) {
                         actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel', id: 'cancel-button' })
                     } else {
-                        if (safRequiresSrf && (safStatus == twcSaf.Status.Approved || safStatus == twcSaf.Status.AwaitingPhotos || safStatus == twcSaf.Status.PhotosReceived)) {
-                            if (pageData.userInfo.isEmployee && safStatus == twcSaf.Status.PhotosReceived) {
+                        if (safRequiresSrf && (safStatus == twcSaf.Status.Approved || safStatus == twcSaf.Status.AwaitingPhotos || safStatus == twcSaf.Status.PhotosReceived || safStatus == twcSaf.Status.PartiallyComplete)) {
+                            if (pageData.userInfo.isEmployee && (safStatus == twcSaf.Status.PhotosReceived || safStatus == twcSaf.Status.PartiallyComplete)) {
                                 if (pageData.siteAccessInfo[twcSaf.Fields.COMPLETION_REVIEWER] == pageData.userInfo.profile) {
                                     actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Completion Reviewed', id: 'review-completion-button' });
                                 } else {
                                     actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Assign Reviewer', id: 'assign-reviewer-button' });
                                 }
-                            } else {
+                            }
+                            
+                            if (safStatus == twcSaf.Status.AwaitingPhotos || safStatus == twcSaf.Status.PhotosReceived || safStatus == twcSaf.Status.PartiallyComplete) {
                                 actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Upload Completion Photos', id: 'upload-photos-button' });
                             }
 
@@ -146,6 +148,12 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 var userInfo = twcConfig.userInfo(context);
                 var payload = JSON.parse(context.request.body);
                 var fields = twcSiteAccessUtils.getSafActionRecord(payload, userInfo);
+                return fields;
+
+            } else if (context.request.parameters.action == 'saf-action-list') {
+                var userInfo = twcConfig.userInfo(context);
+                var payload = JSON.parse(context.request.body);
+                var fields = twcSiteAccessUtils.getSafActionList(payload, userInfo);
                 return fields;
 
             } else if (context.request.parameters.action == 'get-srf-actions') {

@@ -5,6 +5,12 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_srfReview.js', '../data/oTWC_equipment.js', '../data/oTWC_equipAction.js', '../data/oTWC_srfItem.js', '../data/oTWC_sds.js', './oTWC_sdsEngine.js', '../data/oTWC_file.js'],
     function (core, coreSql, recu, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSrfReview, twcEquipment, twcEqAct, twcSrfItem, twcSds, twcSdsEngine, twcFile) {
 
+        // @IMPORTANT NOTE: API Governance
+        //      initEquipment = 10 units + 6 units per action
+        //      after init equip = 58 units
+        //      so we have 1000 - 10 - 58 = 932 / 6 => 155 Max Actions to process we round to 150
+        const MAX_ACTIONS_TO_INIT = 150;
+
         // @@HARDCODED
         const WORKFLOW_STATUS = {
             NEW: 1,
@@ -45,8 +51,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function initEquipment(options) {
+            
             var actions = getEqActions(options);
+            if (actions.length > MAX_ACTIONS_TO_INIT) { throw new Error(`Too many actions to save: ${MAX_ACTIONS_TO_INIT}`); }
+
             core.array.each(actions, action => {
+                // LOOP: 2 units (save rec) + 2 UNITS * 2 for submit = 6 units
                 var eq = twcEquipment.get(action.eq_id);
                 eq.site = action[twcSrf.Fields.SITE];
                 eq.customer = action[twcSrf.Fields.CUSTOMER];
@@ -113,6 +123,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var actions = getEqActions(options);
             core.array.each(actions, action => {
 
+                // @@TODO: this should not happen but it did so I need to keep going but we should remove this line
+                if (!action.eq_id) { return; }
+
+
                 var s = licenseStatus;
                 if (action.ea_type == twcUtils.EqActionType.Remove || action.ea_type == twcUtils.EqActionType.Unlicence || action.ea_type == twcUtils.EqActionType.SwapUnlicence) {
                     // @@NOTE: this is called with 'license' stuff but we may have an unlicense
@@ -139,6 +153,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (!options) { throw new Error('no parameters passed'); }
             if (!options.srf) { throw new Error('invalid parameters passed'); }
 
+            
             initEquipment(options);
 
             // @@NOTE: get SRF and make sure status is Submitted

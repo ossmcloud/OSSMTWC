@@ -6,7 +6,6 @@ SAF:
     https://9061443-sb1.app.netsuite.com/app/common/custom/custrecordentry.nl?rectype=989&id=123
 
 	// @@TODO: SAF 
-    if TME selected then flag related eq as well
 	if detaching form a different saf only do it at submit
 	construction saf => allow to complete each eq. acton
 			done
@@ -19,11 +18,6 @@ Workflow:
 	Planned dates 
 		Only changes to planned dates (pull forward, or push out) should affect future planned dates.
             Exception of the 4x check steps after initial review, should not be able to re-forecast these.
-
-Others:
-	SRF: big files will cause the UI to take time to save
-
-
 
 
 
