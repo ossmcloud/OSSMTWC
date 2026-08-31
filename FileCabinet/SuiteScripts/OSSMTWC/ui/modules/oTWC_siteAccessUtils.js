@@ -295,11 +295,17 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 for (var k in twcUtils.Insurances) {
                     if (insuranceInfo[twcUtils.Insurances[k].field] == twcUtils.NoActiveExpired.Active) {
                         if (insuranceInfo[twcUtils.Insurances[k].fieldEx] < latestDate) {
-                            validationErrors.push(`<b>${insuranceInfo.name}:</b> ${k} Insurance will be expired by ${latestDate}`)
+                            // @@NOTE: TL Does not want to show insurance expiry details (unless the logged in user is the company)
+                            if (userInfo.companyProfile.id == companyId) {
+                                validationErrors.push(`<b>${insuranceInfo.name}:</b> ${k} Insurance will be expired by ${latestDate}`)
+                            } else {
+                                // @@NOTE: if the user is not the company we use a generic message and exit at the 1st failed validations otherwise the message will duplicate
+                                validationErrors.push('A SAF for these dates cannot be processed for the Customer at this time. Please contact the Customer to resolve.')
+                                return;
+                            }
                         }
                     }
                 }
-
             }
 
             validateCompanyInsurance(payload['saf-customer']);
@@ -428,8 +434,6 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
                 var docIds = [];
                 for (var d in payload.documents) { if (payload.documents[d]) { docIds.push(d.replace('file_toggle_', '')); } }
-
-
 
                 try {
                     if (docIds.length > 0) {
@@ -644,24 +648,22 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 from    customrecord_twc_saf_action sa
                 join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea and ea.custrecord_twc_eq_action_saf = sa.custrecord_twc_saf_a_saf
                 where   sa.custrecord_twc_saf_a_saf = ${saf}
+                and     sa.custrecord_twc_saf_a_status in (${twcUtils.SafActionStatus.Pending}, ${twcUtils.SafActionStatus.AwaitingPhotos})
             `);
 
             var actionSkipped = false;
             core.array.each(safActions, sa => {
-                if (sa.saf_status != twcUtils.SafActionStatus.Detached) {
-                    if (actions && actions.indexOf(parseInt(sa.saf_action_id)) < 0) {
-                        actionSkipped = true;
-                        return;
-                    }
-                    recu.submit(twcSafAction.Type, sa.saf_action_id, [twcSafAction.Fields.SAF_ACTION_STATUS, twcSafAction.Fields.SAF_ACTION_COMPLETE], [twcUtils.SafActionStatus.Complete, true]);
-                    recu.submit(twcEqAct.Type, sa.ea_action_id, twcEqAct.Fields.EA_STATUS, twcUtils.EaActionStatus.Complete);
+                if (actions && actions.indexOf(parseInt(sa.saf_action_id)) < 0) {
+                    actionSkipped = true;
+                    return;
+                }
+                recu.submit(twcSafAction.Type, sa.saf_action_id, [twcSafAction.Fields.SAF_ACTION_STATUS, twcSafAction.Fields.SAF_ACTION_COMPLETE], [twcUtils.SafActionStatus.Complete, true]);
+                recu.submit(twcEqAct.Type, sa.ea_action_id, twcEqAct.Fields.EA_STATUS, twcUtils.EaActionStatus.Complete);
 
-                    if (sa.ea_type == twcUtils.EqActionType.Install) {
-                        recu.submit(twcEquipment.Type, sa.equip_id, twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcUtils.EqInstallStatus.Installed)
-                    } else if (sa.ea_type == twcUtils.EqActionType.Remove) {
-                        recu.submit(twcEquipment.Type, sa.equip_id, twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcUtils.EqInstallStatus.Removed)
-                    }
-
+                if (sa.ea_type == twcUtils.EqActionType.Install) {
+                    recu.submit(twcEquipment.Type, sa.equip_id, twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcUtils.EqInstallStatus.Installed)
+                } else if (sa.ea_type == twcUtils.EqActionType.Remove) {
+                    recu.submit(twcEquipment.Type, sa.equip_id, twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcUtils.EqInstallStatus.Removed)
                 }
             })
             return !actionSkipped;

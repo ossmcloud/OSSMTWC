@@ -2,18 +2,11 @@ SRF:
     // @@TODO: SRF
 	When swapping TME show list of ATME/Feeders with toggle
 
+    SRF List: status Feedback issued!!!
+
 SAF:
-    https://9061443-sb1.app.netsuite.com/app/common/custom/custrecordentry.nl?rectype=989&id=123
-
-	// @@TODO: SAF 
-	if detaching form a different saf only do it at submit
-	construction saf => allow to complete each eq. acton
-			done
-			need more pic
-			detach
-			cancel
-			this determines if we have partially completed, completed or back to awaitig pics
-
+    // @@TODO: SAF 
+	
 Workflow:
 	Planned dates 
 		Only changes to planned dates (pull forward, or push out) should affect future planned dates.

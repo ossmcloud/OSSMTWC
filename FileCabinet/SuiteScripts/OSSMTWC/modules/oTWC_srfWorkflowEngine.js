@@ -51,7 +51,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function initEquipment(options) {
-            
+
             var actions = getEqActions(options);
             if (actions.length > MAX_ACTIONS_TO_INIT) { throw new Error(`Too many actions to save: ${MAX_ACTIONS_TO_INIT}`); }
 
@@ -153,7 +153,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (!options) { throw new Error('no parameters passed'); }
             if (!options.srf) { throw new Error('invalid parameters passed'); }
 
-            
+
             initEquipment(options);
 
             // @@NOTE: get SRF and make sure status is Submitted
@@ -279,7 +279,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (item.formData) {
                         var recordType = ''; var fields = []; var values = [];
                         if (item.formData.record == twcSrfReview.Type) {
-                            
+
                             var reviewRecordInfo = twcUtils.getSrfReviewRecord(options);
                             var reviewRecord = twcSrfReview.get(reviewRecordInfo.id);
                             reviewRecord.name = `R${reviewRecordInfo.srf_name}_${reviewRecordInfo.feedback_loop_count}`;
@@ -298,7 +298,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     recordType = recordType[0];
                                     continue;
                                 }
-                                
+
                                 if (!reviewRecord.hasField(k)) { continue; }
                                 reviewRecord.set(k, item.formData[k]);
                             }
@@ -326,7 +326,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     values.push(val);
                                 }
                             }
-                            
+
                         }
 
                         if (recordType && fields.length > 0) {

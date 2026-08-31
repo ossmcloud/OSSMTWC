@@ -3,8 +3,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_site.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfWorkflowEngine.js', '../data/oTWC_icons.js', './oTWC_sdsEngineUI.js'],
-    function (core, coreSql, recu, https, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSite, dialog, twcUi, twcSrfWorkflowEngine, twcIcons, twcSdsEngineUI) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_site.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfWorkflowEngine.js', '../data/oTWC_icons.js', './oTWC_sdsEngineUI.js'],
+    function (core, cored, coreSql, recu, https, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSite, dialog, twcUi, twcSrfWorkflowEngine, twcIcons, twcSdsEngineUI) {
 
         const TODAY = (new Date()).format();
 
@@ -182,11 +182,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 // @@NOTE: there can be some inconsistency on the way dates are returned, could be DD/MM/YYYY but control expects YYYY-MM-DD
                                 if (v.indexOf('/') > 0) { v = twcUtils.fromNsToJs(v) }
                             }
+
+                            if (!v && formData.fields[k].default) {
+                                if (formData.fields[k].type?.toLowerCase() == 'date') {
+                                    // @@TODO: do we need more default date values???
+                                    if (formData.fields[k].default == 'TODAY') { v = (new Date()).format(); }
+                                } else {
+                                    v = formData.fields[k].default;
+                                }
+                            }
+
                             formData.fields[k].value = v;
                         }
-                        if (formData.fields[k].readOnly === undefined) {
-                            formData.fields[k].readOnly = this.#readOnly;
-                        }
+                        if (formData.fields[k].readOnly === undefined) { formData.fields[k].readOnly = this.#readOnly; }
 
                         if (formData.fields[k].dataSourceConfig) {
                             if (formData.fields[k].dataSourceConfig.startsWith('utils')) {
@@ -251,13 +259,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 //         these fields are identified by the fact that the id will be [table_name]-[field_name]
                                 var fieldId = formData.fields[k].id;
                                 if (fieldId.indexOf('-') > 0) { fieldId = fieldId.split('-')[1]; }
-                                
+
                                 if (this.#workflow[fieldId] === undefined) {
                                     this.#item[fieldId] = values[formData.fields[k].id];
                                 } else {
                                     this.#workflow[fieldId] = values[formData.fields[k].id];
                                 }
-                                
+
                             }
                         }
                         appendItem(this.#item, formData);
@@ -576,9 +584,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED && item.is_review == 'T' && item.review_passed != 'T') {
                         styles = `background-color: red !important; color: white !important`;
                     } else if (item.next_stage_pick == 'T') {
-                        if (this.#workflow.items[idx + 1]?.stage_hidden == 'T' && (this.#workflow.items[idx + 1]?.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS || this.#workflow.items[idx + 1]?.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED)) {
-                            styles = `background-color: magenta !important; color: white !important`;
-                            stageName = this.#workflow.items[idx + 1].stage_name;
+                        if (this.#workflow.items[idx + 1]?.stage_hidden == 'T') {
+                            if (this.#workflow.items[idx + 1]?.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS || this.#workflow.items[idx + 1]?.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED) {
+                                styles = `background-color: magenta !important; color: white !important`;
+                                stageName = this.#workflow.items[idx + 1].stage_name;
+                            } else if (this.#workflow.items[idx + 1]?.status == twcSrfWorkflowEngine.WorkflowStatus.NEW) {
+                                stageName = `SRF Approved`;
+                            }
                         }
                     }
 

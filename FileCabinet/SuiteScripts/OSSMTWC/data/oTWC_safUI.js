@@ -125,11 +125,18 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         var _primaryContractors = null;
-        function getPrimaryContractors(userInfo) {
+        function getPrimaryContractors(userInfo, dataSource) {
             if (!_primaryContractors) {
                 _primaryContractors = [];
                 if (userInfo.isEmployee) {
                     _primaryContractors = twcUtils.getVendors(userInfo);
+                    // @@NOTE: this happens if a Customer (that is only a customer) has entered the SAF as they will be the primary contractor no matter what
+                    if (!_primaryContractors.find(c => { return c.value == dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR] })) {
+                        _primaryContractors.unshift({
+                            value: dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR],
+                            text: dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR + '_name'] || '???'
+                        })
+                    }
                 } else {
                     if (!userInfo.canEnterSAF) {
                         throw new Error(`Your accreditation status [<b>${userInfo.companyProfile.accreditation_status_name}</b>] does not allow for this action`);
@@ -277,7 +284,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var customers = twcUtils.getCustomers(userInfo);
             var customer = dataSource[twcSaf.Fields.CUSTOMER] || (customers.length == 1 ? customers[0].value : null);
 
-            var primaryContractors = getPrimaryContractors(userInfo);
+            var primaryContractors = getPrimaryContractors(userInfo, dataSource);
             var primaryContractor = dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR] || (primaryContractors.length == 1 ? primaryContractors[0].value : null);
 
             var step3Info = { id: 'site-access-step-3a', fields: [] };
@@ -666,6 +673,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fields[twcSrfItem.Fields.DESCRIPTION] = { title: 'Description' };
             fields[twcEqAct.Fields.EA_TYPE + '_name'] = { title: 'Type' };
             fields[twcSafAction.Fields.SAF_ACTION_STATUS + '_name'] = { title: 'Status', styles: { width: '120px', 'text-align': 'center' } };
+
+            // @@TODO: we need to fix filters sorting with child rows before we can show
+            for (var k in fields) {
+                fields[k].noSort = true;
+                fields[k].noFilter = true;
+            }
 
             eqActionsLists.fields.push({
                 id: `${twcSafAction.Type}`,

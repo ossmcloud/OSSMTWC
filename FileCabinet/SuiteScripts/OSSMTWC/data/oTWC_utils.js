@@ -1292,7 +1292,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 join    customrecord_twc_equip e on e.id = a.custrecord_twc_eq_action_eq
                 where   sa.custrecord_twc_saf_a_saf = ${saf.id}
                 ${actionStatusFilter}
-                order by sa.created
+                order by srfi.id 
             `, action => {
                 action['saf-detach'] = (action['custrecord_twc_saf_a_status'] == SAF_ACTION_STATUS.Pending) ? '<span class="o-table-action twc-clickable" data-action="detach">detach</span>' : '';
 
@@ -1302,13 +1302,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 if (action.parent_srf_item) {
                     var parent = safActions.find(a => { return a.srf_item == action.parent_srf_item })
-                    if (!parent.relatedItems) {
-                        parent.relatedItems = [];
-                        parent.expand = `<span class="twc-srf-item-expand" data-collapsed="true">+</span>`;
+                    if (!parent) {
+                        // @@TODO: @@REVIEW: this is an 'orphan'
+                        safActions.push(action);    
+                    } else {
+                        if (!parent.relatedItems) {
+                            parent.relatedItems = [];
+                            parent.expand = `<span class="twc-srf-item-expand" data-collapsed="true">+</span>`;
+                        }
+                        action.custrecord_twc_srf_itm_srf_name = '';
+                        action.child = true;
+                        parent.relatedItems.push(action);
                     }
-                    action.custrecord_twc_srf_itm_srf_name = '';
-                    action.child = true;
-                    parent.relatedItems.push(action);
                 } else {
                     safActions.push(action);
                 }

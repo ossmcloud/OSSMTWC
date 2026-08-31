@@ -747,6 +747,82 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
         }
 
+        class TWCSafActionTable {
+            #table = null;
+            constructor(table) {
+                this.#table = table;
+            }
+
+            get table() { return this.#table; }
+            get data() { return this.#table.data; }
+            get ui() { return this.#table.ui; }
+
+            init() {
+                this.#table.ui.find('input[type="checkbox"]').on('click', e => {
+                    var checkBox = jQuery(e.currentTarget);
+                    var checked = checkBox.is(':checked') ? 'checked' : '';
+                    this.#table.ui.find(`input[data-srf-parent-id=${checkBox.data('srf-id')}]`).prop('checked', checked);
+                })
+                this.#table.ui.find('#srf-actions-check-all').on('click', e => {
+                    var checked = jQuery(e.currentTarget).is(':checked') ? 'checked' : '';
+                    this.#table.ui.find('input[type="checkbox"]').prop('checked', checked);
+                })
+                this.#table.ui.find('.twc-srf-item-expand').click(e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    var rowIndex = jQuery(e.currentTarget).closest('.o-row').data('idx');
+                    var collapse = !(jQuery(e.currentTarget).data('collapsed') || false);
+                    jQuery(e.currentTarget).data('collapsed', collapse);
+                    jQuery(e.currentTarget).html(collapse ? '+' : '-');
+
+                    var dataRows = this.#table.getDataRows();
+                    for (var x = (rowIndex + 1); x < dataRows.length; x++) {
+                        if (!dataRows[x].data.child) { return; }
+                        if (collapse) {
+                            dataRows[x].ui().addClass('o-row-hidden')
+                        } else {
+                            dataRows[x].ui().removeClass('o-row-hidden')
+                        }
+                    }
+                })
+
+                this.#table.onRowInit = (table, row) => {
+                    if (row.data.child) {
+                        row.cssClass += 'o-row-child o-row-hidden';
+                    }
+                }
+                this.#table.onColumnInit = (tbl, col) => {
+                    if (col.id == twcSafAction.Fields.SAF_ACTION_STATUS + '_name') {
+                        col.formatValue = (v) => {
+                            return twcSafAction.getStatusHtml(v);
+                        }
+                    }
+                }
+
+                this.#table.onInitEvents = (table) => {
+                    this.init();
+                }
+            }
+
+            render(data) {
+                this.#table.render(data, true);
+                // this.init();
+            }
+
+            checked() {
+                var actions = this.ui.find('input[data-id]:checked');
+                actions = actions.map(function () { return jQuery(this).data('id'); }).get();
+                return actions;
+            }
+
+            static get(table) {
+                if (!table) { return null; }
+                var tbl = new TWCSafActionTable(table);
+                tbl.init();
+                return tbl;
+            }
+        }
 
 
         class TWCEqActionForm {
@@ -784,44 +860,45 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             initSrfTable() {
-                this.#safActionsTable = this.#form.getControl('srf-actions');
-                this.#safActionsTable.onRowInit = (table, row) => {
-                    if (row.data.child) { row.cssClass += 'o-row-child o-row-hidden'; }
-                }
+                this.#safActionsTable = TWCSafActionTable.get(this.#form.getControl('srf-actions'));
+                // this.#safActionsTable = this.#form.getControl('srf-actions');
+                // this.#safActionsTable.onRowInit = (table, row) => {
+                //     if (row.data.child) { row.cssClass += 'o-row-child o-row-hidden'; }
+                // }
             }
             selectSrf() {
                 this.waitShow();
                 this.page.post({ action: 'get-srf-actions' }, { srf: this.#form.getControl('saf-action-srf').value, thisSaf: this.data.siteAccessInfo?.id }).then(res => {
                     this.#safActionsTable.render(res.data, true);
-                    this.#safActionsTable.ui.find('.twc-srf-item-expand').click(e => {
-                        e.preventDefault();
-                        e.stopPropagation();
+                    // this.#safActionsTable.ui.find('.twc-srf-item-expand').click(e => {
+                    //     e.preventDefault();
+                    //     e.stopPropagation();
 
-                        var rowIndex = jQuery(e.currentTarget).closest('.o-row').data('idx');
-                        var collapse = !(jQuery(e.currentTarget).data('collapsed') || false);
-                        jQuery(e.currentTarget).data('collapsed', collapse);
-                        jQuery(e.currentTarget).html(collapse ? '+' : '-');
+                    //     var rowIndex = jQuery(e.currentTarget).closest('.o-row').data('idx');
+                    //     var collapse = !(jQuery(e.currentTarget).data('collapsed') || false);
+                    //     jQuery(e.currentTarget).data('collapsed', collapse);
+                    //     jQuery(e.currentTarget).html(collapse ? '+' : '-');
 
-                        var dataRows = this.#safActionsTable.getDataRows();
-                        for (var x = (rowIndex + 1); x < dataRows.length; x++) {
-                            if (!dataRows[x].data.child) { return; }
-                            if (collapse) {
-                                dataRows[x].ui().addClass('o-row-hidden')
-                            } else {
-                                dataRows[x].ui().removeClass('o-row-hidden')
-                            }
-                        }
+                    //     var dataRows = this.#safActionsTable.getDataRows();
+                    //     for (var x = (rowIndex + 1); x < dataRows.length; x++) {
+                    //         if (!dataRows[x].data.child) { return; }
+                    //         if (collapse) {
+                    //             dataRows[x].ui().addClass('o-row-hidden')
+                    //         } else {
+                    //             dataRows[x].ui().removeClass('o-row-hidden')
+                    //         }
+                    //     }
 
-                    })
-                    this.#safActionsTable.ui.find('input[type="checkbox"]').on('click', e => {
-                        var checkBox = jQuery(e.currentTarget);
-                        var checked = checkBox.is(':checked') ? 'checked' : '';
-                        this.#safActionsTable.ui.find(`input[data-srf-parent-id=${checkBox.data('srf-id')}]`).prop('checked', checked);
-                    })
-                    this.#safActionsTable.ui.find('#srf-actions-check-all').on('click', e => {
-                        var checked = jQuery(e.currentTarget).is(':checked') ? 'checked' : '';
-                        this.#safActionsTable.ui.find('input[type="checkbox"]').prop('checked', checked);
-                    })
+                    // })
+                    // this.#safActionsTable.ui.find('input[type="checkbox"]').on('click', e => {
+                    //     var checkBox = jQuery(e.currentTarget);
+                    //     var checked = checkBox.is(':checked') ? 'checked' : '';
+                    //     this.#safActionsTable.ui.find(`input[data-srf-parent-id=${checkBox.data('srf-id')}]`).prop('checked', checked);
+                    // })
+                    // this.#safActionsTable.ui.find('#srf-actions-check-all').on('click', e => {
+                    //     var checked = jQuery(e.currentTarget).is(':checked') ? 'checked' : '';
+                    //     this.#safActionsTable.ui.find('input[type="checkbox"]').prop('checked', checked);
+                    // })
                     this.#safActionsTable.ui.find('span[data-action="detach"]').on('click', e => {
                         this.detachOtherSaf(e);
                     })
@@ -913,14 +990,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
         }
 
-        class TWCEqActionCompleteForm {
 
-        }
 
         class TWCSiteAccessPage extends twcPageBase.TWCPageBase {
             #sitesTable = null;
             #sitePanel = null;
             #safBuilder = null;
+            #safActionTable = null;
             constructor() {
                 super({ scriptId: 'otwc_siteAccess_sl' });
             }
@@ -954,29 +1030,30 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.getControl('assign-reviewer-button')?.on('click', e => { this.assignReviewer(); })
                 this.ui.getControl('review-completion-button')?.on('click', e => { this.photosReviewed(); })
 
-                var safActionsTable = this.ui.getControl(twcSafAction.Type);
-                if (safActionsTable) {
-                    safActionsTable.ui.find('.twc-srf-item-expand').click(e => {
-                        e.preventDefault();
-                        e.stopPropagation();
+                this.#safActionTable = TWCSafActionTable.get(this.ui.getControl(twcSafAction.Type));
+                // var safActionsTable = this.ui.getControl(twcSafAction.Type);
+                // if (safActionsTable) {
+                //     safActionsTable.ui.find('.twc-srf-item-expand').click(e => {
+                //         e.preventDefault();
+                //         e.stopPropagation();
 
-                        var rowIndex = jQuery(e.currentTarget).closest('.o-row').data('idx');
-                        var collapse = !(jQuery(e.currentTarget).data('collapsed') || false);
-                        jQuery(e.currentTarget).data('collapsed', collapse);
-                        jQuery(e.currentTarget).html(collapse ? '+' : '-');
+                //         var rowIndex = jQuery(e.currentTarget).closest('.o-row').data('idx');
+                //         var collapse = !(jQuery(e.currentTarget).data('collapsed') || false);
+                //         jQuery(e.currentTarget).data('collapsed', collapse);
+                //         jQuery(e.currentTarget).html(collapse ? '+' : '-');
 
-                        var dataRows = safActionsTable.getDataRows();
-                        for (var x = (rowIndex + 1); x < dataRows.length; x++) {
-                            if (!dataRows[x].data.child) { return; }
-                            if (collapse) {
-                                dataRows[x].ui().addClass('o-row-hidden')
-                            } else {
-                                dataRows[x].ui().removeClass('o-row-hidden')
-                            }
-                        }
+                //         var dataRows = safActionsTable.getDataRows();
+                //         for (var x = (rowIndex + 1); x < dataRows.length; x++) {
+                //             if (!dataRows[x].data.child) { return; }
+                //             if (collapse) {
+                //                 dataRows[x].ui().addClass('o-row-hidden')
+                //             } else {
+                //                 dataRows[x].ui().removeClass('o-row-hidden')
+                //             }
+                //         }
 
-                    })
-                }
+                //     })
+                // }
             }
 
             changeStatus() {
@@ -1160,21 +1237,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             photosReviewed() {
                 try {
                     var list = this.postSync({ action: 'saf-action-list' }, { id: this.data.siteAccessInfo.id, actionStatus: twcUtils.SafActionStatus.Pending, showSelect: true });
-                    var formConfig = {
-                        controls: [
-                            { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Review Comment', width: '100%', rows: 5, mandatory: true, lineBreak: true },
-                            list
-                        ]
-                    }
-
-                    var form = twcUI.init(formConfig);
-
-                    var safActionsTable = form.getControl(twcSafAction.Type);
-                    safActionsTable.ui.find('input[type="checkbox"]').on('click', e => {
-                        var checkBox = jQuery(e.currentTarget);
-                        var checked = checkBox.is(':checked') ? 'checked' : '';
-                        safActionsTable.ui.find(`input[data-srf-parent-id=${checkBox.data('srf-id')}]`).prop('checked', checked);
-                    })
+                    var formHtml = jQuery(`
+                        ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Review Comment', width: '100%', rows: 5, value: this.data.siteAccessInfo[twcSaf.Fields.REVIEW_COMMENT], mandatory: true, lineBreak: true })}
+                        ${list}
+                    `);
+                    var form = twcUI.init({}, formHtml);
+                    var safActionsTable = TWCSafActionTable.get(form.getControl(twcSafAction.Type));
 
                     dialog.open({
                         title: 'Completion photo reviewed',
@@ -1184,9 +1252,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             try {
                                 var values = form.getValues();
 
-                                var actions = safActionsTable.ui.find('input[data-id]:checked');
+                                var actions = safActionsTable.checked();
                                 if (actions.length == 0) { throw new Error('No action selected'); }
-                                actions = actions.map(function () { return jQuery(this).data('id'); }).get();
 
                                 this.postSync({ action: 'saf-set-reviewed' }, { saf: this.data.siteAccessInfo.id, comment: values.comment, actions: actions });
                                 location.reload();

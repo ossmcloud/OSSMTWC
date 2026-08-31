@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView_ue.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteAccessUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_utils.js', '../data/oTWC_config.js', '../data/oTWC_saf.js', '../data/oTWC_safTimeBlock.js', '../O/controls/oTWC_ui_ctrl.js'],
-    function (file, core, cored, coreSql, uis, twcBaseViewUE, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteAccessUtils, twcUIPanel, twcUtils, twcConfig, twcSaf, twcSafTimeBlock, twcUI) {
+define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView_ue.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteAccessUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_utils.js', '../data/oTWC_config.js', '../data/oTWC_saf.js', '../data/oTWC_safTimeBlock.js', '../O/controls/oTWC_ui_ctrl.js', '../data/oTWC_icons.js'],
+    function (file, core, cored, coreSql, uis, twcBaseViewUE, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteAccessUtils, twcUIPanel, twcUtils, twcConfig, twcSaf, twcSafTimeBlock, twcUI, twcIcons) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -23,28 +23,42 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 var safRequiresSrf = twcUtils.getSafType(pageData.siteAccessInfo[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';
 
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteAccessInfo.siteId || context.request.parameters.siteId, pageData.userInfo);
-                
+
                 pageData.timeBlocks = twcUtils.getSafTimeBlocks();
                 pageData.siteTimeBlocks = twcSiteAccessUtils.getAllSafTimeBlocks(pageData.siteAccessInfo, pageData.userInfo);
                 pageData.safActionDetachReason = twcUtils.getSafActionDetachReason();
                 pageData.recordStatus = `<div class="twc-div-span-table">${twcSaf.getSafStatusHtml(safStatus)}</div>`;
                 if (context.request.parameters.recId) {
+
+                    var safIsInThePastMsg = safIsInThePast ? `<span style="padding-right: 5px;text-align: right; vertical-align: middle;">SAF is in the past${pageData.userInfo.powerUser ? '<span style="display: block; font-size: 8px;">(you can edit the SAF because you have special permissions)</span>' : ''}</span><span style="vertical-align: middle;">${twcIcons.get('exclamation', 24)}</span><span style="width: 5px;"></span>` : '';
+
                     var safCode = pageData.siteAccessInfo.name;
                     if (context.request.parameters.reUse == 'T') { safCode = 'REUSE: ' + safCode; }
                     s.form.f.title += ` - ${safCode}`;
                     pageData.recordStatus = `
                         <div class="twc-div-span-table">
+                            ${safIsInThePastMsg}
                             <span class="twc-record-status" style="border: 1px solid var(--grid-color); padding: 0px 34px; font-size: 20px; vertical-align: middle; background-color: var(--accent-bkgd-color); color: var(--accent-fore-color)">
                                 ${safCode}
                             </span>
                             <span style="width: 5px;"></span>
                             ${pageData.recordStatus}
+                            
                         </div>
                     `
                 }
                 // @@NOTE: if we have no recId is because we have a new SAF, we have a submit button at the bottom of the page for it, we use the forceViewOnly to hide the Save/Cancel buttons
                 var canEdit = pageData.userInfo.isEmployee ? (safStatus != twcSaf.Status.Cancelled) : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Rejected || safStatus == twcSaf.Status.Approved);
-                if (canEdit && safIsInThePast) { canEdit = false; }
+                if (canEdit && safIsInThePast) {
+                    if (!pageData.userInfo.powerUser) {
+                        canEdit = false;
+                    }
+                }
+
+                if (safIsInThePast) {
+                    pageData.recordStatus += ' '
+                }
+
 
                 // @@NOTE: we set pageData.forceViewOnly = true because we do not want the baseView save/cancel buttons
                 pageData.forceViewOnly = canEdit ? context.request.parameters.recId === undefined : true;
@@ -71,7 +85,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
                 html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteAccess');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
-                
+
                 var readOnly = context.request.parameters.edit != 'T';
                 var fieldGroups = twcSiteAccessUtils.getSAFInfoPanels(pageData.siteAccessInfo, pageData.userInfo, { siteTimeBlocks: pageData.siteTimeBlocks, editMode: pageData.editMode });
                 html = html.replaceAll('{SITE_ACCESS_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
@@ -97,7 +111,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                                     actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Assign Reviewer', id: 'assign-reviewer-button' });
                                 }
                             }
-                            
+
                             if (safStatus == twcSaf.Status.AwaitingPhotos || safStatus == twcSaf.Status.PhotosReceived || safStatus == twcSaf.Status.PartiallyComplete) {
                                 actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Upload Completion Photos', id: 'upload-photos-button' });
                             }
@@ -154,7 +168,8 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 var userInfo = twcConfig.userInfo(context);
                 var payload = JSON.parse(context.request.body);
                 var fields = twcSiteAccessUtils.getSafActionList(payload, userInfo);
-                return fields;
+                return twcUIPanel.render(fields, true)
+                //return fields;
 
             } else if (context.request.parameters.action == 'get-srf-actions') {
                 var payload = JSON.parse(context.request.body);
@@ -198,7 +213,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
         }
 
-        
+
 
         return {
             onRequest: uis.onRequest

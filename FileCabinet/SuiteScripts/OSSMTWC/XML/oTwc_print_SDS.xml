@@ -310,7 +310,7 @@
             </tr>
             <tr>
                 <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Other (please specify): </td>
-                <td style="border:1px solid #666; padding:7px;">${(requestJSON.srf.custrecord_twc_srf_power_notes!"")?replace("null", "")}</td>
+                <td style="border:1px solid #666; padding:7px;">${(requestJSON.sds.custrecord_twc_sds_power_supply_notes!"")?replace("null", "")?replace("\n", "<br />")}</td>
             </tr>
         </table>
 
@@ -325,11 +325,11 @@
                 <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Rights: </td>
                 <td style="width:25%; border:1px solid #666; padding:7px;"> <#if requestJSON.sds.custrecord_twc_sds_fibre_rights == "T"> Yes <#elseif requestJSON.sds.custrecord_twc_sds_fibre_rights == "F"> No </#if> </td>
                 <td style="width:25%; border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Duct Route: </td>
-                <td style="width:25%; border:1px solid #666; padding:7px;"> ${requestJSON.sds.custrecord_twc_sds_drawing_ref} </td>
+                <td style="width:25%; border:1px solid #666; padding:7px;"> ${requestJSON.sds.custrecord_twc_sds_fibre_drawing_ref?replace("null", "")} </td>
             </tr>
             <tr>
                 <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Fibre Provider: </td>
-                <td style="border:1px solid #666; padding:7px;"> ${requestJSON.sds.custrecord_twc_sds_fibre_provider_name} </td>
+                <td style="border:1px solid #666; padding:7px;"> ${requestJSON.sds.custrecord_twc_sds_fibre_provider_name?replace("null", "")} </td>
                 <td style="border:1px solid #666; padding:7px; background-color:gainsboro;"> Other Provider: </td>
                 <td style="border:1px solid #666; padding:7px;"> ${(requestJSON.sds.custrecord_twc_sds_fibre_provider_other!"")?replace("null", "")} </td>
             </tr>
