@@ -146,6 +146,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             fields[twcSrfItem.Fields.REQUEST_TYPE] = { title: 'Request Type', styles: { width: '150px' } };
             fields[twcSrfItem.Fields.EQUIPMENT_ID] = { title: 'Equipment', nullText: '', styles: { width: '200px' } };
+            if (stepType == twcSrfItem.StepType.ATME || stepType == twcSrfItem.StepType.FEEDER) {
+                fields[twcSrfItem.Fields.TME_ID] = { title: 'TME', nullText: '', styles: { width: '200px' } };
+            }
             fields[twcSrfItem.Fields.ITEM_TYPE] = { title: 'Type', nullText: '', styles: { width: '150px' } };
             fields[twcSrfItem.Fields.DESCRIPTION] = 'Description';
 

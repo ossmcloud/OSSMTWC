@@ -17,8 +17,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.inventoryInfo.siteId || context.request.parameters.siteId, pageData.userInfo);
 
                 var html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteInfo');
-                // @TODO : Work on the Status field for Inventory Record
-                // pageData.recordStatus = `<div class="twc-div-span-table">${twcInventory.getTktStatusHtml(pageData.inventoryInfo[twcInventory.Fields.EQUIPMENT_STATUS])}</div>`;
                 if (context.request.parameters.recId) {
                     var srfCode = pageData.inventoryInfo.name;
                     s.form.f.title += ` - ${srfCode}`;

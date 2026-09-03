@@ -3,7 +3,7 @@
  *@NScriptType ClientScript
  *@NModuleScope public
  */
-define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js',
+define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', './O/oTWC_dialogEx.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js',
     './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js',
     './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_saf.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js', './O/oTWC_nsFileUtils.js', './O/controls/oTWC_ui_ctrl.js',
     './oTWC_otop_test.js', './data/oTWC_profileUI.js', './modules/oTWC_certStatusEngine.js', './data/oTWC_equipAction.js', './modules/oTWC_srfWorkflowEngine.js',
@@ -56,6 +56,10 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
 
                 try {
                     // var dataSource = { id: 85 }
+
+                    dialog.siteFinder({ fullInfo: true }, e => {
+                        console.log(e)
+                    })
 
                     // var items = twcSrfItem.select(
                     //     {
@@ -127,7 +131,7 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
 
                     //twcSrfWorkflowEngineUI.getForm({ srf: 22 }).popUp();
                     // twcSrfWorkflowEngine.deleteWorkflow({ srf: 22 })
-                    twcSrfWorkflowEngine.initWorkFlow({ srf: 83, profile: 4201 });
+                    // twcSrfWorkflowEngine.initWorkFlow({ srf: 83, profile: 4201 });
 
                     //var eqAction = twcEquipAction.get();
 

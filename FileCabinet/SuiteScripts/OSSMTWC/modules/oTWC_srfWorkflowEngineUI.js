@@ -672,7 +672,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             async uploadFile() {
-                await this.page.uploadFile({ showParent: true, recordType: twcSrf.Type, recordId: this.data.siteRequestInfo.id }, (file, res) => {
+                await this.page.uploadFile({ showParent: false, filters: { 'custrecord_twc_file_type_use_in_srf': 'T', 'custrecord_twc_file_type_drawing': 'T' }  }, (file, res) => {
                     // console.log(file, res);
                     // location.reload();
                 })

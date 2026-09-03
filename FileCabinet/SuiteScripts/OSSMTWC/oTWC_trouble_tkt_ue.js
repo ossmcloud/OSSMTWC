@@ -26,11 +26,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
                     let customer = cusTkt ? recu.lookUp(twcCompany.Type, cusTkt, twcCompany.Fields.ENTITY)?.value : null;
 
                     caseRecordNew.set('title', siteName)
+                    caseRecordNew.set('title', siteName)
                     caseRecordNew.set('company', customer || twcConfig.TOWERCOM_ENTITY)
                     caseRecordNew.set('profile', twcConfig.TKT_CASE_PROFILE)
                     caseRecordNew.set('status', twcConfig.TKT_CASE_STATUS)
                     caseRecordNew.set('startdate', dateTimeObj)
                     caseRecordNew.set(twcConfig.Fields.CASE.TKT_RECORD, newRec.id)
+
+                    caseRecordNew.set('incomingmessage', newRec.getValue(twcTroubleTicket.Fields.REPORT_ISSUE__WORKS_REQUIRED))
 
                     let caseId = caseRecordNew.save(true)
                     recu.submit(newRec.type, newRec.id, twcTroubleTicket.Fields.CASE_REFERENCE, caseId);

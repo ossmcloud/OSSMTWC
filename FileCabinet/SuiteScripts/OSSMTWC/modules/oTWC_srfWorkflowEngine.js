@@ -95,18 +95,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (action[twcSrfItem.Fields.TMI_ID_SRF]) {
                     var parent = actions.find(a => { return a.id == action[twcSrfItem.Fields.TMI_ID_SRF]; })
                     eq.parentTMEID = parent?.eq_id;
+                } else if (action[twcSrfItem.Fields.TMI_ID]) {
+                    eq.parentTMEID = action[twcSrfItem.Fields.TMI_ID]
                 }
-
-                // @@TODO: SRF: review fields to populate
-                // eq.locationNotes
-                // eq.customerNote
-                // eq.tLNote
-                // eq.windLoadingNm2Front
-                // eq.windLoadingNm2Side
-                // eq.windLoadingNm2Rear
-                // eq.windLoadingNm2Max
-                // eq.windRegime
-                // eq.activePassive
 
                 eq.save();
                 action.eq_id = eq.id;

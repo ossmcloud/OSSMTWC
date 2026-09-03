@@ -54,6 +54,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 company.custrecordtwc_entity, cae.addrtext AS customer_address, c.altname as operator_name, custrecord_twc_co_number as company_number,
                                 TO_CHAR(srf.custrecord_twc_srf_lic_pack_signed, 'DD-MM-YYYY') as client_signed, BUILTIN.DF(srf.custrecord_twc_srf_lic_pack_sign_by) as client_singed_by,
                                 TO_CHAR(srf.custrecord_twc_srf_lic_pack_exec, 'DD-MM-YYYY') as tl_signed, BUILTIN.DF(srf.custrecord_twc_srf_lic_pack_exec_by) as tl_signed_by,
+                                
                     FROM        ${twcSrf.Type} srf 
                     INNER JOIN  customrecord_twc_company company ON srf.custrecord_twc_srf_cust = company.id
                     INNER JOIN  Customer c ON company.custrecordtwc_entity = c.id

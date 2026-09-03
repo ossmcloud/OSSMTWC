@@ -15,6 +15,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #dataFiltered = null;
             #tableData = null;
             #tableDataFiltered = null;
+            #sitesFiltered = null;
             #initialTableHeight = null;
             #tableLastScrollTop = 0;
             constructor(options) {
@@ -100,7 +101,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var filters = this.ui.getValues();
 
                 var siteIds = []; var hasFilters = false;
+
+                this.#sitesFiltered = this.#data.filter(s => {
+                    var match = true;
+                    for (var f in filters) {
+                        if (!f.startsWith('cust') && f != 'record_id' && f != 'site_id') { continue; }
+                        if (!filters[f]) { continue; }
+                        var values = filters[f].split(',').map(i => { return i?.toString() });
+                        if (f == 'site_id') { f = 'id'; }
+                        match = values.indexOf(s[f]?.toString()) >= 0;
+                        if (!match) { break; }
+                    }
+                    if (match) { siteIds.push(s.id) }
+                    return match;
+                });
+
+
+               
                 if (this.#tableData) {
+                    siteIds = [];
                     this.#tableDataFiltered = this.#tableData.filter(s => {
                         var match = true;
                         // Handle the date range filter once
@@ -152,18 +171,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.#dataFiltered = this.#data;
                     }
                 } else {
-                    this.#dataFiltered = this.#data.filter(s => {
-                        var match = true;
-                        for (var f in filters) {
-                            if (!f.startsWith('cust') && f != 'record_id') { continue; }
-                            if (!filters[f]) { continue; }
-                            var values = filters[f].split(',').map(i => { return i?.toString() });
-                            match = values.indexOf(s[f]?.toString()) >= 0;
-                            if (!match) { break; }
-                        }
-                        if (match) { siteIds.push(s.id) }
-                        return match;
-                    });
+                    this.#dataFiltered = this.#sitesFiltered;
+                    // this.#dataFiltered = this.#data.filter(s => {
+                    //     var match = true;
+                    //     for (var f in filters) {
+                    //         if (!f.startsWith('cust') && f != 'record_id') { continue; }
+                    //         if (!filters[f]) { continue; }
+                    //         var values = filters[f].split(',').map(i => { return i?.toString() });
+                    //         match = values.indexOf(s[f]?.toString()) >= 0;
+                    //         if (!match) { break; }
+                    //     }
+                    //     if (match) { siteIds.push(s.id) }
+                    //     return match;
+                    // });
 
                     this.#sitesTable.refresh(this.#dataFiltered);
                 }
@@ -215,7 +235,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             updateGoogleMap(searchByCoordInfo) {
-                this.#map.refreshMap(this.#dataFiltered, searchByCoordInfo);
+                //this.#map.refreshMap(this.#dataFiltered, searchByCoordInfo);
+                this.#map.refreshMap(this.#sitesFiltered, searchByCoordInfo);
             }
 
             expandSiteTable() {
