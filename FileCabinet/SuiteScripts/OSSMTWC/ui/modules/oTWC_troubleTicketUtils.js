@@ -16,6 +16,39 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.created desc`;
+
+            // @@NOTE: TWC Employees can see everything
+            if (!userInfo.isEmployee) {
+                var allowedCustomers = [];
+
+                if (userInfo.companyProfile?.isVendor || userInfo.companyProfile?.isBoth) {
+                    // @@NOTE the agent passes specifies what customers can be seen 
+                    var agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${userInfo.profile}`)?.agent_passes || '0';
+                    agentPasses = agentPasses.split(',').map(i => { return parseInt(i.trim()); })
+
+                    // @@NOTE: this filter will ensure that even if a customer was not removed from the agent passes field for a profile but was removed from the ACL list the profile will still not see it
+                    var aclList = coreSQL.run(`select custrecord_twc_acl_cust as cust from customrecord_twc_acl where custrecord_twc_acl_cont = ${userInfo.companyProfile.id}`)
+                    allowedCustomers = agentPasses.filter(ap => { return aclList.find(acl => { return acl.cust == ap; }) })
+                }
+
+                if (userInfo.companyProfile?.isCustomer || userInfo.companyProfile?.isBoth) {
+                    // in case we have a customer or a vendor that is also a customer we include the customer into the customer list
+                    allowedCustomers.push(userInfo.companyProfile.id || 0)
+                }
+
+                // @@NOTE: this is to ensure nothing is shown if no customers on the agent passes field
+                if (allowedCustomers.length == 0) { allowedCustomers.push('0'); }
+
+                whereClause += `and ${twcTrblTkts.Fields.CUSTOMER} in (${allowedCustomers.join(',')})`;
+
+                if (userInfo.companyProfile?.isVendor && !userInfo.companyProfile?.isCustomer) {
+                    // @@NOTE: in addition vendors can only see what was created by their organization
+                    whereClause += `and ${twcTrblTkts.Fields.AUTHOR} in (select id from customrecord_twc_prof where custrecord_twc_prof_company = ${userInfo.companyProfile.id})`;
+                }
+            }
+
+
+
             var tickets = coreSQL.run(`
                 select  ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO}
                 from    ${twcTrblTkts.Type} s
@@ -311,7 +344,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             deleteTrblTktsFile(payload);
             saveResolutionFile(payload)
-            saveTktImage(payload)
+            // saveTktImage(payload)
 
             return payload.id;
         }
@@ -325,9 +358,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             })
         }
         function saveResolutionFile(payload) {
-            if (!payload.files_edited) { return; }
+            if (!payload.files) { return; }
+
+            var tktInfo = coreSQL.first(`
+                select  tk.id, site.${twcSite.Fields.SITE_ID} as site_id
+                from    ${twcTrblTkts.Type} tk
+                join    ${twcSite.Type} site on site.id = tk.${twcTrblTkts.Fields.SITE}
+                where   tk.id = ${payload.id}
+            `)
+
+            var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/${tktInfo.id}`);
             
-            core.array.each(payload.files_edited, file => {
+            core.array.each(payload.files, file => {
                 if (!file.dirty) { return; }
                 var tktFile = twcFile.get(file.id);
                 tktFile.recordType = twcTrblTkts.Type;
@@ -338,6 +380,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     tktFile.set(k, file[k])
                 }
                 tktFile.save();
+
+                if (file.fileObject) {
+                    var nsFile = nsFileUtils.writeFile({
+                        name: `${tktFile.id}_${file.fileObject.name}`,
+                        fileType: nsFileUtils.getFileType(file.fileObject.type),
+                        content: file.fileObject.content,
+                        folder: tktFolder,
+                    });
+                    recu.submit(twcFile.Type, tktFile.id, twcFile.Fields.FILE, nsFile.fileId);
+                }
+
             })
         }
 

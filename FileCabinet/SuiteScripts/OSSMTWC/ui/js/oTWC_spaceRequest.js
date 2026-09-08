@@ -6,6 +6,26 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_utils.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_file.js', '../../data/oTWC_equipmentLibUI.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js', '../../modules/oTWC_srfWorkflowEngineUI.js.js', '../../modules/oTWC_sdsEngineUI.js'],
     (core, coreSql, b64, twcPageBase, twcUtils, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, twcUI, uiTable, twcSite, twcSrf, twcSrfItem, twcUIPanel, twcFile, twcEqLibUI, twcEqUI, twcEquipment, twcSrfWorkflowEngineUI, twcSdsEngineUI) => {
 
+        const DEV = core.me();
+
+        // @@TODO: remove once framework upgraded over v2.0.65
+        Number.prototype.percentOf = function (total, decimals, asString) {
+            if (decimals == undefined) { decimals = 2; }
+            if (!total) { return Infinity; }
+            var pc = (this / total * 100).roundNumber(decimals);
+            if (asString) { return `${pc}%`; }
+            return pc;
+        }
+
+
+        function copySrfItem(srfItem) {
+            var srfItemCopy = JSON.parse(JSON.stringify(srfItem));
+            srfItemCopy.id = null;
+            if (srfItemCopy.relatedItems) {
+                srfItemCopy.relatedItems.map(i => { i.id = null; i.dirty = true; })
+            }
+            return srfItemCopy;
+        }
 
 
         class TWCSiteSrfTable {
@@ -86,15 +106,33 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #page = null;
             #srfItem = null;
             #form = null;
+            #mode = null;
             #isEdit = false;
+            #isCopy = false;
+            #relatedEqTable = null;
 
-            constructor(page, srfItem, isEdit) {
+            constructor(page, srfItem, mode) {
                 this.#page = page;
                 this.#srfItem = srfItem;
-                this.#isEdit = isEdit;
+                this.#mode = mode || 'open';
+                this.#isEdit = mode == 'edit';
+                this.#isCopy = mode == 'copy';
             }
 
             get data() { return this.#page.data; }
+
+            manageSRFSubItem(srfNewRelatedItem, mode) {
+                TWCSpaceRequestItemForm[mode](this.#page, srfNewRelatedItem, (srfRelatedItem, addAndCopy) => {
+                    if (mode == 'open' || mode == 'copy') {
+                        if (!this.#srfItem.relatedItems) { this.#srfItem.relatedItems = []; }
+                        this.#srfItem.relatedItems.push(srfNewRelatedItem);
+                    } else {
+                        srfRelatedItem.dirty = true;
+                    }
+                    this.#relatedEqTable.render(this.#srfItem.relatedItems, true)
+                    if (addAndCopy) { this.manageSRFSubItem(copySrfItem(srfNewRelatedItem), 'copy'); }
+                });
+            }
 
             render(callback) {
                 var res = this.#page.postSync({ action: 'child-record' }, { srf: this.data.siteRequestInfo, item: this.#srfItem })
@@ -115,14 +153,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.pickEquipment(twcEqUI.EqClass.TME, (pickedEq) => { this.setFormTmeEqState(pickedEq); })
                 })
 
-                var relatedEqTable = this.#form.getControl('srf-related-eq-table');
-                
-                if (relatedEqTable) {
-                    // @@NOTE: we call the render now because we want to make sure the .data property of table "relatedEqTable" is populated with a "reference" to this.#srfItem.relatedItems
-                    //         this is because, for an exiting SRF, the 1st time this pop-up is loaded the table is rendered on the server so the 'table.data' collection is not the same s what's in memory
-                    relatedEqTable.render(this.#srfItem.relatedItems, true)
+                this.#relatedEqTable = this.#form.getControl('srf-related-eq-table');
 
-                    relatedEqTable.onToolbarClick = e => {
+                if (this.#relatedEqTable) {
+                    // @@NOTE: we call the render now because we want to make sure the .data property of table "this.#relatedEqTable" is populated with a "reference" to this.#srfItem.relatedItems
+                    //         this is because, for an exiting SRF, the 1st time this pop-up is loaded the table is rendered on the server so the 'table.data' collection is not the same s what's in memory
+                    this.#relatedEqTable.render(this.#srfItem.relatedItems, true)
+
+                    this.#relatedEqTable.onToolbarClick = e => {
                         var srfNewRelatedItem = null;
                         if (e.action == 'add-new') {
                             var eqClass = jQuery(e.evt.target).closest('.twc-table-toolbar-button').data('eq-class');
@@ -133,38 +171,40 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             srfNewRelatedItem[twcSrfItem.Fields.STEP_TYPE] = eqClass;
                             srfNewRelatedItem[twcSrfItem.Fields.STEP_TYPE + '_name'] = (eqClass == twcEqUI.EqClass.ATME) ? 'ATME' : 'FEEDER';
                             srfNewRelatedItem[twcSrfItem.Fields.STRUCTURE] = this.#form.getControl(twcSrfItem.Fields.STRUCTURE).value;
-                            TWCSpaceRequestItemForm.open(this.#page, srfNewRelatedItem, (srfRelatedItem) => {
-                                if (!this.#srfItem.relatedItems) { this.#srfItem.relatedItems = []; }
-                                this.#srfItem.relatedItems.push(srfNewRelatedItem);
-                                relatedEqTable.render(this.#srfItem.relatedItems, true)
-                            });
+                            this.manageSRFSubItem(srfNewRelatedItem, 'open');
                         } else if (e.action == 'edit') {
                             srfNewRelatedItem = e.rowData;
-                            TWCSpaceRequestItemForm.edit(this.#page, srfNewRelatedItem, (srfRelatedItem) => {
-                                srfRelatedItem.dirty = true;
-                                relatedEqTable.render(this.#srfItem.relatedItems, true)
-                            })
+                            this.manageSRFSubItem(srfNewRelatedItem, 'edit');
                         } else if (e.action == 'delete') {
                             dialog.confirm('Are you sure you wish to delete this record', () => {
                                 srfNewRelatedItem = e.rowData;
                                 if (!this.#srfItem.relatedItemsDelete) { this.#srfItem.relatedItemsDelete = []; }
                                 this.#srfItem.relatedItemsDelete.push(srfNewRelatedItem);
                                 this.#srfItem.relatedItems.splice(this.#srfItem.relatedItems.indexOf(srfNewRelatedItem), 1);
-                                relatedEqTable.render(this.#srfItem.relatedItems, true)
+                                this.#relatedEqTable.render(this.#srfItem.relatedItems, true)
                             })
                         }
 
                     }
                 }
 
-                dialog.confirm({ title: 'manage item', message: this.#form.ui, width: '75%', height: '75vh' }, () => {
+                var dlgTitle = 'add new srf item';
+                if (this.#mode == 'edit') { dlgTitle = 'edit srf item'; }
+                if (this.#mode == 'copy') { dlgTitle = 'copy srf item'; }
+                var dlg = dialog.confirm({ title: 'manage item', message: this.#form.ui, width: '75%', height: '75vh' }, () => {
                     try {
+
+                        var addAndCopy = dlg.dialog.find('#o-dialog_ok').data('add-and-copy');
+                        // @@NOTE: we clear the add-and-copy flag in case this function fails and subsequently the user clicks ok instead of add and copy
+                        if (addAndCopy) { dlg.dialog.find('#o-dialog_ok').data('add-and-copy', false); }
+
+
                         var reqType = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
 
                         if (this.getLLibCfg(this.#srfItem[twcSrfItem.Fields.STEP_TYPE], this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).value)?.pick_from_library == 'T') {
                             if (!this.#form.getControl(twcSrfItem.Fields.EQUIPMENT_LIBRARY).value) {
                                 // @@TODO: this should not be necessary
-                                if (!this.#isEdit) { throw new Error(`You must pick an item from the library`) }
+                                if (this.#mode == 'open') { throw new Error(`You must pick an item from the library`) }
                             }
                         }
 
@@ -192,13 +232,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.#srfItem.dirty = true;
                         this.#page.dirty = true
 
-                        callback(this.#srfItem);
+                        callback(this.#srfItem, addAndCopy);
 
                     } catch (error) {
                         dialog.error(error);
                         return false;
                     }
                 })
+
+                var text = 'add and duplicate';
+                if (this.#mode == 'edit') { text = 'save and duplicate'; }
+                var addAndCopyButton = jQuery(`<button id="o-dialog_ok_copy">${text}</button>`);
+                dlg.dialog.find('#o-dialog_buttons').prepend(addAndCopyButton);
+                addAndCopyButton.click(e => {
+                    dlg.dialog.find('#o-dialog_ok').data('add-and-copy', true);
+                    dlg.dialog.find('#o-dialog_ok').click();
+                })
+
             }
 
 
@@ -260,7 +310,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var cfg = this.getLLibCfg(this.#srfItem[twcSrfItem.Fields.STEP_TYPE], itemType);
                 if (!cfg) { return; }
 
-                if (pickedEqLib || this.#isEdit) {
+                if (pickedEqLib || this.#isEdit || this.#isCopy) {
                     this.#form.ui.find('#srf-item-dimension').css('display', 'block');
                     this.#form.ui.find('#srf-item-spec').css('display', 'block');
                     this.#form.ui.find('#srf-related-eq').css('display', 'block');
@@ -347,10 +397,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var reqType = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
                 if (reqType != twcSrfItem.RequestType.REMOVE) { return; }
 
-                var relatedEqTable = this.#form.getControl('srf-related-eq-table');
-                if (relatedEqTable) {
-                    relatedEqTable.render(pickedEq?.relatedItems || this.#srfItem.relatedItems, true);
-                    relatedEqTable.ui.find('#srf-related-eq-table_toolBar').css('display', 'none')
+                // var relatedEqTable = this.#form.getControl('srf-related-eq-table');
+                if (this.#relatedEqTable) {
+                    this.#relatedEqTable.render(pickedEq?.relatedItems || this.#srfItem.relatedItems, true);
+                    this.#relatedEqTable.ui.find('#srf-related-eq-table_toolBar').css('display', 'none')
                     this.#form.ui.find('#srf-related-eq').css('display', 'block');
                 }
             }
@@ -468,7 +518,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 form.render(callback);
             }
             static edit(page, srfItem, callback) {
-                var form = new TWCSpaceRequestItemForm(page, srfItem, true);
+                var form = new TWCSpaceRequestItemForm(page, srfItem, 'edit');
+                form.render(callback);
+            }
+            static copy(page, srfItem, callback) {
+                var form = new TWCSpaceRequestItemForm(page, srfItem, 'copy');
                 form.render(callback);
             }
 
@@ -508,7 +562,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         })
 
                         this.ui.getControl('attach-file')?.on('click', e => {
-                            this.uploadFile({ showParent: true, recordType: twcSrf.Type, recordId: this.data.siteRequestInfo.id }, (file, res) => {
+                            this.uploadFile({ showParent: true, recordType: twcSrf.Type, recordId: this.data.siteRequestInfo.id, srf: this.data.siteRequestInfo }, (file, res) => {
                                 location.reload();
                             })
                         })
@@ -574,7 +628,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             }
                             if (e.id == twcSrf.Fields.CUSTOMER) {
                                 this.post({ action: 'get-customer-site-id' }, { site: this.data.siteRequestInfo[twcSrf.Fields.SITE], customer: e.value }).then(res => {
-                                    console.log(res);
+                                    if (DEV && !res) { res = '999' }
                                     this.ui.getControl(twcSrf.Fields.OPERATOR_SITE_ID).value = res;
                                 })
                             }
@@ -588,7 +642,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     this[manageMethod](null, e.table);
 
                                 } else if (e.action == 'edit') {
-                                    this[manageMethod](e.rowData, e.table, true);
+                                    this[manageMethod](e.rowData, e.table, 'edit');
 
                                 } else if (e.action == 'delete') {
                                     dialog.confirm('Are you sure you wish to delete this record', () => {
@@ -605,8 +659,89 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER] = this.ui.getControl(twcSrf.Fields.CUSTOMER).value
                         }
 
+
+                        // @@NOTE: this is a bit of a stretch for the ui table control Ihave as that does not support grouping (i.e.: it should but it does not)
+                        //         this bit works only thanks to stuff done on the server side:
+                        //              FileCabinet\SuiteScripts\OSSMTWC\data\oTWC_srfUI.js     : func: getSrfItems             => here we populate the 'expand' field with <span class="twc-srf-item-expand">
+                        //                                                                      : func: getTmeFields            => here we add onRowInit function to initially hide child rows
+                        //              FileCabinet\SuiteScripts\OSSMTWC\data\oTWC_srfItemUI.js : func: getStepTableUIControl   => here we add the 'expand' column to the table
+                        //         here we need a function: initTmeTableExpandCollapse because we need to call this at first load but also every time the table is re-render (filter selected)
+                        var tmeTable = this.ui.getControl('customrecord_twc_srf_itm_1');
+                        tmeTable.onInitEvents = (table) => { initTmeTableExpandCollapse(); }
+
+                        const initTmeTableExpandCollapse = () => {
+                            core.array.each(tmeTable.rows, row => {
+                                if (row.data?.child) {
+                                    row.cssClass += 'o-row-child';
+                                    row.ui().addClass('o-row-child')
+                                    row.ui().addClass('o-row-hidden')
+                                }
+                            })
+
+                            tmeTable.ui.find('.twc-srf-item-expand-all').click(e => {
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                var collapse = jQuery(e.currentTarget).data('collapsed') || false;
+                                collapse = !collapse;
+                                jQuery(e.currentTarget).data('collapsed', collapse);
+                                jQuery(e.currentTarget).html(collapse ? '+' : '-');
+                                tmeTable.ui.find('.twc-srf-item-expand').data('collapsed', collapse);
+                                tmeTable.ui.find('.twc-srf-item-expand').html(collapse ? '+' : '-');
+                                var dataRows = tmeTable.getDataRows();
+                                for (var x = 0; x < dataRows.length; x++) {
+                                    if (dataRows[x].data.child) {
+                                        if (collapse) {
+                                            dataRows[x].ui().addClass('o-row-hidden')
+                                        } else {
+                                            dataRows[x].ui().removeClass('o-row-hidden')
+                                        }
+                                    }
+                                }
+                            });
+
+                            tmeTable.ui.find('.twc-srf-item-expand').click(e => {
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                var rowIndex = jQuery(e.currentTarget).closest('.o-row').data('idx');
+                                var collapse = jQuery(e.currentTarget).data('collapsed') || false;
+                                collapse = !collapse;
+                                jQuery(e.currentTarget).data('collapsed', collapse);
+                                jQuery(e.currentTarget).html(collapse ? '+' : '-');
+
+                                var dataRows = tmeTable.getDataRows();
+                                for (var x = (rowIndex + 1); x < dataRows.length; x++) {
+                                    if (!dataRows[x].data.child) { return; }
+                                    if (collapse) {
+                                        dataRows[x].ui().addClass('o-row-hidden')
+                                    } else {
+                                        dataRows[x].ui().removeClass('o-row-hidden')
+                                    }
+                                }
+
+                            })
+
+                            tmeTable.ui.find('.twc-srf-item-create-lib').click(e => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                var rowIndex = jQuery(e.currentTarget).closest('.o-row').data('idx');
+                                var dataRow = tmeTable.getDataRows()[rowIndex];
+                                console.log(dataRow.data);
+                                var url = core.url.record(twcEqLibUI.Type, dataRow.data[twcSrfItem.Fields.EQUIPMENT_LIBRARY]);
+                                window.open(`${url}&srfItem=${dataRow.data.id}`);
+
+                            })
+                        }
+                        initTmeTableExpandCollapse();
+
+
+                        if (this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER] && !this.data.siteRequestInfo.id) {
+                            this.ui.getControl(twcSrf.Fields.CUSTOMER).value = this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER];
+                        }
+
                         // @@TODO: test only
-                        if (core.ossm()) {
+                        if (DEV) {
                             if (this.data.editMode && !this.data.siteRequestInfo.id) {
                                 this.ui.getControl(twcSrf.Fields.CUSTOMER).value = 11;
                             }
@@ -696,7 +831,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
 
-            manageSRFItem(srfItem, table, isEdit) {
+            manageSRFItem(srfItem, table, mode) {
                 try {
                     if (!this.ui.getControl(twcSrf.Fields.CUSTOMER).value) { throw new Error('You need to specify a customer'); }
 
@@ -705,13 +840,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     srfItem[twcSrfItem.Fields.STEP_TYPE] = table.id.replace('customrecord_twc_srf_itm_', '');
 
-                    var method = isEdit ? 'edit' : 'open';
-                    TWCSpaceRequestItemForm[method](this, srfItem, () => {
+                    var method = mode || 'open';
+                    TWCSpaceRequestItemForm[method](this, srfItem, (i, addAndCopy) => {
                         // @@NOTE: if we have anew item then add it to the collection 
                         var itemList = `items_${srfItem.custrecord_twc_srf_itm_stype}`;
                         if (!this.data.siteRequestInfo[itemList]) { this.data.siteRequestInfo[itemList] = table.data; }
                         if (this.data.siteRequestInfo[itemList].indexOf(srfItem) < 0) { this.data.siteRequestInfo[itemList].push(srfItem); }
                         table.render(this.data.siteRequestInfo[itemList], true)
+
+                        if (addAndCopy) {
+                            this.manageSRFItem(copySrfItem(srfItem), table, 'copy');
+                        }
+
                     })
 
                 } catch (error) {
@@ -734,7 +874,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         // @@NOTE: we use getValues just to detect missing mandatory fields
                         this.ui.getValues();
 
-                        if (!this.ui.getControl(twcFile.Type)?.data.length) { throw new Error('You need to attach at least one file'); }
+                        if (!DEV) {
+                            if (!this.ui.getControl(twcFile.Type)?.data.length) { throw new Error('You need to attach at least one file'); }
+                        }
 
                         var srfItemsCount = 0;
                         for (var k in twcEquipment.StepType) {
@@ -744,9 +886,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
 
                     this.wait();
+                    this.waitMessage('saving SRF, this may take few moments...', 0);
 
                     var res = await this.post({ action: 'save' }, this.data.siteRequestInfo);
+                    while (res.keepSaving) {
+                        console.log(res.keepSaving);
+                        this.waitMessage(res.keepSaving.stageName, res.keepSaving.stage.percentOf(res.keepSaving.stageCount));
+                        res = await this.post({ action: 'save' }, res);
+                    }
+
                     this.dirty = false;
+
+                    if (res.errors && res.errors.length > 0) {
+                        var errorMsg = `Some error occurred while saving:<ul class="twc">`;
+                        core.array.each(res.errors, err => {
+                            errorMsg += `<li><b>${err.stage}</b><br>${err.error}</li>`;
+                        })
+                        errorMsg += '</ul>';
+                        await dialog.errorAsync(errorMsg);
+                    }
 
                     location.href = core.url.script('otwc_spacerequest_sl', { recId: res.id });
 

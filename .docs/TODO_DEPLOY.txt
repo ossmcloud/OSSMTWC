@@ -48,6 +48,7 @@ SCHEMA:
         custrecord_twc_file_recordtype
         custrecord_twc_file_type_access
         custrecord_twc_file_type_public
+        custrecord_twc_file_type_sys
 
     customrecord_twc_company
         custrecord_twc_co_sds_include_licensemap
@@ -64,6 +65,11 @@ SCHEMA:
     customrecord_twc_srf_wks
         custrecord_twc_srf_wks_can_edit
 
+    customrecord_twc_eq_type
+        custrecord_twc_eq_type_create_lib_item
+
+    customrecord_twc_eq_lib
+        custrecord_twc_eq_lib_srf_item
 
 	TODO:
 		REMOVE: customrecord_twc_srf.custrecord_twc_srf_sds_form_data

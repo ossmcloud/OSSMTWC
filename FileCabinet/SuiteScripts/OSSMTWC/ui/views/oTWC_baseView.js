@@ -20,6 +20,8 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
             #unHandledErrors = [];
             #ui = null;
             #waitPanel = null;
+            #waitPanelMsg = null;
+            #waitPanelProgress = null;
             constructor(options) {
                 this.#options = options || {};
                 this.#page = jQuery('.twc_page');
@@ -36,6 +38,7 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
             get page() { return this.#page; }
             get data() { return this.#data; }
             get ui() { return this.#ui; }
+            get waitPanel() { return this.#waitPanel; }
 
             wait() {
                 this.#waitPanel = jQuery(`
@@ -46,6 +49,23 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
                     </div>
                 `)
                 jQuery('body').append(this.#waitPanel)
+            }
+            waitMessage(msg, progress) {
+                if (this.#waitPanel) {
+                    if (!this.#waitPanelMsg) {
+                        this.#waitPanelMsg = jQuery('<div class="twc-overlay-message"></div>');
+                        this.#waitPanel.append(this.#waitPanelMsg);
+                    }
+                    this.#waitPanelMsg.html(msg);
+
+                    if (progress) {
+                        if (!this.#waitPanelProgress) {
+                            this.#waitPanel.append(jQuery('<div class="twc-overlay-progress"><div></div></div>'));
+                            this.#waitPanelProgress = this.#waitPanel.find('.twc-overlay-progress>div');
+                        }
+                        this.#waitPanelProgress.css('width', `${progress}%`);
+                    }
+                }
             }
             waitClose() {
                 if (this.#waitPanel) {
@@ -311,6 +331,12 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
 
 
                 var res = await https.promise.post({ url: url, body: { file: file, getUrl: e?.ctrlKey } });
+                if (res.error) {
+                    console.log(res);
+                    dialog.error(res);
+                    return;
+                }
+
                 if (e?.ctrlKey) {
                     jQuery(e.currentTarget).html(icon);
                     window.open(res.url);
@@ -352,6 +378,7 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
 
                     var url = core.url.script('otwc_microsvc_sl', { action: 'upload-file-ui' });
                     var res = await https.promise.post({ url: url, body: { options: options } });
+                    if (res.error) { throw new Error(res.error); }
 
                     var form = twcUIPanel.ui(res);
                     form.on('change', e => {
@@ -380,10 +407,8 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
                             obj.fileObject = fileObject;
                             obj[twcFile.Fields.RECORD_TYPE] = options.recordType;
                             obj[twcFile.Fields.RECORD_ID] = options.recordId;
-                            obj[twcFile.Fields.R_TYPE] = obj[twcFile.Fields.R_TYPE].value;
-                            obj[twcFile.Fields.STATUS] = obj[twcFile.Fields.STATUS].value;
-
-                            console.log(obj);
+                            obj[twcFile.Fields.R_TYPE] = obj[twcFile.Fields.R_TYPE]?.value;
+                            obj[twcFile.Fields.STATUS] = obj[twcFile.Fields.STATUS]?.value;
 
                             dialog.saving(dlg, 'uploading file...<br />this may take some time depending of the file size.<br />Please do not close this pop-up, this browser tab or refresh the page')
 

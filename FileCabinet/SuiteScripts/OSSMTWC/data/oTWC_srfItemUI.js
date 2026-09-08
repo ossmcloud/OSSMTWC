@@ -15,7 +15,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var siteInfraStructures = twcUtils.getInfraStructures({ siteId: srf.site }, userInfo.isEmployee);
             var siteStructures = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Structure })
-            var voltageTypes= twcUtils.getVoltageTypes( userInfo);
+            var voltageTypes = twcUtils.getVoltageTypes(userInfo);
 
             var basicInfo = { id: 'srf-item-info', title: 'Basic Info', fields: [] };
             fieldGroup.controls.push(basicInfo);
@@ -135,15 +135,22 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
-        function getStepTableUIControl(userInfo, srf, stepType, dataSource) {
+        function getStepTableUIControl(userInfo, srf, stepType, dataSource, readOnly) {
 
-
-            var fields = {
-                [twcSrfItem.Fields.REQUEST_TYPE]: { title: 'Request Type', styles: { width: '150px' } },
-                [twcSrfItem.Fields.EQUIPMENT_ID]: { title: 'Equipment', nullText: '', styles: { width: '200px' } },
-                [twcSrfItem.Fields.ITEM_TYPE]: { title: 'Type', nullText: '', styles: { width: '150px' } },
-                [twcSrfItem.Fields.DESCRIPTION]: 'Description'
+            var fields = {};
+            var noSort = undefined;
+            if (readOnly && stepType == twcSrf.StepType.TME) {
+                noSort = true;
+                fields['expand'] = { title: '', nullText: '', noFilter: true, noSort: true, styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
             }
+
+            fields[twcSrfItem.Fields.REQUEST_TYPE] = { title: 'Request Type', styles: { width: '150px' } };
+            fields[twcSrfItem.Fields.EQUIPMENT_ID] = { title: 'Equipment', nullText: '', styles: { width: '200px' } };
+            if (stepType == twcSrfItem.StepType.ATME || stepType == twcSrfItem.StepType.FEEDER) {
+                fields[twcSrfItem.Fields.TME_ID] = { title: 'TME', nullText: '', styles: { width: '200px' } };
+            }
+            fields[twcSrfItem.Fields.ITEM_TYPE] = { title: 'Type', nullText: '', styles: { width: '150px' } };
+            fields[twcSrfItem.Fields.DESCRIPTION] = 'Description';
 
             if (stepType == twcSrfItem.StepType.FEEDER) {
                 fields[twcSrfItem.Fields.TYPE_OPT] = 'Type Opt';
@@ -164,6 +171,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             }
 
+            if (readOnly && userInfo.isEmployee) {
+                fields['create_lib_item'] = { title: '', nullText: '', noFilter: true, noSort: true, styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
+            }
+
+            for (var k in fields) {
+                if (k == 'expand' || k =='create_lib_item') { continue; }
+                if (fields[k].constructor.name == 'String') {
+                    fields[k] = { title: fields[k] }
+                }
+                fields[k].nullText = '-';
+                // fields[k].noSort = noSort;
+                fields[k].noSort = true;
+            }
+
 
             var label = '';
             if (stepType == twcSrfItem.StepType.TME) {
@@ -180,7 +201,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var items = null;
             if (dataSource) {
-                items = dataSource.filter(i => { return i[twcSrfItem.Fields.STEP_TYPE] == stepType; })
+                items = dataSource;
+
             } else {
                 items = twcSrfItem.select(
                     {
@@ -198,7 +220,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 id: `${twcSrfItem.Type}_${stepType}`, recordType: twcSrfItem.Type, label: label,
                 fields: fields,
                 dataSource: items,
-                FieldsInfo: twcSrfItem.FieldsInfo
+                FieldsInfo: twcSrfItem.FieldsInfo,
             }
 
         }
@@ -224,6 +246,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
             fields[twcFile.Fields.DESCRIPTION] = { title: 'Description', nullText: '' };
+            fields[twcFile.Fields.UPLOADED_BY + '_name'] = { title: 'Upload by', nullText: '', type: 'text', styles: { width: '160px' } };
             fields[twcFile.Fields.CREATED] = { title: 'Upload Date', nullText: '', type: 'datetime', styles: { width: '160px', 'text-align': 'center' } };
 
             var files = twcFile.select({

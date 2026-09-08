@@ -4,7 +4,7 @@
 
  */
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView_ue.js', './views/oTWC_baseView.js', '../data/oTWC_config.js', '../ui/modules/oTWC_troubleTicketUtils.js', '../O/controls/oTWC_ui_fieldPanel.js', '../ui/modules/oTWC_siteInfoUtils.js', '../data/oTWC_troubleTickets.js', '../O/controls/oTWC_ui_ctrl.js', '../data/oTWC_utils.js', '../data/oTWC_troubleTickets.js'],
-    function (core, cored, coreSql, uis, twcBaseViewUE, twcBaseView, twcConfig, twcTroubleTicketUtils, twcUIPanel, twcSiteInfoUtils, twcTkt, twcUI,twcUtils, twcTroubleTicket) {
+    function (core, cored, coreSql, uis, twcBaseViewUE, twcBaseView, twcConfig, twcTroubleTicketUtils, twcUIPanel, twcSiteInfoUtils, twcTkt, twcUI, twcUtils, twcTroubleTicket) {
         var PAGE_VERSION = 'v0.01';
 
         var suiteLet = uis.new({ title: 'TL Trouble Ticket', script: 'SuiteScripts/OSSMTWC/ui/oTWC_troubleTicket_cs.js' });
@@ -45,7 +45,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (tktStatus != twcTkt.Status.Resolved) {
                             actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Resolve', id: 'resolve-button' });
                         }
-                        if(tktStatus == twcTkt.Status.Resolved ||tktStatus == twcTkt.Status.Assessed){
+                        if (tktStatus == twcTkt.Status.Resolved || tktStatus == twcTkt.Status.Assessed) {
                             actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Upload Resolution Photos', id: 'upload-resolution-photo' });
                         }
                     } else {
@@ -67,18 +67,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 // @@NOTE: in edit mode we only want to see the 'edit/cancel' buttons
                 // if (pageData.editMode) { actions = ''; }
-                if (pageData.editMode) {
-                    actions = '';
-                        if(tktStatus == twcTkt.Status.Resolved ||tktStatus == twcTkt.Status.Assessed){
-                            actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Upload Resolution Photos', id: 'upload-resolution-photo' });
-                        }
-                } 
+                // if (pageData.editMode) {
+                //     actions = '';
+                //     if (tktStatus == twcTkt.Status.Resolved || tktStatus == twcTkt.Status.Assessed) {
+                //         actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Upload Resolution Photos', id: 'upload-resolution-photo' });
+                //     }
+                // }
 
-                if (pageData.trblTktInfo[twcTroubleTicket.Fields.CASE_REFERENCE]) {
+                if (pageData.userInfo.isEmployee && pageData.trblTktInfo[twcTroubleTicket.Fields.CASE_REFERENCE]) {
                     actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Open Support Case', id: 'open-support-case' });
                 }
-
-                
 
                 if (actions) { html = html.replaceAll('<div id="custom-actions"></div>', `<div id="custom-actions">${actions}</div>`); }
 
@@ -117,12 +115,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return { status: 'success' };
 
             }
-             else if (context.request.parameters.action == 'edit-file') {
+            else if (context.request.parameters.action == 'manage-file') {
                 var payload = JSON.parse(context.request.body);
                 var fields = twcTroubleTicketUtils.getEditFileRecord(payload, userInfo);
                 return fields;
             }
-             else if (context.request.parameters.action == 'get-company-profile') {
+            else if (context.request.parameters.action == 'get-company-profile') {
                 var payload = JSON.parse(context.request.body);
                 return { data: twcUtils.getProfiles({ company: payload.company, canAttend: false }) };
             }

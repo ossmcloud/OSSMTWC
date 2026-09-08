@@ -27,6 +27,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ALIAS: 'custrecord_twc_eq_lib_alias',
             PUBLIC: 'custrecord_twc_eq_lib_public',
             TL_NOTE: 'custrecord_twc_eq_lib_tl_note',
+            CREATED_FROM_SRF_ITEM: 'custrecord_twc_eq_lib_srf_item',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -50,10 +51,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WIND_LOADING_NM2_REAR: { name: 'custrecord_twc_eq_lib_wind_ldg_nm2_rear', type: 'integer', alias: 'windLoadingNm2Rear', display: 'normal', mandatory: false },
             WIND_LOADING_NM2_MAX: { name: 'custrecord_twc_eq_lib_wind_ldg_nm2_max', type: 'integer', alias: 'windLoadingNm2Max', display: 'normal', mandatory: false },
             WIND_REGIME: { name: 'custrecord_twc_eq_lib_wind_regime', type: 'text', alias: 'windRegime', display: 'normal', mandatory: false },
-            VOLTAGE_TYPE: { name: 'custrecord_twc_eq_lib_voltage', type: 'select', alias: 'voltageType', display: 'normal', mandatory: false, recordType: 'customlist_twc_equip_voltage_type' },
+            VOLTAGE_TYPE: { name: 'custrecord_twc_eq_lib_voltage', type: 'select', alias: 'voltageType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_voltage_type' },
             ALIAS: { name: 'custrecord_twc_eq_lib_alias', type: 'text', alias: 'alias', display: 'normal', mandatory: false },
             PUBLIC: { name: 'custrecord_twc_eq_lib_public', type: 'text', alias: 'public', display: 'normal', mandatory: false },
             TL_NOTE: { name: 'custrecord_twc_eq_lib_tl_note', type: 'text', alias: 'tLNote', display: 'normal', mandatory: false },
+            CREATED_FROM_SRF_ITEM: { name: 'custrecord_twc_eq_lib_srf_item', type: 'select', alias: 'createdFromSRFItem', display: 'statictext', mandatory: false, recordType: 'customrecord_twc_srf_itm' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -176,7 +178,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get voltageTypeName() { return this.getText(_recordFields.VOLTAGE_TYPE); }
             
-            
             get alias() {
                 return this.get(_recordFields.ALIAS);
             } set alias(value) {
@@ -194,6 +195,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set tLNote(value) {
                 this.set(_recordFields.TL_NOTE, value)
             }
+            
+            get createdFromSRFItem() {
+                return this.get(_recordFields.CREATED_FROM_SRF_ITEM);
+            } set createdFromSRFItem(value) {
+                this.set(_recordFields.CREATED_FROM_SRF_ITEM, value)
+            }
+            get createdFromSRFItemName() { return this.getText(_recordFields.CREATED_FROM_SRF_ITEM); }
             
             get created() {
                 return this.get(_recordFields.CREATED);
