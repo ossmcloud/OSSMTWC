@@ -192,6 +192,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return attendAs;
         }
 
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const FILE_STATUS = {
             Pending: 1,
             Rejected: 2,
