@@ -1332,6 +1332,30 @@ div.twc-overlay {
     backdrop-filter: blur(1px);
 }
 
+div.twc-overlay-message {
+    padding: 7px;
+    margin-bottom: 7px;
+    color: var(--accent-fore-color);
+    font-weight: bold;
+}
+
+div.twc-overlay-progress {
+    width: 1000px;
+    height: 25px;
+    border: 1px solid var(--accent-fore-color);
+    background-color: var(--accent-bkgd-color);
+    padding: 1px 2px;
+    border-radius: 5px;
+    margin: auto;
+}
+
+div.twc-overlay-progress>div {
+    background-color: var(--accent-fore-color);
+    height: 20px;
+    width: 0px;
+    border-radius: 5px;
+    transition: width 1s;
+}
 
 
 table.twc-qualification-chart,
@@ -2714,7 +2738,7 @@ div.twc-dashboard {
     text-align: center;
     margin: 7px;
     cursor: pointer;
-    
+
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     border: 1px solid var(--grid-color);
 }
@@ -2737,4 +2761,26 @@ div.twc-dashboard-content {
     cursor: pointer;
 }
 
+span.twc-srf-item-expand-all {
+    cursor: pointer;
+    padding: 7px;
+    margin-bottom: -7px;
+    display: block;
+}
 
+span.twc-srf-item-expand {
+    cursor: pointer;
+    padding: 7px;
+    display: block;
+}
+
+span.twc-srf-item-expand-all:hover,
+span.twc-srf-item-expand:hover {
+    background-color: var(--accent-bkgd-color);
+    color: var(--accent-fore-color)
+}
+
+span.twc-srf-item-create-lib {
+    text-decoration: underline;
+    color: var(--accent-fore-color);
+}

@@ -125,11 +125,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         var _primaryContractors = null;
-        function getPrimaryContractors(userInfo) {
+        function getPrimaryContractors(userInfo, dataSource) {
             if (!_primaryContractors) {
                 _primaryContractors = [];
                 if (userInfo.isEmployee) {
                     _primaryContractors = twcUtils.getVendors(userInfo);
+                    if (dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR]) {
+                        // @@NOTE: this happens if a Customer (that is only a customer) has entered the SAF as they will be the primary contractor no matter what
+                        if (!_primaryContractors.find(c => { return c.value == dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR] })) {
+                            _primaryContractors.unshift({
+                                value: dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR],
+                                text: dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR + '_name'] || '???'
+                            })
+                        }
+                    }
                 } else {
                     if (!userInfo.canEnterSAF) {
                         throw new Error(`Your accreditation status [<b>${userInfo.companyProfile.accreditation_status_name}</b>] does not allow for this action`);
@@ -277,7 +286,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var customers = twcUtils.getCustomers(userInfo);
             var customer = dataSource[twcSaf.Fields.CUSTOMER] || (customers.length == 1 ? customers[0].value : null);
 
-            var primaryContractors = getPrimaryContractors(userInfo);
+            var primaryContractors = getPrimaryContractors(userInfo, dataSource);
             var primaryContractor = dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR] || (primaryContractors.length == 1 ? primaryContractors[0].value : null);
 
             var step3Info = { id: 'site-access-step-3a', fields: [] };
@@ -297,7 +306,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             //
             var step3CInfo = { id: 'site-access-step-3c', title: 'Equipment Actions', hide: !eqActionsVisible, fields: [] };
             fieldGroup.controls.push(step3CInfo);
-            var crewTableControl = {
+            var eqActionTableControl = {
                 id: `saf-eq-action-table`,
                 type: twcUI.CTRL_TYPE.TABLE,
                 label: 'Equipment Actions',
@@ -327,8 +336,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 `
 
             }
-            step3CInfo.fields.push(crewTableControl);
-
+            step3CInfo.fields.push(eqActionTableControl);
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
 
@@ -527,16 +535,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSafActionRecord(saf, childRecord, userInfo) {
             var fieldGroup = { id: 'saf-action', collapsed: false, fields: [] };
             fieldGroup.fields.push({ id: 'saf-action-srf', label: 'S.R.F', type: twcUI.CTRL_TYPE.DROPDOWN, allowAll: false, noAutoSelect: true, dataSource: twcUtils.getSrfDropDown(saf), mandatory: true, width: '350px', lineBreak: true });
-            //fieldGroup.fields.push({ id: 'saf-action-eq', label: 'Equipment Action', type: twcUI.CTRL_TYPE.DROPDOWN, allowAll: false, dataSource: [], mandatory: true });
 
             var checkAllInput = `<input id="srf-actions-check-all" type="checkbox" />`;
-
             var eqActions = {
                 id: `srf-actions`,
                 type: twcUI.CTRL_TYPE.TABLE,
                 label: 'Equipment Actions',
                 columns: [
+                    { id: 'expand', title: '', noSort: true, noFilter: true, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } },
                     { id: 'select', title: checkAllInput, noSort: true, noFilter: true, styles: { width: '50px', 'text-align': 'center', 'padding': '0px' } },
+                    { id: 'ea_id', title: 'ID', styles: { width: '50px' }, noFilter: true, noSort: true },
                     { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF' },
                     { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
                     { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Eq. Type' },
@@ -553,6 +561,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 showToolbar: true,
                 showEditDelete: false,
                 readOnly: true,
+
             }
             fieldGroup.fields.push(eqActions);
 
@@ -561,7 +570,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
-
+        function getSafActionList(saf, userInfo) {
+            var fieldGroup = { id: 'saf-action', collapsed: false, controls: [] };
+            var eqActionsLists = getSAFInfoPanels_Info_Actions(saf, userInfo);
+            eqActionsLists.fields[0].readOnly = true;
+            fieldGroup.controls.push(eqActionsLists)
+            configUIFields.formatPanelFields(saf, fieldGroup);
+            return fieldGroup;
+        }
 
 
         function getSAFInfoPanels_Info(dataSource, userInfo) {
@@ -630,48 +646,63 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
             if (requiresSrf) {
-                var eqActionsLists = { id: 'site-access-eq-actions', collapsed: false, renderAsTable: { width: '100%' }, fields: [] };
-                fieldGroup.controls.push(eqActionsLists);
-
-
-                // @@TODO: use constant
-                var eaActionLink = (userInfo.isEmployee) ? { url: core.url.record('customrecord_twc_eq_action') + '&id=${ea_id}', valueField: 'ea_id' } : null;
-                var equipLink = (userInfo.isEmployee) ? { url: core.url.record('customrecord_twc_equip') + '&id=${' + twcEqAct.Fields.EA_EQUIPMENT + '}', valueField: twcEqAct.Fields.EA_EQUIPMENT } : null;
-
-                eqActionsLists.fields.push({
-                    id: `${twcSafAction.Type}`,
-                    label: 'Equipment Actions',
-                    fields: {
-                        ['ea_id']: { title: 'ID', styles: { width: '50px' }, link: eaActionLink, noFilter: true, noSort: true },
-                        [twcSrfItem.Fields.SRF + '_name']: { title: 'SRF', styles: { width: '125px' } },
-                        [twcEqAct.Fields.EA_EQUIPMENT + '_name']: { title: 'Equipment', link: equipLink },
-                        [twcSrfItem.Fields.STEP_TYPE + '_name']: { title: 'Class' },
-                        [twcSrfItem.Fields.ITEM_TYPE + '_name']: { title: 'Item' },
-                        [twcSrfItem.Fields.DESCRIPTION]: { title: 'Description' },
-                        [twcEqAct.Fields.EA_TYPE + '_name']: { title: 'Type' },
-                        [twcSafAction.Fields.SAF_ACTION_STATUS + '_name']: { title: 'Status', styles: { width: '120px', 'text-align': 'center' } },
-                    },
-                    dataSource: getSafEqAction(dataSource),
-                    FieldsInfo: twcSafAction.FieldsInfo,
-                    styles: { width: '100%', 'padding-left': '0px' },
-                    onColumnInit: (tbl, col) => {
-                        if (col.id == twcSafAction.Fields.SAF_ACTION_STATUS + '_name') {
-                            col.formatValue = (v) => {
-                                return twcSafAction.getStatusHtml(v);
-                            }
-                        }
-                    }
-                });
-
+                fieldGroup.controls.push(getSAFInfoPanels_Info_Actions(dataSource, userInfo));
             }
-
-
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
 
             return fieldGroup;
         }
 
+        function getSAFInfoPanels_Info_Actions(dataSource, userInfo) {
+            var eqActionsLists = { id: 'site-access-eq-actions', collapsed: false, renderAsTable: { width: '100%' }, fields: [] };
+
+            // @@TODO: use constant
+            var eaActionLink = (userInfo.isEmployee) ? { url: core.url.record('customrecord_twc_eq_action') + '&id=${ea_id}', valueField: 'ea_id' } : null;
+            var equipLink = (userInfo.isEmployee) ? { url: core.url.record('customrecord_twc_equip') + '&id=${' + twcEqAct.Fields.EA_EQUIPMENT + '}', valueField: twcEqAct.Fields.EA_EQUIPMENT } : null;
+
+            var fields = {};
+            if (dataSource.showSelect) {
+                fields['select'] = { title: '', nullText: '', noSort: true, noFilter: true, styles: { width: '50px', 'text-align': 'center', 'padding': '0px' } };
+            }
+
+            fields['expand'] = { title: '', noSort: true, noFilter: true, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
+            fields['ea_id'] = { title: 'ID', styles: { width: '50px' }, link: eaActionLink, noFilter: true, noSort: true };
+            fields[twcSrfItem.Fields.SRF + '_name'] = { title: 'SRF', styles: { width: '125px' } };
+            fields[twcEqAct.Fields.EA_EQUIPMENT + '_name'] = { title: 'Equipment', link: equipLink };
+            fields[twcSrfItem.Fields.STEP_TYPE + '_name'] = { title: 'Class' };
+            fields[twcSrfItem.Fields.ITEM_TYPE + '_name'] = { title: 'Item' };
+            fields[twcSrfItem.Fields.DESCRIPTION] = { title: 'Description' };
+            fields[twcEqAct.Fields.EA_TYPE + '_name'] = { title: 'Type' };
+            fields[twcSafAction.Fields.SAF_ACTION_STATUS + '_name'] = { title: 'Status', styles: { width: '120px', 'text-align': 'center' } };
+
+            // @@TODO: we need to fix filters sorting with child rows before we can show
+            for (var k in fields) {
+                fields[k].noSort = true;
+                fields[k].noFilter = true;
+            }
+
+            eqActionsLists.fields.push({
+                id: `${twcSafAction.Type}`,
+                label: 'Equipment Actions',
+                fields: fields,
+                dataSource: getSafEqAction(dataSource),
+                FieldsInfo: twcSafAction.FieldsInfo,
+                styles: { width: '100%', 'padding-left': '0px' },
+                onColumnInit: (tbl, col) => {
+                    if (col.id == twcSafAction.Fields.SAF_ACTION_STATUS + '_name') {
+                        col.formatValue = (v) => {
+                            return twcSafAction.getStatusHtml(v);
+                        }
+                    }
+                },
+                onRowInit: (table, row) => {
+                    if (row.data.child) { row.cssClass += 'o-row-child o-row-hidden'; }
+                }
+            });
+
+            return eqActionsLists;
+        }
 
         function getSAFInfoPanels_WorkFlowInfo(dataSource, userInfo) {
             var fieldGroup = { id: 'site-access-workflow', title: 'Workflow info', collapsed: false, controls: [] };
@@ -697,7 +728,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (!userInfo.isEmployee) {
                 workFlowLogsInfo.fields.push({ id: twcSaf.Fields.REVIEW_COMMENT, width: '100%', rows: 5, label: 'Review Comment', lineBreak: true })
             }
-            
+
             workFlowLogsInfo.fields.push({
                 id: `${twcFile.Type}`, label: 'Completion Photos',
                 fields: {
@@ -774,6 +805,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         return {
             getSafCrewRecord: getSafCrewRecord,
             getSafActionRecord: getSafActionRecord,
+            getSafActionList: getSafActionList,
             getSafTableFields: getSafTableFields,
             getSAFInfoPanels: getSAFInfoPanels,
             renderTimeBlocks: renderTimeBlocks

@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../data/oTWC_troubleTickets.js', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', './oTWC_siteInfoPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_fieldPanel.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', '../../data/oTWC_file.js','../../data/oTWC_troubleTicketsUI.js'],
-    (core, coreSql, twcPageBase, dialog, twcIcons, twcConfig, twcTkt, uiTable, twcSiteLocatorPanel, twcSiteInfoPanel, twcUI, twcUIPanel, b64, twcFile,twcTroubleTicketsUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_icons.js', '../../data/oTWC_config.js', '../../data/oTWC_troubleTickets.js', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', './oTWC_siteInfoPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_fieldPanel.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', '../../data/oTWC_file.js', '../../data/oTWC_troubleTicketsUI.js'],
+    (core, coreSql, twcPageBase, dialog, twcIcons, twcConfig, twcTkt, uiTable, twcSiteLocatorPanel, twcSiteInfoPanel, twcUI, twcUIPanel, b64, twcFile, twcTroubleTicketsUI) => {
 
         var _tktLink = null;
         var _isRes = ''
@@ -91,7 +91,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 if (col.id == twcTkt.Fields.SITE_LATITUDE || col.id == twcTkt.Fields.SITE_LONGITUDE) { col.styles = { 'text-align': 'right' }; }
 
-             
+
 
             }
 
@@ -155,11 +155,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var fileCtrl = this.ui.getControl(twcFile.Type);
                 if (fileCtrl) {
                     fileCtrl.onToolbarClick = e => {
-                        if (e.action == 'edit') {
+                        if (e.action == 'add-new') {
+                            this.manageFile(null, e.table);
+                        } else if (e.action == 'edit') {
                             this.manageFile(e.rowData, e.table);
 
                         } else if (e.action == 'delete') {
-                            dialog.confirm('Are you sure you wish to delete this resoltuion image', () => {
+                            dialog.confirm('Are you sure you wish to delete this resolution image', () => {
                                 e.rowData.delete = true;
                                 this.manageFile(e.rowData, e.table);
                             })
@@ -195,18 +197,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             async cancelTicket() {
                 var formConfig = {
                     controls: [
-                        {
-                            type: twcUI.CTRL_TYPE.TEXTAREA,
-                            id: twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE,
-                            value: '',
-                            width: '100%',
-                            rows: 7
-                        },
+                        { type: twcUI.CTRL_TYPE.TEXTAREA, id: twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE, value: '', width: '100%', rows: 7 },
                     ]
                 };
 
                 var form = twcUI.init(formConfig);
-
                 dialog.open({
                     title: 'Cancel Ticket',
                     content: form.ui,
@@ -255,35 +250,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var isResPicReq = this.reqResPhotos(this.data.trblTktInfo.id)
 
                     if (isResPicReq == false) {
-                        dialog.error("Please add Resoltuion Image to resolve the ticket!!")
+                        dialog.error("Please add Resolution Image to resolve the ticket!!")
                         return
                     }
                 }
 
                 var formConfig = {
                     controls: [
-                        {
-                            type: twcUI.CTRL_TYPE.TEXTAREA,
-                            id: twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE,
-                            label: 'Comment',
-                            value: '',
-                            width: '100%',
-                            rows: 7
-                        },
-                        {
-                            type: twcUI.CTRL_TYPE.DATE,
-                            id: twcTkt.Fields.SCHEDULED_COMPLETION_DATE,
-                            label: 'Scheduled Date',
-                            value: '',
-                            lineBreak: true
-                        },
-                        {
-                            type: twcUI.CTRL_TYPE.DATE,
-                            label: 'Corrective Action Date',
-                            id: twcTkt.Fields.CORRECTIVE_ACTION,
-                            value: '',
-                            lineBreak: true
-                        }
+                        { type: twcUI.CTRL_TYPE.TEXTAREA, id: twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE, label: 'Comment', value: '', width: '100%', rows: 7 },
+                        { type: twcUI.CTRL_TYPE.DATE, id: twcTkt.Fields.SCHEDULED_COMPLETION_DATE, label: 'Scheduled Date', value: '', lineBreak: true },
+                        { type: twcUI.CTRL_TYPE.DATE, label: 'Corrective Action Date', id: twcTkt.Fields.CORRECTIVE_ACTION, value: '', lineBreak: true }
                     ]
                 };
 
@@ -300,18 +276,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             var payload = form.getValues();
                             payload.tkt = this.data.trblTktInfo.id;
 
-                            if (!payload[twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE] || !payload[twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE].trim()) {
-                                throw new Error('Please specify a comment');
-                            }
-
-                            if (!payload[twcTkt.Fields.SCHEDULED_COMPLETION_DATE]) {
-                                throw new Error('Please select scheduled Date');
-                            }
-
-                            if (!payload[twcTkt.Fields.CORRECTIVE_ACTION]) {
-                                throw new Error('Please select Corrective Action Date');
-                            }
-
+                            if (!payload[twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE] || !payload[twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE].trim()) { throw new Error('Please specify a comment'); }
+                            if (!payload[twcTkt.Fields.SCHEDULED_COMPLETION_DATE]) { throw new Error('Please select scheduled Date'); }
+                            if (!payload[twcTkt.Fields.CORRECTIVE_ACTION]) { throw new Error('Please select Corrective Action Date'); }
 
                             this.post({ action: 'resolve-tkt-status' }, payload).then(resp => {
                                 if (resp.error) {
@@ -337,19 +304,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             reqResPhotos(tktId) {
-                //    var tktInfo = coreSql.first(`
-                //         select distinct t.id
-                //         from ${twcTkt.Type} t
-                //         join customrecord_twc_trbl_tkt_category cat
-                //         on cat.id = t.custrecord_twc_trbl_tkt_category
-                //         left join customrecord_twc_file f
-                //         on f.custrecord_twc_file_recid = t.id
-                //         and f.isinactive = 'F'
-                //         and f.custrecord_twc_file_rectype = '${twcTkt.Type}'
-                //         where t.id = ${tktId}
-                //         and cat.custrecord_twc_trbl_tkt_requires_res_pic = 'T'
-                //         and f.id is null
-                //     `);
                 var tktInfo = coreSql.first(`
                     select distinct t.id
                     from ${twcTkt.Type} t
@@ -376,20 +330,28 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (!tktfFile) { tktfFile = {}; }
                     if (this.deleteRecord(tktfFile, table)) { return; }
 
-                    var res = this.postSync({ action: 'edit-file' }, { tkt: this.data.trblTktInfo, file: tktfFile })
-                    res.controls.find(c => { return c.id == 'upload-file' }).hide = true;
-                    res.controls.find(c => { return c.id == twcFile.Fields.R_TYPE }).readOnly = true;
-                    res.controls.find(c => { return c.id == twcFile.Fields.STATUS }).hide = true;
-
+                    var res = this.postSync({ action: 'manage-file' }, { tkt: this.data.trblTktInfo, file: tktfFile })
                     var form = twcUIPanel.ui(res);
                     form.on('change', e => {
-                        if (e.id == 'name') {
+                        if (e.id == 'upload-file') {
                             e.target.readFile(file => {
                                 tktfFile.fileObject = file;
                                 tktfFile.name = file.name;
+                                form.getControl('name').value = tktfFile.name;
                             })
+                        } else if (e.id == twcFile.Fields.R_TYPE) {
+                            form.getControl(twcFile.Fields.STATUS).setDataSource(e.target.valueObj?.allowedStatues || []);
+                            if (e.target.valueObj?.defaultStatus) {
+                                form.getControl(twcFile.Fields.STATUS).value = e.target.valueObj.defaultStatus;
+                            } else if (e.target.valueObj?.allowedStatues.length == 1) {
+                                form.getControl(twcFile.Fields.STATUS).value = e.target.valueObj.allowedStatues[0].value;
+                            } else {
+                                form.getControl(twcFile.Fields.STATUS).value = null;
+                            }
                         }
+
                     });
+
 
                     dialog.confirm({ title: 'manage file', message: form.ui, width: '600px', height: '400px' }, () => {
                         try {
@@ -490,15 +452,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     content: form.ui,
                     size: { width: '1000px', height: '500px' },
                     ok: (dlg) => {
-                        console.log('pic', photos);
-
-                        if (!this.data?.trblTktInfo?.id) {
-                            this.#resFiles = photos;
-                            dlg.close();
-                            refreshOpenPicturesTable.call(this, photos);
-                            return;
-                        }
-
                         this.uploadPhoto(photoList, photos, 0, () => {
                             var errors = photos.filter(p => { return p.error !== undefined; })
                             if (errors.length > 0) {
@@ -507,23 +460,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 dialog.error(errorHtml, () => { location.reload(); });
                                 return;
                             }
-
-                            // this.postSync({ action: 'edit-saf-status' }, { saf: this.data.siteAccessInfo.id, status: twcSaf.Status.PhotosReceived });
-
                             dlg.close();
-                            // location.reload();
 
-                            console.log("ID", this.data.trblTktInfo.id)
-                            if (this.data?.trblTktInfo?.id) {
+                            if (!this.data.editMode) {
                                 location.reload();
-                            } else {
-                                var html = `<html><body><h2 id="msg">Image(s) Uploaded Successfully</h2><script>var count=0;var interval=setInterval(function(){count++;document.getElementById("msg").innerHTML="Image(s) Uploaded Successfully"+".".repeat(count);if(count===3){clearInterval(interval);}},500);</script></body></html>`;
-                                dialog.message({
-                                    title: 'Resolution Image',
-                                    message: html,
-                                    size: { width: '450px', height: '20vh' }
-                                })
                             }
+
+                            // var html = `<html><body><h2 id="msg">Image(s) Uploaded Successfully</h2><script>var count=0;var interval=setInterval(function(){count++;document.getElementById("msg").innerHTML="Image(s) Uploaded Successfully"+".".repeat(count);if(count===3){clearInterval(interval);}},500);</script></body></html>`;
+                            // dialog.message({
+                            //     title: 'Resolution Image',
+                            //     message: html,
+                            //     size: { width: '450px', height: '20vh' }
+                            // })
                         });
 
 
@@ -534,17 +482,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             uploadPhoto(photoList, photos, idx, callback) {
-                // if (!this.data?.trblTktInfo?.id) {
-                //     if (photos[idx]?.deleted) {
-
-                //         photos.splice(idx, 1);
-                //         this.#resFiles = photos;
-                //         return;
-                //     }
-                //     this.#resFiles = photos
-                //     return;
-                // }
-
                 if (photos[idx] === undefined) {
                     callback();
                     return;
@@ -584,15 +521,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     if (!this.dirty) { throw new Error('The record has not changed'); }
 
-                    //throw new Error(JSON.stringify(this.data))
+                    // @@NOTE: we use getValues just to detect missing mandatory fields
+                    this.ui.getValues();
+
                     var resFilesAdded = this.#resFiles
 
                     var payload = this.#changes;
-
+                    payload[twcTkt.Fields.CUSTOMER] = this.ui.getControl(twcTkt.Fields.CUSTOMER).value;
                     payload.id = window.twc.page.data.recId
                     payload.siteId = window.twc.page.data.siteInfo.site.id
                     payload.files_deleted = this.data.trblTktInfo['files_deleted']
-                    payload.files_edited = this.data.trblTktInfo['files']
+                    payload.files = this.data.trblTktInfo['files']
                     payload.newFiles = resFilesAdded
                     // throw new Error(JSON.stringify(payload))
                     var resp = await this.post({ action: 'save' }, payload);
@@ -610,60 +549,60 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
-     
-        function refreshOpenPicturesTable(photos) {
 
-            const existingCount =
-                (this.data.trblTktInfo.tempOpenFiles || []).length;
+        // function refreshOpenPicturesTable(photos) {
 
-            const newFiles = photos.map((p, idx) => ({
-                created: new Date().toLocaleString(),
-                name: p.name,
-                custrecord_twc_file_type_name: p.type,
-                custrecord_twc_file_description: p.notes,
-                preview_link: "",
-                _fileObj: p
-            }));
+        //     const existingCount =
+        //         (this.data.trblTktInfo.tempOpenFiles || []).length;
 
-            this.data.trblTktInfo.tempOpenFiles = [
-                ...(this.data.trblTktInfo.tempOpenFiles || []),
-                ...newFiles
-            ];
+        //     const newFiles = photos.map((p, idx) => ({
+        //         created: new Date().toLocaleString(),
+        //         name: p.name,
+        //         custrecord_twc_file_type_name: p.type,
+        //         custrecord_twc_file_description: p.notes,
+        //         preview_link: "",
+        //         _fileObj: p
+        //     }));
 
-            this.data.trblTktInfo.type = 'customrecord_twc_trbl_tkt'
+        //     this.data.trblTktInfo.tempOpenFiles = [
+        //         ...(this.data.trblTktInfo.tempOpenFiles || []),
+        //         ...newFiles
+        //     ];
 
-            const newPanel = twcTroubleTicketsUI.getTKOpenPictures(
-                this.data.trblTktInfo,
-                this.userInfo
-            );
+        //     this.data.trblTktInfo.type = 'customrecord_twc_trbl_tkt'
 
-            console.log('newPanel', newPanel);
+        //     const newPanel = twcTroubleTicketsUI.getTKOpenPictures(
+        //         this.data.trblTktInfo,
+        //         this.data.userInfo
+        //     );
 
-            const panelEl = jQuery('#trbl-tkts-files');
+        //     console.log('newPanel', newPanel);
 
-            if (!panelEl.length) {
-                console.log('Panel not found');
-                return;
-            }
+        //     const panelEl = jQuery('#trbl-tkts-files');
 
-            panelEl.empty();
+        //     if (!panelEl.length) {
+        //         console.log('Panel not found');
+        //         return;
+        //     }
 
-            twcUI.init(newPanel.controls[0], panelEl);
-            panelEl.find('[data-action="edit"]').hide();
+        //     panelEl.empty();
 
-            panelEl.find('[data-action="delete"]').off('click').on('click', e => {
-                const row = jQuery(e.currentTarget).closest('.o-row');
-                const idx = row.data('idx');
-                this.data.trblTktInfo.tempOpenFiles.splice(idx, 1);
-                photos.splice(idx, 1);
-                this.resFiles = photos;
+        //     twcUI.init(newPanel.controls[0], panelEl);
+        //     panelEl.find('[data-action="edit"]').hide();
 
-                refreshOpenPicturesTable.call(
-                    this,
-                    []
-                );
-            });
-        }
+        //     panelEl.find('[data-action="delete"]').off('click').on('click', e => {
+        //         const row = jQuery(e.currentTarget).closest('.o-row');
+        //         const idx = row.data('idx');
+        //         this.data.trblTktInfo.tempOpenFiles.splice(idx, 1);
+        //         photos.splice(idx, 1);
+        //         this.resFiles = photos;
+
+        //         refreshOpenPicturesTable.call(
+        //             this,
+        //             []
+        //         );
+        //     });
+        // }
 
 
         return {

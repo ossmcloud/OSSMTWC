@@ -95,6 +95,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     var isDate = (this.#colHeader.data('type') == 'date' || this.#colHeader.data('type') == 'datetime');
                     var values = []; var valueGrouped = {};
                     core.array.each(this.#column.table.data, (d, i) => {
+                        if (this.#column.table.rows[i + 1].ui().hasClass('o-row-child')) { return; }
 
                         if (!this.#column.table.applyFilter(this.#column.table.rows[i + 1], this)) { return; }
 
@@ -568,6 +569,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             #options = null;
             #data = null;
             #dataIdx = null;
+
             constructor(table, options, data, idx) {
                 if (core.utils.isEmpty(table)) { throw new err.ONullArgument('table'); }
                 if (core.utils.isEmpty(options)) { throw new err.ONullArgument('options'); }
@@ -581,6 +583,11 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get table() { return this.#table; }
             get options() { return this.#options; }
             get data() { return this.#data; }
+            get cssClass() {
+                return this.#options.cssClass || '';
+            } set cssClass(val) {
+                this.#options.cssClass = val;
+            }
 
             ui() {
                 return this.#table.ui.find(`div.o-row[data-idx="${this.#dataIdx}"]`);
@@ -588,7 +595,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
             render() {
 
-                var html = `<div class="o-row" data-idx="${this.#dataIdx}">`;
+                var html = `<div class="o-row ${this.cssClass}" data-idx="${this.#dataIdx}">`;
                 core.array.each(this.table.columns, c => {
                     var v = '';
                     if (c.unbound) {
@@ -734,6 +741,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#tableId = options.id || options.tableId || 'o_table';
 
                 this.#columnInit = options.onColumnInit;
+                this.#rowInit = options.onRowInit;
 
                 if (options.unboundCols) { this.#unboundCols = options.unboundCols; }
 
@@ -815,6 +823,10 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#rowInit = val;
             }
 
+            getDataRows() {
+                return this.#rows.filter(r => { return !r.header && !r.footer; })
+            }
+
             getColumn(id) {
                 return this.#columns.find(c => { return c.id == id })
             }
@@ -866,6 +878,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.render();
             }
             applyFilter(r, filter) {
+                if (r.ui().hasClass('o-row-child')) { return true; }
                 var display = true;
                 core.array.each(this.#filters, f => {
                     if (filter && filter.column.id == f.column.id) { return false; }
@@ -1438,7 +1451,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
         return {
             Table: HtmlTable,
             TableControl: TableControl,
-            
+
             render: render,
             renderPlainTable: renderPlainTable,
             ui: (element) => {

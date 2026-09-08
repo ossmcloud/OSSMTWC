@@ -3,16 +3,16 @@
  *@NScriptType ClientScript
  *@NModuleScope public
  */
-define(['N/xml','/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js',
+define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', './O/oTWC_dialogEx.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js',
     './data/oTWC_utils.js', './data/oTWC_site.js', './data/oTWC_config.js', './data/oTWC_configUIFields.js', './data/oTWC_rolePermission.js', './data/oTWC_configUIFields.js',
     './ui/modules/oTWC_siteInfoUtils.js', './data/oTWC_saf.js', './data/oTWC_srfUI.js', './data/oTWC_equipment.js', './O/oTWC_nsFileUtils.js', './O/controls/oTWC_ui_ctrl.js',
     './oTWC_otop_test.js', './data/oTWC_profileUI.js', './modules/oTWC_certStatusEngine.js', './data/oTWC_equipAction.js', './modules/oTWC_srfWorkflowEngine.js',
-    './modules/oTWC_srfWorkflowEngineUI.js', './ui/modules/oTWC_siteRequestUtils.js', './ui/modules/oTWC_siteAccessUtils.js', './modules/oTWC_sdsEngine.js', './modules/oTWC_sdsEngineUI.js', './ui/modules/oTWC_siteLocatorUtils.js'],
+    './modules/oTWC_srfWorkflowEngineUI.js', './ui/modules/oTWC_siteRequestUtils.js', './ui/modules/oTWC_siteAccessUtils.js', './modules/oTWC_sdsEngine.js', './modules/oTWC_sdsEngineUI.js', './ui/modules/oTWC_siteLocatorUtils.js', './data/oTWC_srfItem.js'],
     function (xml, core, coreSQL, dialog, recu,
         twcUtils, twcSite, twcConfig, configUIFields, rolePermission, twcConfigUIFields,
         siteInfoUtils, twcSaf, twcSrfUI, twcEquipment, nsFileUtils, twcUI,
         otop, twcProfileUI, twcCertStatusEngine, twcEquipAction, twcSrfWorkflowEngine,
-        twcSrfWorkflowEngineUI, twcSiteRequestUtils, twcSiteAccessUtils, twcSdsEngine, twcSdsEngineUI, twcSiteLocatorUtils) {
+        twcSrfWorkflowEngineUI, twcSiteRequestUtils, twcSiteAccessUtils, twcSdsEngine, twcSdsEngineUI, twcSiteLocatorUtils, twcSrfItem) {
         var _ui;
 
         function pageInit(context) {
@@ -55,20 +55,47 @@ define(['N/xml','/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'S
             testFunction() {
 
                 try {
+                    // var dataSource = { id: 85 }
 
-                    deleteSds(30)
+                    dialog.siteFinder({ fullInfo: true }, e => {
+                        console.log(e)
+                    })
+
+                    // var items = twcSrfItem.select(
+                    //     {
+                    //         where: { [twcSrfItem.Fields.SRF]: dataSource.id || 0, },
+                    //         useNames: true,
+                    //         // tablePrefix: 'r',
+                    //         joins: 
+                    //             {
+                    //                 type: 'left',
+                    //                 table: 'customrecord_twc_eq_type',
+                    //                 fx: 'custrecord_twc_srf_itm_type',
+                    //                 // alias: 'eqt',
+                    //                 fields: [
+                    //                     { name: 'custrecord_twc_eq_type_create_lib_item', alias: 'create_lib_item' },
+                    //                 ]
+                    //             }
+                    //         ,
+                    //         getSql: true
+                    //     }
+                    // );
+
+                    // console.log(items.query);
+                    // console.log(coreSQL.run(items));
+                    // //deleteSds(30)
                     //recu.submit('customrecord_twc_srf', 28, 'custrecord_twc_srf_sds_form_data', null);
 
                     //twcSiteAccessUtils.deleteSaf(147);
                     //twcSiteRequestUtils.deleteSrf(35)
-                    
-                    
+
+
                     //                    console.log(twcSdsEngine.getFormData({id: 36}))
                     //console.log(twcSdsEngine.setAsCurrent({ id: 36 }))
 
                     //console.log(twcSiteLocatorUtils.getSites(null, twcConfig.userInfo()))
                     //console.log(twcSdsEngine.getSrfInfo(58).srfItems)
-                    twcSdsEngine.getSdsEquipments(31)
+                    //twcSdsEngine.getSdsEquipments(31)
 
                     // console.log(xml.escape({ xmlText: '/core/media/media.nl?id=25190&c=9061443_SB1&h=0x8UEtEYj_WI0zAlZrm7m_qYnvhXfgsOCm6N2VuCknGLV6DH&_xt=.pdf' }));
 
@@ -95,7 +122,7 @@ define(['N/xml','/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'S
 
                     //         var val = form.getValues();
                     //         console.log(val);
-                            
+
                     //     } catch (error) {
                     //         dialog.error(error)
                     //         return false;
@@ -104,7 +131,7 @@ define(['N/xml','/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'S
 
                     //twcSrfWorkflowEngineUI.getForm({ srf: 22 }).popUp();
                     // twcSrfWorkflowEngine.deleteWorkflow({ srf: 22 })
-                    //twcSrfWorkflowEngine.initWorkFlow({ srf: 22 });
+                    // twcSrfWorkflowEngine.initWorkFlow({ srf: 83, profile: 4201 });
 
                     //var eqAction = twcEquipAction.get();
 

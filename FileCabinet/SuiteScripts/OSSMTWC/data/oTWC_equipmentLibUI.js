@@ -49,6 +49,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         return {
+            Type: twcEqLib.Type,
             Fields: twcEqLib.Fields,
             getLibTableFields: getLibTableFields,
             getLibToEquipmentFieldMap: getLibToEquipmentFieldMap,

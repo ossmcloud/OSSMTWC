@@ -2,6 +2,7 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
+// define([], () => {
 define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_safCrew.js', '../../data/oTWC_safAction.js', '../../data/oTWC_equipAction.js', '../../data/oTWC_equipment.js', '../../data/oTWC_safTimeBlock.js', '../../data/oTWC_safLog.js', '../../data/oTWC_file.js', '../../data/oTWC_fileType.js', '../../O/oTWC_nsFileUtils.js'],
     (record, core, coreSQL, b64, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew, twcSafAction, twcEqAct, twcEquipment, twcSafTimeBlock, twcSafLog, twcFile, twcFileType, nsFileUtils) => {
 
@@ -233,6 +234,14 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             return twcSafUI.getSafActionRecord(saf, childRecord, userInfo);
         }
 
+        function getSafActionList(options, userInfo) {
+            // var saf = twcSaf.get(options.saf.id);
+            // saf.copyFromObject(options.saf);
+            // saf.siteId = options.saf.siteId;
+            if (!options.type) { options.type = twcSaf.Type; }
+            return twcSafUI.getSafActionList(options, userInfo);
+        }
+
         function getVendorDocs(options) {
             var files = twcUtils.getFiles({
                 filters: {
@@ -282,22 +291,28 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
 
             const validateCompanyInsurance = (companyId) => {
-                var insuranceInfo = twcUtils.getCompanyInsuranceDetails(companyId);    
+                var insuranceInfo = twcUtils.getCompanyInsuranceDetails(companyId);
                 for (var k in twcUtils.Insurances) {
                     if (insuranceInfo[twcUtils.Insurances[k].field] == twcUtils.NoActiveExpired.Active) {
                         if (insuranceInfo[twcUtils.Insurances[k].fieldEx] < latestDate) {
-                            validationErrors.push(`<b>${insuranceInfo.name}:</b> ${k} Insurance will be expired by ${latestDate}`)
+                            // @@NOTE: TL Does not want to show insurance expiry details (unless the logged in user is the company)
+                            if (userInfo.companyProfile.id == companyId) {
+                                validationErrors.push(`<b>${insuranceInfo.name}:</b> ${k} Insurance will be expired by ${latestDate}`)
+                            } else {
+                                // @@NOTE: if the user is not the company we use a generic message and exit at the 1st failed validations otherwise the message will duplicate
+                                validationErrors.push('A SAF for these dates cannot be processed for the Customer at this time. Please contact the Customer to resolve.')
+                                return;
+                            }
                         }
                     }
                 }
-
             }
 
             validateCompanyInsurance(payload['saf-customer']);
             if (payload['saf-vendor'] != payload['saf-customer']) {
                 validateCompanyInsurance(payload['saf-vendor']);
             }
-            
+
             var crewIds = [payload['saf-picw-staff']];
             core.array.each(payload.crews, c => {
                 if (payload['saf-picw-staff'] == c['saf-crew-member']) {
@@ -419,8 +434,6 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
                 var docIds = [];
                 for (var d in payload.documents) { if (payload.documents[d]) { docIds.push(d.replace('file_toggle_', '')); } }
-
-
 
                 try {
                     if (docIds.length > 0) {
@@ -625,7 +638,9 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             })
         }
 
-        function validateAndCompleteActions(saf) {
+        function validateAndCompleteActions(saf, actions) {
+            // throw new Error(JSON.stringify(actions))
+
             var safActions = coreSQL.run(`
                 select  sa.id saf_action_id, ea.id as ea_action_id, ea.name as eq_action, ea.custrecord_twc_eq_action_eq as equip_id, ea.custrecord_twc_eq_action_type as ea_type,
                         sa.custrecord_twc_saf_a_status as saf_status, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as saf_status_name,
@@ -633,21 +648,25 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 from    customrecord_twc_saf_action sa
                 join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea and ea.custrecord_twc_eq_action_saf = sa.custrecord_twc_saf_a_saf
                 where   sa.custrecord_twc_saf_a_saf = ${saf}
+                and     sa.custrecord_twc_saf_a_status in (${twcUtils.SafActionStatus.Pending}, ${twcUtils.SafActionStatus.AwaitingPhotos})
             `);
 
+            var actionSkipped = false;
             core.array.each(safActions, sa => {
-                if (sa.saf_status != twcUtils.SafActionStatus.Detached) {
-                    recu.submit(twcSafAction.Type, sa.saf_action_id, [twcSafAction.Fields.SAF_ACTION_STATUS, twcSafAction.Fields.SAF_ACTION_COMPLETE], [twcUtils.SafActionStatus.Complete, true]);
-                    recu.submit(twcEqAct.Type, sa.ea_action_id, twcEqAct.Fields.EA_STATUS, twcUtils.EaActionStatus.Complete);
+                if (actions && actions.indexOf(parseInt(sa.saf_action_id)) < 0) {
+                    actionSkipped = true;
+                    return;
+                }
+                recu.submit(twcSafAction.Type, sa.saf_action_id, [twcSafAction.Fields.SAF_ACTION_STATUS, twcSafAction.Fields.SAF_ACTION_COMPLETE], [twcUtils.SafActionStatus.Complete, true]);
+                recu.submit(twcEqAct.Type, sa.ea_action_id, twcEqAct.Fields.EA_STATUS, twcUtils.EaActionStatus.Complete);
 
-                    if (sa.ea_type == twcUtils.EqActionType.Install) {
-                        recu.submit(twcEquipment.Type, sa.equip_id, twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcUtils.EqInstallStatus.Installed)
-                    } else if (sa.ea_type == twcUtils.EqActionType.Remove) {
-                        recu.submit(twcEquipment.Type, sa.equip_id, twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcUtils.EqInstallStatus.Removed)
-                    }
-
+                if (sa.ea_type == twcUtils.EqActionType.Install) {
+                    recu.submit(twcEquipment.Type, sa.equip_id, twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcUtils.EqInstallStatus.Installed)
+                } else if (sa.ea_type == twcUtils.EqActionType.Remove) {
+                    recu.submit(twcEquipment.Type, sa.equip_id, twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcUtils.EqInstallStatus.Removed)
                 }
             })
+            return !actionSkipped;
         }
 
         function saveSafImage(options) {
@@ -688,9 +707,11 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
         }
 
         function setSafReviewed(options) {
-            recu.submit(twcSaf.Type, options.saf, [twcSaf.Fields.STATUS, twcSaf.Fields.REVIEW_COMMENT], [twcSaf.Status.Complete, options.comment]);
+            //
             twcSafLog.logInfo(options.saf, `Completion photos reviewed`, `Comment: ${options.comment}`);
-            validateAndCompleteActions(options.saf);
+            var completed = validateAndCompleteActions(options.saf, options.actions);
+            recu.submit(twcSaf.Type, options.saf, [twcSaf.Fields.STATUS, twcSaf.Fields.REVIEW_COMMENT], [completed ? twcSaf.Status.Complete : twcSaf.Status.PartiallyComplete, options.comment]);
+
         }
 
         function getSafTimeBlocks(id) {
@@ -786,6 +807,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             renderSiteAccessPanel: renderSiteAccessPanel,
             getSafCrewRecord: getSafCrewRecord,
             getSafActionRecord: getSafActionRecord,
+            getSafActionList: getSafActionList,
             getVendorDocs: getVendorDocs,
 
             saveNewSaf: saveNewSaf,

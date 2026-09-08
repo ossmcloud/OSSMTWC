@@ -3,7 +3,7 @@
  *@NScriptType ClientScript
  *@NModuleScope public
  */
-define(['N/currentRecord', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './ui/module/oTWC_siteAccessUtils.js'],
+define(['N/currentRecord', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/client/controls/dialog/html.dialog.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './ui/modules/oTWC_siteAccessUtils.js'],
     function (currentRecord, core, coreSQL, dialog, recu, twcSiteAccessUtils) {
 
         function pageInit(context) {

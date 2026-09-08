@@ -49,7 +49,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     select  ${selectList}
                     from    ${twcSite.Type} s
                     ${joins}
-                    where   s.id = ?
+                    where   s.isinactive = 'F'
+                    and     s.id = ?
                 `,
                 params: [siteId]
             })

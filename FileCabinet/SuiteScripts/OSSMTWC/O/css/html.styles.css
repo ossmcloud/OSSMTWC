@@ -183,6 +183,13 @@ div.o-row:hover>div {
     /* cursor: pointer; */
 }
 
+div.o-row-hidden {
+    display: none !important;
+}
+div.o-row-child>div {
+    border: none !important;
+}
+
 div.o-row-selected>div {
     color: var(--accent-fore-color);
     background-color: var(--accent-bkgd-color);

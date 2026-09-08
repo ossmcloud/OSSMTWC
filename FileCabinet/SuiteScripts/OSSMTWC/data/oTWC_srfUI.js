@@ -91,32 +91,74 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         }
 
+
+        const TME_CHILD_COLLAPSED = true;
+
         function getSrfItems(dataSource, userInfo, readOnly) {
             var items = twcSrfItem.select(
                 {
                     where: { [twcSrfItem.Fields.SRF]: dataSource.id || 0, },
+                    joins: {
+                        type: 'left',
+                        table: 'customrecord_twc_eq_type',
+                        fx: 'custrecord_twc_srf_itm_type',
+                        fields: [{ name: 'custrecord_twc_eq_type_create_lib_item', alias: 'create_lib_item' }]
+                    },
                     useNames: true
                 }
             );
 
-            if (!readOnly) {
-                var tempItems = [];
-                core.array.each(items, item => {
-                    var parentId = item[twcSrfItem.Fields.TMI_ID_SRF];
-                    if (parentId) {
-                        item.child = true;
-                        var parent = items.find(i => { return i.id == parentId; })
-                        if (!parent.relatedItems) { parent.relatedItems = []; }
-                        parent.relatedItems.push(item);
-                    } else {
-                        tempItems.push(item);
+            var tempItems = [];
+            core.array.each(items, item => {
+                var parentId = item[twcSrfItem.Fields.TMI_ID_SRF];
+                if (item.create_lib_item == 'T') {
+                    item.create_lib_item = '<span class="twc-clickable twc-srf-item-create-lib" title="create library entry">Lib</span>';
+                }
+                if (parentId) {
+                    item.child = true;
+                    var parent = items.find(i => { return i.id == parentId; })
+                    if (!parent.relatedItems) {
+                        parent.relatedItems = [];
+                        parent.expand = `<span class="twc-srf-item-expand" data-collapsed="${TME_CHILD_COLLAPSED}">${TME_CHILD_COLLAPSED ? '+' : '-'}</span>`;
+                    }
+                    parent.relatedItems.push(item);
+                } else {
+                    tempItems.push(item);
+                }
+            })
+            items = tempItems;
+            return items;
+        }
+        function filterSrfItems(dataSource, stepType, readOnly) {
+            var tempItems = dataSource.filter(i => { return i[twcSrfItem.Fields.STEP_TYPE] == stepType; })
+            if (readOnly && stepType == twcSrf.StepType.TME) {
+                items = [];
+                core.array.each(tempItems, tempItem => {
+                    items.push(tempItem);
+                    if (tempItem.relatedItems) {
+                        // @@TODO: sort
+                        core.array.each(tempItem.relatedItems, ri => {
+                            items.push(ri);
+                        })
                     }
                 })
-                items = tempItems;
+                return items
+            } else {
+                return tempItems;
             }
-
-
-            return items;
+        }
+        function getTmeFields(items, userInfo, dataSource, readOnly) {
+            var fields = twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.TME, filterSrfItems(items, twcSrf.StepType.TME, readOnly), readOnly);
+            if (readOnly) {
+                fields.fields.expand.title = `<span class="twc-srf-item-expand-all" data-collapsed="${TME_CHILD_COLLAPSED}">${TME_CHILD_COLLAPSED ? '+' : '-'}</span>`;
+            }
+            fields.onRowInit = (table, row) => {
+                if (row.data.child) {
+                    row.cssClass += 'o-row-child';
+                    if (TME_CHILD_COLLAPSED) { row.cssClass += ' o-row-hidden'; }
+                }
+            }
+            return fields;
         }
 
         function getSRFInfoPanels(dataSource, userInfo, readOnly) {
@@ -138,10 +180,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
             var items = getSrfItems(dataSource, userInfo, readOnly);
-            fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 6 (TME)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.TME, items)] });
-            fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 6 (ATME)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.ATME, items)] });
-            fieldGroup.controls.push({ id: 'site-request-step-4', title: 'Step 3 of 6 (Feeders)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.FEEDER, items)] });
-            fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 4 of 6 (GIE)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.GIE, items)] });
+            fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 6 (TME)', fields: [getTmeFields(items, userInfo, dataSource, readOnly)] });
+            fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 6 (ATME)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.ATME, filterSrfItems(items, twcSrf.StepType.ATME, readOnly), readOnly)] });
+            fieldGroup.controls.push({ id: 'site-request-step-4', title: 'Step 3 of 6 (Feeders)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.FEEDER, filterSrfItems(items, twcSrf.StepType.FEEDER, readOnly), readOnly)] });
+            fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 4 of 6 (GIE)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.GIE, filterSrfItems(items, twcSrf.StepType.GIE, readOnly), readOnly)] });
             fieldGroup.controls.push({ id: 'site-request-step-5', title: 'Step 5 of 6 (Attachments)', fields: [twcSrfItemUI.getFileTableUIControl(userInfo, dataSource)] });
 
             var step5 = {
