@@ -246,6 +246,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 from    customrecord_twc_file_type t
                 join    customrecord_twc_file_type p on p.id = t.parent
                 where   t.isinactive = 'F'
+                
             `
 
             if (options?.recordType) {
@@ -258,9 +259,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 } else {
                     for (var f in options.filters) {
                         if (options.filters[f].op !== undefined) {
-                            sql += `and ${f} ${options.filters[f].op} ${options.filters[f].value}`;
+                            sql += `and ${f.startsWith('t.') || f.startsWith('p.') ? '' : 't.'}${f} ${options.filters[f].op} ${options.filters[f].value}`;
                         } else {
-                            sql += `and ${f} = '${options.filters[f]}'`;
+                            sql += `and ${f.startsWith('t.') || f.startsWith('p.') ? '' : 't.'}${f} = '${options.filters[f]}'`;
                         }
                     }
                 }
@@ -526,7 +527,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             New: { color: 'white', backgroundColor: 'silver' },
             Assessed: { color: 'white', backgroundColor: 'orange' },
             Resolved: { color: 'white', backgroundColor: 'green' },
-            Cancelled: { color: 'white', backgroundColor: 'yellow' },
+            Cancelled: { color: 'maroon', backgroundColor: 'yellow' },
         }
         function getTktStatusName(tktStatusNumber, asObject) {
             if (!tktStatusNumber) { tktStatusNumber = 1; }
@@ -558,6 +559,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const TKT_PRIORITY = {
+            None: 0,
             Urgent: 1,
             High: 2,
             Medium: 3,
@@ -568,6 +570,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         };
 
         const TKT_PRIORITY_STYLE = {
+            None: { color: 'white', backgroundColor: 'silver' },
             Urgent: { color: 'white', backgroundColor: 'red' },
             High: { color: 'white', backgroundColor: 'orange' },
             Medium: { color: 'black', backgroundColor: 'yellow' },
@@ -578,7 +581,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         };
 
         function getTktPriorityName(tktPriorityNumber) {
-            if (!tktPriorityNumber) { tktPriorityNumber = 1; }
+            if (!tktPriorityNumber) { tktPriorityNumber = 0; }
 
             for (var k in TKT_PRIORITY) {
                 if (TKT_PRIORITY[k] == tktPriorityNumber) {
@@ -588,7 +591,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getTktPriorityStyle(tktPriorityNumber) {
-            if (!tktPriorityNumber) { tktPriorityNumber = 1; }
+            if (!tktPriorityNumber) { tktPriorityNumber = 0; }
 
             if (isNaN(parseInt(tktPriorityNumber))) {
                 return TKT_PRIORITY_STYLE[tktPriorityNumber];
@@ -598,7 +601,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getTktPriorityHtml(tktPriorityNumber, spanClass) {
-            if (!tktPriorityNumber) { tktPriorityNumber = 1; }
+            if (!tktPriorityNumber) { tktPriorityNumber = 0; }
             var priorityName = getTktPriorityName(tktPriorityNumber);
             if (isNaN(parseInt(tktPriorityNumber))) {
                 priorityName = tktPriorityNumber;
@@ -874,11 +877,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (!options.isEmployee) {
                     var agentPasses = [];
                     if (options.companyProfile.isVendor) {
-                        
+
                         agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${options.profile}`)?.agent_passes?.split(',') || [];
                     }
                     if (options.companyProfile.isCustomer) {
-                        
+
                         agentPasses.push(options.srf.custrecord_twc_srf_cust || options.companyProfile.id)
                     }
 
@@ -1251,9 +1254,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     action.child = true;
                     parent.relatedItems.push(action);
                 } else {
-                    srfActions.push(action);    
+                    srfActions.push(action);
                 }
-                
+
             })
 
 
@@ -1304,7 +1307,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var parent = safActions.find(a => { return a.srf_item == action.parent_srf_item })
                     if (!parent) {
                         // @@TODO: @@REVIEW: this is an 'orphan'
-                        safActions.push(action);    
+                        safActions.push(action);
                     } else {
                         if (!parent.relatedItems) {
                             parent.relatedItems = [];
@@ -1317,7 +1320,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 } else {
                     safActions.push(action);
                 }
-                
+
             })
 
             var tempActions = [];
@@ -1641,7 +1644,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getOperatorSiteId: getOperatorSiteId,
 
             getVoltageTypes: getVoltageTypes,
-            
+
             formatLongDate: formatLongDate,
             fromJsToNs: fromJsToNs,
             fromNsToJs: fromNsToJs,

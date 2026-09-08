@@ -730,12 +730,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 console.log(dataRow.data);
                                 var url = core.url.record(twcEqLibUI.Type, dataRow.data[twcSrfItem.Fields.EQUIPMENT_LIBRARY]);
                                 window.open(`${url}&srfItem=${dataRow.data.id}`);
-                                
+
                             })
                         }
                         initTmeTableExpandCollapse();
 
 
+                        if (this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER] && !this.data.siteRequestInfo.id) {
+                            this.ui.getControl(twcSrf.Fields.CUSTOMER).value = this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER];
+                        }
 
                         // @@TODO: test only
                         if (DEV) {
@@ -893,6 +896,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
 
                     this.dirty = false;
+
+                    if (res.errors && res.errors.length > 0) {
+                        var errorMsg = `Some error occurred while saving:<ul class="twc">`;
+                        core.array.each(res.errors, err => {
+                            errorMsg += `<li><b>${err.stage}</b><br>${err.error}</li>`;
+                        })
+                        errorMsg += '</ul>';
+                        await dialog.errorAsync(errorMsg);
+                    }
 
                     location.href = core.url.script('otwc_spacerequest_sl', { recId: res.id });
 

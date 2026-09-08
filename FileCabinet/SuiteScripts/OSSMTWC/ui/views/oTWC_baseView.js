@@ -331,6 +331,12 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
 
 
                 var res = await https.promise.post({ url: url, body: { file: file, getUrl: e?.ctrlKey } });
+                if (res.error) {
+                    console.log(res);
+                    dialog.error(res);
+                    return;
+                }
+
                 if (e?.ctrlKey) {
                     jQuery(e.currentTarget).html(icon);
                     window.open(res.url);

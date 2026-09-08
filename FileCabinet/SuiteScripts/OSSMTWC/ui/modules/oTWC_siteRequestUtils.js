@@ -10,7 +10,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var fields = twcEquipmentUI.getInventoryTableFields();
             var fieldsSql = '';
             fields.map(f => {
-                if (f.field == twcEquipment.Fields.INFRASTRUCTURE || f.field == twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS || f.field == twcEquipment.Fields.CUSTOMER) {
+                if (f.field == twcEquipment.Fields.INFRASTRUCTURE || f.field == twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS || f.field == twcEquipment.Fields.CUSTOMER || f.field == twcEquipment.Fields.EQUIPMENT_TYPE) {
                     fieldsSql += `BUILTIN.DF(eq.${f.field}) as ${f.field}, eq.${f.field} as ${f.field}_id, `
                 } else {
                     fieldsSql += `eq.${f.field}, `
@@ -64,6 +64,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             twcSrfWorkflowEngine.initWorkFlow(payload);
         }
 
+        var _savingErrors = [];
         const SAVE_MIN_UNITS = 150;
         function saveSiteSrf_validateUnits(customLimit) {
             if (core.env.units() < (customLimit || SAVE_MIN_UNITS)) {
@@ -110,7 +111,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         payload.id = newSrf.save();
                     }
 
-                    payload.keepSaving = { stage: 1, stageCount: 8, stageName: 'saving files...' };
+                    payload.keepSaving = { stage: 1, stageCount: 8, stageName: 'saving files...', errors: [] };
                     return payload;
                 }
 
@@ -118,6 +119,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     saveSiteSrfFile(payload);
                     payload.keepSaving.stage = 2;
                     payload.keepSaving.stageName = 'preparing to save items...';
+                    payload.keepSaving.errors.push(..._savingErrors);
                     return payload;
                 }
                 if (payload.keepSaving.stage == 2) {
@@ -125,36 +127,42 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     deleteSitesSrfFile(payload);
                     payload.keepSaving.stage = 3;
                     payload.keepSaving.stageName = 'saving items (TME)...';
+                    payload.keepSaving.errors.push(..._savingErrors);
                     return payload;
                 }
                 if (payload.keepSaving.stage == 3) {
                     saveSiteSrfItems(payload, payload[`items_${twcSrfItem.StepType.TME}`] || []);
                     payload.keepSaving.stage = 4;
                     payload.keepSaving.stageName = 'saving items (ATME)...';
+                    payload.keepSaving.errors.push(..._savingErrors);
                     return payload;
                 }
                 if (payload.keepSaving.stage == 4) {
                     saveSiteSrfItems(payload, payload[`items_${twcSrfItem.StepType.ATME}`] || []);
                     payload.keepSaving.stage = 5;
                     payload.keepSaving.stageName = 'saving items (GIE)...';
+                    payload.keepSaving.errors.push(..._savingErrors);
                     return payload;
                 }
                 if (payload.keepSaving.stage == 5) {
                     saveSiteSrfItems(payload, payload[`items_${twcSrfItem.StepType.GIE}`] || []);
                     payload.keepSaving.stage = 6;
                     payload.keepSaving.stageName = 'saving items (FEEDERS)...';
+                    payload.keepSaving.errors.push(..._savingErrors);
                     return payload;
                 }
                 if (payload.keepSaving.stage == 6) {
                     saveSiteSrfItems(payload, payload[`items_${twcSrfItem.StepType.FEEDER}`] || []);
                     payload.keepSaving.stage = 7;
                     payload.keepSaving.stageName = 'finalizing...';
+                    payload.keepSaving.errors.push(..._savingErrors);
                     return payload;
                 }
                 if (payload.keepSaving.stage == 7) {
                     // @@NOTE: this will throw unless it is the 1st step to run on the session
                     //         we need to make sure functions here have max units allowed
-                    saveSiteSrf_validateUnits(950);
+                    core.logDebug('TEMP-STAGE-7', core.env.units())
+                    saveSiteSrf_validateUnits(930);
                     if (srfCancelled) {
                         twcSrfWorkflowEngine.cancelWorkflow({ srf: payload.id });
                     } else if (payload.submitOnSave) {
@@ -162,10 +170,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                     payload.keepSaving.stage = 8;
                     payload.keepSaving.stageName = 'almost there...';
+                    payload.keepSaving.errors.push(..._savingErrors);
                     return payload;
                 }
 
-                return { id: payload.id };
+
+
+                return { id: payload.id, errors: payload.keepSaving.errors };
 
             } catch (error) {
                 core.logError('SAVE-SRF-ERROR', error.message);
@@ -207,7 +218,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (item.ss_actionSaved) { return; }
 
                 var requestType = item[twcSrfItem.Fields.REQUEST_TYPE];
-                var equipmentId = item[twcSrfItem.Fields.EQUIPMENT_ID] || item[twcSrfItem.Fields.TME_ID];
+                //var equipmentId = item[twcSrfItem.Fields.EQUIPMENT_ID] || item[twcSrfItem.Fields.TME_ID];
+                var equipmentId = item[twcSrfItem.Fields.EQUIPMENT_ID]
                 saveEqAction(item, payload, equipmentId, (requestType == twcSrfItem.RequestType.SWAP) ? twcSrfItem.RequestType.REMOVE : requestType)
                 // SWAP (REMOVE + INSTALL)
                 if (requestType == twcSrfItem.RequestType.SWAP) { saveEqAction(item, payload, null, twcSrfItem.RequestType.INSTALL); }
@@ -216,6 +228,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@TODO: this should stored in some log or something
                 log.error('Equip Action Save Failed', e);
                 log.error('Equip Action Save Failed', e.stack);
+                _savingErrors.push({
+                    stage: 'Saving Equipment Action',
+                    error: e.message,
+                    stack: e.stack,
+                    reference: {
+                        type: twcSrfItem.Type,
+                        id: item.id,
+                    }
+                })
             } finally {
                 item.ss_actionSaved = true;
             }
@@ -236,25 +257,38 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (!item.dirty) { return; }
             if (item.ss_saved) { return; }
 
-            if (parentItem) {
-                item[twcSrfItem.Fields.TMI_ID_SRF] = parentItem.id;
-            }
+            try {
+                if (parentItem) {
+                    item[twcSrfItem.Fields.TMI_ID_SRF] = parentItem.id;
+                }
 
-            var srfItem = twcSrfItem.get(item.id);
-            srfItem.sRF = payload.id;
-            srfItem.stepType = item[twcSrfItem.Fields.STEP_TYPE];
-            for (var k in item) {
-                if (k == 'name') { continue; }
-                // @@IMPORTANT: field itemType is dependent on the stepType field
-                //              when stepTypeField is set the itemType is reset since we set the step type above make sure we skip it from here
-                if (k == twcSrfItem.Fields.STEP_TYPE) { continue; }
-                if (!srfItem.hasField(k)) { continue; }
-                srfItem.set(k, item[k])
-            }
-            if (!item.id) { item.isNew = true; }
-            item.id = srfItem.save();
+                var srfItem = twcSrfItem.get(item.id);
+                srfItem.sRF = payload.id;
+                srfItem.stepType = item[twcSrfItem.Fields.STEP_TYPE];
+                for (var k in item) {
+                    if (k == 'name') { continue; }
+                    // @@IMPORTANT: field itemType is dependent on the stepType field
+                    //              when stepTypeField is set the itemType is reset since we set the step type above make sure we skip it from here
+                    if (k == twcSrfItem.Fields.STEP_TYPE) { continue; }
+                    if (!srfItem.hasField(k)) { continue; }
+                    srfItem.set(k, item[k])
+                }
+                if (!item.id) { item.isNew = true; }
+                item.id = srfItem.save();
 
-            item.ss_saved = true;
+                item.ss_saved = true;
+            } catch (e) {
+                _savingErrors.push({
+                    stage: 'Save SRF Item Action',
+                    error: e.message,
+                    stack: e.stack,
+                    reference: {
+                        type: twcSrfItem.Type,
+                        id: item.id,
+                    }
+                })
+
+            }
             saveSiteSrf_validateUnits();
         }
 
@@ -270,18 +304,49 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // @@NOTE: Deleting Eq. Action record first to avoid dependency issue on SRF Item record.
                     var srfItemId = item.id;
                     if (!srfItemId) { return; }
-                    var eqActions = coreSQL.run(`SELECT id FROM ${twcEqAct.Type} WHERE ${twcEqAct.Fields.EA_SRF_ITEM} = ${srfItemId} `);
+                    var eqActions = coreSQL.run(`SELECT id, ${twcEqAct.Fields.EA_EQUIPMENT} as eq_id, ${twcEqAct.Fields.EA_TYPE} as type FROM ${twcEqAct.Type} WHERE ${twcEqAct.Fields.EA_SRF_ITEM} = ${srfItemId} `);
                     core.array.each(eqActions, action => {
                         try {
+                            if (action.eq_id) {
+                                // @@NOTE: if we have an existing equipment to delete the action we need to clear ASSOCIATED_EQUIP_ACTIONS on the eq. record
+                                recu.submit(twcEquipment.Type, action.eq_id, twcEquipment.Fields.ASSOCIATED_EQUIP_ACTIONS, null);
+                                recu.submit(twcSrfItem.Type, srfItemId, twcSrfItem.Fields.EQUIPMENT_ID, null);
+                            }
+
                             recu.del(twcEqAct.Type, action.id);
+
+                            if (action.eq_id) {
+                                // @@NOTE: we can remove the equipment if this was an install action
+                                if (action.type == twcUtils.EqActionType.Install) { recu.del(twcEquipment.Type, action.eq_id); }
+                            }
                         } catch (eqErr) {
                             log.error('Failed Deleting Eq Action', eqErr.message);
+
+                            _savingErrors.push({
+                                stage: 'Delete Equipment Action',
+                                error: eqErr.message,
+                                stack: eqErr.stack,
+                                reference: {
+                                    type: twcEqAct.Type,
+                                    id: action.id,
+                                }
+                            })
+
                         }
                     });
                     recu.del(twcSrfItem.Type, srfItemId);
                 } catch (e) {
                     log.error('Delete SRF Item Failed', e.message);
-                    // @@TODO:
+
+                    _savingErrors.push({
+                        stage: 'Delete SRF Item Action',
+                        error: e.message,
+                        stack: e.stack,
+                        reference: {
+                            type: twcSrfItem.Type,
+                            id: srfItemId,
+                        }
+                    })
                 } finally {
                     item.ss_deleted = true;
                 }
@@ -303,40 +368,56 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var srfFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${srfInfo.site_id}/${srfInfo.name}`);
 
             core.array.each(payload.files, file => {
-                if (!file.dirty) { return; }
-                if (file.ss_saved) { return; }
 
-                if (!file[twcFile.Fields.R_TYPE]) {
-                    file[twcFile.Fields.R_TYPE] = twcUtils.SrfDeafultFileType.id;
-                    file[twcFile.Fields.STATUS] = twcUtils.SrfDeafultFileType.status;
+                try {
+                    if (!file.dirty) { return; }
+                    if (file.ss_saved) { return; }
+
+                    if (!file[twcFile.Fields.R_TYPE]) {
+                        file[twcFile.Fields.R_TYPE] = twcUtils.SrfDeafultFileType.id;
+                        file[twcFile.Fields.STATUS] = twcUtils.SrfDeafultFileType.status;
+                    }
+                    if (!file[twcFile.Fields.REVISION]) { file[twcFile.Fields.REVISION] = 1; }
+
+
+                    var srfFile = twcFile.get(file.id);
+                    srfFile.recordType = twcSrf.Type;
+                    srfFile.recordID = payload.id;
+                    for (var k in file) {
+                        if (k == 'fileObject') { continue; }
+                        if (!srfFile.hasField(k)) { continue; }
+                        srfFile.set(k, file[k])
+                    }
+
+
+                    srfFile.save();
+
+                    var nsFile = nsFileUtils.writeFile({
+                        name: `${srfFile.id}_${file.fileObject.name}`,
+                        fileType: nsFileUtils.getFileType(file.fileObject.type),
+                        content: file.fileObject.content,
+                        folder: srfFolder,
+                    });
+                    recu.submit(twcFile.Type, srfFile.id, twcFile.Fields.FILE, nsFile.fileId);
+
+                    file.ss_saved = true;
+                    delete file.fileObject;
+
+                } catch (e) {
+                    _savingErrors.push({
+                        stage: 'Save SRF File',
+                        error: e.message,
+                        stack: e.stack,
+                        reference: {
+                            type: twcSrf.Type,
+                            id: payload.id,
+                        }
+                    })
                 }
-                if (!file[twcFile.Fields.REVISION]) { file[twcFile.Fields.REVISION] = 1; }
-
-
-                var srfFile = twcFile.get(file.id);
-                srfFile.recordType = twcSrf.Type;
-                srfFile.recordID = payload.id;
-                for (var k in file) {
-                    if (k == 'fileObject') { continue; }
-                    if (!srfFile.hasField(k)) { continue; }
-                    srfFile.set(k, file[k])
-                }
-
-
-                srfFile.save();
-
-                var nsFile = nsFileUtils.writeFile({
-                    name: `${srfFile.id}_${file.fileObject.name}`,
-                    fileType: nsFileUtils.getFileType(file.fileObject.type),
-                    content: file.fileObject.content,
-                    folder: srfFolder,
-                });
-                recu.submit(twcFile.Type, srfFile.id, twcFile.Fields.FILE, nsFile.fileId);
-
-                file.ss_saved = true;
-                delete file.fileObject;
 
                 saveSiteSrf_validateUnits();
+
+
             })
         }
         function deleteSitesSrfFile(payload) {
@@ -345,8 +426,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@TODO: delete actual file
                 if (file.ss_deleted) { return; }
 
-                recu.del(twcFile.Type, file.id);
-                file.ss_deleted = true;
+                try {
+                    recu.del(twcFile.Type, file.id);
+                    file.ss_deleted = true;
+
+                } catch (e) {
+                    _savingErrors.push({
+                        stage: 'Delete SRF File',
+                        error: e.message,
+                        stack: e.stack,
+                        reference: {
+                            type: twcFile.Type,
+                            id: file.id,
+                        }
+                    })
+
+                }
                 saveSiteSrf_validateUnits();
             })
         }

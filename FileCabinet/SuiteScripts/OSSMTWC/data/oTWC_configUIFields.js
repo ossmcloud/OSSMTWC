@@ -14,8 +14,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getFieldAccess(dataSource, fieldId) {
             if (!_fieldAccessInfo) {
-                _userInfo = twcUtils.userInfo();
                 _fieldAccessInfo = {};
+                try {
+                    _userInfo = twcUtils.userInfo();
+                } catch (error) {
+                    // @@TODO: this is run from client side and no permission to employee record
+                    return;
+                }
+
 
                 coreSQL.each(`
                     select  custrecord_twc_fieldaccess_table as table, custrecord_twc_fieldaccess_field as field, custrecord_twc_fieldaccess_level as level
@@ -99,7 +105,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     throw new Error('configUIFields :: dataSource.Type cannot be empty');
                 }
             }
-            
+
             // @@NOTE: getFieldAccess for panel visibility
             var accessType = getFieldAccess(dataSource, panelFields.id);
             if (accessType) {
@@ -112,7 +118,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 //if (accessType.access == FIELD_ACCESS_TYPE.View && !_userInfo.isEmployee) { control.readOnly = true; }
             }
 
-            
+
             if (panelFields.controls) {
                 core.array.each(panelFields.controls, control => { formatPanelFields(dataSource, control); })
                 return;
@@ -135,7 +141,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         var f = getDataFieldInfo(field, k);
 
                         // @@NOTE: getFieldAccess for columns visibility
-                        
+
                         var accessType = getFieldAccess(dataObj || { Type: field.recordType }, k);
                         if (accessType) {
                             if (accessType.access == FIELD_ACCESS_TYPE.TL && !_userInfo.isEmployee) { continue; }
@@ -171,7 +177,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         dataSource: field.dataSource || dataObj.select({ fields: field.fields, where: field.where, orderBy: field.orderBy, useNames: true }),
                         dataSourceType: field.recordType,
                         showToolbar: field.showToolbar === undefined ? true : field.showToolbar,
-                        showEditDelete: true,
+                        showEditDelete: field.showEditDelete === undefined ? true : field.showEditDelete,
+                        newToolBarButton: field.newToolBarButton,
                         readOnly: field.readOnly,
                         styles: field.styles,
                         onColumnInit: (tbl, col) => {
@@ -202,7 +209,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     return;
                 }
 
-                
+
 
                 var fieldId = field.id; var dataField = null; var dataFields = null;
                 if (field.id.indexOf('.') < 0) {
@@ -298,7 +305,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     }
                 }
 
-                
+
 
                 panelFields.controls.push(control)
 

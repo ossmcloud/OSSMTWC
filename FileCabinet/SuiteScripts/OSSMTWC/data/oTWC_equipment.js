@@ -20,7 +20,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: twcEquipment.FieldsInfo,
             getInvStatusName: twcUtils.getInvStatusName,
             getInvStatusStyle: twcUtils.getInvStatusStyle,
-            getTktStatusHtml: twcUtils.getTktStatusHtml,
             Status: twcUtils.SrfStatus,
             StepType: twcUtils.SrfStepType,
 

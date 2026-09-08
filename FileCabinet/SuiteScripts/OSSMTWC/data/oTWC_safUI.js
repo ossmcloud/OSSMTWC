@@ -130,12 +130,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 _primaryContractors = [];
                 if (userInfo.isEmployee) {
                     _primaryContractors = twcUtils.getVendors(userInfo);
-                    // @@NOTE: this happens if a Customer (that is only a customer) has entered the SAF as they will be the primary contractor no matter what
-                    if (!_primaryContractors.find(c => { return c.value == dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR] })) {
-                        _primaryContractors.unshift({
-                            value: dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR],
-                            text: dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR + '_name'] || '???'
-                        })
+                    if (dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR]) {
+                        // @@NOTE: this happens if a Customer (that is only a customer) has entered the SAF as they will be the primary contractor no matter what
+                        if (!_primaryContractors.find(c => { return c.value == dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR] })) {
+                            _primaryContractors.unshift({
+                                value: dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR],
+                                text: dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR + '_name'] || '???'
+                            })
+                        }
                     }
                 } else {
                     if (!userInfo.canEnterSAF) {

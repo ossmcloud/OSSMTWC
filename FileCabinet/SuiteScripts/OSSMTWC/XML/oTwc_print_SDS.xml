@@ -437,7 +437,10 @@
             <tr>
                 <td style="padding:8px; border:1px solid #666; border-top:none;">
                     <p style="font-weight:bold; padding-bottom: 3px;">
-                        Additional SRF Specific Conditions
+                        Additional SRF Specific Conditions:
+                    </p>
+                    <p>
+                        ${requestJSON.sds.custrecord_twc_sds_add_cond}
                     </p>
                     <#if requestJSON.sdsCondition_2?has_content>
                         <#list requestJSON.sdsCondition_2.conditions as condition>
