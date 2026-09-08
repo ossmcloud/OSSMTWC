@@ -177,6 +177,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (userInfo.isEmployee) {
                 basicInfo.fields.push({ id: twcSrf.Fields.SRF_TYPE, label: 'SRF Type', dataSource: twcUtils.getSrfTypes(), allowAll: false })
                 basicInfo.fields.push({ id: twcSrf.Fields.REVENUE_IMPACTING, label: 'Revenue Impacting', dataSource: twcUtils.getSrfRevenueImpact(), allowAll: false })
+
+
+                basicInfo.fields.push({ id: twcSrf.Fields.SRF_STATUS })
             }
 
             var items = getSrfItems(dataSource, userInfo, readOnly);

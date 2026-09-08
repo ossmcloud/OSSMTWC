@@ -271,6 +271,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     control[k] = field[k];
                 }
 
+                if (!control.label && dataField?.field_label) {
+                    control.label = dataField.field_label;
+                }
+
                 if (dataField.field_type == 'List/Record' || dataField.field_type == 'Multiple Select') {
                     try {
                         if (!control.dataSource) {

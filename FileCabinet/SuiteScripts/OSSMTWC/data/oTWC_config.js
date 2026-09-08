@@ -115,6 +115,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 left join   customrecordtype l on l.internalid = cf.fieldvaluetyperecord
                 left join   customlist cl on cl.internalid = cf.fieldvaluetyperecord
                 where       ${whereClause}
+                and         cf.isstored = 'T'
                 order by id
             `, cf => {
                 var nsTableId = parseInt(cf.field_foreign_table);
