@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_utils.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_file.js', '../../data/oTWC_equipmentLibUI.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js', '../../modules/oTWC_srfWorkflowEngineUI.js.js', '../../modules/oTWC_sdsEngineUI.js'],
-    (core, coreSql, b64, twcPageBase, twcUtils, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, twcUI, uiTable, twcSite, twcSrf, twcSrfItem, twcUIPanel, twcFile, twcEqLibUI, twcEqUI, twcEquipment, twcSrfWorkflowEngineUI, twcSdsEngineUI) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_utils.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_file.js', '../../data/oTWC_equipmentLibUI.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js', '../../modules/oTWC_srfWorkflowEngineUI.js.js', '../../modules/oTWC_sdsEngineUI.js', '../../data/oTWC_icons.js'],
+    (core, coreSql, b64, twcPageBase, twcUtils, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, twcUI, uiTable, twcSite, twcSrf, twcSrfItem, twcUIPanel, twcFile, twcEqLibUI, twcEqUI, twcEquipment, twcSrfWorkflowEngineUI, twcSdsEngineUI, twcIcons) => {
 
         const DEV = core.me();
 
@@ -423,13 +423,31 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     var container = jQuery(`
                         <div>
+                            <div style="padding: 7px; border: 1px solid var(--grid-color);">
+                                ${twcIcons.get('info', 16)} To pick the library item, select an item from the list and click 'Add' or simply double click on the desired item.
+                            </div>
                             ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, id: 'twc_eq_lib_search', width: '100%', hint: 'type to search library' })}
                         </div>
                     `);
 
-                    var dlg = dialog.open({ title: 'pick item from library', content: container, size: { width: '60%', height: '70vh' } });
-                    var tblContainer = jQuery(`<div style="height: calc(70vh - 150px); overflow: auto;"></div>`);
-                    var eqLibTable = new uiTable.TableControl(tblContainer, onColumnInit, { id: 'twc_eq_lib', fitContainer: false, fitScreen: false })
+                    var dlg = dialog.open({
+                        title: 'pick item from library', content: container, size: { width: '70%', height: '70vh' },
+                        ok: () => {
+                            try {
+                                var selectedRows = eqLibTable.table.getSelectedRows();
+                                if (selectedRows.rowsData.length == 0) { throw new Error(`Please, select an item from the list`); }
+                                callback({ e: selectedRows })
+                                return true;
+                            } catch (error) {
+                                dialog.error(error);
+                                return false;
+                            }
+                        }
+                    });
+                    dlg.dialog.find('#o-dialog_ok').html('add')
+
+                    var tblContainer = jQuery(`<div style="height: calc(70vh - 190px); overflow: auto;"></div>`);
+                    var eqLibTable = new uiTable.TableControl(tblContainer, onColumnInit, { id: 'twc_eq_lib', fitContainer: false, fitScreen: false, singleRowSelect: true })
                     eqLibTable.init(this.data.eqLib.filter(el => { return el[twcEqLibUI.Fields.EQUIPMENT_CLASS] == eqClass && el[twcEqLibUI.Fields.EQUIPMENT_TYPE] == eqType }))
                     eqLibTable.table.on('dblclick', e => {
                         try {
