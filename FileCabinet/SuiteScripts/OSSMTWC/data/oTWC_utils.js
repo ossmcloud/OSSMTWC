@@ -809,8 +809,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})`, 'customrecord_twc_file': FILE_STATUS.Approved } } })
         }
 
-        function getFilePreviewLink(file_id) {
-            return `<div style="text-align: center;"><span class="twc-clickable twc-preview-file" data-file="${file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`
+        function getFilePreviewLink(file_id, id) {
+            return `<div style="text-align: center;"><span class="twc-clickable twc-preview-file" data-twc-file="${id || ''}" data-file="${file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`
+        }
+        function getFileDeleteLink(file_id, id) {
+            return `<div style="text-align: center;"><span class="twc-clickable twc-delete-file" data-twc-file="${id || ''}" data-file="${file_id}" style="width: 100%;">${twcIcons.get('trash', 16, 'red')}</span></div>`
         }
 
         function getFiles(options) {
@@ -849,8 +852,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var files = [];
             coreSQL.each(sql, f => {
-                //f.preview_link = `<div style="text-align: center;"><span class="twc-clickable twc-preview-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
-                f.preview_link = getFilePreviewLink(f.file_id);
+                f.preview_link = getFilePreviewLink(f.file_id, f.id);
+                f.delete_link = getFileDeleteLink(f.file_id, f.id);
                 files.push(f)
             })
 

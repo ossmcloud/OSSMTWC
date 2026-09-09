@@ -338,13 +338,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (fieldCfg?.readOnly !== undefined) {
                             eqField.readOnly = fieldCfg?.readOnly;
                         }
+                        if (fieldCfg?.disabled !== undefined) {
+                            eqField.disabled = fieldCfg?.disabled;
+                            if (!eqField.disabled && fieldCfg?.readOnly === undefined) {
+                                eqField.readOnly = false;
+                            }
+                        }
 
                     } else {
                         eqField.mandatory = fieldMap.canEdit ? !fieldMap.notMandatory : false;
                         eqField.readOnly = !fieldMap.canEdit;
 
                     }
-                    if (pickedEqLib) { eqField.value = pickedEqLib[fieldMap.libField]; }
+                    if (pickedEqLib) {
+                        if (!eqField.value || eqField.readOnly) {
+                            eqField.value = pickedEqLib[fieldMap.libField];
+                        }
+                    }
                 })
             }
 

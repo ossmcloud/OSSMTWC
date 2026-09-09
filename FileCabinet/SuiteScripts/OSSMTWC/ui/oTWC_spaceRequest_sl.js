@@ -3,8 +3,8 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView_ue.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_equipmentLibCfg.js', '../data/oTWC_equipmentLib.js', '../data/oTWC_equipment.js', '../data/oTWC_icons.js', '../modules/oTWC_srfWorkflowEngine.js', '../modules/oTWC_sdsRender.js', '../modules/oTWC_sdsEngine.js'],
-    function (render, nsFile, core, cored, coreSql, uis, twcBaseViewUE, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcUtils, twcSrf, twcEqLibCfg, twcEqLib, twcEquipment, twcIcons, twcSrfWorkflowEngine, twcSdsRender, twcSdsEngine) {
+define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/ui/nsSuitelet.js', './views/oTWC_baseView_ue.js', './views/oTWC_baseView.js', '../ui/modules/oTWC_siteInfoUtils.js', '../ui/modules/oTWC_siteLocatorUtils.js', '../ui/modules/oTWC_siteRequestUtils.js', '../O/controls/oTWC_ui_ctrl.js', '../O/controls/oTWC_ui_fieldPanel.js', '../data/oTWC_config.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_equipmentLibCfg.js', '../data/oTWC_equipmentLib.js', '../data/oTWC_equipment.js', '../data/oTWC_file.js', '../data/oTWC_fileType.js', '../data/oTWC_icons.js', '../modules/oTWC_srfWorkflowEngine.js', '../modules/oTWC_sdsRender.js', '../modules/oTWC_sdsEngine.js'],
+    function (render, nsFile, core, cored, coreSql, uis, twcBaseViewUE, twcBaseView, twcSiteInfoUtils, twcSiteLocatorUtils, twcSiteRequestUtils, twcUI, twcUIPanel, twcConfig, twcUtils, twcSrf, twcEqLibCfg, twcEqLib, twcEquipment, twcFile, twcFileType, twcIcons, twcSrfWorkflowEngine, twcSdsRender, twcSdsEngine) {
 
         var PAGE_VERSION = 'v0.01';
 
@@ -199,6 +199,24 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
             } else if (context.request.parameters.action == 'update-workflow') {
                 return twcSrfWorkflowEngine.updateWorkflow(userInfo, JSON.parse(context.request.body))
 
+            } else if (context.request.parameters.action == 'get-drawing-files') {
+                return {
+                    files: twcUtils.getFiles({
+                        filters: {
+                            [twcFile.Fields.RECORD_TYPE]: twcSrf.Type,
+                            [twcFile.Fields.RECORD_ID]: JSON.parse(context.request.body).srf,
+                            [twcFileType.Fields.DRAWING]: 'T'
+                        }
+                    })
+                };
+            } else if (context.request.parameters.action == 'delete-drawing-files') {
+                
+                var f = twcFile.get(JSON.parse(context.request.body).twcFile);
+                nsFile.delete(f.file);
+                f.del();
+
+                return { status: 'success' };
+
             } else if (context.request.parameters.action == 'reject-sds') {
                 return twcSrfWorkflowEngine.rejectSds(userInfo, JSON.parse(context.request.body))
 
@@ -206,8 +224,8 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 return twcSdsEngine.getSds(JSON.parse(context.request.body))
 
             } else if (context.request.parameters.action == 'get-sds-twc-file') {
-                var twcFile = coreSql.first(`select custrecord_twc_sds_pdf as twc_file from customrecord_twc_sds where custrecord_twc_sds_srf = ${JSON.parse(context.request.body).srf}`)?.twc_file;
-                return { twcFile: twcFile }
+                var f = coreSql.first(`select custrecord_twc_sds_pdf as twc_file from customrecord_twc_sds where custrecord_twc_sds_srf = ${JSON.parse(context.request.body).srf}`)?.twc_file;
+                return { twcFile: f }
 
             } else if (context.request.parameters.action == 'sign-sds') {
                 var resp = twcSrfWorkflowEngine.postSignature(userInfo, JSON.parse(context.request.body));
