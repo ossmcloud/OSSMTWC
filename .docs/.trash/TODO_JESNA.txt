@@ -2,23 +2,31 @@
 TODO:
 -----
 
-NEW TICKET PICTURES:
-    change button label to 'Add Picture'
-    also show the Open Ticket Files and let user delete uploaded files
-    
-    the files sublist should be two:
-        Open Ticket Files (new one, under main trouble ticket group)
-            => this should only show file type where custrecord_twc_file_type_image=T and custrecord_twc_file_type_completion_img=F
 
-        Resolution Files (already there)    
-            => this should only show file type where custrecord_twc_file_type_image=T and custrecord_twc_file_type_completion_img=T
+To login as customer:
+https://9061443-sb1.app.netsuite.com/app/login/secure/privatelogin.nl?c=9061443_SB1
 
 
-TEST WORKFLOW:
-    create new ticket as contractor
-    create new ticket as customer
-    cancel ticket as customer
-    asses ticket as employee
-    resolve ticket with images as employee
-    make sure customers can only see their tickets
-    make sure contractors can only see their tickets and their customer tickets
+
+Issue 214:
+    Create Scheduled Task to:
+        load all safs that are in the past (based on the latest time block)
+            considering days in custrecord_twc_saf_wrk_photo_req_delay
+
+        for the SAFs that match:
+            change status to: Awaiting Photos
+            email custrecord_twc_saf_primary_contractor, use email template
+
+
+Issue 137:  
+    add fields to company table:
+        PL Insurance File
+        EL Insurance File
+        PI Insurance File
+
+    when accepting a new insurance file:
+        populate the relevant new fields based on what was selected in the approve insurance form
+        IMPORTANT:
+            if any of the field is already populated:
+                change that file status to superseeded
+        

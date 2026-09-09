@@ -61,6 +61,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             window.open(core.url.record(twcSite.Type));
                         } else if (e.id == 'twc-action-clear-filter') {
                             this.clearFilters();
+                            // @@TODO: this does not work, why?
+                            this.#sitesTable.table.resetAllFilters()
                         } else {
                             throw new Error(`Invalid Action ${e.id}`)
                         }

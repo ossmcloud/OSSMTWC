@@ -799,6 +799,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get data() { return this.#data; }
             get dataType() { return this.#options.dataSourceType; }
 
+            get singleRowSelect() {
+                return this.#options.singleRowSelect || false;
+            } set singleRowSelect(val) {
+                this.#options.singleRowSelect = (val === true);
+            }
+
             get noResize() {
                 return this.#options.noResize;
             }
@@ -1033,11 +1039,11 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         this.#triggerRowSelected();
                         return;
                     }
-                    if (!e.ctrlKey && !e.shiftKey) {
+                    if ((!e.ctrlKey && !e.shiftKey) || this.singleRowSelect) {
                         this.#j.find('.o-row-selected').removeClass('o-row-selected');
                     }
 
-                    if (e.shiftKey && this.#lastSelectedRow) {
+                    if (e.shiftKey && this.#lastSelectedRow && !this.singleRowSelect) {
                         var r = this.#lastSelectedRow;
                         // @@NOTE: if current clicked row.top > lastSelectedRow.top then we select down, otherwise we select up
                         var method = (row.position().top > r.position().top) ? 'next' : 'prev';
@@ -1387,6 +1393,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     showFooter: this.#options.showFooter,
                     unboundCols: this.#options.unboundCols,
                     onColumnInit: this.#onColumnInit,
+                    singleRowSelect: this.#options.singleRowSelect,
                 }, data);
 
                 this.#table.onInitEvents = () => {

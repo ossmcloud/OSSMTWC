@@ -2,8 +2,6 @@ SRF:
     // @@TODO: SRF
 	When swapping TME show list of ATME/Feeders with toggle
 
-    SRF List: status Feedback issued!!!
-
 SAF:
     // @@TODO: SAF 
 	
