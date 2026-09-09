@@ -74,7 +74,28 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getInventoryData(options, userInfo) {
             const inventoryFields = twcUtils.getFields(twcEqip.Type);
-            const userFields = twcInventoryUI.getInventoryTableFields();
+            // const userFields = twcInventoryUI.getInventoryTableFields();
+            const userFields = [
+                { field: twcInventory.Fields.NAME, title: 'Eq. ID', addCount: true },
+                { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS, title: 'Install<br />Status' },
+                { field: twcInventory.Fields.INFRASTRUCTURE, title: 'Structure' },
+                { field: twcInventory.Fields.CUSTOMER, title: 'Customer' },
+                { field: twcInventory.Fields.EQUIPMENT_TYPE, title: 'Type', styles: { width: '100px' } },
+                {
+                    field: 'make_model', title: 'Make / Model', nullText: '', sql: `
+                        case when (${twcInventory.Fields.MAKE} is null AND ${twcInventory.Fields.MODEL} is null)
+                            then ''
+                            else NVL(${twcInventory.Fields.MAKE}, '') || ' / ' || NVL(${twcInventory.Fields.MODEL}, '')
+                        end
+                    `
+                },
+                { field: twcInventory.Fields.LENGTH_MM, title: 'Length (mm)' },
+                { field: twcInventory.Fields.WIDTH_MM, title: 'Width (mm)' },
+                { field: twcInventory.Fields.HEIGHTDEPTH_MM, title: 'Depth<br />(mm)' },
+                { field: twcInventory.Fields.HEIGHT_ON_TOWER_M, title: 'Height on<br />Tower' },
+            ];
+
+
             var sqlFields = 's.id, s.id as record_id, s.custrecord_twc_equip_site as site_id, BUILTIN.DF(s.custrecord_twc_equip_site) as site_id_text';
             sqlFields += formatUserFields(inventoryFields, userFields);
 
@@ -88,7 +109,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             var inventoryDetails = coreSQL.run(`
-                select  ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO},
+                select  s.name, ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO},
                         BUILTIN.DF(i.custrecord_twc_infra_type) as infra_type, BUILTIN.DF(i.custrecord_twc_infra_str_type) as infra_str_type, i.custrecord_twc_infra_id as infra_id
                 from    ${twcInventory.Type} s
                 join    customrecord_twc_infra i on i.id = ${twcInventory.Fields.INFRASTRUCTURE}
@@ -145,6 +166,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 core.array.each(userFields, uf => {
                     if (uf.field == 'name' || uf.field == 'custrecord_twc_srf_site') { return; }
                     var nsField = fields.find(nsf => { return nsf.field_id == uf.field });
+                    if (!nsField) {
+                        if (uf.sql) { sqlFields += `, ${uf.sql} as ${uf.field}`; }
+                        return;
+                    }
                     var sqlField = uf.field;
                     uf.type = twcUI.nsTypeToTableColumnType(nsField.field_type);
                     if (nsField.field_type == 'Date') {

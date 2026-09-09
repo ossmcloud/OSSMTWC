@@ -873,6 +873,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var sql = '';
             if (options.srf) {
+                // @@NOTE: for SRF the accreditation status does not apply
+                additionalFilters = '';
                 additionalFilters += ` and c.custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer} `
 
                 if (!options.isEmployee) {

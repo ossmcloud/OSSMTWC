@@ -28,7 +28,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     unboundCols: unboundCols,
 
                 });
-                
+
             }
 
             get table() { return this.#table.table; }
@@ -37,14 +37,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (col.id == 'id') { return false; }
                 if (col.id == 'record_id') { return false; }
                 if (col.id == 'site_id') { return false; }
-                if (col.id == 'name') { return false; }
+                //if (col.id == 'name') { return false; }
                 if (col.id == twcSite.Fields.ADDRESS_COUNTY || col.id == twcSite.Fields.SITE_TYPE || col.id == twcSite.Fields.SITE_PORTFOLIO) { return false; }
-                
+
                 var uf = window.twc.page.data.data.inventoryInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
                 if (uf) {
                     if (uf.label) { col.title = uf.label; }
                     if (uf.listRecord && !col.id.endsWith('_text')) { return false; }
                     col.type = uf.type?.toLowerCase() || '';
+                    col.nullText = uf.nullText;
+                    col.addCount = uf.addCount;
                 }
 
                 if (col.id == 'site_id_text') {
