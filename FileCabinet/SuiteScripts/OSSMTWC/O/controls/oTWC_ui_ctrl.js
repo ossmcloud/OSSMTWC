@@ -67,6 +67,16 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 return obj;
             }
 
+            getControls(id) {
+                var obj = [];
+                core.array.each(this.#controls, c => {
+                    if (c.id == id) {
+                        obj.push(c);
+                    }
+                });
+                return obj;
+            }
+
             // addControl(options) {
 
             // }

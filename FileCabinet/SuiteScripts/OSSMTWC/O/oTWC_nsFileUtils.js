@@ -74,6 +74,49 @@ define(['N/file', 'N/search', 'N/record', 'N/https', 'SuiteBundles/Bundle 548734
             }
         }
 
+        function getFileTypeFromExt(fileName) {
+            var ext = fileName.substring(fileName.lastIndexOf('.') + 1)?.toLowerCase();
+            if (ext == 'pdf') {
+                return 'PDF';
+            } else if (ext == 'doc' || ext == 'docx') {
+                return 'WORD';
+            } else if (ext == 'xls' || ext == 'xlsx' || ext == 'xlsm') {
+                return 'EXCEL';
+            } else if (ext == 'ppt' || ext == 'pptx') {
+                return 'POWERPOINT';
+            } else if (ext == 'zip') {
+                return 'ZIP';
+            } else if (ext == 'gzip') {
+                return 'GZIP';
+            } else if (ext == 'csv') {
+                return 'CSV';
+            } else if (ext == 'xml') {
+                return 'XMLDOC';
+            } else if (ext == 'html') {
+                return 'HTMLDOC';
+            } else if (ext == 'css') {
+                return 'STYLESHEET';
+            } else if (ext == 'svg') {
+                return 'SVG';
+            } else if (ext == 'js') {
+                return 'JAVASCRIPT';
+            } else if (ext == 'json') {
+                return 'JSON';
+            } else if (ext == 'dwg') {
+                return 'AUTOCAD';
+            } else if (ext == 'ico') {
+                return 'ICON';
+            } else if (ext == 'png' || ext == 'jpeg' || ext == 'jpg' || ext == 'bmp' || ext == 'gif') {
+                var imgFormat = ext.toUpperCase();
+                if (imgFormat == 'JPEG') { imgFormat = 'JPG'; }
+                return imgFormat + 'IMAGE';
+            } else {
+                return 'MISCBINARY'
+                return 'PLAINTEXT'
+            }
+
+        }
+
         function createFolderIfNotExist(folderPath, parentId) {
             try {
                 var folderArray = folderPath.split('/');
@@ -123,6 +166,7 @@ define(['N/file', 'N/search', 'N/record', 'N/https', 'SuiteBundles/Bundle 548734
 
         return {
             getFileType: getFileType,
+            getFileTypeFromExt: getFileTypeFromExt,
             readFile: readFile,
             writeFile: writeFile,
             createFolderIfNotExist: createFolderIfNotExist

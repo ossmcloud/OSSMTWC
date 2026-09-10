@@ -15,10 +15,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             initPreviewFileEvents() {
-                this.ui.getControl(twcFile.Type).ui.find('.twc-preview-file').click(async e => {
-                    var file = jQuery(e.currentTarget).data('file')
-                    await this.previewFile(file, e)
+                var fileTables = this.ui.getControls(twcFile.Type);
+                core.array.each(fileTables, fileTable => {
+                    fileTable.ui.find('.twc-preview-file').click(async e => {
+                        var file = jQuery(e.currentTarget).data('file')
+                        await this.previewFile(file, e)
+                    })    
                 })
+                
             }
             initFileFormatValueColumns(table) {
                 if (!table.getColumn(twcFile.Fields.STATUS + '_name')) { return; }
