@@ -58,7 +58,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames(userInfo) }));
             html = html.replace('{FILTER_SAF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Equipment ID', width: 'calc(25% - 2px)', multiSelect: true, id: 'record_id', noEmpty: true, dataSource: twcUtils.getEquipmentIds() }));
             html = html.replace('{FILTER_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Status', width: 'calc(25% - 2px)', multiSelect: true, id: twcEqip.Fields.EQUIPMENT_INSTALL_STATUS, noEmpty: true, dataSource: twcUtils.getEquipmentStatus() }));
-            html = html.replace('{FILTER_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Type', width: '50%', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));
+            //html = html.replace('{FILTER_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Type', width: '50%', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));
+            html = html.replace('{FILTER_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Type', width: '50%', multiSelect: true, id: twcEqip.Fields.EQUIPMENT_CLASS, noEmpty: true, dataSource: twcUtils.getEquipmentClass() }));
             html = html.replace('{FILTER_CUSTOMER}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Customer', width: '50%', multiSelect: true, id: twcEqip.Fields.CUSTOMER, noEmpty: true, dataSource: twcUtils.getCustomers(userInfo), noAutoSelect: true }));
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
 
@@ -77,9 +78,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             // const userFields = twcInventoryUI.getInventoryTableFields();
             const userFields = [
                 { field: twcInventory.Fields.NAME, title: 'Eq. ID', addCount: true },
-                { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS, title: 'Install<br />Status' },
                 { field: twcInventory.Fields.INFRASTRUCTURE, title: 'Structure' },
                 { field: twcInventory.Fields.CUSTOMER, title: 'Customer' },
+                { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS, title: 'Install<br />Status' , sortIdx : 50},
+
                 { field: twcInventory.Fields.EQUIPMENT_TYPE, title: 'Type', styles: { width: '100px' } },
                 {
                     field: 'make_model', title: 'Make / Model', nullText: '', sql: `
@@ -89,9 +91,28 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         end
                     `
                 },
-                { field: twcInventory.Fields.LENGTH_MM, title: 'Length (mm)' },
-                { field: twcInventory.Fields.WIDTH_MM, title: 'Width (mm)' },
-                { field: twcInventory.Fields.HEIGHTDEPTH_MM, title: 'Depth<br />(mm)' },
+                {
+                    field: 'length_width_height',
+                    title: 'Length / Width / Height ',
+                    nullText: '',
+                    sql: `
+                    CASE
+                        WHEN (
+                            ${twcInventory.Fields.LENGTH_MM} IS NULL
+                            AND ${twcInventory.Fields.WIDTH_MM} IS NULL
+                            AND ${twcInventory.Fields.HEIGHTDEPTH_MM} IS NULL
+                        )
+                        THEN ''
+                        ELSE
+                            NVL(${twcInventory.Fields.LENGTH_MM}, '') || ' / ' ||
+                            NVL(${twcInventory.Fields.WIDTH_MM}, '') || ' / ' ||
+                            NVL(${twcInventory.Fields.HEIGHTDEPTH_MM}, '')
+                    END
+                `
+                },
+                // { field: twcInventory.Fields.LENGTH_MM, title: 'Length (mm)' },
+                // { field: twcInventory.Fields.WIDTH_MM, title: 'Width (mm)' },
+                // { field: twcInventory.Fields.HEIGHTDEPTH_MM, title: 'Depth<br />(mm)' },
                 { field: twcInventory.Fields.HEIGHT_ON_TOWER_M, title: 'Height on<br />Tower' },
             ];
 

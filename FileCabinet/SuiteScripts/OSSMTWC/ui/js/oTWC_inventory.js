@@ -34,9 +34,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             get table() { return this.#table.table; }
 
             colInit(tbl, col) {
+                
                 if (col.id == 'id') { return false; }
                 if (col.id == 'record_id') { return false; }
                 if (col.id == 'site_id') { return false; }
+                 if (col.id == 'infra_type') { return false; }
+                 if(col.id == 'custrecord_twc_equip_str_text'){return false}
                 //if (col.id == 'name') { return false; }
                 if (col.id == twcSite.Fields.ADDRESS_COUNTY || col.id == twcSite.Fields.SITE_TYPE || col.id == twcSite.Fields.SITE_PORTFOLIO) { return false; }
 
@@ -57,18 +60,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 }
 
-                if (col.id == 'infra_id') {
+                  if (col.id == 'site_id_text') {
                     col.sortIdx = 51;
-                    col.title = 'Infra. ID';
+                    col.title = 'Site';
                 }
-                if (col.id == 'infra_type') {
+                if (col.id == 'infra_id') {
                     col.sortIdx = 52;
-                    col.title = 'Infrastructure';
+                    col.title = 'Infra. ID';
                 }
                 if (col.id == 'infra_str_type') {
                     col.sortIdx = 53;
-                    col.title = 'Infra. Type';
+                    col.title = 'Infra Type';
                 }
+                 if (col.id == 'custrecord_twc_equip_customer_text') {
+                    col.sortIdx = 54;
+                }
+                if (col.id == 'custrecordtwc_eq_install_status_text') {
+                     col.sortIdx = 55;
+                }
+
 
                 if (col.id == twcInventory.Fields.EQUIPMENT_ID) { col.addCount = true; }
             }

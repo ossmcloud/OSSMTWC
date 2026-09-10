@@ -136,6 +136,17 @@ define(['N/currentRecord', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.
 
                         for (var k in twcUtils.Insurances) {
                             if (values[k]) {
+
+                                var insuranceFileField = twcUtils.Insurances[k].fieldFile;
+                                var oldFileId = companyInsuranceDetails[insuranceFileField];
+
+                                if (oldFileId) {
+                                    recu.submit(twcFile.Type, oldFileId, twcFile.Fields.STATUS, twcUtils.FileStatus.Superseded);
+                                }
+
+                                submitFields.push(insuranceFileField);
+                                submitValues.push(currentRecord.get().id);
+
                                 submitFields.push(twcUtils.Insurances[k].fieldAvailable);
                                 submitFields.push(twcUtils.Insurances[k].fieldEx);
                                 submitFields.push(twcUtils.Insurances[k].fieldLimit);

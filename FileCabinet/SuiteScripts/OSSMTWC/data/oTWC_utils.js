@@ -133,10 +133,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `
         }
 
-        const COMPANY_INSURANCE_FIELDS = {
-            EL: { field: 'custrecord_twc_co_el_status', fieldEx: 'custrecord_twc_co_el_expiry', fieldLimit: 'custrecord_twc_co_el_limit', fieldAvailable: 'custrecord_twc_co_el_available_typ', fieldCurrency: 'custrecord_twc_co_el_limit_cur', code: 'el' },
-            PL: { field: 'custrecord_twc_co_pl_status', fieldEx: 'custrecord_twc_co_pl_expiry', fieldLimit: 'custrecord_twc_co_pl_limit', fieldAvailable: 'custrecord_twc_co_pl_available_typ', fieldCurrency: 'custrecord_twc_co_pl_limit_cur', code: 'pl' },
-            PI: { field: 'custrecord_twc_co_pi_status', fieldEx: 'custrecord_twc_co_pi_expiry', fieldLimit: 'custrecord_twc_co_pi_limit', fieldAvailable: 'custrecord_twc_co_pi_available_typ', fieldCurrency: 'custrecord_twc_co_pi_limit_cur', code: 'pi' },
+          const COMPANY_INSURANCE_FIELDS = {
+            EL: { field: 'custrecord_twc_co_el_status', fieldEx: 'custrecord_twc_co_el_expiry', fieldLimit: 'custrecord_twc_co_el_limit', fieldAvailable: 'custrecord_twc_co_el_available_typ', fieldCurrency: 'custrecord_twc_co_el_limit_cur', code: 'el', fieldFile : 'custrecord_twc_co_el_inc_file' },
+            PL: { field: 'custrecord_twc_co_pl_status', fieldEx: 'custrecord_twc_co_pl_expiry', fieldLimit: 'custrecord_twc_co_pl_limit', fieldAvailable: 'custrecord_twc_co_pl_available_typ', fieldCurrency: 'custrecord_twc_co_pl_limit_cur', code: 'pl', fieldFile : 'custrecord_twc_co_pl_inc_file' },
+            PI: { field: 'custrecord_twc_co_pi_status', fieldEx: 'custrecord_twc_co_pi_expiry', fieldLimit: 'custrecord_twc_co_pi_limit', fieldAvailable: 'custrecord_twc_co_pi_available_typ', fieldCurrency: 'custrecord_twc_co_pi_limit_cur', code: 'pi', fieldFile : 'custrecord_twc_co_pi_inc_file' },
         }
         const COMPANY_INSURANCE_AVAILABLE_TYPE = {
             NA: 1,
@@ -809,8 +809,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getFiles({ filters: { 'f.id': { op: 'in', value: `(${fileIds})`, 'customrecord_twc_file': FILE_STATUS.Approved } } })
         }
 
-        function getFilePreviewLink(file_id) {
-            return `<div style="text-align: center;"><span class="twc-clickable twc-preview-file" data-file="${file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`
+        function getFilePreviewLink(file_id, id) {
+            return `<div style="text-align: center;"><span class="twc-clickable twc-preview-file" data-twc-file="${id || ''}" data-file="${file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`
+        }
+        function getFileDeleteLink(file_id, id) {
+            return `<div style="text-align: center;"><span class="twc-clickable twc-delete-file" data-twc-file="${id || ''}" data-file="${file_id}" style="width: 100%;">${twcIcons.get('trash', 16, 'red')}</span></div>`
         }
 
         function getFiles(options) {
@@ -849,8 +852,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var files = [];
             coreSQL.each(sql, f => {
-                //f.preview_link = `<div style="text-align: center;"><span class="twc-clickable twc-preview-file" data-file="${f.file_id}" style="width: 100%;">${twcIcons.get('download', 16)}</span></div>`;
-                f.preview_link = getFilePreviewLink(f.file_id);
+                f.preview_link = getFilePreviewLink(f.file_id, f.id);
+                f.delete_link = getFileDeleteLink(f.file_id, f.id);
                 files.push(f)
             })
 
@@ -1155,6 +1158,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getEquipmentStatus() {
             return getLookUpTableValues('customrecord_twc_equip_install_status');
         }
+        function getEquipmentClass() {
+            return coreSQL.run(`select id as value, name as text from customrecord_twc_eq_class where 1 = 1 order by id`)
+        }
 
 
         function getSafTimeBlocks(siteId) {
@@ -1450,9 +1456,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getCompanyInsuranceDetails(companyId) {
             return coreSQL.first(`
                 select  id, name,
-                        custrecord_twc_co_el_limit, TO_CHAR(custrecord_twc_co_el_expiry, 'YYYY-MM-DD') as custrecord_twc_co_el_expiry, custrecord_twc_co_el_status, custrecord_twc_co_el_limit_cur,
-                        custrecord_twc_co_pl_limit, TO_CHAR(custrecord_twc_co_pl_expiry, 'YYYY-MM-DD') as custrecord_twc_co_pl_expiry, custrecord_twc_co_pl_status, custrecord_twc_co_pl_limit_cur,
-                        custrecord_twc_co_pi_limit, TO_CHAR(custrecord_twc_co_pi_expiry, 'YYYY-MM-DD') as custrecord_twc_co_pi_expiry, custrecord_twc_co_pi_status, custrecord_twc_co_pi_limit_cur,
+                        custrecord_twc_co_el_limit, TO_CHAR(custrecord_twc_co_el_expiry, 'YYYY-MM-DD') as custrecord_twc_co_el_expiry, custrecord_twc_co_el_status, custrecord_twc_co_el_limit_cur, custrecord_twc_co_el_inc_file,
+                        custrecord_twc_co_pl_limit, TO_CHAR(custrecord_twc_co_pl_expiry, 'YYYY-MM-DD') as custrecord_twc_co_pl_expiry, custrecord_twc_co_pl_status, custrecord_twc_co_pl_limit_cur, custrecord_twc_co_pl_inc_file,
+                        custrecord_twc_co_pi_limit, TO_CHAR(custrecord_twc_co_pi_expiry, 'YYYY-MM-DD') as custrecord_twc_co_pi_expiry, custrecord_twc_co_pi_status, custrecord_twc_co_pi_limit_cur, custrecord_twc_co_pi_inc_file,
                         custrecord_twc_co_restrictions, custrecord_twc_co_insurer
                 from    customrecord_twc_company where id = ${companyId}
             `);
@@ -1631,6 +1637,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getVendors: getVendors,
             getEquipmentIds: getEquipmentIds,
             getEquipmentStatus: getEquipmentStatus,
+            getEquipmentClass:getEquipmentClass,
             getSafIds: getSafIds,
             getSrfIds: getSrfIds,
             getSrfStatus: getSrfStatus,
