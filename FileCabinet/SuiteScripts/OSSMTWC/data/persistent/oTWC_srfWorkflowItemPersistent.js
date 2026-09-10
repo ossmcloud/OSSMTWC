@@ -10,6 +10,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WORKFLOW: 'custrecord_twc_srf_wkfi_parent',
             WORKFLOW_STAGE: 'custrecord_twc_srf_wkfi_stage',
             STATUS: 'custrecord_twc_srf_wkfi_status',
+            STATUS_MESSAGE: 'custrecord_twc_srf_wkfi_status_msg',
             PLANNED: 'custrecord_twc_srf_wkfi_planned',
             ACTUAL: 'custrecord_twc_srf_wkfi_actual',
             REVIEW: 'custrecord_twc_srf_wkfi_review',
@@ -26,6 +27,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WORKFLOW: { name: 'custrecord_twc_srf_wkfi_parent', type: 'select', alias: 'workflow', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_wkf' },
             WORKFLOW_STAGE: { name: 'custrecord_twc_srf_wkfi_stage', type: 'select', alias: 'workflowStage', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_wks' },
             STATUS: { name: 'custrecord_twc_srf_wkfi_status', type: 'select', alias: 'status', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_wkf_status' },
+            STATUS_MESSAGE: { name: 'custrecord_twc_srf_wkfi_status_msg', type: 'text', alias: 'statusMessage', display: 'normal', mandatory: false },
             PLANNED: { name: 'custrecord_twc_srf_wkfi_planned', type: 'date', alias: 'planned', display: 'normal', mandatory: false },
             ACTUAL: { name: 'custrecord_twc_srf_wkfi_actual', type: 'date', alias: 'actual', display: 'normal', mandatory: false },
             REVIEW: { name: 'custrecord_twc_srf_wkfi_review', type: 'select', alias: 'review', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_rev' },
@@ -68,6 +70,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.STATUS, value)
             }
             get statusName() { return this.getText(_recordFields.STATUS); }
+            
+            get statusMessage() {
+                return this.get(_recordFields.STATUS_MESSAGE);
+            } set statusMessage(value) {
+                this.set(_recordFields.STATUS_MESSAGE, value)
+            }
             
             get planned() {
                 return this.get(_recordFields.PLANNED);
@@ -140,8 +148,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_SRFWorkflowItem,
 
-            get: function (id) {
-                var rec = new OSSMTWC_SRFWorkflowItem(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_SRFWorkflowItem(id, staticLoad);
                 rec.load();
                 return rec;
             }, 

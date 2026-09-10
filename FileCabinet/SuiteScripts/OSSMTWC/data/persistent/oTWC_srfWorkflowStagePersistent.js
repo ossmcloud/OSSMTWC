@@ -7,6 +7,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordType = 'customrecord_twc_srf_wks';
         var _recordFields = {
             NAME: 'name',
+            ALT_NAME: 'custrecord_twc_srf_wks_seq_name',
             OUTER_SEQUENCE: 'custrecord_twc_srf_wks_seq_outer',
             SEQUENCE_NUMBER: 'custrecord_twc_srf_wks_seq_no',
             STEP_NUMBER: 'custrecord_twc_srf_wks_step_no',
@@ -33,6 +34,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
+            ALT_NAME: { name: 'custrecord_twc_srf_wks_seq_name', type: 'text', alias: 'altName', display: 'normal', mandatory: false },
             OUTER_SEQUENCE: { name: 'custrecord_twc_srf_wks_seq_outer', type: 'integer', alias: 'outerSequence', display: 'normal', mandatory: false },
             SEQUENCE_NUMBER: { name: 'custrecord_twc_srf_wks_seq_no', type: 'integer', alias: 'sequenceNumber', display: 'normal', mandatory: false },
             STEP_NUMBER: { name: 'custrecord_twc_srf_wks_step_no', type: 'text', alias: 'stepNumber', display: 'normal', mandatory: false },
@@ -66,6 +68,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get('name');
             } set name(value) {
                 this.set('name', value)
+            }
+            
+            get altName() {
+                return this.get(_recordFields.ALT_NAME);
+            } set altName(value) {
+                this.set(_recordFields.ALT_NAME, value)
             }
             
             get outerSequence() {
@@ -216,8 +224,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_SRFWorkflowStage,
 
-            get: function (id) {
-                var rec = new OSSMTWC_SRFWorkflowStage(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_SRFWorkflowStage(id, staticLoad);
                 rec.load();
                 return rec;
             }, 

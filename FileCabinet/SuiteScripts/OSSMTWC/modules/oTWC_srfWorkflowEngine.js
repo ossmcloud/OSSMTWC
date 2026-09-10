@@ -464,8 +464,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             workflow.items = [];
             coreSql.each(`
-                select  wi.id, ws.id as stage, ws.name as stage_name, ws.custrecord_twc_srf_wks_step_no step_no, ws.custrecord_twc_srf_wks_seq_no as seq_no,
+                select  wi.id, ws.id as stage, ws.name as stage_name, ws.custrecord_twc_srf_wks_seq_name as stage_alt_name, ws.custrecord_twc_srf_wks_step_no step_no, ws.custrecord_twc_srf_wks_seq_no as seq_no,
                         wi.custrecord_twc_srf_wkfi_status as status, BUILTIN.DF(custrecord_twc_srf_wkfi_status) as status_name,
+                        wi.custrecord_twc_srf_wkfi_status_msg as status_message, 
                         TO_CHAR(wi.custrecord_twc_srf_wkfi_planned, 'YYYY-MM-DD') as planned, TO_CHAR(wi.custrecord_twc_srf_wkfi_actual, 'YYYY-MM-DD') as actual,
                         custrecord_twc_srf_wkfi_cprofile as profile, BUILTIN.DF(custrecord_twc_srf_wkfi_cprofile) as profile_name,
                         wi.custrecord_twc_srf_wkfi_assigned_to as assigned_to, BUILTIN.DF(wi.custrecord_twc_srf_wkfi_assigned_to) as assigned_to_name,
@@ -607,6 +608,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     {
                         id: sdsProduced.id,
                         [twcSrfWorkflowItem.Fields.STATUS]: WORKFLOW_STATUS.IN_PROGRESS,
+                        [twcSrfWorkflowItem.Fields.STATUS_MESSAGE]: `<b>SDS Was rejected (by ${userInfo.name}):</b><br />${options.comment}`,
                         [twcSrfWorkflowItem.Fields.ACTUAL]: null,
                         formData: formData
                     }
