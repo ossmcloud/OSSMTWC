@@ -8,7 +8,7 @@ https://9061443-sb1.app.netsuite.com/app/login/secure/privatelogin.nl?c=9061443_
 
 
 
-Issue 214:
+Issue 214: 
     Create Scheduled Task to:
         load all safs that are in the past (based on the latest time block)
             considering days in custrecord_twc_saf_wrk_photo_req_delay
@@ -17,6 +17,15 @@ Issue 214:
             change status to: Awaiting Photos
             email custrecord_twc_saf_primary_contractor, use email template
 
+-----
+Script name : OSSMTWC - SAF Status - SVC
+Questions : 
+    Need to consider current saf stauts ? or Need to avoid Pending, Cancelled, Rejected status of SAF?
+    Works only if Type  => Construction/Installation/Decommission ?
+    Email Recipient  Primary Contractor(SAF) -> Entity (Company) -> Vendor email ?
+    Author ?
+
+........................
 
 Issue 137:  
     add fields to company table:
@@ -29,4 +38,12 @@ Issue 137:
         IMPORTANT:
             if any of the field is already populated:
                 change that file status to superseeded
+
+........................
+
+Issue 221:
+
+Which field -- SRF the equipment was last installed/removed under (if possible?) ?
+Equipment Type or Equipment class ? - Dropdown to filter by Type - can this be changed to filter for Equipment Type
+
         

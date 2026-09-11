@@ -64,6 +64,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CONTRACTOR_FLAG: 'custrecord_twc_con_flag',
             LANDLORD_FLAG: 'custrecord_twc_landlord_flag',
             SDS_INCLUDE_LICENSE_MAP: 'custrecord_twc_co_sds_include_licensemap',
+            PL_INSURANCE_FILE: 'custrecord_twc_co_pl_inc_file',
+            EL_INSURANCE_FILE: 'custrecord_twc_co_el_inc_file',
+            PI_INSURANCE_FILE: 'custrecord_twc_co_pi_inc_file',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -128,6 +131,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CONTRACTOR_FLAG: { name: 'custrecord_twc_con_flag', type: 'select', alias: 'contractorFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_con_flag' },
             LANDLORD_FLAG: { name: 'custrecord_twc_landlord_flag', type: 'select', alias: 'landlordFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_landlord_flag' },
             SDS_INCLUDE_LICENSE_MAP: { name: 'custrecord_twc_co_sds_include_licensemap', type: 'checkbox', alias: 'sDSIncludeLicenseMap', display: 'normal', mandatory: false },
+            PL_INSURANCE_FILE: { name: 'custrecord_twc_co_pl_inc_file', type: 'select', alias: 'pLInsuranceFile', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
+            EL_INSURANCE_FILE: { name: 'custrecord_twc_co_el_inc_file', type: 'select', alias: 'eLInsuranceFile', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
+            PI_INSURANCE_FILE: { name: 'custrecord_twc_co_pi_inc_file', type: 'select', alias: 'pIInsuranceFile', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -504,6 +510,27 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.SDS_INCLUDE_LICENSE_MAP, value)
             }
             
+             get pLInsuranceFile() {
+                return this.get(_recordFields.PL_INSURANCE_FILE);
+            } set pLInsuranceFile(value) {
+                this.set(_recordFields.PL_INSURANCE_FILE, value)
+            }
+            get pLInsuranceFileName() { return this.getText(_recordFields.PL_INSURANCE_FILE); }
+            
+            get eLInsuranceFile() {
+                return this.get(_recordFields.EL_INSURANCE_FILE);
+            } set eLInsuranceFile(value) {
+                this.set(_recordFields.EL_INSURANCE_FILE, value)
+            }
+            get eLInsuranceFileName() { return this.getText(_recordFields.EL_INSURANCE_FILE); }
+            
+            get pIInsuranceFile() {
+                return this.get(_recordFields.PI_INSURANCE_FILE);
+            } set pIInsuranceFile(value) {
+                this.set(_recordFields.PI_INSURANCE_FILE, value)
+            }
+            get pIInsuranceFileName() { return this.getText(_recordFields.PI_INSURANCE_FILE); }
+           
             get created() {
                 return this.get(_recordFields.CREATED);
             } set created(value) {
