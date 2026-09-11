@@ -81,7 +81,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 { field: twcInventory.Fields.INFRASTRUCTURE, title: 'Structure' },
                 { field: twcInventory.Fields.CUSTOMER, title: 'Customer' },
                 { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS, title: 'Install<br />Status' , sortIdx : 50},
-
+                { field: twcInventory.Fields.EQUIPMENT_CLASS, title: 'Class', styles: { width: '100px' } },
                 { field: twcInventory.Fields.EQUIPMENT_TYPE, title: 'Type', styles: { width: '100px' } },
                 {
                     field: 'make_model', title: 'Make / Model', nullText: '', sql: `

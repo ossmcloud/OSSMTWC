@@ -2,12 +2,9 @@
  * @NApiVersion 2.1
  * @NScriptType ScheduledScript
  */
-define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'N/email', '../data/oTWC_saf.js', '../data/oTWC_safTimeBlock.js', 'N/render'],
-    (runtime, task, core, coreSQL, recu, email, twcSaf, twcTB, render) => {
-
-        const SAF_TEMPLATE = 2
-        const AUTHOR = 821
-
+define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'N/email', '../data/oTWC_config.js', '../data/oTWC_saf.js', '../data/oTWC_safTimeBlock.js', 'N/render'],
+    (runtime, task, core, coreSQL, recu, email, twcConfig, twcSaf, twcTB, render) => {
+        
         function execute(context) {
             try {
                 core.logDebug('START', 'Starting')
@@ -27,6 +24,7 @@ define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
         }
 
         function updateSAFstatus() {
+            // @@TODO: currently we email the primary contractor, is this ok?
             var sql = `
                 SELECT saf.id AS saf_id,
                 saf.${twcSaf.Fields.PRIMARY_CONTRACTOR} AS contractor_id,
@@ -58,7 +56,7 @@ define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
 
                     if (saf.vendor_id) {
                         var mergeResult = render.mergeEmail({
-                            templateId: SAF_TEMPLATE,
+                            templateId: twcConfig.SAF_AWAIT_PHOTOS_MAIL_TEMPLATE,
                             customRecord: { type: twcSaf.Type, id: saf.saf_id },
                             entity: { type: 'vendor', id: saf.vendor_id },
 
@@ -67,7 +65,7 @@ define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
                         var body = mergeResult.body.replace('{{SAF_PHOTO_REQUEST}}', 'You are requested to submit photos for this SAF so that we can proceed with the next stage of processing.');
 
                         email.send({
-                            author: AUTHOR,
+                            author: twcConfig.NO_REPLY,
                             recipients: saf.vendor_id,
                             subject: mergeResult.subject,
                             body: body,
