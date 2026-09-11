@@ -18,6 +18,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         const TOWERCOM_ENTITY = 822;
         const TKT_CASE_PROFILE = 1;
         const TKT_CASE_STATUS = 1;
+        const NO_REPLY = 827;
+        const SAF_AWAIT_PHOTOS_MAIL_TEMPLATE = 2;
 
         const FIELD_ENTITY_USER_PREF = 'custentity_twc_userpref';
 
@@ -347,7 +349,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         return {
             Fields: CUSTOM_FIELDS,
-            
+
             ROOT_FILE_FOLDER: 'TL Files', // @@NOTE: this is duplicated on twc_utils.js
             CONTRACTOR_FLAG: CONTRACTOR_FLAG,
             CUSTOMER_FLAG: CUSTOMER_FLAG,
@@ -357,9 +359,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             TOWERCOM_ENTITY: TOWERCOM_ENTITY,
             TKT_CASE_PROFILE: TKT_CASE_PROFILE,
             TKT_CASE_STATUS: TKT_CASE_STATUS,
-
+            NO_REPLY: NO_REPLY,
+            SAF_AWAIT_PHOTOS_MAIL_TEMPLATE: SAF_AWAIT_PHOTOS_MAIL_TEMPLATE,
             
-
             userInfo: getUserInfo,
             getUserPref: getUserPref,
             setUserPref: setUserPref,

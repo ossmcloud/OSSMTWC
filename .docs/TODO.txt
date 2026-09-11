@@ -4,6 +4,7 @@ SRF:
 
 SAF:
     // @@TODO: SAF 
+    // @@TODO: currently we email the primary contractor, is this ok?
 
 SDS:
     // @@TODO: should this go to site folder or company folder ?????

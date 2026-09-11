@@ -18,11 +18,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #sitesFiltered = null;
             #initialTableHeight = null;
             #tableLastScrollTop = 0;
+            #isInventoryPage = false;
             constructor(options) {
                 this.#page = options.page;
                 this.#sitesTable = options.table;
                 this.#data = options.data;
                 this.#tableData = options.tableData;
+                this.#isInventoryPage = this.#page.constructor.name == 'TWCInventoryPage';
             }
 
             get ui() { return this.#page.ui; }
@@ -101,23 +103,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             updateResults() {
                 var filters = this.ui.getValues();
-
                 var siteIds = []; var hasFilters = false;
 
-                this.#sitesFiltered = this.#data.filter(s => {
-                    var match = true;
-                    for (var f in filters) {
-                        if (!f.startsWith('cust') && f != 'record_id' && f != 'site_id') { continue; }
-                        if (!filters[f]) { continue; }
-                        var values = filters[f].split(',').map(i => { return i?.toString() });
-                        if (f == 'site_id') { f = 'id'; }
-                        match = values.indexOf(s[f]?.toString()) >= 0;
-                        if (!match) { break; }
-                    }
-                    if (match) { siteIds.push(s.id) }
-                    return match;
-                });
-
+                if (!this.#isInventoryPage) {
+                    // @@NOTE: for the Inventory page we only want to show the sites that appear in the filtered list (see updateGoogleMap())
+                    this.#sitesFiltered = this.#data.filter(s => {
+                        var match = true;
+                        for (var f in filters) {
+                            if (!f.startsWith('cust') && f != 'record_id' && f != 'site_id') { continue; }
+                            if (!filters[f]) { continue; }
+                            var values = filters[f].split(',').map(i => { return i?.toString() });
+                            if (f == 'site_id') { f = 'id'; }
+                            match = values.indexOf(s[f]?.toString()) >= 0;
+                            if (!match) { break; }
+                        }
+                        if (match) { siteIds.push(s.id) }
+                        return match;
+                    });
+                }
 
                
                 if (this.#tableData) {
@@ -186,7 +189,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     //     if (match) { siteIds.push(s.id) }
                     //     return match;
                     // });
-
                     this.#sitesTable.refresh(this.#dataFiltered);
                 }
              
@@ -237,8 +239,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             updateGoogleMap(searchByCoordInfo) {
-                //this.#map.refreshMap(this.#dataFiltered, searchByCoordInfo);
-                this.#map.refreshMap(this.#sitesFiltered, searchByCoordInfo);
+                if (this.#isInventoryPage) {
+                    this.#map.refreshMap(this.#dataFiltered, searchByCoordInfo);
+                } else {
+                    this.#map.refreshMap(this.#sitesFiltered, searchByCoordInfo);
+                }
             }
 
             expandSiteTable() {
