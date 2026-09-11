@@ -3,8 +3,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_site.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfWorkflowEngine.js', '../data/oTWC_icons.js', './oTWC_sdsEngineUI.js'],
-    function (core, cored, coreSql, recu, https, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSite, dialog, twcUi, twcSrfWorkflowEngine, twcIcons, twcSdsEngineUI) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_site.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfWorkflowEngine.js', '../data/oTWC_icons.js', './oTWC_sdsEngineUI.js', '../data/oTWC_file.js'],
+    function (core, cored, coreSql, recu, https, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSite, dialog, twcUi, twcSrfWorkflowEngine, twcIcons, twcSdsEngineUI, twcFile) {
 
         const TODAY = (new Date()).format();
 
@@ -51,13 +51,73 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 //this.#readOnly = this.#item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || this.#item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED;
             }
 
+            renderDrawingFileList(container) {
+                if (!container) {
+                    container = jQuery('#workflow-form-data');
+                }
+                var fileListContainer = container.find('#workflow-form-data-drawings');
+                if (fileListContainer.length == 0) {
+                    fileListContainer = jQuery(`<div id="workflow-form-data-drawings" style="margin-top: 7px;"></div>`);
+                    container.append(fileListContainer);
+                }
+                fileListContainer.html(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 64)}</span>`)
+
+
+                this.#workflowForm.post('get-drawing-files', { srf: this.#workflowForm.page.data.siteRequestInfo.id })
+                    .then(res => {
+                        if (res.error) { throw new Error(res.error); }
+
+                        var fileList = jQuery(`<div class="twc-div-table-r"></div>`);
+                        core.array.each(res.files, f => {
+                            var desc = f[twcFile.Fields.DESCRIPTION] || '';
+                            if (desc) { desc = ` (${desc})`; }
+                            fileList.append(`
+                                <div class="file-table-row">
+                                    <div style="width: 30px;">${f.preview_link}</div>    
+                                    <div>${f.name}${desc}</div>
+                                    <div style="width: 30px;">${f.delete_link}</div>    
+                                </div>
+                            `);
+                        })
+                        fileList.find('.twc-preview-file').click(async e => {
+                            var fileId = jQuery(e.currentTarget).data('file');
+                            await this.#workflowForm.page.previewFile(fileId, e)
+                        })
+                        fileList.find('.twc-delete-file').click(async e => {
+                            var fileId = jQuery(e.currentTarget).data('twc-file');
+                            await dialog.confirmAsync('are you sure you wish to delete the file?');
+                            container.find('#workflow-form-data-drawings').html(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 64)}</span>`)
+                            this.#workflowForm.post('delete-drawing-files', { twcFile: fileId })
+                                .then(res => {
+                                    if (res.error) { throw new Error(res.error); }
+                                    jQuery(e.currentTarget).closest('.file-table-row').remove();
+                                }).catch(err => {
+                                    dialog.error(err.error || err.message)
+
+                                }).finally(() => {
+                                    this.renderDrawingFileList();
+                                })
+
+
+                        })
+
+                        fileListContainer.html(fileList)
+
+                    }).catch(err => {
+                        fileListContainer.html(`<div style="color: red; padding: 7px;">${err.error || err.message}</div>`)
+                    })
+            }
+
             render(callback) {
                 var statusLabel = '';
                 if (this.#item.set_status_name) {
                     statusLabel = `
-                        <span class="twc-record-status" style="${getStatusStyles(this.#item.set_status)}">
-                            ${this.#item.set_status_name}
-                        </span>
+                        <div>
+                            <label style="margin-top: 2px; margin-bottom: 11px;">SRF Status Transition</label>
+                            <span class="twc-record-status" style="${getStatusStyles(this.#item.set_status)}">
+                                ${this.#item.set_status_name}
+                            </span>
+                        </div>
                     `;
                 }
                 this.#ui = jQuery(`
@@ -65,10 +125,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         <div class="omt-ui-flex-panel" style="margin-bottom: 3px;">
                             ${twcUi.render({ type: twcUi.CTRL_TYPE.DATE, id: 'actual_date', label: 'Actual', value: this.#item.actual || TODAY, readOnly: this.#readOnly })}
                             ${twcUi.render({ type: twcUi.CTRL_TYPE.DATE, id: 'planned_date', label: 'Planned', value: this.#item.planned, readOnly: this.#readOnly })}
-                            <div>
-                                <label style="margin-top: 2px; margin-bottom: 11px;">SRF Status Transition</label>
-                                ${statusLabel}
-                            </div>
+                            ${statusLabel}
                         </div>
                     </div>
                 `);
@@ -118,7 +175,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
 
                 if (nextSteps.length > 0) {
-                    var nextStepContainerOuter = jQuery(`<div style="margin-top: 7px; padding: 3px; border: 1px solid var(--grid-color);"><h3 style="margin-bottom: 7px; border-bottom: 1px solid var(--grid-color);">Next Steps Planned Dates</h3></div>`);
+                    var nextStepContainerOuter = jQuery(`<div style="margin-top: 7px; padding: 3px; border: 1px solid var(--grid-color);"><h3 style="margin-bottom: 7px; border-bottom: 1px solid var(--grid-color);">Next Steps</h3></div>`);
                     var nextStepContainer = jQuery(`<div class="twc-div-table-r" style="table-layout: auto;"></div>`);
                     nextStepContainerOuter.append(nextStepContainer);
                     core.array.each(nextSteps, next => {
@@ -142,16 +199,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             requiredToggle = `<div style="width: 50px;">${twcUi.render({ type: twcUi.CTRL_TYPE.TOGGLE, id: `required_${next.id}`, value: next.status != twcSrfWorkflowEngine.WorkflowStatus.NOT_REQUIRED, readOnly: this.#readOnly })}</div>`;
                         }
 
+                        var nextStepPlannedDate = '';
+                        if (nextSteps.length > 0) {
+                            // nextStepPlannedDate = `
+                            //     <div style="padding: 0px 3px;">
+                            //         ${twcUi.render({ type: twcUi.CTRL_TYPE.DATE, id: `planned_date_${next.id}`, value: next.planned, readOnly: this.#readOnly })}
+                            //     </div>
+                            // `
+                        }
+
                         nextStepContainer.append(`
                                 <div>
                                     ${radioButton}
                                     <div style="width: 150px; padding: 0px 3px;">
-                                        ${next.stage_name}
+                                        ${next.stage_alt_name || next.stage_name}
                                     </div>
                                     ${requiredToggle}
-                                    <div style="padding: 0px 3px;">
-                                        ${twcUi.render({ type: twcUi.CTRL_TYPE.DATE, id: `planned_date_${next.id}`, value: next.planned, readOnly: this.#readOnly })}
-                                    </div>
+                                    ${nextStepPlannedDate}
                                     ${assignToDropDOwn}
                                     
                                 </div>
@@ -164,12 +228,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (this.#item.form_data) {
                     formData = JSON.parse(this.#item.form_data);
                     var formDataContainer = jQuery(`
-                        <div style="margin-top: 7px; padding: 3px; border: 1px solid var(--grid-color);">
+                        <div id="workflow-form-data" style="margin-top: 7px; padding: 3px; border: 1px solid var(--grid-color);">
                             <h3 style="margin-bottom: 7px; border-bottom: 1px solid var(--grid-color);">${formData.title}</h3>
                         </div>
                     `);
                     for (var k in formData.fields) {
-                        if (formData.fields[k].type != 'button') {
+                        if (formData.fields[k].type == 'drawings') {
+                            this.renderDrawingFileList(formDataContainer);
+                            continue;
+                        } else if (formData.fields[k].type != 'button') {
                             // @@NOTE: the form is generally associated to one record but one or more field could relate to a different record (srf or workflow)
                             //         these fields are identified by the fact that the id will be [table_name]-[field_name]
                             var fieldId = formData.fields[k].id;
@@ -210,6 +277,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
 
                 this.#form = twcUi.init({}, this.#ui);
+
+                if (this.#item.status_message) {
+                    function decodeHTMLEntities(text) {
+                        const doc = new DOMParser().parseFromString(text, 'text/html');
+                        return doc.documentElement.textContent;
+                    }
+
+                    this.#ui.append(`
+                        <div style="padding: 7px; border: 1px solid var(--grid-color); margin-top: 7px;">
+                            ${decodeHTMLEntities(this.#item.status_message)}
+                        </div>
+                    `)
+                }
 
                 var method = this.#readOnly ? 'open' : 'confirm';
                 this.#dlg = dialog[method]({ title: 'manage item', content: this.#ui, size: { width: '700px', height: '550px' } }, dlg => {
@@ -277,7 +357,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             var required = values[`required_${next.id}`];
                             if (required === undefined) { required = true; }
                             if (required) {
-                                next.planned = values[`planned_date_${next.id}`];
+                                if (values[`planned_date_${next.id}`]) {
+                                    next.planned = values[`planned_date_${next.id}`];
+                                }
                                 next.assigned_to = values[`assigned_to_${next.id}`]?.value;
                                 next.assigned_to_name = values[`assigned_to_${next.id}`]?.text;
                                 next.status = (next.is_last_stage == 'T') ? twcSrfWorkflowEngine.WorkflowStatus.COMPLETED : twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS;
@@ -332,15 +414,34 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 }
 
+                var issueSdsButton = this.#form.getControl('issue_sds');
+                if (issueSdsButton) {
+                    this.#dlg.dialog.find('#o-dialog_ok').css('display', 'none');
+                    if (this.#item.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS) {
+                        // @@NOTE: this is a bit dirty but will do for now
+                        issueSdsButton.on('click', e => {
+                            dialog.confirm('are you sure you wish to Issue the SDS', (dlg) => {
+
+                                this.#dlg.dialog.find('#o-dialog_ok').click();
+                            })
+                        })
+                    }
+                }
+
                 var rejectSdsButton = this.#form.getControl('reject_sds');
                 if (rejectSdsButton) {
                     if (this.#item.status == twcSrfWorkflowEngine.WorkflowStatus.IN_PROGRESS) {
                         // @@NOTE: this is a bit dirty but will do for now
                         rejectSdsButton.on('click', e => {
-                            dialog.confirm('Are you sure you wish to reject the SDS', () => {
+                            var html = `
+                                ${twcUi.render({ type: twcUi.CTRL_TYPE.TEXTAREA, id: 'rejection_comment', label: 'rejection comment', width: '100%', rows: 9, mandatory: true })}
+                            `
+                            dialog.confirm(html, (dlg) => {
                                 try {
+                                    var comment = dlg.dialog.find('#rejection_comment').val().trim();
+                                    if (!comment) { throw new Error(`Please, specify a rejection comment`); }
 
-                                    this.#workflowForm.post('reject-sds', { wkf: this.#workflow, item: this.#item })
+                                    this.#workflowForm.post('reject-sds', { wkf: this.#workflow, item: this.#item, comment: comment })
                                         .then(res => {
                                             callback(res);
                                             this.#dlg.close();
@@ -350,6 +451,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                                 } catch (error) {
                                     dialog.error(error)
+                                    return false;
                                 }
                             })
                         })
@@ -364,7 +466,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
 
                 this.#form.getControl('upload_file')?.on('click', e => {
-                    this.#workflowForm.uploadFile();
+                    this.#workflowForm.uploadFile(this);
                 })
 
 
@@ -671,7 +773,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
 
-            async uploadFile() {
+            async uploadFile(form) {
                 await this.page.uploadFile({
                     showParent: false,
                     recordType: twcSrf.Type,
@@ -682,6 +784,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     }
                 }, (file, res) => {
+                    form.renderDrawingFileList();
                     // console.log(file, res);
                     // location.reload();
                 })

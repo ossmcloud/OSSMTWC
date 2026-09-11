@@ -2,15 +2,15 @@
  * @NApiVersion 2.1
  * @NScriptType ScheduledScript
  */
-define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js'],
-    (runtime, task, core, coreSQL, recu) => {
+define(['N/runtime', 'N/task', 'N/file', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js'],
+    (runtime, task, file, core, coreSQL, recu) => {
 
         function execute(context) {
 
             try {
 
                 core.logDebug('START', 'Starting')
-                if (deleteDuplicates() == 'RESTART') {
+                if (deleteImportedFiles() == 'RESTART') {
                     core.logDebug('RESTART', 'Restart....')
                     task.create({
                         taskType: task.TaskType.SCHEDULED_SCRIPT,
@@ -27,6 +27,25 @@ define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
 
         }
 
+        function deleteImportedFiles() {
+            var restart = '';
+            coreSQL.each(`
+                select id, custrecord_twc_file_doc as file
+                from   customrecord_twc_file
+                where   custrecord_twc_file_imported = 'T'
+            `, f => {
+                core.logDebug('DELETE-RADIX-FILE', JSON.stringify(f));
+                file.delete(f.file);
+                recu.del('customrecord_twc_file', f.id);
+
+                if (runtime.getCurrentScript().getRemainingUsage() < 50) {
+                    restart = 'RESTART';
+                    return false;
+                }
+            })
+
+            return restart;
+        }
 
         function deleteDuplicates() {
             // these are the sites we want to keep

@@ -75,7 +75,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 }
 
                 if (options.document.fileObject) {
-                    var folder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/C${company.id.pad(7)}`);
+                    var folder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/Companies/C${company.id.pad(7)}`);
                     var fileId = saveFile(company.id, options.document.fileObject, folder);
                     recu.submit(twcFile.Type, response.id, twcFile.Fields.FILE, fileId);
                     response.fileId = fileId;
@@ -93,7 +93,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
                         archiveProfileCurrentFile(c, childRecord, fileObject.name, userInfo);
 
-                        var folder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/C${company.id.pad(7)}/P${response.id.pad(7)}`);
+                        var folder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/Companies/C${company.id.pad(7)}/P${response.id.pad(7)}`);
                         var fileId = saveFile(response.id, fileObject, folder);
                         recu.submit(twcProfile.Type, response.id, `custrecord_twc_prof_${c}_filename`, fileId);
                     }

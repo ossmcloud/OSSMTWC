@@ -69,11 +69,18 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     }
                 }
 
+                var btnStyles = ''
+                if (this.#options.buttonStyles) {
+                    for (var s in this.#options.buttonStyles) {
+                        btnStyles += `${s}: ${this.#options.buttonStyles[s]}; `;
+                    }
+                }
+
                 var html = `
                     <div class="twc_ctrl" data-type="button" data-id="${this.#options.id}" style="${styles}">
                         ${label}
                         <div class="twc_ctrl_table" style="width: 100%;">
-                            <input type="button" class="twc-button" style="width: 100%;" id="${this.#options.id}" value="${this.#options.value}" ${disabled}/>
+                            <input type="button" class="twc-button" style="width: 100%;${btnStyles}" id="${this.#options.id}" value="${this.#options.value}" ${disabled}/>
                         </div>
                     </div>
                 `

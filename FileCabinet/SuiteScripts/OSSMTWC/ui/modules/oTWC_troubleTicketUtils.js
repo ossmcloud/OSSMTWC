@@ -367,7 +367,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 where   tk.id = ${payload.id}
             `)
 
-            var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/${tktInfo.id}`);
+            var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/TTK/${tktInfo.id}`);
             
             core.array.each(payload.files, file => {
                 if (!file.dirty) { return; }
@@ -412,7 +412,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 where   tk.id = ${options.tkt || options.id}
             `)
 
-            var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/${tktInfo.id}`);
+            var tktFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${tktInfo.site_id}/TTK/${tktInfo.id}`);
             var pictures = options.newFiles || [options.photo];
             core.array.each(pictures, file => {
                 var nsFile = nsFileUtils.writeFile({

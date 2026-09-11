@@ -14,6 +14,7 @@ define(['N/search','N/query'], (search, query) => {
         }
 
         const meter = context.request.parameters.meter;
+        const recId =  context.request.parameters.recId
 
         let results = [];
 
@@ -41,14 +42,23 @@ define(['N/search','N/query'], (search, query) => {
             // });
                                     // BUILTIN.DF(${SOURCE_FIELD_ID}) AS meter,
 
+            var whereClause = ''
+            if (recId) {
+                whereClause = 'AND id != '+ recId
+            }
+
             const sql = `
                     SELECT
                         id AS internalid,
                         custrecord_twc_pwr_rdg_id AS readingid,
-                        ${SOURCE_FIELD_ID} AS meter,
+                        BUILTIN.DF(custrecord_twc_pwr_rdg_pwr_mtr) AS meter,
+                        custrecord_twc_pwr_rdg_date as reading_date,
                         created
                     FROM
                         customrecord_twc_pwr_rdg
+                    WHERE
+                     custrecord_twc_pwr_rdg_pwr_mtr = ${meter}
+                     ${whereClause} 
                 `;
 
            // const results = [];
@@ -60,6 +70,7 @@ define(['N/search','N/query'], (search, query) => {
                     internalid: result.internalid,
                     readingid: result.readingid,
                     meter: result.meter,
+                    reading_date: result.reading_date,
                     created: result.created
                 });
             });

@@ -16,6 +16,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             STATUS: 'custrecord_twc_file_status',
             UPLOADED_BY: 'custrecord_twc_file_uploaded_by',
             META_DATA: 'custrecord_twc_file_metadata',
+            IMPORTED: 'custrecord_twc_file_imported',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -32,6 +33,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             STATUS: { name: 'custrecord_twc_file_status', type: 'select', alias: 'status', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file_status' },
             UPLOADED_BY: { name: 'custrecord_twc_file_uploaded_by', type: 'select', alias: 'uploadedBy', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             META_DATA: { name: 'custrecord_twc_file_metadata', type: 'text', alias: 'metaData', display: 'normal', mandatory: false },
+            IMPORTED: { name: 'custrecord_twc_file_imported', type: 'checkbox', alias: 'imported', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -105,6 +107,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.META_DATA, value)
             }
             
+            get imported() {
+                return this.get(_recordFields.IMPORTED);
+            } set imported(value) {
+                this.set(_recordFields.IMPORTED, value)
+            }
+            
             get created() {
                 return this.get(_recordFields.CREATED);
             } set created(value) {
@@ -137,8 +145,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_File,
 
-            get: function (id) {
-                var rec = new OSSMTWC_File(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_File(id, staticLoad);
                 rec.load();
                 return rec;
             }, 

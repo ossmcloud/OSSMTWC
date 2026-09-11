@@ -1,0 +1,49 @@
+
+NEEDS:
+    dotnet add package MySql.Data
+
+
+TODO:
+    01. Detailed CSV log
+    02. Site folders are more complex
+    03. import profile folders
+    04. A file with same name for same record already found
+        should we overwrite instead
+
+    05. should we create sub folders:
+        companies
+        profiles
+        sites
+
+
+
+
+
+
+Companies folders:
+    C:\e_drive\.temp\twc-radix-data\companies\4\saf
+    C:\e_drive\.temp\twc-radix-data\companies\43\saf
+    C:\e_drive\.temp\twc-radix-data\companies\49\saf
+    C:\e_drive\.temp\twc-radix-data\companies\60\saf
+    C:\e_drive\.temp\twc-radix-data\companies\67\saf
+
+
+Profile folders:
+    C:\e_drive\.temp\twc-radix-data\profiles\56\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\88\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\162\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\239\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\469\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\471\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\477\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\771\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\773\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\851\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\908\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\938\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\1415\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\1461\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\1507\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\1515\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\1516\qualifications
+    C:\e_drive\.temp\twc-radix-data\profiles\1526\qualifications

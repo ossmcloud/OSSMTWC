@@ -4,8 +4,8 @@
  * @NScriptType UserEventScript
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'N/query', 'N/ui/serverWidget', 'N/record'],
-    (runtime, core, recu, query, serverWidget, record) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'N/query', 'N/ui/serverWidget', 'N/record', 'N/format'],
+    (runtime, core, recu, query, serverWidget, record, format) => {
 
         const SOURCE_FIELD_ID = 'custrecord_twc_pwr_rdg_pwr_mtr';
         const HTML_FIELD_ID = 'custpage_power_reading_html';
@@ -76,10 +76,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         function renderPowerReadings(context, htmlField) {
-
-            // const htmlField = context.form.getField({
-            //     id: HTML_FIELD_ID
-            // });
             log.debug("htmlField", htmlField)
 
             if (!htmlField) {
@@ -92,19 +88,18 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             log.debug("meterId", meterId)
 
             if (!meterId) {
-                htmlField.defaultValue = renderTable([]);
+                htmlField.defaultValue = `
+        <div id="powerReadingDiv">
+            ${renderTable([])}
+        </div>
+    `;
                 return;
             }
 
             try {
 
-                const results = getPowerReadings(meterId);
+                const results = getPowerReadings(meterId, context.newRecord.id);
                 log.debug("results", results)
-                //         htmlField.defaultValue = `
-                //     <div id="powerReadingDiv">
-                //         ${renderTable(results)}
-                //     </div>
-                // `;
                 htmlField.defaultValue = `
     <div id="powerReadingDiv" style="width:100%; margin:10px 0 0 0; padding:0;">
         ${renderTable(results)}
@@ -124,18 +119,24 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
         }
 
-        function getPowerReadings(meterId) {
+        function getPowerReadings(meterId, recId) {
 
+            var whereClause = ''
+            if (recId) {
+                whereClause = `AND id != ${recId}`
+            }
             const sql = `
             SELECT
                 id AS internalid,
                 custrecord_twc_pwr_rdg_id AS readingid,
-                custrecord_twc_pwr_rdg_pwr_mtr AS meter,
+                BUILTIN.DF(custrecord_twc_pwr_rdg_pwr_mtr) AS meter,
+                custrecord_twc_pwr_rdg_date as reading_date,
                 created
             FROM
                 customrecord_twc_pwr_rdg
             WHERE
-                custrecord_twc_pwr_rdg_pwr_mtr = ?
+                custrecord_twc_pwr_rdg_pwr_mtr = ? 
+                ${whereClause}
             ORDER BY
                 created DESC
         `;
@@ -221,6 +222,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             html += '<th>Internal ID</th>';
             html += '<th>Reading ID</th>';
             html += '<th>Meter</th>';
+            html += '<th>Reading Date</th>';
             html += '<th>Created</th>';
             html += '</tr></thead>';
             html += '<tbody>';
@@ -249,6 +251,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     html += '<td>' + escapeHtml(row.internalid) + '</td>';
                     html += '<td>' + escapeHtml(row.readingid) + '</td>';
                     html += '<td>' + escapeHtml(row.meter) + '</td>';
+                    html += '<td>' + escapeHtml(row.reading_date) + '</td>';
                     html += '<td>' + escapeHtml(row.created) + '</td>';
                     html += '</tr>';
 
@@ -396,23 +399,71 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 return results.length ? results[0] : null;
             },
 
+            // daysSinceLastReading: function (powerReadRec, prevRecReadingDate, fields) {
+            //     try {
+            //         var readingDate = powerReadRec.getText({ fieldId: fields.READING_DATE });
+            //         log.debug("readingDate.",readingDate)
+            //         if (!readingDate || !prevRecReadingDate) return null;
+            //         log.debug("Not null",new Date(readingDate) - new Date(prevRecReadingDate))
+            //         return Math.round((new Date(readingDate) - new Date(prevRecReadingDate)) / (24 * 60 * 60 * 1000));
+            //     } catch (err) {
+            //         log.error("error@daysSinceLastReading", err);
+            //         return null;
+            //     }
+            // },
+
             daysSinceLastReading: function (powerReadRec, prevRecReadingDate, fields) {
+
                 try {
-                    var readingDate = powerReadRec.getValue({ fieldId: fields.READING_DATE });
-                    if (!readingDate || !prevRecReadingDate) return null;
-                    return Math.round((new Date(readingDate) - new Date(prevRecReadingDate)) / (24 * 60 * 60 * 1000));
+
+                    var readingDate = powerReadRec.getText({
+                        fieldId: fields.READING_DATE
+                    });
+
+                    log.debug("readingDate", readingDate);
+                    log.debug("prevRecReadingDate", prevRecReadingDate);
+
+                    if (!readingDate || !prevRecReadingDate) {
+                        return null;
+                    }
+
+                    var currentDate = format.parse({
+                        value: readingDate,
+                        type: format.Type.DATE
+                    });
+
+                    var previousDate = format.parse({
+                        value: prevRecReadingDate,
+                        type: format.Type.DATE
+                    });
+
+                    var diff = currentDate.getTime() - previousDate.getTime();
+
+                    var days = Math.round(diff / (24 * 60 * 60 * 1000));
+
+                    log.debug("currentDate", currentDate);
+                    log.debug("previousDate", previousDate);
+                    log.debug("daysSinceLastReading", days);
+
+                    return days;
+
                 } catch (err) {
+
                     log.error("error@daysSinceLastReading", err);
                     return null;
                 }
             },
-
             dayUnitsUsage: function (powerReadRec, previousReading, fields) {
                 try {
                     var current = powerReadRec.getValue({ fieldId: fields.DAY_READING });
+                    var meterWrap = powerReadRec.getValue({ fieldId: fields.DAY_WRAP });
+
                     var previous = previousReading.day_reading;
+                    log.debug("current", current)
+                    log.debug("previous", previous)
+
                     if (current === '' || current === null || previous === '' || previous === null) return null;
-                    return Number(current) - Number(previous) + Number(previousReading.day_meter_wrap || 0);
+                    return Number(current) - Number(previous) + Number(meterWrap || 0);
                 } catch (err) {
                     log.error("error@dayUnitsUsage", err);
                     return null;
@@ -423,8 +474,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 try {
                     var current = powerReadRec.getValue({ fieldId: fields.NIGHT_READING });
                     var previous = previousReading.night_reading;
+                    var nightWrap = powerReadRec.getValue({ fieldId: fields.NIGHT_WRAP });
+
                     if (current === '' || current === null || previous === '' || previous === null) return null;
-                    return Number(current) - Number(previous) + Number(previousReading.night_meter_wrap || 0);
+                    return Number(current) - Number(previous) + Number(nightWrap || 0);
                 } catch (err) {
                     log.error("error@nightUnitsUsage", err);
                     return null;
@@ -435,8 +488,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 try {
                     var current = powerReadRec.getValue({ fieldId: fields.PEAK_READING });
                     var previous = previousReading.peak_reading;
+                    var peakWrap = powerReadRec.getValue({ fieldId: fields.PEAK_WRAP });
+
                     if (current === '' || current === null || previous === '' || previous === null) return null;
-                    return Number(current) - Number(previous) + Number(previousReading.peak_meter_wrap || 0);
+                    return Number(current) - Number(previous) + Number(peakWrap || 0);
                 } catch (err) {
                     log.error("error@peakUnitsUsage", err);
                     return null;
@@ -445,7 +500,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             kWhUsageReading: function (powerReadRec, daysSinceLastReading, dayUnitsUsage, nightUnitsUsage, peakUnitsUsage, fields) {
                 try {
-                    var multiplier = powerReadRec.getValue({ fieldId: fields.METER_MULTIPLIER });
+                    var multiplier = powerReadRec.getText({ fieldId: fields.METER_MULTIPLIER });
                     if (daysSinceLastReading === null || dayUnitsUsage === null || nightUnitsUsage === null || peakUnitsUsage === null || !multiplier || !daysSinceLastReading) return null;
                     return ((Number(dayUnitsUsage) + Number(nightUnitsUsage) + Number(peakUnitsUsage)) * Number(multiplier)) / (Number(daysSinceLastReading) * 24);
                 } catch (err) {

@@ -3,12 +3,12 @@
  * @NScriptType ClientScript
  *
  */
-define(['N/url'], (url) => {
+define(['N/url','N/currentRecord'], (url,currentRec) => {
 
     var SOURCE_FIELD_ID = 'custrecord_twc_pwr_rdg_pwr_mtr';
 
     function pageInit(context) {
-    console.log('Mode:', context.mode);
+        console.log('Mode:', context.mode);
     }
 
     async function fieldChanged(context) {
@@ -24,10 +24,11 @@ define(['N/url'], (url) => {
             return;
         }
 
+        console.log("context.currentRecord.id", context.currentRecord.id)
         const suiteletUrl = url.resolveScript({
             scriptId: 'customscript_otwc_pwr_reading_fun_sl',
             deploymentId: 'customdeploy_otwc_pwr_reading_fun_sl',
-            params: { meter: meterId }
+            params: { meter: meterId, recId: context.currentRecord.id }
         });
 
         try {
@@ -40,6 +41,12 @@ define(['N/url'], (url) => {
             }
 
             const data = await response.json();
+            
+            // var htmlField = rec.setValue({
+            //     fieldId: 'custrecord_twc_power_rd_table',
+            //     value: '<div id="powerReadingDiv"> </div>'
+            // });
+
             renderTable(data);
 
         } catch (e) {
@@ -50,11 +57,14 @@ define(['N/url'], (url) => {
 
     function renderTable(data, isError) {
 
+
+
         var target = document.getElementById('powerReadingDiv');
         if (!target) {
             console.error('powerReadingDiv not found on page - add the Inline HTML field to the form.');
             return;
         }
+        target.innerHTML = '';
 
         var html = '';
 
@@ -74,11 +84,11 @@ define(['N/url'], (url) => {
         html += '.pwr-rdg-sublist .pwr-rdg-error { text-align: center; color: #c0392b; padding: 8px; }';
         html += '</style>';
 
-       // html += '<div style="overflow-x:auto;">';
+        // html += '<div style="overflow-x:auto;">';
         html += '<div style="width: 340%; margin:0; padding:0; overflow-x:auto;">';
         html += '<table class="pwr-rdg-sublist">';
         html += '<thead><tr>';
-        html += '<th>Internal ID</th><th>Reading ID</th><th>Meter</th><th>Created</th>';
+        html += '<th>Internal ID</th><th>Reading ID</th><th>Meter</th><th>Reading Date</th><th>Created</th>';
         html += '</tr></thead><tbody>';
 
         if (isError) {
@@ -91,6 +101,7 @@ define(['N/url'], (url) => {
                 html += '<td>' + escapeHtml(row.internalid) + '</td>';
                 html += '<td>' + escapeHtml(row.readingid) + '</td>';
                 html += '<td>' + escapeHtml(row.meter) + '</td>';
+                html += '<td>' + escapeHtml(row.reading_date) + '</td>';
                 html += '<td>' + escapeHtml(row.created) + '</td>';
                 html += '</tr>';
             });
@@ -111,7 +122,7 @@ define(['N/url'], (url) => {
     }
 
     return {
-        pageInit:pageInit,
+        pageInit: pageInit,
         fieldChanged: fieldChanged
     };
 });
