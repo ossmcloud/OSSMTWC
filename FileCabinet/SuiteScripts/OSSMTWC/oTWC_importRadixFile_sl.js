@@ -4,8 +4,8 @@
  *@NModuleScope public
  *@NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './O/oTWC_nsFileUtils.js', './data/oTWC_utils.js', './data/oTWC_file.js', './data/oTWC_fileType.js', './data/oTWC_company.js', './data/oTWC_profile.js'],
-    function (file, uis, core, coreSQL, recu, nsFileUtils, twcUtils, twcFile, twcFileType, twcCompany, twcProfile) {
+define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './O/oTWC_nsFileUtils.js', './data/oTWC_utils.js', './data/oTWC_file.js', './data/oTWC_fileType.js', './data/oTWC_company.js', './data/oTWC_profile.js', './data/oTWC_site.js'],
+    function (file, uis, core, coreSQL, recu, nsFileUtils, twcUtils, twcFile, twcFileType, twcCompany, twcProfile, twcSite) {
         var suiteLet = uis.new({ title: 'Radix File Import Utility' });
         suiteLet.get = (context, s) => {
 
@@ -36,7 +36,7 @@ define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
                 if (check) { throw new Error(`A file with same name for same record already found`); }
 
                 // @@TODO: get folder
-                var folder = getFolder(payload.recordType, record.id, record.company);
+                var folder = getFolder(payload.recordType, record, payload);
 
 
                 var fileId = file.create({
@@ -49,8 +49,7 @@ define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
 
 
                 // @@NOTE: now create file record
-                var twcType = RADIX_FILE_TYPES.find(t => { return t.radixType == payload.fileType; })
-
+                var twcType = getFileType(payload)
 
                 var fileTypeInfo = coreSQL.first(`
                     select  top 1 fs.id, fs.name
@@ -112,6 +111,25 @@ define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
             { radixType: 24, radixName: 'Trouble Ticket Resolution', twcType: 5 },
         ]
 
+        // @@HARDCODED: @@GO-LIVE:
+        const TWC_SITE_FILE_TYPES = [
+            { name: 'Access Drawings', twcType: 15, radixFolder: 'Access' },
+            { name: 'Agreements', twcType: 20, radixFolder: 'Agreements' },
+            { name: 'CAD Drawings', twcType: 21, radixFolder: 'CAD Drawings' },
+            { name: 'Elevations', twcType: 22, radixFolder: 'Elevations' },
+            { name: 'License Map', twcType: 14, radixFolder: 'License Map' },
+            { name: 'Panoramics', twcType: 23, radixFolder: 'Panoramics' },
+            { name: 'Site Safety', twcType: 24, radixFolder: 'Site Safety' },
+            
+        ]
+
+        function getFileType(payload) {
+            if (twcSite.Type == payload.recordType) {
+                return TWC_SITE_FILE_TYPES.find(t => { return t.radixFolder == payload.folder; })
+            } else {
+                return RADIX_FILE_TYPES.find(t => { return t.radixType == payload.fileType; })
+            }
+        }
 
         function getRecordInfo(type, radixId) {
             if (twcCompany.Type == type) {
@@ -125,17 +143,28 @@ define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
                 if (!rec.company) { throw new Error(`Profile [Radix: ${radixId} / NS: ${rec.id}] found but no company assigned to it`) }
                 return rec;
 
+            } else if (twcSite.Type == type) {
+                // @@NOTE: this is Radix file name => Site Name - SITECODE
+                var siteCode = radixId.split('-')[1].trim();
+                var rec = coreSQL.first(`select id, ${twcSite.Fields.SITE_ID} as site_id from ${type} where ${twcSite.Fields.SITE_ID} = '${siteCode}'`);
+                if (!rec) { throw new Error(`No site found for Radix id: ${radixId}`) }
+                return rec;
+
             } else {
                 throw new Error(`Invalid type: ${type}`);
             }
         }
 
-        function getFolder(type, recordId, company) {
+        function getFolder(type, record, payload) {
             if (twcCompany.Type == type) {
-                return nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/C${recordId.pad(7)}`)
-            } else if (twcProfile.Type == type) {
+                return nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/Companies/C${record.id.pad(7)}`);
 
-                return nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/C${company.pad(7)}/P${recordId.pad(7)}`)
+            } else if (twcProfile.Type == type) {
+                return nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/Companies/C${record.company.pad(7)}/P${record.id.pad(7)}`);
+
+            } else if (twcSite.Type == type) {
+                return nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/Sites/${record.site_id}/${payload.folder}`);
+
             } else {
                 throw new Error(`Invalid type: ${type}`);
             }

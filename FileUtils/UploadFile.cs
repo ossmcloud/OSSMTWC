@@ -48,18 +48,50 @@ public class JObject {
 public class TWCRecordType {
     public const string COMPANY = "customrecord_twc_company";
     public const string PROFILE = "customrecord_twc_prof";
+    public const string SITE = "customrecord_twc_site";
 }
 
 
 public class NSEngine {
     const string URL = "https://9061443-sb1.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=1597&deploy=1&compid=9061443_SB1&ns-at=AAEJ7tMQdQwtQsRFNIW8CUFQJmGAxNYtlxu70wSA0FxBrs7PYcY";
 
-
     private RadixDB _radix = new RadixDB();
     private HttpClient _nsClient;
 
     public NSEngine() {
         _nsClient = new HttpClient();
+    }
+
+
+    public void UploadCompanyFiles(int startFrom = 0) {
+        string[] folders = Directory.GetDirectories(@"C:\e_drive\.temp\twc-radix-data\companies");
+        Utils.SortNumeric(folders);
+        foreach (string folder in folders) {
+            this.UploadFolder(folder, TWCRecordType.COMPANY, startFrom);
+        }
+    }
+    public void UploadProfileFiles(int startFrom = 0) {
+        string[] folders = Directory.GetDirectories(@"C:\e_drive\.temp\twc-radix-data\profiles");
+        Utils.SortNumeric(folders);
+        foreach (string folder in folders) {
+            this.UploadFolder(folder, TWCRecordType.PROFILE, startFrom);
+        }
+    }
+
+    public void UploadSiteFiles(string startFrom = "") {
+        string[] folders = Directory.GetDirectories(@"C:\e_drive\.temp\twc-radix-data\sites");
+        Array.Sort(folders);
+        foreach (string folder in folders) {
+            this.UploadSiteFolder(folder);
+        }
+    }
+    public void UploadSiteFolder(string fileRoot) {
+        string[] folders = Directory.GetDirectories(fileRoot);
+        Array.Sort(folders);
+        foreach (string folder in folders) {
+            if (folder.EndsWith(".Thumbnails")) { continue; }
+            this.UploadFolder(folder, TWCRecordType.SITE);
+        }
     }
 
 
@@ -71,11 +103,17 @@ public class NSEngine {
         try {
             string radixId = Path.GetFileName(folderPath);
 
+            if (recordType == TWCRecordType.SITE) {
+                // @@NOTE: here we are on a site sub folder: i.e.: C:\e_drive\.temp\twc-radix-data\sites\Anablaha - TKY6028\Access
+                //         we want the parent folder here
+                radixId = Path.GetFileNameWithoutExtension(Path.GetDirectoryName(folderPath));
+            }
 
             Console.WriteLine();
             Console.WriteLine($"FOLDER-START: [FILES: {files.Length}] [{radixId}] {folderPath}");
 
-            if (int.Parse(radixId) < startFrom) {
+            int radixIdCheck = 0;
+            if (int.TryParse(radixId, out radixIdCheck) && radixIdCheck < startFrom) {
                 Console.WriteLine($"FOLDER-SKIPPED: {folderPath}");
                 Console.WriteLine();
                 return;
@@ -86,7 +124,7 @@ public class NSEngine {
 
             for (var fx = 0; fx < files.Length; fx++) {
                 string file = files[fx];
-                Console.Write($"{(fx + 1).ToString().PadLeft(3)}. File: {Path.GetFileName(file).PadRight(20)} ");
+                Console.Write($"{(fx + 1).ToString().PadLeft(3)}. File: {Path.GetFileName(file).PadRight(50)} | ");
                 if (!this.UploadFile(file, radixId, recordType)) {
                     errorCount++;
                 }
@@ -97,7 +135,7 @@ public class NSEngine {
         } catch (System.Exception ex) {
             Console.WriteLine($"FOLDER-ERROR: [{files.Length} - ERRORS: {errorCount}]  {ex.Message}");
             Console.WriteLine();
-            
+
         }
     }
 
@@ -105,14 +143,14 @@ public class NSEngine {
     public bool UploadFile(string filePath, string radixId, string recordType) {
         bool success = false;
         try {
-
-
             string fileType = string.Empty;
             string fileName = Path.GetFileNameWithoutExtension(filePath);
             string ext = Path.GetExtension(filePath);
             string submitted = string.Empty;
             string descr = string.Empty;
             string radixFileId = string.Empty;
+            string folder = Path.GetFileNameWithoutExtension(Path.GetDirectoryName(filePath));
+
             if (string.IsNullOrEmpty(ext)) {
                 RadixFileInfo fileInfo = _radix.GetFileInfo(fileName);
                 if (fileInfo.Deleted) { throw new Exception("File is flagged as deleted in Radix"); }
@@ -134,13 +172,12 @@ public class NSEngine {
                 radixId = radixId,
                 fileType = fileType,
                 fileName = fileName,
+                folder = folder,
                 submitted = submitted,
                 description = descr,
                 radixFileId = radixFileId,
                 content = base64String,
             };
-
-
 
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{URL}&action=upload-file");
             request.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload));

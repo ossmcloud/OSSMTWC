@@ -4,14 +4,17 @@ NEEDS:
 
 
 TODO:
-    00. company 49:
-        Last 2 files:
-            ERROR: Cannot read property 'substring' of null
     01. Detailed CSV log
     02. Site folders are more complex
     03. import profile folders
     04. A file with same name for same record already found
         should we overwrite instead
+
+    05. should we create sub folders:
+        companies
+        profiles
+        sites
+
 
 
 

@@ -365,7 +365,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 where   s.id = ${payload.id}
             `)
 
-            var srfFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${srfInfo.site_id}/${srfInfo.name}`);
+            var srfFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${srfInfo.site_id}/SRF/${srfInfo.name}`);
 
             core.array.each(payload.files, file => {
 

@@ -57,9 +57,12 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
                 try {
                     // var dataSource = { id: 85 }
 
-                    dialog.siteFinder({ fullInfo: true }, e => {
-                        console.log(e)
-                    })
+                    console.log(recu.lookUp('customrecord_twc_prof', 1, 'custrecord_twc_prof_company'))
+                    console.log(recu.lookUp('customrecord_twc_prof', 2, 'custrecord_twc_prof_company'))
+
+                    // dialog.siteFinder({ fullInfo: true }, e => {
+                    //     console.log(e)
+                    // })
 
                     // var items = twcSrfItem.select(
                     //     {

@@ -679,7 +679,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 join    ${twcSite.Type} site on site.id = ${twcSaf.Fields.SITE}
                 where   saf.id = ${options.saf}
             `)
-            var safFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${safInfo.site_id}/${safInfo.name}`);
+            var safFolder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${safInfo.site_id}/SAF/${safInfo.name}`);
 
             var nsFile = nsFileUtils.writeFile({
                 name: `${options.saf}_${options.photo.name}`,

@@ -57,12 +57,50 @@ define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
 
             if (!f.recordType || !f.recordID) { throw new Error(`Cannot save file without both record type and id`); }
 
-            var folderName = `${f.recordType.replace('customrecord_twc_', '')[0].toUpperCase()}${f.recordID.pad(7)}`;
             // @@NOTE: we cannot add twcSrf or twcSaf in define as we have a conflict with the twc_utils.js module
             //          once the twcUtils reference is gone form these than we can reference them here
-            if (f.recordType == 'customrecord_twc_site' || f.recordType == 'customrecord_twc_srf' || f.recordType == 'customrecord_twc_saf') {
-                folderName = recu.lookUp(f.recordType, f.recordID, 'name');
+
+            var folderName = '_TEMP';
+            if (f.recordType == 'customrecord_twc_company') {
+                folderName = `Companies/C${f.recordID.pad(7)}`;
+            } else if (f.recordType == 'customrecord_twc_prof') {
+                // need to retrieve the company id
+                var companyId = parseInt(recu.lookUp('customrecord_twc_prof', f.recordID, 'custrecord_twc_prof_company')?.value || '0');
+                folderName = `Companies/C${companyId.pad(7)}/P${f.recordID.pad(7)}`;
+
+            } else if (f.recordType == 'customrecord_twc_site') {
+                var siteId = recu.lookUp('customrecord_twc_site', f.recordID, 'custrecord_twc_site_id');
+                folderName = `Sites/${siteId}`;
+
+            } else if (f.recordType == 'customrecord_twc_srf') {
+                var folderInfo = coreSQL.first(`
+                    select  s.custrecord_twc_site_id as site_id, srf.name
+                    from    customrecord_twc_srf srf
+                    join    customrecord_twc_site s on s.id = srf.custrecord_twc_srf_site
+                    where   srf.id = ${f.recordID}
+                `);
+                folderName = `Sites/${folderInfo.site_id}/SRF/${folderInfo.name}`;
+
+            } else if (f.recordType == 'customrecord_twc_saf') {
+                var folderInfo = coreSQL.first(`
+                    select  s.custrecord_twc_site_id as site_id, saf.name
+                    from    customrecord_twc_saf saf
+                    join    customrecord_twc_site s on s.id = saf.custrecord_twc_saf_id
+                    where   saf.id = ${f.recordID}
+                `);
+                folderName = `Sites/${folderInfo.site_id}/SAF/${folderInfo.name}`;
+
+            } else if (f.recordType == 'customrecord_twc_trbl_tkt') {
+                var folderInfo = coreSQL.first(`
+                    select  s.custrecord_twc_site_id as site_id, ttk.name
+                    from    customrecord_twc_trbl_tkt ttk
+                    join    customrecord_twc_site s on s.id = ttk.custrecord_twc_trbl_tkt_site
+                    where   ttk.id = ${f.recordID}
+                `);
+                folderName = `Sites/${folderInfo.site_id}/TTK/${folderInfo.name}`;
+
             }
+
 
             var folder = nsFileUtils.createFolderIfNotExist(`${twcConfig.ROOT_FILE_FOLDER}/${folderName}`);
             f.file = saveFile(f.recordID, file.fileObject, folder);
