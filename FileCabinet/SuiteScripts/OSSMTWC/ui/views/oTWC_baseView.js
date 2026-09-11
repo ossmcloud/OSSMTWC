@@ -343,16 +343,46 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
                     return;
                 }
 
-                var dataType = `application/${res.type.toLowerCase()}`;
+                // var dataType = `application/${res.type.toLowerCase()}`;
+                // var blob = base64ToBlob(res.fileContent, dataType)
+                // var blobUrl = URL.createObjectURL(blob);
 
-                var blob = base64ToBlob(res.fileContent, dataType)
-                var blobUrl = URL.createObjectURL(blob);
+                // var html = `<object style="width: 100%;height: 100%;" data="${blobUrl}"></object>`;
+                // if (res.type.indexOf('IMAGE') > 0) {
+                //     dataType = `data:image/${res.type.toLowerCase().replace('image', '')}`;
+                //     html = `<img style="width: 100%; border: 1px solid var(--grid-color);" src="${blobUrl}" />`;
+                // }
 
-                var html = `<object style="width: 100%;height: 100%;" data="${blobUrl}"></object>`;
-                if (res.type.indexOf('IMAGE') > 0) {
-                    dataType = `data:image/${res.type.toLowerCase().replace('image', '')}`;
-                    html = `<img style="width: 100%; border: 1px solid var(--grid-color);" src="${blobUrl}" />`;
+                var dataType = (res.type.indexOf('IMAGE') > 0) ? `data:image/${res.type.toLowerCase().replace('image', '')}` : res.type.toLowerCase();
+                if (dataType.indexOf('/') < 0) { dataType = `application/${dataType}`; }
+                if (res.omtFile?.file_type == 'mp4') { dataType = 'video/mp4'; }
+
+                var blob = null; var blobUrl = '';
+                if (res.fileContent) {
+                    blob = base64ToBlob(res.fileContent, dataType)
+                    blobUrl = URL.createObjectURL(blob);
+                } else {
+                    blobUrl = res.url;
                 }
+
+                var dialogSize = { width: '1000px', height: '95vh' };
+                var fileName = res.name;
+                var html = ``; var dialogHeight = '95vh';
+                if (res.type.toUpperCase().indexOf('IMAGE') > 0) {
+                    html = `<img style="width: 100%; border: 1px solid var(--grid-color);" src="${blobUrl}" />`;
+                } else if (res.type.toUpperCase().indexOf('PDF') >= 0 || res.type.toUpperCase().indexOf('VIDEO') >= 0) {
+                    html = `<object style="width: 100%;height: 100%;" data="${blobUrl}"><p>The object cannot be displayed.</p></object>`;
+                } else {
+                    dialogSize = { width: '650px', height: '400px' };
+                    var target = '';
+                    html = `<b>No preview is supported for ths file type: ${res.type}</b>`;
+                    html += `
+                        <br /><br />
+                        <a id="download_file" href="${blobUrl}" ${target} download="${fileName}">click here to download: <b>${res.name}</b></a>
+                    `;
+                    dialogHeight = '450px';
+                }
+
 
 
                 if (e) {
@@ -364,7 +394,7 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
                 dialog.message({
                     title: res.name,
                     message: html,
-                    size: { width: '1000px', height: '95vh' }
+                    size: dialogSize
                 })
             }
 
@@ -435,6 +465,108 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
                 }
 
             }
+
+            async viewFiles(options) {
+                return await TWCPageBase.viewFilesStatic(options);
+            }
+            static async viewFilesStatic(options) {
+
+                var waitPanel = jQuery(`
+                    <div class="twc-overlay">
+                        <span class="twc-wait-cursor">
+                            ${twcIcons.ICONS.waitWheel}
+                        </span>
+                    </div>
+                `)
+                jQuery('body').append(waitPanel)
+
+                try {
+                    var url = core.url.script('otwc_microsvc_sl', { action: 'view-files' });
+                    var res = await https.promise.post({ url: url, body: { filters: options.filters || options } });
+                    if (res.error) { throw new Error(res.error); }
+
+                    var tableContainer = jQuery('<div></div>')
+                    var fileTable = new uiTable.TableControl(
+                        tableContainer,
+                        (tbl, col) => {
+                            if (col.id == 'preview_link') {
+                                col.sortIdx = 10;
+                                col.styles = { width: '30px', 'text-align': 'center' }
+                                col.title = '';
+                                col.noFilter = true;
+                                col.noSort = true;
+
+                            } else if (col.id == 'name') {
+                                col.sortIdx = 20;
+                                col.addCount = true;
+
+                            } else if (col.id == (twcFile.Fields.R_TYPE + '_name')) {
+                                col.styles = { width: '150px', 'text-align': 'center' }
+                                col.title = 'type';
+                                col.sortIdx = 25;
+
+                            } else if (col.id == (twcFile.Fields.STATUS + '_name')) {
+                                col.styles = { width: '150px', 'text-align': 'center' }
+                                col.title = 'status';
+                                col.sortIdx = 30;
+
+                            } else if (col.id == twcFile.Fields.REVISION) {
+                                col.styles = { width: '75px', 'text-align': 'center' }
+                                col.title = 'Rev';
+                                col.sortIdx = 40;
+
+                            } else if (col.id == twcFile.Fields.DESCRIPTION) {
+                                col.sortIdx = 50;
+                                col.title = 'description';
+
+                            } else if (col.id == twcFile.Fields.UPLOADED_BY) {
+                                col.styles = { width: '175px' }
+                                col.title = 'Uploaded By';
+                                col.sortIdx = 80;
+
+                            } else if (col.id == 'created') {
+                                col.type = 'datetime';
+                                col.styles = { width: '135px', 'text-align': 'center' }
+                                col.sortIdx = 90;
+                            } else {
+                                // @@NOTE: if we have fxFields the framework would return the field_name (with id) and field_name_name (with BUILTIN.DF value)
+                                //         we do not want to show the id
+                                if (tbl.data.length > 0) {
+                                    if (tbl.data[0][`${col.id}_name`] !== undefined) { return false; }
+                                }
+                                return false;
+                            }
+                        },
+                        {
+                            id: 'omt_files',
+                            fitScreen: true
+                        }
+                    );
+                    var form = twcUI.init({}, tableContainer);
+                    var dlg = dialog.open({ title: 'Files', content: form.ui, width: '85%', height: '70hv' });
+                    fileTable.refresh(res.files, true);
+
+                    const resizeTable = () => {
+                        tableContainer.find('ossm').height(dlg.dialog.find('#o-dialog_content').innerHeight() - 15);
+                        tableContainer.find('#omt_files').css('display', 'table');
+                        tableContainer.find('#omt_files').css('table-layout', 'fixed');
+                        tableContainer.find('.twc-preview-file').click(e => {
+                            TWCPageBase.previewFileStatic(jQuery(e.currentTarget).data('file'), e);
+                        })
+
+                    }
+                    // fileTable.table.filtersApplied = resizeTable;
+                    fileTable.table.onInitEvents = resizeTable;
+                    resizeTable();
+
+
+                } catch (error) {
+                    dialog.error(res);
+                } finally {
+                    waitPanel.remove();
+                }
+
+            }
         }
 
         function initPageData(context, data) {
@@ -472,6 +604,10 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
 
             async uploadFile(options, callback) {
                 return await TWCPageBase.uploadFileStatic(options, callback)
+            },
+
+            async viewFiles(options) {
+                return await TWCPageBase.viewFilesStatic(options)
             }
 
         }

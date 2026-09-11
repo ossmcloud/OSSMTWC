@@ -117,10 +117,10 @@ define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
             { name: 'Agreements', twcType: 20, radixFolder: 'Agreements' },
             { name: 'CAD Drawings', twcType: 21, radixFolder: 'CAD Drawings' },
             { name: 'Elevations', twcType: 22, radixFolder: 'Elevations' },
-            { name: 'License Map', twcType: 14, radixFolder: 'License Map' },
+            { name: 'License Map', twcType: 14, radixFolder: 'Licence Maps' },
             { name: 'Panoramics', twcType: 23, radixFolder: 'Panoramics' },
             { name: 'Site Safety', twcType: 24, radixFolder: 'Site Safety' },
-            
+
         ]
 
         function getFileType(payload) {
@@ -145,7 +145,7 @@ define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
 
             } else if (twcSite.Type == type) {
                 // @@NOTE: this is Radix file name => Site Name - SITECODE
-                var siteCode = radixId.split('-')[1].trim();
+                var siteCode = radixId.indexOf('-') > 0 ? radixId.split('-')[1].trim() : radixId.trim();
                 var rec = coreSQL.first(`select id, ${twcSite.Fields.SITE_ID} as site_id from ${type} where ${twcSite.Fields.SITE_ID} = '${siteCode}'`);
                 if (!rec) { throw new Error(`No site found for Radix id: ${radixId}`) }
                 return rec;

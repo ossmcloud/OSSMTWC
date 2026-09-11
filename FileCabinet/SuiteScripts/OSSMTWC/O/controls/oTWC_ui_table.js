@@ -722,6 +722,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             #colResize = null;
             #filters = [];
             #toolBar = null;
+            #filtersApplied = null;
             constructor(options, data) {
                 if (core.utils.isEmpty(options)) { throw new err.ONullArgument('options'); }
 
@@ -829,6 +830,14 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#rowInit = val;
             }
 
+
+            get filtersApplied() {
+                return this.#filtersApplied;
+            } set filtersApplied(val) {
+                if (!core.utils.isEmpty(val) && !core.utils.isFunc(val)) { throw new err.OInvalidArgumentType('val', 'function'); }
+                this.#filtersApplied = val;
+            }
+
             getDataRows() {
                 return this.#rows.filter(r => { return !r.header && !r.footer; })
             }
@@ -882,6 +891,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     r.hide = r.filtered;
                 });
                 this.render();
+                if (this.filtersApplied) {
+                    this.filtersApplied(this.#filters);
+                }
             }
             applyFilter(r, filter) {
                 if (r.ui().hasClass('o-row-child')) { return true; }

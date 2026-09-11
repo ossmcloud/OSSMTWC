@@ -16,14 +16,20 @@ define(['N/currentRecord', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.
                 console.log(file, res);
                 location.reload();
             })
+        }
 
-           
+
+        async function viewFiles() {
+            await twcBaseView.viewFiles({ recordType: currentRecord.get().type, recordId: currentRecord.get().id });
+
+
         }
 
 
         return {
             pageInit: pageInit,
-            uploadFile: uploadFile
+            uploadFile: uploadFile,
+            viewFiles: viewFiles
         }
     });
 

@@ -55,10 +55,35 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
             testFunction() {
 
                 try {
+
+                    coreSQL.each(`
+                         select f.id, f.name, s.custrecord_twc_site_id, sf.name,sf.id as site_folder, sf.parent
+                        from  mediaitemfolder f
+                        join customrecord_twc_srf srf on srf.name = f.name
+                        join customrecord_twc_site s on s.id = srf.custrecord_twc_srf_site
+                        join  mediaitemfolder sf on sf.name = s.custrecord_twc_site_id
+                        where  f.parent=2250
+                        and f.name like 'SRF%'
+                       
+                        order by f.name
+                    `, f => {
+                       try {
+                           console.log(f)
+                            recu.submit('folder', f.id, 'parent', f.site_folder);
+                       } catch (error) {
+                           console.log(error);
+                       }
+                    })
                     // var dataSource = { id: 85 }
 
-                    console.log(recu.lookUp('customrecord_twc_prof', 1, 'custrecord_twc_prof_company'))
-                    console.log(recu.lookUp('customrecord_twc_prof', 2, 'custrecord_twc_prof_company'))
+
+                    // var f = recu.load('folder', 2908)
+                    // f.set('parent', 5175)
+                    
+                    // console.log(f)
+
+                    // console.log(recu.lookUp('customrecord_twc_prof', 1, 'custrecord_twc_prof_company'))
+                    // console.log(recu.lookUp('customrecord_twc_prof', 2, 'custrecord_twc_prof_company'))
 
                     // dialog.siteFinder({ fullInfo: true }, e => {
                     //     console.log(e)

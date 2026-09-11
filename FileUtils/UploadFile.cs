@@ -82,6 +82,9 @@ public class NSEngine {
         string[] folders = Directory.GetDirectories(@"C:\e_drive\.temp\twc-radix-data\sites");
         Array.Sort(folders);
         foreach (string folder in folders) {
+            if (Path.GetFileName(folder).CompareTo(folder) < 0) {
+                continue;
+            }
             this.UploadSiteFolder(folder);
         }
     }

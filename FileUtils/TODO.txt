@@ -5,16 +5,10 @@ NEEDS:
 
 TODO:
     01. Detailed CSV log
-    02. Site folders are more complex
-    03. import profile folders
     04. A file with same name for same record already found
         should we overwrite instead
-
-    05. should we create sub folders:
-        companies
-        profiles
-        sites
-
+    05. add 'uploaded date field' on file record (this shoudl populate automatically for normal records)
+    06. delete all files and re-import all (check timing)
 
 
 

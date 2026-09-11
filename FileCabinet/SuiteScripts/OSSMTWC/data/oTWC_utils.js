@@ -839,10 +839,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     sql += options.filters;
                 } else {
                     for (var f in options.filters) {
+                        var fileId = f;
+                        if (f == 'recordType') { fileId = twcFile.Fields.RECORD_TYPE; }
+                        if (f == 'recordId') { fileId = twcFile.Fields.RECORD_ID; }
                         if (options.filters[f].op !== undefined) {
-                            sql += `and ${f} ${options.filters[f].op} ${options.filters[f].value}`;
+                            sql += `and ${fileId} ${options.filters[f].op} ${options.filters[f].value}`;
                         } else {
-                            sql += `and ${f} = '${options.filters[f]}'`;
+                            sql += `and ${fileId} = '${options.filters[f]}'`;
                         }
                     }
                 }
