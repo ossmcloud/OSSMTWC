@@ -4,6 +4,10 @@ NEEDS:
 
 
 TODO:
+    00. CSV File import:
+        Site File: what about elevations, CAD Drawings, Agreements, Panoramics and File Safety
+    
+    00. site files use subfolder (add field to file type)
     01. Detailed CSV log
     04. A file with same name for same record already found
         should we overwrite instead
