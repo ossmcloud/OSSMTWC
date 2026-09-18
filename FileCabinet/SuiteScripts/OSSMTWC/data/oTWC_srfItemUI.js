@@ -186,14 +186,18 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
 
-            var label = '';
+            var label = ''; var eqClassName = '';
             if (stepType == twcSrfItem.StepType.TME) {
+                eqClassName = 'TME';
                 label = 'Request Tower Mounted Equipment (TME) Installation / Removal';
             } else if (stepType == twcSrfItem.StepType.ATME) {
+                eqClassName = 'ATME';
                 label = 'Request Additional Tower Mounted Equipment (ATME) Installation / Removal';
             } else if (stepType == twcSrfItem.StepType.GIE) {
+                eqClassName = 'GIE';
                 label = 'Request Ground/Indoor Equipment (GIE) Installation / Removal';
             } else if (stepType == twcSrfItem.StepType.FEEDER) {
+                eqClassName = 'FEEDER';
                 label = 'Request Feeders Installation / Removal';
             } else {
                 throw new Error(`Invalid SRF Item Step Type: ${stepType}`);
@@ -216,11 +220,21 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 );
             }
 
+
             return {
                 id: `${twcSrfItem.Type}_${stepType}`, recordType: twcSrfItem.Type, label: label,
                 fields: fields,
                 dataSource: items,
                 FieldsInfo: twcSrfItem.FieldsInfo,
+                newToolBarButton: `
+                    <div class="twc-table-toolbar-button" data-eq-class="${twcSrfItem.StepType.ATME}">
+                        <div style="vertical-align: bottom; padding-bottom: 1px;">
+                            ${twcIcons.get('addNew', 16)}
+                        </div>
+                        <div>
+                            ADD ${eqClassName}
+                        </div>
+                    </div>`
             }
 
         }

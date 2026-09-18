@@ -54,6 +54,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 `,
                 params: [siteId]
             })
+            if (!siteInfo) { throw new Error(`Invalid site id: ${siteId}`); }
 
             var mainFields = twcSiteUI.getSiteMainInfoFields(userInfo);
 

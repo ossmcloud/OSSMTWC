@@ -294,9 +294,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'terms-and-cond-agreed' })}
                     </div>
                 `
+
+                var signedByOperator = '';
                 if (isTL) {
-                    disclaimer = 'By clicking "Ok" you are entering into a legally binding agreement';
                     checkBox = '';
+                    disclaimer = 'By clicking "Ok" you are entering into a legally binding agreement';
+                    signedByOperator = `
+                        <div>
+                            <label>Signed by</label>
+                             ${srf.pack_sign_by_name} on ${srf.pack_sign_by_date}
+                        </div>
+                    `
                 }
 
                 var html = jQuery(`
@@ -305,6 +313,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             ${preview}
                         </div>
                         <div style="width: 550px">
+                            ${signedByOperator}
                             <div>
                                 <label>Disclaimer</label>
                                 ${disclaimer}

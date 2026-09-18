@@ -51,8 +51,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         </div>
                 `
 
-
-                if (userInfo.isEmployee || userInfo.companyProfile?.id == srf[twcSrf.Fields.CUSTOMER]) {
+                if (userInfo.isEmployee || (userInfo.companyProfile?.id == srf[twcSrf.Fields.CUSTOMER] && srf[twcSrf.Fields.SRF_STATUS] >= twcUtils.SrfStatus.SRFApproved)) {
                     reviewInfoHtml += `
                         <div style="margin-left: 11px; border-left: 1px dotted silver; padding-left: 11px;">
                             <label>Accounts Check Passed</label>
@@ -92,7 +91,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
-        const TME_CHILD_COLLAPSED = true;
+        const TME_CHILD_COLLAPSED = false;
 
         function getSrfItems(dataSource, userInfo, readOnly) {
             var items = twcSrfItem.select(
@@ -208,6 +207,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-button', value: 'Save As Draft' });
                     buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'submit-srf-button', value: 'Submit SRF' })
                     buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'cancel-srf-button', value: 'Cancel SRF' })
+                } else if (dataSource[twcSrf.Fields.SRF_STATUS] == twcUtils.SrfStatus.FeedbackIssued) {
+                    buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-button', value: 'Save' });
+                    buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'submit-srf-button', value: 'Re-Submit SRF' })
                 } else {
                     buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-button', value: 'Save' });
                 }
@@ -244,13 +246,74 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroup;
         }
 
+        function getSRFInfoPanels_Existing(dataSource, userInfo) {
+            var srfLink = core.url.script('otwc_spacerequest_sl');
 
+            var whereClause = `where ${twcSrf.Fields.SITE} = ${dataSource.siteId} `;
+            var orderBy = `${twcSrf.Fields.SRF_REQUESTED_DATE} desc`;
+
+            // @@NOTE: TWC Employees can see everything
+            if (!userInfo.isEmployee) {
+                var allowedCustomers = [];
+
+                if (userInfo.companyProfile?.isVendor || userInfo.companyProfile?.isBoth) {
+                    // @@NOTE the agent passes specifies what customers can be seen 
+                    var agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${userInfo.profile}`)?.agent_passes || '0';
+                    agentPasses = agentPasses.split(',').map(i => { return parseInt(i.trim()); })
+
+                    // @@NOTE: this filter will ensure that even if a customer was not removed from the agent passes field for a profile but was removed from the ACL list the profile will still not see it
+                    var aclList = coreSQL.run(`select custrecord_twc_acl_cust as cust from customrecord_twc_acl where custrecord_twc_acl_cont = ${userInfo.companyProfile.id}`)
+                    allowedCustomers = agentPasses.filter(ap => { return aclList.find(acl => { return acl.cust == ap; }) })
+                }
+
+                if (userInfo.companyProfile?.isCustomer || userInfo.companyProfile?.isBoth) {
+                    // in case we have a customer or a vendor that is also a customer we include the customer into the customer list
+                    allowedCustomers.push(userInfo.companyProfile.id || 0)
+                }
+
+                // @@NOTE: this is to ensure nothing is shown if no customers on the agent passes field
+                if (allowedCustomers.length == 0) { allowedCustomers.push('0'); }
+
+                whereClause += `and ${twcSrf.Fields.CUSTOMER} in (${allowedCustomers.join(',')})`;
+
+                if (userInfo.companyProfile?.isVendor && !userInfo.companyProfile?.isCustomer) {
+                    // @@NOTE: in addition vendors can only see what was created by their organization
+                    whereClause += `and ${twcSrf.Fields.SRF_SUBMITTED_BY} in (select id from customrecord_twc_prof where custrecord_twc_prof_company = ${userInfo.companyProfile.id})`;
+                }
+            }
+
+
+            var srfList = twcSrf.select({ where: whereClause, orderBy: orderBy, useNames: true })
+
+            var srfDetails = { id: 'space-request-existing-srfs', title: 'Existing SRFs', collapsed: true, fields: [] };
+            srfDetails.fields.push({
+                id: `${twcSrf.Type}`, label: 'Srf Details',
+                fields: {
+                    [twcSrf.Fields.NAME]: { title: 'SRF ID', link: { url: srfLink + '&recId=${id}', valueField: 'id' } },
+                    [twcSrf.Fields.OPERATOR_SITE_ID]: 'Operator Site ID',
+                    [twcSrf.Fields.SRF_TYPE]: 'Type',
+                    [twcSrf.Fields.SRF_STATUS]: 'Status',
+                    [twcSrf.Fields.CUSTOMER]: 'Customer',
+                    [twcSrf.Fields.SRF_REQUESTED_DATE]: 'Requested Date',
+                    [twcSrf.Fields.SRF_SUBMITTED_BY]: 'Requested By',
+                },
+                dataSource: srfList,
+                FieldsInfo: twcSrf.FieldsInfo,
+                readOnly: true
+            });
+
+            configUIFields.formatPanelFields(dataSource, srfDetails);
+
+            return srfDetails;
+        }
 
 
         return {
             getSrfTableFields: getSrfTableFields,
             getSRFInfoPanels: getSRFUIPanels,
-            getSrfChildRecord: getSrfChildRecord
+            getSrfChildRecord: getSrfChildRecord,
+
+            getSrfListPanel: getSRFInfoPanels_Existing
 
         }
     });

@@ -13,6 +13,32 @@ Make sure all @@HARDCODED match
 
 -------------------------------------------------
 
+
+SCHEMA: AFTER 2026-09-17
+------------------------
+	customrecord_twc_sds
+        use name
+
+    customrecord_twc_srf
+        custrecord_twc_srf_lic_pack_signed      => changed to date/time
+        custrecord_twc_srf_lic_pack_exec        => changed to date/time
+
+    customrecord_twc_saf
+        custrecord_twc_saf_customer             => remove Sourcing & Filtering
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 SCHEMA:
 -------
 	customrecord_twc_srf

@@ -90,9 +90,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LICENCE_PACK_REVIEWER: { name: 'custrecord_twc_srf_lic_pack_rev', type: 'select', alias: 'licencePackReviewer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             LICENCE_PACK_REVIEWED: { name: 'custrecord_twc_srf_lic_pack_revd', type: 'date', alias: 'licencePackReviewed', display: 'normal', mandatory: false },
             LICENCE_PACK_ISSUED: { name: 'custrecord_twc_srf_lic_pack_issued', type: 'date', alias: 'licencePackIssued', display: 'normal', mandatory: false },
-            LICENCE_PACK_SIGNED: { name: 'custrecord_twc_srf_lic_pack_signed', type: 'date', alias: 'licencePackSigned', display: 'normal', mandatory: false },
+            LICENCE_PACK_SIGNED: { name: 'custrecord_twc_srf_lic_pack_signed', type: 'datetimetz', alias: 'licencePackSigned', display: 'normal', mandatory: false },
             LICENCE_PACK_SIGNED_BY: { name: 'custrecord_twc_srf_lic_pack_sign_by', type: 'select', alias: 'licencePackSignedBy', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
-            LICENCE_PACK_EXECUTED: { name: 'custrecord_twc_srf_lic_pack_exec', type: 'date', alias: 'licencePackExecuted', display: 'normal', mandatory: false },
+            LICENCE_PACK_EXECUTED: { name: 'custrecord_twc_srf_lic_pack_exec', type: 'datetimetz', alias: 'licencePackExecuted', display: 'normal', mandatory: false },
             LICENCE_PACK_EXECUTED_BY: { name: 'custrecord_twc_srf_lic_pack_exec_by', type: 'select', alias: 'licencePackExecutedBy', display: 'normal', mandatory: false, recordType: '-4' },
             SDS_FORM_DATA: { name: 'custrecord_twc_srf_sds_form_data', type: 'clobtext', alias: 'sDSFormData', display: 'hidden', mandatory: false },
             TL_DRAWING_DRAFTED_OBSOLETE: { name: 'custrecord_twc_srf_tl_drg_draft', type: 'date', alias: 'tLDrawingDraftedOBSOLETE', display: 'normal', mandatory: false },
@@ -410,8 +410,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_SRF,
 
-            get: function (id) {
-                var rec = new OSSMTWC_SRF(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_SRF(id, staticLoad);
                 rec.load();
                 return rec;
             }, 

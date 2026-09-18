@@ -400,7 +400,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         } else {
                             for (var f in options.where) {
                                 var field = this.findField(f);
-                                if (options.where[f].constructor.name == 'Object') {
+                                if (options.where[f] && options.where[f].constructor.name == 'Object') {
                                     var op = options.where[f].op || options.where[f].operator || '=';
                                     var placeholders = '?';
                                     if (Array.isArray(options.where[f].values)) {

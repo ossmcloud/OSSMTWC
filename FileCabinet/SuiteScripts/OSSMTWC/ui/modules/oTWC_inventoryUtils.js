@@ -80,7 +80,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 { field: twcInventory.Fields.NAME, title: 'Eq. ID', addCount: true },
                 { field: twcInventory.Fields.INFRASTRUCTURE, title: 'Structure' },
                 { field: twcInventory.Fields.CUSTOMER, title: 'Customer' },
-                { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS, title: 'Install<br />Status' , sortIdx : 50},
+                { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS, title: 'Install<br />Status', sortIdx: 50 },
                 { field: twcInventory.Fields.EQUIPMENT_CLASS, title: 'Class', styles: { width: '100px' } },
                 { field: twcInventory.Fields.EQUIPMENT_TYPE, title: 'Type', styles: { width: '100px' } },
                 {
@@ -223,13 +223,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getInventoryInfo: (pageData) => {
                 var inv = {};
                 if (pageData.siteId) {
-                    inv = coreSQL.first(`select * from ${twcInventory.Type} where id = ${pageData.siteId}`);
+                    // @@NOTE:
+                    inv = {};
                     inv.siteId = inv[twcInventory.Fields.SITE];
                     inv.type = twcInventory.Type;
 
-                    if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, inv[twcInventory.Fields.CUSTOMER])) {
-                        throw new Error('You do not have access to see this Equipment record');
-                    }
+                    // @@NOTE: this is wrong, we are looking for a given equipment record using the site Id ???
+                    //         if there happen to be no record for the given siteid the below will fail
+                    /*
+                        inv = coreSQL.first(`select * from ${twcInventory.Type} where id = ${pageData.siteId}`);
+                        inv.siteId = inv[twcInventory.Fields.SITE];
+                        inv.type = twcInventory.Type;
+                        if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, inv[twcInventory.Fields.CUSTOMER])) {
+                            throw new Error('You do not have access to see this Equipment record');
+                        }
+                    */
 
                 } else {
                     if (pageData.userInfo.isCustomer) { inv[twcInventory.Fields.CUSTOMER] = pageData.userInfo.id; }

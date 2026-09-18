@@ -565,9 +565,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 super({ scriptId: 'otwc_spaceRequest_sl' });
             }
 
+            // resizeRightPane() {
+            //     var w = this.page.find('.twc-container-inner').innerWidth() - this.page.find('#twc-site-info-panel').parent().outerWidth() - 15;
+            //     this.page.find('#twc-site-request-details-panel').width(w);
+            // }
+
             initPage() {
                 console.log('TWCSpaceRequestPage => InitPage')
                 if (this.data.siteRequestInfo) {
+                    
                     // @@NOTE: this is record view/edit mode
                     this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
 
@@ -611,8 +617,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                         this.waitClose();
                                     });
                             });
-
                         });
+                        this.ui.getControl('edit-submit-button')?.on('click', e => {
+                            location.href = location.href + "&edit=T";
+                        })
                         this.ui.getControl('submit-srf-button')?.on('click', e => {
                             dialog.confirmAsync('Are you sure you wish to submit this SRF?').then(() => {
                                 this.data.siteRequestInfo.submitOnSave = true;
@@ -621,6 +629,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 this.onSave(e);
                             });
                         });
+
                         this.ui.getControl('accept-srf-approval')?.on('click', e => {
                             dialog.confirmAsync('Are you sure you want to accept this request?').then(() => {
                                 this.wait();
@@ -698,11 +707,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         tmeTable.onInitEvents = (table) => { initTmeTableExpandCollapse(); }
 
                         const initTmeTableExpandCollapse = () => {
+                            var collapsed = tmeTable.columns[0].title.indexOf('>+<') > 0;
                             core.array.each(tmeTable.rows, row => {
                                 if (row.data?.child) {
                                     row.cssClass += 'o-row-child';
                                     row.ui().addClass('o-row-child')
-                                    row.ui().addClass('o-row-hidden')
+                                    if (collapsed) { row.ui().addClass('o-row-hidden') }
                                 }
                             })
 

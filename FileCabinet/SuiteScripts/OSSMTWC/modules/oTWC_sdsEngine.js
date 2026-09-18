@@ -47,13 +47,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var srfInfo = {}
             srfInfo.srf = coreSql.first(`
                     SELECT      srf.id, srf.custrecord_twc_srf_op_site_id, srf.custrecord_twc_srf_site, srf.name, TO_CHAR(srf.custrecord_twc_srf_approval_date, 'DD-MM-YYYY') as approval_date,
-                                srf.custrecord_twc_srf_op_site_id as operator_site_id, 
                                 case srf.custrecord_twc_srf_pwr_supp_req_from_tl when 'T' then 'Yes' else 'No' end as power_supply_required,
                                 srf.custrecord_twc_srf_power_notes,
                                 srf.custrecord_twc_srf_cust as company_id, company.name as customer_name,
-                                company.custrecordtwc_entity, cae.addrtext AS customer_address, c.altname as operator_name, custrecord_twc_co_number as company_number,
-                                TO_CHAR(srf.custrecord_twc_srf_lic_pack_signed, 'DD-MM-YYYY') as client_signed, BUILTIN.DF(srf.custrecord_twc_srf_lic_pack_sign_by) as client_singed_by,
-                                TO_CHAR(srf.custrecord_twc_srf_lic_pack_exec, 'DD-MM-YYYY') as tl_signed, BUILTIN.DF(srf.custrecord_twc_srf_lic_pack_exec_by) as tl_signed_by,
+                                company.custrecordtwc_entity, cae.addrtext AS customer_address, c.altname as operator_name, custrecord_twc_co_number as company_number, custrecord_twc_co_regd_office as registered_office,
+                                TO_CHAR(srf.custrecord_twc_srf_lic_pack_signed, 'DD-MM-YYYY @ HH24:Mi:ss') as client_signed, BUILTIN.DF(srf.custrecord_twc_srf_lic_pack_sign_by) as client_singed_by,
+                                TO_CHAR(srf.custrecord_twc_srf_lic_pack_exec, 'DD-MM-YYYY @ HH24:Mi:ss') as tl_signed, BUILTIN.DF(srf.custrecord_twc_srf_lic_pack_exec_by) as tl_signed_by,
                                 
                     FROM        ${twcSrf.Type} srf 
                     INNER JOIN  customrecord_twc_company company ON srf.custrecord_twc_srf_cust = company.id
@@ -231,7 +230,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             coreSql.each(`
-                select  eq.id as eq_id, sdsi.id as sds_eq_id, srfi.id as srf_eq_id, ${sqlFields}
+                select  eq.id as eq_id, sdsi.id as sds_eq_id, srfi.id as srf_eq_id, srfi.custrecord_twc_srf_itm_invent_flag as srf_inventory_flag,
+                        ${sqlFields}
                 
                 from    customrecord_twc_sds sds 
                 
@@ -253,12 +253,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 var sdsEq = twcSdsEquipment.get(eq.sds_eq_id);
                 sdsEq.sDS = sdsId;
+                sdsEq.sRFItem = eq.srf_eq_id;
                 sdsEq.equipment = eq.eq_id;
                 sdsEq.partofSDS = (eq.srf_eq_id) != null;
                 sdsEq.includeinSDS = true;  // @@TODO:
 
                 for (var k in copyFields) {
                     sdsEq.set(k, eq[copyFields[k]])
+                }
+
+                if (eq.srf_inventory_flag) {
+                    sdsEq.set('custrecord_twc_sds_item_inventory_flag', eq.srf_inventory_flag);
                 }
             
                 sdsEq.save();

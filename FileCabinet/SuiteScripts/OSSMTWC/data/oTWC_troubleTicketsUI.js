@@ -29,7 +29,43 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getTKTExistingTktsPanels(dataSource, userInfo) {
             var tktLink = core.url.script('oTWC_troubleTicket_sl');
-            var tktDetails = { id: 'trbl-ticket', title: `Existing Trouble Tickets`, collapsed: false, fields: [] };
+            var tktDetails = { id: 'trbl-ticket', title: `Existing Trouble Tickets`, collapsed: true, fields: [] };
+
+            var whereClause = `where ${twcTrblTkts.Fields.SITE} = ${dataSource.siteId} `;
+            var orderBy = `${twcTrblTkts.Fields.SUBMITTED} desc`;
+
+            // @@NOTE: TWC Employees can see everything
+            if (!userInfo.isEmployee) {
+                var allowedCustomers = [];
+
+                if (userInfo.companyProfile?.isVendor || userInfo.companyProfile?.isBoth) {
+                    // @@NOTE the agent passes specifies what customers can be seen 
+                    var agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${userInfo.profile}`)?.agent_passes || '0';
+                    agentPasses = agentPasses.split(',').map(i => { return parseInt(i.trim()); })
+
+                    // @@NOTE: this filter will ensure that even if a customer was not removed from the agent passes field for a profile but was removed from the ACL list the profile will still not see it
+                    var aclList = coreSQL.run(`select custrecord_twc_acl_cust as cust from customrecord_twc_acl where custrecord_twc_acl_cont = ${userInfo.companyProfile.id}`)
+                    allowedCustomers = agentPasses.filter(ap => { return aclList.find(acl => { return acl.cust == ap; }) })
+                }
+
+                if (userInfo.companyProfile?.isCustomer || userInfo.companyProfile?.isBoth) {
+                    // in case we have a customer or a vendor that is also a customer we include the customer into the customer list
+                    allowedCustomers.push(userInfo.companyProfile.id || 0)
+                }
+
+                // @@NOTE: this is to ensure nothing is shown if no customers on the agent passes field
+                if (allowedCustomers.length == 0) { allowedCustomers.push('0'); }
+
+                whereClause += `and ${twcTrblTkts.Fields.CUSTOMER} in (${allowedCustomers.join(',')})`;
+
+                if (userInfo.companyProfile?.isVendor && !userInfo.companyProfile?.isCustomer) {
+                    // @@NOTE: in addition vendors can only see what was created by their organization
+                    whereClause += `and ${twcTrblTkts.Fields.AUTHOR} in (select id from customrecord_twc_prof where custrecord_twc_prof_company = ${userInfo.companyProfile.id})`;
+                }
+            }
+
+            var tktList = twcTrblTkts.select({ where: whereClause, orderBy: orderBy, useNames: true })
+
 
             tktDetails.fields.push({
                 id: `${twcTrblTkts.Type}`, label: 'Trouble Ticket Details',
@@ -43,7 +79,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcTrblTkts.Fields.CUSTOMER]: 'CUSTOMER',
                     [twcTrblTkts.Fields.STATUS]: 'STATUS',
                 },
-                where: { [twcTrblTkts.Fields.SITE]: dataSource.siteId },
+                dataSource: tktList,
                 FieldsInfo: twcTrblTkts.FieldsInfo,
                 readOnly: true,
 
@@ -236,8 +272,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             getTicketsTableFields: getTicketsTableFields,
             getTKTInfoPanels: getTKTUIPanels,
             getTktChildRecord: getTktChildRecord,
-            getTKOpenPictures: getTKOpenPictures
+            getTKOpenPictures: getTKOpenPictures,
 
+            getTktListPanel: getTKTExistingTktsPanels
         }
     });
 

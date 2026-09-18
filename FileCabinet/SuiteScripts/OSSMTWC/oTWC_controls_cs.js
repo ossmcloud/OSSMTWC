@@ -55,25 +55,27 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
             testFunction() {
 
                 try {
+                    recu.submit('customrecord_twc_srf', 101, 'custrecord_twc_srf_lic_pack_signed', new Date(2026, 8, 18, 11, 25, 15))
+                    // deleteSds(51)
 
-                    coreSQL.each(`
-                         select f.id, f.name, s.custrecord_twc_site_id, sf.name,sf.id as site_folder, sf.parent
-                        from  mediaitemfolder f
-                        join customrecord_twc_srf srf on srf.name = f.name
-                        join customrecord_twc_site s on s.id = srf.custrecord_twc_srf_site
-                        join  mediaitemfolder sf on sf.name = s.custrecord_twc_site_id
-                        where  f.parent=2250
-                        and f.name like 'SRF%'
+                    // coreSQL.each(`
+                    //      select f.id, f.name, s.custrecord_twc_site_id, sf.name,sf.id as site_folder, sf.parent
+                    //     from  mediaitemfolder f
+                    //     join customrecord_twc_srf srf on srf.name = f.name
+                    //     join customrecord_twc_site s on s.id = srf.custrecord_twc_srf_site
+                    //     join  mediaitemfolder sf on sf.name = s.custrecord_twc_site_id
+                    //     where  f.parent=2250
+                    //     and f.name like 'SRF%'
                        
-                        order by f.name
-                    `, f => {
-                       try {
-                           console.log(f)
-                            recu.submit('folder', f.id, 'parent', f.site_folder);
-                       } catch (error) {
-                           console.log(error);
-                       }
-                    })
+                    //     order by f.name
+                    // `, f => {
+                    //    try {
+                    //        console.log(f)
+                    //         recu.submit('folder', f.id, 'parent', f.site_folder);
+                    //    } catch (error) {
+                    //        console.log(error);
+                    //    }
+                    // })
                     // var dataSource = { id: 85 }
 
 
@@ -122,7 +124,7 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
                     //console.log(twcSdsEngine.setAsCurrent({ id: 36 }))
 
                     //console.log(twcSiteLocatorUtils.getSites(null, twcConfig.userInfo()))
-                    //console.log(twcSdsEngine.getSrfInfo(58).srfItems)
+                    // console.log(twcSdsEngine.getSrfInfo(101).srfItems)
                     //twcSdsEngine.getSdsEquipments(31)
 
                     // console.log(xml.escape({ xmlText: '/core/media/media.nl?id=25190&c=9061443_SB1&h=0x8UEtEYj_WI0zAlZrm7m_qYnvhXfgsOCm6N2VuCknGLV6DH&_xt=.pdf' }));

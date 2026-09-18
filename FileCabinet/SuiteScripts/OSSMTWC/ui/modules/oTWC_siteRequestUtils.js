@@ -578,7 +578,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSiteRequestInfo: (pageData) => {
                 var srf = {};
                 if (pageData.recId) {
-                    srf = coreSQL.first(`select * from ${twcSrf.Type} where id = ${pageData.recId}`);
+                    srf = coreSQL.first(`
+                        select *,
+                        BUILTIN.DF(custrecord_twc_srf_lic_pack_sign_by) as pack_sign_by_name,
+                        TO_CHAR(custrecord_twc_srf_lic_pack_signed, 'DD-MM-YYYY @ HH24:Mi:ss') pack_sign_by_date
+                        from ${twcSrf.Type} 
+                        where id = ${pageData.recId}
+                    `);
                     if (!srf) { throw new Error(`No SRF found using id ${pageData.recId}`) }
                     srf.siteId = srf[twcSrf.Fields.SITE];
 

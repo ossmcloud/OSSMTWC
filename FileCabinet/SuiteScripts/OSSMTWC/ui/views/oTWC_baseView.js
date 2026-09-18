@@ -25,6 +25,7 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
             constructor(options) {
                 this.#options = options || {};
                 this.#page = jQuery('.twc_page');
+                this.resizeRightPane();
 
                 var pageData = this.#page.find('#twc-page-data').html();
                 if (pageData) { pageData = b64.decode(pageData); }
@@ -39,6 +40,12 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
             get data() { return this.#data; }
             get ui() { return this.#ui; }
             get waitPanel() { return this.#waitPanel; }
+
+            resizeRightPane() {
+                var w = this.page.find('.twc-container-inner').innerWidth() - this.page.find('#twc-site-info-panel').parent().outerWidth() - 15;
+                this.page.find('#twc-site-request-details-panel').width(w);
+            }
+
 
             wait() {
                 this.#waitPanel = jQuery(`
@@ -608,6 +615,28 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
 
             async viewFiles(options) {
                 return await TWCPageBase.viewFilesStatic(options)
+            },
+
+            underMaintenance(userInfo) {
+                if (!(core.me() || userInfo?.profile == 4039)) {
+                    throw new Error(`
+                        <div style="display: flex; align-items: center;">
+                            <div>
+                                ${twcIcons.get('gear', 128, 'red')}
+                            </div>
+                            <div style="color: black !important; margin-left: 17px;">
+                                <h1 style="margin-top: 0px;">This page is currently under active development and cannot be accessed at the moment.</h1>
+                                <div>
+                                    <span style="font-size: 24px;">The estimated date/time for this functionality to be back on line is:</span>
+                                    <span style="font-size: 24px; font-weight: bold; font-decoration: underlined; color: blue;">Monday the 21st @ 09.00</span>
+                                </div>
+                                <div style="margin-top: 11px;">
+                                    We are sorry for the inconvenience.
+                                </div>
+                            </div>
+                        <div>
+                    `)
+                }
             }
 
         }

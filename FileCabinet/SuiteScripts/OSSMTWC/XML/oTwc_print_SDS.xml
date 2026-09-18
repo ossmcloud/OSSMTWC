@@ -62,7 +62,12 @@
             <tr>
                 <td border="0" width="70%">
                     <font size="12">
-                        <b>SITE DETAILS SCHEDULE (SDS)</b>
+                        <b>
+                            SITE DETAILS SCHEDULE (SDS)
+                            <#if requestJSON.srf.tl_signed == "null">
+                                [Subject to Contract / Contract Denied]
+                            </#if>
+                        </b>
                     </font>
                 </td>
                 <td border="0" width="30%" align="right">
@@ -95,7 +100,7 @@
                 <td width="20%" class="label" align="right"> Site ID: </td>
                 <td width="20%"> ${requestJSON.siteDetails.site_id} </td>
                 <td width="20%" class="label" align="right"> ${requestJSON.agreement.custrecord_twc_agreement_party} Site ID: </td>
-                <td width="20%"> ${requestJSON.siteDetails.operator_site_id} </td>
+                <td width="20%"> ${requestJSON.srf.custrecord_twc_srf_op_site_id} </td>
             </tr>
             <tr>
                 <td class="label" align="right">Site Address:</td>
@@ -139,7 +144,7 @@
                     <br />
                     Company Number: ${requestJSON.srf.company_number}
                     <br />
-                    Registered Office: ${requestJSON.srf.customer_address}
+                    Registered Office: ${requestJSON.srf.registered_office}
                     <br />
                     <br />
                     Whose address for correspondence is:

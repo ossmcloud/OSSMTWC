@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_file.js', './oTWC_fileType.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcFile, twcFileType) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_file.js', './oTWC_fileType.js', './oTWC_safUI.js', './oTWC_srfUI.js', './oTWC_troubleTicketsUI.js', './oTWC_equipmentUI.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcFile, twcFileType, safUI, srfUI, ttkUI, eqUI) => {
 
         function getSiteTableFields() {
             // @@IMPORTANT: make sure some fields are there as they are needed by the ui:
@@ -485,6 +485,38 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
+        // function getSitePanelFields_saf(dataSource, userInfo) {
+        //     var fieldGroup = { id: 'site-saf', title: 'SAF', collapsed: true, controls: [] };
+
+        //     var safList = { id: 'site-saf-list', title: '', fields: [] };
+        //     fieldGroup.controls.push(safList);
+
+
+        //     safList.fields.push({
+        //         id: `${twcInfra.Type}`, label: 'Existing SAF',
+        //         fields: {
+        //             [twcS]: 'Infra Id',
+        //             [twcInfra.Fields.INFRASTRUCTURE_TYPE]: 'Type',
+        //             [twcInfra.Fields.TOWER_FAMILY]: 'Tower Family',
+        //             [twcInfra.Fields.STRUCTURE_HEIGHT_M]: 'Height (m)',
+        //             [twcInfra.Fields.ROOFTOP_HEIGHT_M]: 'Height Rooftop',
+        //             [twcInfra.Fields.ANTI_CLIMB]: 'Anti Climb',
+        //             [twcInfra.Fields.TLM]: 'TLM',
+        //             [twcInfra.Fields.FALL_ARREST_TYPE]: 'Fall Arrest Type',
+        //             [twcInfra.Fields.TOWER_LAST_PAINTED_DATE]: 'Tower Last Painted Date',
+        //             [twcInfra.Fields.SCHEDULED_NEXT_PAINTING_DATE]: 'Scheduled Next Painting Date',
+        //             [twcInfra.Fields.PAINTING_WARRANTY_EXPIRY_DATE]: 'Painting Warranty Expiry Date',
+        //         },
+        //         where: { [twcInfra.Fields.SITE]: dataSource.id },
+        //         FieldsInfo: twcInfra.FieldsInfo,
+        //     });
+
+        //     configUIFields.formatPanelFields(dataSource, fieldGroup);
+
+        //     return fieldGroup;
+        // }
+
+
         function getSiteInfoPanels(dataSource, userinfo) {
             if (!dataSource) { dataSource = {}; }
             dataSource.Type = twcSite.Type;
@@ -493,9 +525,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroups.push(getSitePanelFields_summary(dataSource, userinfo));
             fieldGroups.push(getSitePanelFields_estates(dataSource, userinfo));
             fieldGroups.push(getSitePanelFields_assets(dataSource, userinfo));
-            fieldGroups.push(getSitePanelFields_facilities(dataSource, userinfo))
-            fieldGroups.push(getSitePanelFields_projects(dataSource, userinfo))
-            fieldGroups.push(getSitePanelFields_files(dataSource, userinfo))
+            fieldGroups.push(getSitePanelFields_facilities(dataSource, userinfo));
+            fieldGroups.push(getSitePanelFields_projects(dataSource, userinfo));
+            fieldGroups.push(getSitePanelFields_files(dataSource, userinfo));
+
+            dataSource.siteId = dataSource.id;
+            fieldGroups.push(srfUI.getSrfListPanel(dataSource, userinfo));
+            fieldGroups.push(safUI.getSafListPanel(dataSource, userinfo));
+            fieldGroups.push(ttkUI.getTktListPanel(dataSource, userinfo));
+            fieldGroups.push({ id: 'site-equipment', title: 'Equipment', collapsed: true, controls: eqUI.getInvInfoPanels(dataSource, userinfo) });
+
             return fieldGroups;
         }
 

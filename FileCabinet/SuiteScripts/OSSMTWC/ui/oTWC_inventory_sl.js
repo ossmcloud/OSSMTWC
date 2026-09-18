@@ -18,17 +18,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 var html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteInfo');
                 if (context.request.parameters.recId) {
-                    var srfCode = pageData.inventoryInfo.name;
-                    s.form.f.title += ` - ${srfCode}`;
-                    pageData.recordStatus = `
-                        <div class="twc-div-span-table">
-                            <span class="twc-record-status" style="border: 1px solid var(--grid-color); padding: 0px 34px; font-size: 20px; vertical-align: middle; background-color: var(--accent-bkgd-color); color: var(--accent-fore-color)">
-                                ${srfCode}
-                            </span>
-                            <span style="width: 5px;"></span>
-                            ${pageData.recordStatus}
-                        </div>
-                    `
+                    // var srfCode = pageData.inventoryInfo.name;
+                    // s.form.f.title += ` - ${srfCode}`;
+                    // pageData.recordStatus = `
+                    //     <div class="twc-div-span-table">
+                    //         <span class="twc-record-status" style="border: 1px solid var(--grid-color); padding: 0px 34px; font-size: 20px; vertical-align: middle; background-color: var(--accent-bkgd-color); color: var(--accent-fore-color)">
+                    //             ${srfCode}
+                    //         </span>
+                    //         <span style="width: 5px;"></span>
+                    //         ${pageData.recordStatus}
+                    //     </div>
+                    // `
                 }
 
                 let actions = '';

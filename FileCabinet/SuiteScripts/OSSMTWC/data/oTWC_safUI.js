@@ -444,9 +444,25 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSAFInfoPanels_Existing(dataSource, userInfo) {
             var safLink = core.url.script('otwc_siteaccess_sl');
 
-            var safDetails = { id: 'ite-access-existing-safs', title: 'Existing SAFs', collapsed: true, fields: [] };
-            // safDetails.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Customer' })
-            // safDetails.fields.push({ id: twcSaf.Fields.STATUS, label: 'Status' })
+            var whereClause = `where ${twcSaf.Fields.SITE} = ${dataSource.siteId} `;
+            var orderBy = `${twcSaf.Fields.CREATED} desc`;
+
+            if (!userInfo.isEmployee) {
+                if (userInfo.companyProfile?.isBoth) {
+                    whereClause += `and (
+                       ${twcSaf.Fields.PRIMARY_CONTRACTOR} = ${userInfo.companyProfile.id || 0}
+                    or ${twcSaf.Fields.CUSTOMER} = ${userInfo.companyProfile.id || 0}
+                )`;
+                } else if (userInfo.companyProfile?.isVendor) {
+                    whereClause += `and ${twcSaf.Fields.PRIMARY_CONTRACTOR} = ${userInfo.companyProfile.id || 0}`;
+                } else if (userInfo.companyProfile?.isCustomer) {
+                    whereClause += `and ${twcSaf.Fields.CUSTOMER} = ${userInfo.companyProfile.id || 0}`;
+                }
+            }
+
+            var safList = twcSaf.select({ where: whereClause, orderBy: orderBy,  useNames: true })
+
+            var safDetails = { id: 'site-access-existing-safs', title: 'Existing SAFs', collapsed: true, fields: [] };
             safDetails.fields.push({
                 id: `${twcSaf.Type}`, label: 'Saf Details',
                 fields: {
@@ -466,7 +482,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcSaf.Fields.DRONE_SURVEY]: 'Drone Survey',
 
                 },
-                where: { [twcSaf.Fields.SITE]: dataSource.siteId },
+                dataSource: safList,
                 FieldsInfo: twcSaf.FieldsInfo,
                 readOnly: true
             });
@@ -808,7 +824,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             getSafActionList: getSafActionList,
             getSafTableFields: getSafTableFields,
             getSAFInfoPanels: getSAFInfoPanels,
-            renderTimeBlocks: renderTimeBlocks
+            renderTimeBlocks: renderTimeBlocks,
+
+            getSafListPanel: getSAFInfoPanels_Existing
         }
     });
 

@@ -5,6 +5,14 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_srfReview.js', '../data/oTWC_equipment.js', '../data/oTWC_equipAction.js', '../data/oTWC_srfItem.js', '../data/oTWC_sds.js', './oTWC_sdsEngine.js', '../data/oTWC_file.js'],
     function (core, coreSql, recu, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSrfReview, twcEquipment, twcEqAct, twcSrfItem, twcSds, twcSdsEngine, twcFile) {
 
+        // @@TODO: move to framework within Date.prototype.format
+        Date.prototype.formatTime = function () {
+            var dateFormatted = this.format();
+            var timeFormatted = `${this.getHours().pad()}:${this.getMinutes().pad()}:${this.getSeconds().pad()}`;
+            return `${dateFormatted} ${timeFormatted}`;
+
+        }
+
         // @IMPORTANT NOTE: API Governance
         //      initEquipment = 10 units + 6 units per action
         //      after init equip = 58 units
@@ -63,7 +71,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 eq.equipmentClass = action[twcSrfItem.Fields.STEP_TYPE];
                 eq.equipmentType = action[twcSrfItem.Fields.ITEM_TYPE];
                 eq.infrastructure = action[twcSrfItem.Fields.STRUCTURE];
-                eq.equipmentInstallStatus = twcUtils.EqInstallStatus.Draft;
+                eq.equipmentInstallStatus = twcUtils.EqInstallStatus.NotInstalled;
+
                 if (action.ea_type == twcUtils.EqActionType.Install || action.ea_type == twcUtils.EqActionType.Licence || action.ea_type == twcUtils.EqActionType.SwapLicence) {
                     eq.equipmentLicenceStatus = twcUtils.EqLicenseStatus.ReqtoLicence;
                 } else if (action.ea_type == twcUtils.EqActionType.Remove || action.ea_type == twcUtils.EqActionType.Unlicence || action.ea_type == twcUtils.EqActionType.SwapUnlicence) {
@@ -253,8 +262,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     for (var k in item) {
                         if (!k.startsWith('cust')) { continue; }
                         fields.push(k);
-                        if (twcSrfWorkflowItem.getField(k)?.type == 'date') {
+                        var fieldType = twcSrfWorkflowItem.getField(k)?.type;
+                        if (fieldType == 'date') {
                             values.push(twcUtils.fromJsToNs(item[k]));
+                        // } else if (fieldType == 'datetimez') {
+                        //     values.push(twcUtils.fromJsToNs(item[k]));
                         } else {
                             values.push(item[k]);
                         }
@@ -446,7 +458,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         TO_CHAR(srf.custrecord_twc_srf_lic_pack_revd, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_revd,
                         TO_CHAR(srf.custrecord_twc_srf_lic_pack_issued, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_issued,
                         TO_CHAR(srf.custrecord_twc_srf_lic_pack_signed, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_signed,
-                        srf.custrecord_twc_srf_lic_pack_sign_by,
+                        srf.custrecord_twc_srf_lic_pack_sign_by, 
                         TO_CHAR(srf.custrecord_twc_srf_lic_pack_exec, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_exec,
                         srf.custrecord_twc_srf_lic_pack_exec_by,
                         srf.custrecord_twc_srf_type, srf.custrecord_twc_srf_reveue_impact
@@ -527,13 +539,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (options.isTLSignature) {
                 formData = {
                     record: twcSrf.Type,
-                    [twcSrf.Fields.LICENCE_PACK_EXECUTED]: (new Date()).format(),
+                    [twcSrf.Fields.LICENCE_PACK_EXECUTED]: new Date(),
                     [twcSrf.Fields.LICENCE_PACK_EXECUTED_BY]: userInfo.recordId,
                 }
             } else {
                 formData = {
                     record: twcSrf.Type,
-                    [twcSrf.Fields.LICENCE_PACK_SIGNED]: (new Date()).format(),
+                    [twcSrf.Fields.LICENCE_PACK_SIGNED]: new Date(),
                     [twcSrf.Fields.LICENCE_PACK_SIGNED_BY]: userInfo.profile,
                 }
             }
