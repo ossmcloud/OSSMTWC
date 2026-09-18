@@ -85,17 +85,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     type: twcUI.CTRL_TYPE.TABLE,
                     label: 'related equipment (ATME / FEEDERS)',
                     columns: [
+                        { id: 'toggle', title: '', nullText: '', noFilter: true, noSort: true, styles: { 'text-align': 'center' } },
+                        { id: twcSrfItem.Fields.NAME, title: 'Eq. Id', nullText: '' },
                         { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class', nullText: '' },
                         { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Type', nullText: '' },
                         { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description', nullText: '' },
                         { id: twcSrfItem.Fields.MAKE, title: 'Make', nullText: '' },
                         { id: twcSrfItem.Fields.MODEL, title: 'Model', nullText: '' },
                         { id: twcSrfItem.Fields.HEIGHT_ON_TOWER, title: 'Height on Tower', nullText: '' },
-                        // { id: twcSrfItem.Fields.LENGTH_MM, title: 'Length (mm)', nullText: '' },
-                        // { id: twcSrfItem.Fields.WIDTH_MM, title: 'Width (mm)', nullText: '' },
-                        // { id: twcSrfItem.Fields.DEPTH_MM, title: 'Depth (mm)', nullText: '' },
-                        // { id: twcSrfItem.Fields.WEIGHT_KG, title: 'Weight (kg)}', nullText: '' },
-                        // { id: twcSrfItem.Fields.INVENTORY_FLAG, title: 'Flag', styles: { width: '75px' }, hide: !userInfo.isEmployee, nullText: '' },
                         { id: twcSrfItem.Fields.TYPE_OPT + '_name', title: 'Type Opt', nullText: '' },
 
                     ],
@@ -176,7 +173,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
             for (var k in fields) {
-                if (k == 'expand' || k =='create_lib_item') { continue; }
+                if (k == 'expand' || k == 'create_lib_item') { continue; }
                 if (fields[k].constructor.name == 'String') {
                     fields[k] = { title: fields[k] }
                 }

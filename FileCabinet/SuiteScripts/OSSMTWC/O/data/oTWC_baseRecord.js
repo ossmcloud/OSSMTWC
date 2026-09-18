@@ -166,7 +166,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (fieldName == 'id') { return; }
                 if (fieldName == 'isinactive') { return; }
                 if (fieldName == 'name') {
-                    value = value.substring(0, 300);
+                    value = value?.substring(0, 300);
                     return value;
                 }
 

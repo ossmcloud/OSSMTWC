@@ -38,7 +38,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var fieldsSql = '';
             fields.map(f => { fieldsSql += `eq.${f.field}, ` });
             var sql = `
-                    select  eq.id as ${twcSrfItem.Fields.EQUIPMENT_ID}, eq.custrecord_twc_equip_parent_tme_id as ${twcSrfItem.Fields.TME_ID}, ${fieldsSql}, 
+                    select  eq.id as ${twcSrfItem.Fields.EQUIPMENT_ID}, eq.name as ${twcSrfItem.Fields.EQUIPMENT_ID}_name, ${fieldsSql}, 
                             eq.${twcEquipment.Fields.EQUIPMENT_CLASS} as ${twcSrfItem.Fields.STEP_TYPE}, BUILTIN.DF(eq.${twcEquipment.Fields.EQUIPMENT_CLASS}) as ${twcSrfItem.Fields.STEP_TYPE}_name,
                             eq.${twcEquipment.Fields.EQUIPMENT_TYPE} as ${twcSrfItem.Fields.ITEM_TYPE},BUILTIN.DF(eq.${twcEquipment.Fields.EQUIPMENT_TYPE}) as ${twcSrfItem.Fields.ITEM_TYPE}_name,
                             eq.${twcEquipment.Fields.MAKE} ${twcSrfItem.Fields.MAKE},
@@ -50,6 +50,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             eq.${twcEquipment.Fields.HEIGHTDEPTH_MM} as ${twcSrfItem.Fields.DEPTH_MM},
                             eq.${twcEquipment.Fields.WEIGHT_KG} as ${twcSrfItem.Fields.WEIGHT_KG},
                             eq.${twcEquipment.Fields.INVENTORY_FLAG} as ${twcSrfItem.Fields.INVENTORY_FLAG},
+                            eq.${twcEquipment.Fields.OPT_TYPE} as ${twcSrfItem.Fields.TYPE_OPT},BUILTIN.DF(eq.${twcEquipment.Fields.OPT_TYPE}) as ${twcSrfItem.Fields.TYPE_OPT}_name,
+                            eq.${twcEquipment.Fields.PARENT_TME_ID} as ${twcSrfItem.Fields.TME_ID}, BUILTIN.DF(eq.${twcEquipment.Fields.PARENT_TME_ID}) as ${twcSrfItem.Fields.TME_ID}_name,
+                            
 
                     from    ${twcEquipment.Type} eq
                     left join   customrecord_twc_infra infra on infra.id = eq.custrecord_twc_equip_str

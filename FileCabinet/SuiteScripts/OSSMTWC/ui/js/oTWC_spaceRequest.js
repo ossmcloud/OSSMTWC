@@ -27,6 +27,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return srfItemCopy;
         }
 
+        function isSwapSrfItemField(k) {
+            var swapFields = [
+                twcSrfItem.Fields.SRF,
+                twcSrfItem.Fields.REQUEST_TYPE,
+                twcSrfItem.Fields.STEP_TYPE,
+                `${twcSrfItem.Fields.STEP_TYPE}_name`,
+                twcSrfItem.Fields.ITEM_TYPE,
+                `${twcSrfItem.Fields.ITEM_TYPE}_name`,
+                twcSrfItem.Fields.TME_ID,
+                `${twcSrfItem.Fields.TME_ID}_name`,
+                twcSrfItem.Fields.STRUCTURE,
+
+
+            ]
+
+            return swapFields.indexOf(k) >= 0;
+        }
+
 
         class TWCSiteSrfTable {
             #page = null;
@@ -110,6 +128,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #isEdit = false;
             #isCopy = false;
             #relatedEqTable = null;
+            #addAndCopyButton = null;
 
             constructor(page, srfItem, mode) {
                 this.#page = page;
@@ -117,11 +136,102 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#mode = mode || 'open';
                 this.#isEdit = mode == 'edit';
                 this.#isCopy = mode == 'copy';
+
+
             }
 
             get data() { return this.#page.data; }
 
+            initRelatedEqTable() {
+                if (!this.#relatedEqTable) { return; }
+                core.array.each(this.#relatedEqTable.options.columns, col => {
+                    if (col.id == 'toggle') {
+                        col.formatValue = (value, formattedValue, data, column) => {
+                            return `<input type="checkbox" style="padding: 0px !important; width: 10px; min-width: 10px; transform: scale(2);" data-eq-id="${data.id}" ${data.swapItem ? 'checked' : ''} />`
+                        }
+                    } else {
+                        col.formatValue = (value, formattedValue, data, column) => {
+                            if (data.swapItem && data.swapItem[column.id] != value) {
+                                return `
+                                        <div style="text-decoration: line-through; color: var(--label-color);">${formattedValue}</div>
+                                        <div style="font-weight: bold; color: var(--accent-fore-color);">${data.swapItem[column.id]}</div>
+                                    `
+                            }
+                            return formattedValue;
+                        }
+                    }
+                })
+
+                this.#relatedEqTable.onColumnInit = (tbl, col) => {
+                    if (col.id == 'toggle') {
+                        var reqType = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
+                        return reqType == twcSrfItem.RequestType.SWAP;
+                    }
+                }
+
+                this.#relatedEqTable.onToolbarClick = e => {
+                    var srfNewRelatedItem = null;
+                    if (e.action == 'add-new') {
+                        var eqClass = jQuery(e.evt.target).closest('.twc-table-toolbar-button').data('eq-class');
+                        srfNewRelatedItem = {};
+                        srfNewRelatedItem.dirty = true;
+                        srfNewRelatedItem.child = true;
+                        srfNewRelatedItem[twcSrfItem.Fields.REQUEST_TYPE] = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
+                        srfNewRelatedItem[twcSrfItem.Fields.STEP_TYPE] = eqClass;
+                        srfNewRelatedItem[twcSrfItem.Fields.STEP_TYPE + '_name'] = (eqClass == twcEqUI.EqClass.ATME) ? 'ATME' : 'FEEDER';
+                        srfNewRelatedItem[twcSrfItem.Fields.STRUCTURE] = this.#form.getControl(twcSrfItem.Fields.STRUCTURE).value;
+                        this.manageSRFSubItem(srfNewRelatedItem, 'open');
+                    } else if (e.action == 'edit') {
+                        srfNewRelatedItem = e.rowData;
+                        this.manageSRFSubItem(srfNewRelatedItem, 'edit');
+                    } else if (e.action == 'delete') {
+                        dialog.confirm('Are you sure you wish to delete this record', () => {
+                            srfNewRelatedItem = e.rowData;
+                            if (!this.#srfItem.relatedItemsDelete) { this.#srfItem.relatedItemsDelete = []; }
+                            this.#srfItem.relatedItemsDelete.push(srfNewRelatedItem);
+                            this.#srfItem.relatedItems.splice(this.#srfItem.relatedItems.indexOf(srfNewRelatedItem), 1);
+                            this.#relatedEqTable.render(this.#srfItem.relatedItems, true)
+                        })
+                    }
+
+                }
+
+                this.#relatedEqTable.onInitEvents = () => {
+                    this.#relatedEqTable.ui.find('input[type="checkbox"]').click(e => {
+                        var tableRow = jQuery(e.currentTarget).closest('.o-row');
+                        if (jQuery(e.currentTarget).is(':checked')) {
+                            tableRow.find('.o-table-action[data-action="edit"]').click();
+                        } else {
+                            this.#relatedEqTable.getDataRows()[tableRow.data('idx')].data.swapItem = null;
+                            this.#relatedEqTable.render(this.#srfItem.relatedItems, false);
+                        }
+                    })
+                    var reqType = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
+                    this.#relatedEqTable.ui.find('.o-table-action[data-action="delete"]').css('display', (reqType == twcSrfItem.RequestType.SWAP) ? 'none' : 'inline');
+                }
+
+
+            }
+
+
             manageSRFSubItem(srfNewRelatedItem, mode) {
+                if (this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value == twcSrfItem.RequestType.SWAP) {
+                    if (!srfNewRelatedItem.swapItem) {
+                        srfNewRelatedItem.swapItem = { isRelatedItem: true };
+                        for (var k in srfNewRelatedItem) {
+                            // if (k == 'isRelatedItem') { continue; }
+                            if (isSwapSrfItemField(k)) {
+                                srfNewRelatedItem.swapItem[k] = srfNewRelatedItem[k];
+                            } else if (k == 'name' || k == (twcSrfItem.Fields.EQUIPMENT_ID + '_name')) {
+                                srfNewRelatedItem.swapItem[k] = 'TBA';
+                            } else {
+                                srfNewRelatedItem.swapItem[k] = null;
+                            }
+                        }
+                    }
+                    srfNewRelatedItem = srfNewRelatedItem.swapItem;
+                }
+
                 TWCSpaceRequestItemForm[mode](this.#page, srfNewRelatedItem, (srfRelatedItem, addAndCopy) => {
                     if (mode == 'open' || mode == 'copy') {
                         if (!this.#srfItem.relatedItems) { this.#srfItem.relatedItems = []; }
@@ -129,7 +239,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     } else {
                         srfRelatedItem.dirty = true;
                     }
-                    this.#relatedEqTable.render(this.#srfItem.relatedItems, true)
+                    this.#relatedEqTable.render(this.#srfItem.relatedItems, true);
                     if (addAndCopy) { this.manageSRFSubItem(copySrfItem(srfNewRelatedItem), 'copy'); }
                 });
             }
@@ -140,12 +250,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#form.on('change', e => { this.setFormState(e); })
                 this.setFormState();
 
+                var reqType = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
+                if (this.#srfItem.isRelatedItem) {
+                    this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).readOnly = (reqType == twcSrfItem.RequestType.SWAP);
+                    // this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).readOnly = (reqType == twcSrfItem.RequestType.SWAP);
+                }
+
+
                 this.#form.getControl('srf-pick-from-library').on('click', e => {
                     var itemType = this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).value;
                     this.pickFromLibrary(this.#srfItem[twcSrfItem.Fields.STEP_TYPE], itemType, (pickedEqLib) => { this.setFormEqLibState(pickedEqLib.e.rowsData[0]) })
                 })
 
                 this.#form.getControl('srf-pick-equipment').on('click', e => {
+                    // @@NOTE: this is fired when 'remove' or 'swap' is selcted
                     this.pickEquipment(this.#srfItem[twcSrfItem.Fields.STEP_TYPE], (pickedEq) => { this.setFormEqState(pickedEq); })
                 })
 
@@ -154,44 +272,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
 
                 this.#relatedEqTable = this.#form.getControl('srf-related-eq-table');
-
                 if (this.#relatedEqTable) {
+                    this.initRelatedEqTable();
                     // @@NOTE: we call the render now because we want to make sure the .data property of table "this.#relatedEqTable" is populated with a "reference" to this.#srfItem.relatedItems
                     //         this is because, for an exiting SRF, the 1st time this pop-up is loaded the table is rendered on the server so the 'table.data' collection is not the same s what's in memory
-                    this.#relatedEqTable.render(this.#srfItem.relatedItems, true)
-
-                    this.#relatedEqTable.onToolbarClick = e => {
-                        var srfNewRelatedItem = null;
-                        if (e.action == 'add-new') {
-                            var eqClass = jQuery(e.evt.target).closest('.twc-table-toolbar-button').data('eq-class');
-                            srfNewRelatedItem = {};
-                            srfNewRelatedItem.dirty = true;
-                            srfNewRelatedItem.child = true;
-                            srfNewRelatedItem[twcSrfItem.Fields.REQUEST_TYPE] = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
-                            srfNewRelatedItem[twcSrfItem.Fields.STEP_TYPE] = eqClass;
-                            srfNewRelatedItem[twcSrfItem.Fields.STEP_TYPE + '_name'] = (eqClass == twcEqUI.EqClass.ATME) ? 'ATME' : 'FEEDER';
-                            srfNewRelatedItem[twcSrfItem.Fields.STRUCTURE] = this.#form.getControl(twcSrfItem.Fields.STRUCTURE).value;
-                            this.manageSRFSubItem(srfNewRelatedItem, 'open');
-                        } else if (e.action == 'edit') {
-                            srfNewRelatedItem = e.rowData;
-                            this.manageSRFSubItem(srfNewRelatedItem, 'edit');
-                        } else if (e.action == 'delete') {
-                            dialog.confirm('Are you sure you wish to delete this record', () => {
-                                srfNewRelatedItem = e.rowData;
-                                if (!this.#srfItem.relatedItemsDelete) { this.#srfItem.relatedItemsDelete = []; }
-                                this.#srfItem.relatedItemsDelete.push(srfNewRelatedItem);
-                                this.#srfItem.relatedItems.splice(this.#srfItem.relatedItems.indexOf(srfNewRelatedItem), 1);
-                                this.#relatedEqTable.render(this.#srfItem.relatedItems, true)
-                            })
-                        }
-
-                    }
+                    this.#relatedEqTable.render(this.#srfItem.relatedItems, true);
                 }
 
-                var dlgTitle = 'add new srf item';
-                if (this.#mode == 'edit') { dlgTitle = 'edit srf item'; }
-                if (this.#mode == 'copy') { dlgTitle = 'copy srf item'; }
-                var dlg = dialog.confirm({ title: 'manage item', message: this.#form.ui, width: '75%', height: '75vh' }, () => {
+                var dlgTitle = 'Add new SRF Item';
+                if (this.#mode == 'edit') { dlgTitle = 'Edit SRF Item'; }
+                if (this.#mode == 'copy') { dlgTitle = 'Copy SRF Item'; }
+                var dlg = dialog.confirm({ title: dlgTitle, message: this.#form.ui, width: '75%', height: '80vh' }, () => {
                     try {
 
                         var addAndCopy = dlg.dialog.find('#o-dialog_ok').data('add-and-copy');
@@ -242,9 +333,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 var text = 'add and duplicate';
                 if (this.#mode == 'edit') { text = 'save and duplicate'; }
-                var addAndCopyButton = jQuery(`<button id="o-dialog_ok_copy">${text}</button>`);
-                dlg.dialog.find('#o-dialog_buttons').prepend(addAndCopyButton);
-                addAndCopyButton.click(e => {
+                this.#addAndCopyButton = jQuery(`<button id="o-dialog_ok_copy" style="display: none;">${text}</button>`);
+                dlg.dialog.find('#o-dialog_buttons').prepend(this.#addAndCopyButton);
+                this.#addAndCopyButton.click(e => {
                     dlg.dialog.find('#o-dialog_ok').data('add-and-copy', true);
                     dlg.dialog.find('#o-dialog_ok').click();
                 })
@@ -259,6 +350,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#form.getControl('srf-equipment').mandatory = !(!reqType || reqType == twcSrfItem.RequestType.INSTALL);
                     this.#form.getControl('srf-pick-equipment').hide = (!reqType || reqType == twcSrfItem.RequestType.INSTALL);
                     this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).hide = (!reqType || reqType == twcSrfItem.RequestType.REMOVE);
+                    this.#addAndCopyButton?.css('display', reqType == twcSrfItem.RequestType.INSTALL ? 'inline-block' : 'none');
 
                     if (this.#srfItem[twcSrfItem.Fields.STEP_TYPE] == twcEqUI.EqClass.ATME) {
                         if (this.#form.getControl('srf-tme-equipment')) {
@@ -291,6 +383,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#form.ui.find('#srf-related-eq').css('display', showPanels ? 'block' : 'none');
 
                 }
+
 
                 if (e === undefined || e?.id == twcSrfItem.Fields.ITEM_TYPE) {
                     // @@NOTE: this needs to fire if we change the item type
@@ -405,7 +498,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // if (!pickedEq) { return; }
 
                 var reqType = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
-                if (reqType != twcSrfItem.RequestType.REMOVE) { return; }
+                if (reqType != twcSrfItem.RequestType.REMOVE && reqType != twcSrfItem.RequestType.SWAP) { return; }
 
                 // var relatedEqTable = this.#form.getControl('srf-related-eq-table');
                 if (this.#relatedEqTable) {
@@ -573,7 +666,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             initPage() {
                 console.log('TWCSpaceRequestPage => InitPage')
                 if (this.data.siteRequestInfo) {
-                    
+
                     // @@NOTE: this is record view/edit mode
                     this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
 
@@ -781,7 +874,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         // @@TODO: test only
                         if (DEV) {
                             if (this.data.editMode && !this.data.siteRequestInfo.id) {
-                                this.ui.getControl(twcSrf.Fields.CUSTOMER).value = 11;
+                                this.ui.getControl(twcSrf.Fields.CUSTOMER).value = 2;
                             }
                         }
 
@@ -965,5 +1058,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
     });
+
 
 
