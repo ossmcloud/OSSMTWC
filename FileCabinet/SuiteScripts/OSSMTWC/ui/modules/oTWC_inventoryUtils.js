@@ -120,7 +120,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sqlFields = 's.id, s.id as record_id, s.custrecord_twc_equip_site as site_id, BUILTIN.DF(s.custrecord_twc_equip_site) as site_id_text';
             sqlFields += formatUserFields(inventoryFields, userFields);
 
-            // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcInventory.Fields.EQUIPMENT_ID}`;
 
@@ -155,7 +154,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sqlFields = 's.id, s.id as record_id, s.name';
             sqlFields += formatUserFields(siteFields, userFields);
 
-            // @@TODO: if we decide to have filters / sort  columns on the 'options' parameter we'll built it here
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSite.Fields.NAME}`;
 

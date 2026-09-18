@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_srfItem.js', '../data/oTWC_srfReview.js', '../data/oTWC_sds.js', '../data/oTWC_sdsEquipment.js', '../data/oTWC_fileType.js', '../data/oTWC_company.js', '../data/oTWC_site.js', '../data/oTWC_file.js'],
-    function (core, coreSql, recu, twcUtils, twcSrf, twcSrfItem, twcSrfReview, twcSds, twcSdsEquipment, twcFileType, twcCompany, twcSite, twcFile) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_srfItem.js', '../data/oTWC_srfReview.js', '../data/oTWC_sds.js', '../data/oTWC_sdsEquipment.js', '../data/oTWC_fileType.js', '../data/oTWC_company.js', '../data/oTWC_site.js', '../data/oTWC_file.js'],
+    function (core, coreSql, b64, recu, twcUtils, twcSrf, twcSrfItem, twcSrfReview, twcSds, twcSdsEquipment, twcFileType, twcCompany, twcSite, twcFile) {
 
         function getSrfDrawingFiles(srfId) {
             return twcUtils.getFiles({
@@ -74,8 +74,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 WHERE   sds.custrecord_twc_sds_srf =  ${recId}
             `)
 
-            // @@TODO: SDS: we should probably b64 this one
-            var sdsCondData = JSON.parse(srfInfo.agreement.sds_cond_data || '{}');
+            var sdsCondData = null;
+            if (srfInfo.agreement.sds_cond_data) {
+                // @@NOTE: we try/catch to be backward compatible
+                try {
+                    sdsCondData = JSON.parse(b64.decode(srfInfo.agreement.sds_cond_data) || '{}');
+                } catch (error) {
+                    sdsCondData = JSON.parse(srfInfo.agreement.sds_cond_data || '{}');
+                }
+            }
+            
             //srfInfo.sdsConditions = [];
             coreSql.each(`
                 SELECT  *
@@ -256,7 +264,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 sdsEq.sRFItem = eq.srf_eq_id;
                 sdsEq.equipment = eq.eq_id;
                 sdsEq.partofSDS = (eq.srf_eq_id) != null;
-                sdsEq.includeinSDS = true;  // @@TODO:
+                sdsEq.includeinSDS = true;  
 
                 for (var k in copyFields) {
                     sdsEq.set(k, eq[copyFields[k]])

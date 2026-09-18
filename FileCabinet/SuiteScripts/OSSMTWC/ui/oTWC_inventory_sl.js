@@ -47,7 +47,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var readOnly = context.request.parameters.edit != 'T';
                 // @@NOTE: if permission lvl is 1 it means view only so even if parameter passed force to read only
                 if (pageData.userInfo.permission.lvl == twcConfig.PERMISSION_LEVEL.VIEW) {
-                    // @@TODO: here we should really re-direct without the edit flag
                     readOnly = true;
                 }
 
@@ -69,8 +68,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         suiteLet.post = (context, s) => {
             var userInfo = twcConfig.userInfo(context);
             if (context.request.parameters.action == 'save') {
-                var payload = JSON.parse(context.request.body);
-                // @@TODO: INVENTORY: implement save
+                // @@NOTE: INVENTORY page does not have an individual recor edit page
                 return { status: 'success' };
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);

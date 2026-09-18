@@ -20,7 +20,7 @@ define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
 
                 if (!payload.fileName) { throw new Error('No file name provided'); }
 
-                // @@TODO: get record type, based on it get record id using radix reference
+                // @@NOTE: get record type, based on it get record id using radix reference
                 var record = getRecordInfo(payload.recordType, payload.radixId);
 
                 var check = coreSQL.first({
@@ -35,7 +35,7 @@ define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
                 });
                 if (check) { throw new Error(`A file with same name for same record already found`); }
 
-                // @@TODO: get folder
+                // @@NOTE: get folder
                 var folder = getFolder(payload.recordType, record, payload);
 
 

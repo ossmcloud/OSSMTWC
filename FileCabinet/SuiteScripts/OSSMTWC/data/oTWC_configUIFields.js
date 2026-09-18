@@ -18,7 +18,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 try {
                     _userInfo = twcUtils.userInfo();
                 } catch (error) {
-                    // @@TODO: this is run from client side and no permission to employee record
+                    // @@NOTE: this is run from client side and no permission to employee record
+                    //          it shoudl really not happen
                     return;
                 }
 
@@ -50,7 +51,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
 
-        // @@TODO: need to find a way to make this as handy as possible
+        // @@REVIEW: need to find a way to make this as handy as possible
         function getDataObject(recordType, callback) {
             if (recordType == twcLock.Type) { return twcLock; }
             if (recordType == twcInfra.Type) { return twcInfra; }
@@ -256,9 +257,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
 
 
-                // @@TODO: @@REVIEW: if the dataSource is a loaded object it would have property names determined by the alias
-                //                   but the field id could the the netsuite field id in which case we would not have got the vale with dataSource[fieldId]
-                //                   so we get the value using the .get method (NOTE: if the .get method is not there this may be a different object)
+                // @@REVIEW: if the dataSource is a loaded object it would have property names determined by the alias
+                //           but the field id could the the netsuite field id in which case we would not have got the vale with dataSource[fieldId]
+                //           so we get the value using the .get method (NOTE: if the .get method is not there this may be a different object)
                 if (control.value === undefined && dataSource.get) {
                     if (dataField?.field_type == 'Document') {
                         control.value = dataSource.getText(fieldId);

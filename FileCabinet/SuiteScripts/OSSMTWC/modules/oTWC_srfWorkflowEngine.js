@@ -5,14 +5,7 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_srfReview.js', '../data/oTWC_equipment.js', '../data/oTWC_equipAction.js', '../data/oTWC_srfItem.js', '../data/oTWC_sds.js', './oTWC_sdsEngine.js', '../data/oTWC_file.js'],
     function (core, coreSql, recu, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSrfReview, twcEquipment, twcEqAct, twcSrfItem, twcSds, twcSdsEngine, twcFile) {
 
-        // @@TODO: move to framework within Date.prototype.format
-        Date.prototype.formatTime = function () {
-            var dateFormatted = this.format();
-            var timeFormatted = `${this.getHours().pad()}:${this.getMinutes().pad()}:${this.getSeconds().pad()}`;
-            return `${dateFormatted} ${timeFormatted}`;
-
-        }
-
+        
         // @IMPORTANT NOTE: API Governance
         //      initEquipment = 10 units + 6 units per action
         //      after init equip = 58 units

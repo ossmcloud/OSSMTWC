@@ -72,7 +72,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
         }
         function saveSiteSrf(userInfo, payload) {
-            // @@TODO: SRF: error handling????
             try {
                 var srfCancelled = false;
                 var submitInfo = {};
@@ -225,9 +224,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (requestType == twcSrfItem.RequestType.SWAP) { saveEqAction(item, payload, null, twcSrfItem.RequestType.INSTALL); }
 
             } catch (e) {
-                // @@TODO: this should stored in some log or something
-                log.error('Equip Action Save Failed', e);
-                log.error('Equip Action Save Failed', e.stack);
                 _savingErrors.push({
                     stage: 'Saving Equipment Action',
                     error: e.message,

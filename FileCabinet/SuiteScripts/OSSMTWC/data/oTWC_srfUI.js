@@ -135,7 +135,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 core.array.each(tempItems, tempItem => {
                     items.push(tempItem);
                     if (tempItem.relatedItems) {
-                        // @@TODO: sort
                         core.array.each(tempItem.relatedItems, ri => {
                             items.push(ri);
                         })

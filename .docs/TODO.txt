@@ -1,26 +1,6 @@
-FILES:
-------
-
-DELETE ALL IMPORTED FILES
-SCRIPT TO MOVE ALL OTHER FILES ACCORDINGLY
-SCRIPT TO DELETE ALL EMPTY FOLDERS ON ROOT FOLDER
-
-
-
-
-
-
 
 SRF:
-    // @@TODO: SRF
 	When swapping TME show list of ATME/Feeders with toggle
-
-SAF:
-    // @@TODO: SAF 
-    // @@TODO: currently we email the primary contractor, is this ok?
-
-SDS:
-    // @@TODO: should this go to site folder or company folder ?????
 
 Workflow:
 	Planned dates 

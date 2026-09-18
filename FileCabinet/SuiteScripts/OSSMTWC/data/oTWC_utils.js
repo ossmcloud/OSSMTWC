@@ -366,7 +366,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SRFCancelled: 10
 
         }
-        // @@TODO: these could be on the status table since we have one
+        // @@REVIEW: these could be on the status table since we have one
         const SRF_STATUS_STYLE = {
             Draft: { color: 'white', backgroundColor: 'silver' },
             Submitted: { color: 'white', backgroundColor: 'olive' },
@@ -1667,7 +1667,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             },
 
             parsesSAFDateTime: function (d) {
-                // @@TODO: this is because the stupid server is in UJS and would take the time in lcal irish time but save it in US time
+                // @@REVIEW: this is because the stupid server is in UJS and would take the time in lcal irish time but save it in US time
                 //              i.e.: 13/05/20026 @ 12.00 is saved as 13/05/20026 @ 20.00
                 var date = new Date(d);
                 date = date.addHours(-8);
