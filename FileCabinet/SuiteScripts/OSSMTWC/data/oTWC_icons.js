@@ -502,12 +502,30 @@ define([],
             return icon;
         }
 
+        function wait(options) {
+            var html = `    
+                <div>
+                    <span class="twc-wait-cursor">
+                        ${get('waitWheel', options?.size || 24, options?.color)}
+                    </span>
+            `;
+            if (options?.message) {
+                html += `
+                    <span>
+                        ${options.message}
+                    </span>
+                `
+            }
+            html += '</div>';
+            return html;
+        }
+
         return {
             ICONS: ICONS,
             UNDER_CONSTRUCTION: UNDER_CONSTRUCTION,
 
-            get: get
-
+            get: get,
+            wait: wait,
 
         }
     });

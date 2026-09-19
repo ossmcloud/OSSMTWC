@@ -11,7 +11,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var fieldsSql = '';
             fields.map(f => {
                 if (f.field == twcEquipment.Fields.INFRASTRUCTURE || f.field == twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS || f.field == twcEquipment.Fields.CUSTOMER || f.field == twcEquipment.Fields.EQUIPMENT_TYPE) {
-                    fieldsSql += `BUILTIN.DF(eq.${f.field}) as ${f.field}, eq.${f.field} as ${f.field}_id, `
+                    fieldsSql += `BUILTIN.DF(eq.${f.field}) as ${f.field}_name, eq.${f.field}, `
                 } else {
                     fieldsSql += `eq.${f.field}, `
                 }
@@ -19,9 +19,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sql = `
                     select  eq.id, ${fieldsSql}, 
                             ${twcEquipment.Fields.DESCRIPTION},  
-                            ${twcEquipment.Fields.EQUIPMENT_TYPE}, BUILTIN.DF(${twcEquipment.Fields.EQUIPMENT_TYPE}) as ${twcEquipment.Fields.EQUIPMENT_TYPE}_name,
-
-                            
+                            ${twcEquipment.Fields.PARENT_TME_ID}, BUILTIN.DF(${twcEquipment.Fields.PARENT_TME_ID}) as ${twcEquipment.Fields.PARENT_TME_ID}_name,
+                           
                             
                     from    ${twcEquipment.Type} eq
                     join   customrecord_twc_infra infra on infra.id = eq.custrecord_twc_equip_str

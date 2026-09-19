@@ -80,6 +80,18 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
                 }
             }
 
+            waitIcon(ele, callFunc) {
+                var display = ele.css('display');
+                ele.css('display', 'none');
+                var w = jQuery(twcIcons.wait());
+                ele.parent().append(w);
+                window.setTimeout(() => {
+                    callFunc();
+                    w.remove();
+                    ele.css('display', display);
+                }, 100)
+            }
+
             init() {
                 try {
 

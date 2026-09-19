@@ -1,8 +1,6 @@
 
 SRF Swap:
-    Swap ATME/FEEDER: the TME should be automtically set when equipment selected
-               also we should make sure swapped stuff here is not swapped on the TME section and voce versa
-
+    Swap ATME/FEEDER: we should make sure swapped stuff here is not swapped on the TME section and vice versa
     Save =>
         this should create the same number of SRF Items but 2 actions each
     Load Saved =>
