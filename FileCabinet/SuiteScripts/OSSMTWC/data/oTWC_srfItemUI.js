@@ -15,6 +15,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var siteInfraStructures = twcUtils.getInfraStructures({ siteId: srf.site }, userInfo.isEmployee);
             var siteStructures = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Structure })
+            var siteAccomodations = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Accommodation })
             var voltageTypes = twcUtils.getVoltageTypes(userInfo);
 
             var basicInfo = { id: 'srf-item-info', title: 'Basic Info', fields: [] };
@@ -34,7 +35,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
             }
 
-            basicInfo.fields.push({ id: twcSrfItem.Fields.ITEM_TYPE, label: 'Item Type', mandatory: true, hide: true, dataSource: twcEquipmentType.lookUp(srfItem.stepType) })
+            var itemTypes = twcEquipmentType.lookUp(srfItem.stepType);
+            if (srfItem.stepType == twcSrfItem.StepType.GIE) {
+                if (siteAccomodations.length == 0) {
+                    itemTypes.splice(0, 1);
+                }
+            }
+
+            basicInfo.fields.push({ id: twcSrfItem.Fields.ITEM_TYPE, label: 'Item Type', mandatory: true, hide: true, dataSource: itemTypes })
             basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-from-library', label: '', value: 'Pick From Library', lineBreak: true });
             basicInfo.fields.push({ type: twcUI.CTRL_TYPE.PANEL, id: 'srf-pick-from-library-msg', styles: { color: 'var(--accent-fore-color)', padding: '7px', display: 'none' } })
             basicInfo.fields.push({ id: twcSrfItem.Fields.DESCRIPTION, label: 'Description', width: '100%' })
@@ -43,7 +51,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 var dimensionInfo = { id: 'srf-item-dimension', title: 'Equipment Specifications', hide: isNewRecord, fields: [] };
                 fieldGroup.controls.push(dimensionInfo);
-                dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteStructures, mandatory: (srfItem.stepType != twcSrfItem.StepType.GIE), noAutoSelect: (srfItem.stepType == twcSrfItem.StepType.GIE) });
+                if (srfItem.stepType == twcSrfItem.StepType.GIE) {
+                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteAccomodations, mandatory: true, noAutoSelect: false });
+                } else {
+                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteStructures, mandatory: true });
+                }
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.MAKE, label: 'Make', mandatory: true })
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.MODEL, label: 'Model', mandatory: true })
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.LENGTH_MM, label: 'Length (mm)', mandatory: true })
@@ -66,6 +78,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             } else if (srfItem.stepType == twcSrfItem.StepType.FEEDER) {
                 specInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteStructures, mandatory: true });
                 specInfo.fields.push({ id: twcSrfItem.Fields.TYPE_OPT, label: 'Type Opt', dataSource: twcUtils.getSrfItemTypeOpts(userInfo), mandatory: true })
+
+            } else if (srfItem.stepType == twcSrfItem.StepType.GIE) {
+                specInfo.fields.push({ id: twcSrfItem.Fields.CUSTOMER_REF, label: 'Customer Ref.', mandatory: true })
 
             }
 

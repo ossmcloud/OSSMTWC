@@ -361,10 +361,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SRFApproved: 5,
             LicenceRequested: 6,
             LicenceIssued: 8,
-            LicenseSigned: 12,
+            LicenceSigned: 12,
             LicenceExecuted: 9,
-            SRFCancelled: 10
-
+            SRFCancelled: 10,
+            Completed: 13
         }
         // @@REVIEW: these could be on the status table since we have one
         const SRF_STATUS_STYLE = {
@@ -376,9 +376,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SRFApproved: { color: 'blue', backgroundColor: 'lime', name: 'SRF Approved' },
             LicenceRequested: { color: 'white', backgroundColor: 'steelblue', name: 'License Requested' },
             LicenceIssued: { color: 'white', backgroundColor: 'blue', name: 'License Issued' },
-            LicenseSigned: { color: 'blue', backgroundColor: 'lime', name: 'License Signed' },
+            LicenceSigned: { color: 'blue', backgroundColor: 'lime', name: 'License Signed' },
             LicenceExecuted: { color: 'white', backgroundColor: 'green', name: 'License Executed' },
-            SRFCancelled: { color: 'white', backgroundColor: 'red', name: 'SRF Cancelled' }
+            SRFCancelled: { color: 'white', backgroundColor: 'red', name: 'SRF Cancelled' },
+            Completed: { color: 'lime', backgroundColor: 'green', name: 'Completed' }
         }
         function getSrfStatusName(srfStatusNumber) {
             if (!srfStatusNumber) { srfStatusNumber = 11; }

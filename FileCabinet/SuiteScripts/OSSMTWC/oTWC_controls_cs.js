@@ -55,7 +55,8 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
             testFunction() {
 
                 try {
-                    recu.submit('customrecord_twc_srf', 101, 'custrecord_twc_srf_lic_pack_signed', new Date(2026, 8, 18, 11, 25, 15))
+                    twcSrfWorkflowEngine.setSRFCompleteStatus(105)
+                    //recu.submit('customrecord_twc_srf', 101, 'custrecord_twc_srf_lic_pack_signed', new Date(2026, 8, 18, 11, 25, 15))
                     // deleteSds(51)
 
                     // coreSQL.each(`

@@ -5,7 +5,7 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_srfReview.js', '../data/oTWC_equipment.js', '../data/oTWC_equipAction.js', '../data/oTWC_srfItem.js', '../data/oTWC_sds.js', './oTWC_sdsEngine.js', '../data/oTWC_file.js'],
     function (core, coreSql, recu, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSrfReview, twcEquipment, twcEqAct, twcSrfItem, twcSds, twcSdsEngine, twcFile) {
 
-        
+
         // @IMPORTANT NOTE: API Governance
         //      initEquipment = 10 units + 6 units per action
         //      after init equip = 58 units
@@ -176,13 +176,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     from    customrecord_twc_srf_wks 
                     where  	custrecord_twc_srf_wks_loop ='T'
                     order by custrecord_twc_srf_wks_seq_no
-                `, stage => {
+                `, (stage, idx) => {
                     plannedDate = addWorkingDays(plannedDate, stage.delta_days || 0);
 
                     var srfWorkflowItem = twcSrfWorkflowItem.get();
                     srfWorkflowItem.workflow = wkf.id;
                     srfWorkflowItem.workflowStage = stage.id;
-                    srfWorkflowItem.status = WORKFLOW_STATUS.NEW;
+                    srfWorkflowItem.status = (idx == 0) ? WORKFLOW_STATUS.IN_PROGRESS : WORKFLOW_STATUS.NEW;
                     srfWorkflowItem.planned = plannedDate;
                     srfWorkflowItem.save();
                 });
@@ -235,6 +235,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+        function getNextStepId(workflowId, stepId) {
+            return coreSql.first(`
+                select      wi.id
+                from        customrecord_twc_srf_wkfi wi
+                where       wi.custrecord_twc_srf_wkfi_parent = ${workflowId}
+                and         wi.custrecord_twc_srf_wkfi_stage = (
+                    select  ws.custrecord_twc_srf_wks_next 
+                    from    customrecord_twc_srf_wkfi wi2
+                    join    customrecord_twc_srf_wks ws on ws.id = wi2.custrecord_twc_srf_wkfi_stage
+                    where   wi2.id = ${stepId}
+                )
+                and wi.id > ${stepId}
+            `)?.id;
+        }
 
         function updateWorkflow(userInfo, options) {
             var response = { status: 'success' };
@@ -247,7 +261,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             if (items) {
-                var stepNotRequired = false;
+                var stepNotRequired = false; var someStepIsInProgress = false; var lastReviewStepId = null;
                 core.array.each(items, item => {
                     var fields = []; var values = [];
                     fields.push(twcSrfWorkflowItem.Fields.PROFILE);
@@ -258,15 +272,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         var fieldType = twcSrfWorkflowItem.getField(k)?.type;
                         if (fieldType == 'date') {
                             values.push(twcUtils.fromJsToNs(item[k]));
-                        // } else if (fieldType == 'datetimez') {
-                        //     values.push(twcUtils.fromJsToNs(item[k]));
                         } else {
                             values.push(item[k]);
                         }
 
-                        if (k == twcSrfWorkflowItem.Fields.STATUS && item[k] == WORKFLOW_STATUS.NOT_REQUIRED) {
-                            stepNotRequired = true;
+                        if (k == twcSrfWorkflowItem.Fields.STATUS) {
+                            if (item[k] == WORKFLOW_STATUS.NOT_REQUIRED) {
+                                stepNotRequired = true;
+                            } else if (item[k] == WORKFLOW_STATUS.IN_PROGRESS) {
+                                if (item.isReview) { someStepIsInProgress = true; }
+                            }
                         }
+
+                        if (item.isReview) { lastReviewStepId = item.id; }
                     }
                     recu.submit(twcSrfWorkflowItem.Type, item.id, fields, values);
 
@@ -334,6 +352,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
 
                 })
+
+                if (!someStepIsInProgress && lastReviewStepId) {
+                    // @@NOTE: this can hapen if the 'Initial Review' or 'Re-Submit Review' (basically the TL Review and any feedback loop) was processed withiout selecting any review stage
+                    var nextStep = getNextStepId(options.wkf, lastReviewStepId);
+                    if (nextStep) {
+                        recu.submit(twcSrfWorkflowItem.Type, nextStep, twcSrfWorkflowItem.Fields.STATUS, WORKFLOW_STATUS.IN_PROGRESS);
+                        response.reload = true;
+                    }
+                }
 
                 if (options.setStatus) {
                     recu.submit(twcSrf.Type, options.srf, twcSrf.Fields.SRF_STATUS, options.setStatus);
@@ -764,6 +791,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
+        function setSRFCompleteStatus(srf) {
+            // @@TODO: we should check if all actions were cancelled than the SRF should be cancelled ????
+            var pendingActionCount = coreSql.first(`
+                select      count(*) as c
+                from        customrecord_twc_eq_action
+                where       custrecord_twc_eq_action_srf = ${srf}
+                and         custrecord_twc_eq_action_sts = ${twcUtils.EqActionStatus.Pending}
+            `)?.c;
+            if (pendingActionCount == 0) {
+                recu.submit(twcSrf.Type, srf, twcSrf.Fields.SRF_STATUS, twcUtils.SrfStatus.Completed)
+            }
+            
+        }
+
+
         return {
             WorkflowStatus: WORKFLOW_STATUS,
             initWorkFlow: initWorkFlow,
@@ -774,7 +816,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             isWaitingForSignature: isWaitingForSignature,
             postSignature: postSignature,
             acceptSrf: acceptSrf,
-            rejectSds: rejectSds
+            rejectSds: rejectSds,
+            setSRFCompleteStatus: setSRFCompleteStatus
 
         }
     });

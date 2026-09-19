@@ -309,6 +309,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 id: item.id,
                                 stage: item.stage,
                                 last: item.is_last_stage == 'T',
+                                isReview: item.is_review == 'T',
                                 [twcSrfWorkflowItem.Fields.PLANNED]: item.planned,
                                 [twcSrfWorkflowItem.Fields.STATUS]: item.status,
                                 [twcSrfWorkflowItem.Fields.ASSIGNED_TO]: item.assigned_to,

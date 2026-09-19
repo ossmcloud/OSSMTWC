@@ -385,7 +385,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (e === undefined || e?.id == twcSrfItem.Fields.REQUEST_TYPE || e?.id == twcSrfItem.Fields.ITEM_TYPE) {
                     var reqType = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
                     var itemType = this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).value;
-                    var showPanels = (reqType != twcSrfItem.RequestType.REMOVE && itemType);
+                    var showPanels = (reqType && reqType != twcSrfItem.RequestType.REMOVE && itemType);
 
                     var cfg = null; var pickFromLb = false;
                     if (showPanels) {
@@ -403,6 +403,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#form.ui.find('#srf-item-spec').css('display', showPanels ? 'block' : 'none');
                     this.#form.ui.find('#srf-related-eq').css('display', showPanels ? 'block' : 'none');
 
+                    if (this.#srfItem[twcSrfItem.Fields.STEP_TYPE] == twcEqUI.EqClass.GIE) {
+                        // var structures = this.#form.getControl(twcSrfItem.Fields.STRUCTURE)?.getDataSource();
+                        // console.log(structures)
+                        // @@HARDCODED: @@TODO: SRF: this should not be hardcoded
+                        this.#form.getControl(twcSrfItem.Fields.STRUCTURE).hide = (this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).valueObj?.text == 'Outdoor');
+                        
+                    }
                 }
 
 
