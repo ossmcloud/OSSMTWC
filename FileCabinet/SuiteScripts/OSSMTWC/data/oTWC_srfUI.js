@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItem.js', './oTWC_srfItemUI.js', './oTWC_fileUI.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfReview.js'],
-    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItem, twcSrfItemUI, twcFileUI, configUIFields, twcUI, twcSrfReview) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItem.js', './oTWC_srfItemUI.js', './oTWC_fileUI.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfReview.js', './oTWC_equipment.js'],
+    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItem, twcSrfItemUI, twcFileUI, configUIFields, twcUI, twcSrfReview, twcEq) => {
 
         function getSrfTableFields() {
             // @@IMPORTANT: make sure some fields are there as they are needed by the ui:
@@ -93,6 +93,66 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         const TME_CHILD_COLLAPSED = false;
 
+        const SWAPPED_ITEM_FIELDS = [
+            { srf: twcSrfItem.Fields.EQUIPMENT_ID, eq: 'id' },
+            { srf: `${twcSrfItem.Fields.EQUIPMENT_ID}_name`, eq: twcEq.Fields.NAME },
+            { srf: twcSrfItem.Fields.TME_ID, eq: twcEq.Fields.PARENT_TME_ID },
+            { srf: twcSrfItem.Fields.STEP_TYPE, eq: twcEq.Fields.EQUIPMENT_CLASS },
+            { srf: twcSrfItem.Fields.ITEM_TYPE, eq: twcEq.Fields.EQUIPMENT_TYPE },
+            { srf: twcSrfItem.Fields.DESCRIPTION, eq: twcEq.Fields.DESCRIPTION },
+            { srf: twcSrfItem.Fields.MAKE, eq: twcEq.Fields.MAKE },
+            { srf: twcSrfItem.Fields.MODEL, eq: twcEq.Fields.MODEL },
+            { srf: twcSrfItem.Fields.LENGTH_MM, eq: twcEq.Fields.LENGTH_MM },
+            { srf: twcSrfItem.Fields.WIDTH_MM, eq: twcEq.Fields.WIDTH_MM },
+            { srf: twcSrfItem.Fields.DEPTH_MM, eq: twcEq.Fields.HEIGHTDEPTH_MM },
+            { srf: twcSrfItem.Fields.HEIGHT_ON_TOWER, eq: twcEq.Fields.HEIGHT_ON_TOWER_M },
+            { srf: twcSrfItem.Fields.WEIGHT_KG, eq: twcEq.Fields.WEIGHT_KG },
+            { srf: twcSrfItem.Fields.VOLTAGE_TYPE, eq: twcEq.Fields.VOLTAGE_TYPE },
+            { srf: twcSrfItem.Fields.AZIMUTH, eq: twcEq.Fields.AZIMUTH },
+            { srf: twcSrfItem.Fields.B_END, eq: twcEq.Fields.B_END },
+            { srf: twcSrfItem.Fields.CUSTOMER_REF, eq: twcEq.Fields.CUSTOMER_REF },
+            { srf: twcSrfItem.Fields.INVENTORY_FLAG, eq: twcEq.Fields.INVENTORY_FLAG },
+            { srf: twcSrfItem.Fields.TYPE_OPT, eq: twcEq.Fields.OPT_TYPE },
+        ];
+
+        function getSrfSwapItem(item, swappedItems) {
+            // @@NOTE: this is for related items, for these the swapped item is in 'item' and the new info are in 'swapItem'
+            if (item[twcSrfItem.Fields.REQUEST_TYPE] == twcSrfItem.RequestType.SWAP) {
+                var swappedEq = swappedItems.find(sw => { return sw.id == item[twcSrfItem.Fields.EQUIPMENT_ID] });
+                item.swapItem = {};
+                core.array.each(SWAPPED_ITEM_FIELDS, f => {
+                    item.swapItem[f.srf] = item[f.srf];
+                    item[f.srf] = swappedEq[f.eq];
+                    if (swappedEq[f.eq + '_name']) {
+                        item.swapItem[f.srf + '_name'] = item[f.srf + '_name'];
+                        item[f.srf + '_name'] = swappedEq[f.eq + '_name'];
+                    }
+                })
+                item.swapItem[twcSrfItem.Fields.REQUEST_TYPE] = item[twcSrfItem.Fields.REQUEST_TYPE];
+                item.swapItem[twcSrfItem.Fields.REQUEST_TYPE + '_name'] = item[twcSrfItem.Fields.REQUEST_TYPE + '_name'];
+                item.name = swappedEq.name;
+                item.swapItem.name = 'TBA';
+            }
+        }
+        function getSrfSwappedItem(item, swappedItems) {
+            // @@NOTE: this is for main srf items (or view mode for all items), for these the swapped item is in 'swappedItem' and the new info are in 'item'
+            if (item[twcSrfItem.Fields.REQUEST_TYPE] == twcSrfItem.RequestType.SWAP) {
+                var swappedEq = swappedItems.find(sw => { return sw.id == item[twcSrfItem.Fields.EQUIPMENT_ID] });
+                item.swappedItem = {};
+                core.array.each(SWAPPED_ITEM_FIELDS, f => {
+                    item.swappedItem[f.srf] = swappedEq[f.eq];
+                    if (swappedEq[f.eq + '_name']) {
+                        item.swappedItem[f.srf + '_name'] = swappedEq[f.eq + '_name'];
+                    }
+                })
+                item.swappedItem[twcSrfItem.Fields.REQUEST_TYPE] = item[twcSrfItem.Fields.REQUEST_TYPE];
+                item.swappedItem[twcSrfItem.Fields.REQUEST_TYPE + '_name'] = item[twcSrfItem.Fields.REQUEST_TYPE + '_name'];
+                item[twcSrfItem.Fields.EQUIPMENT_ID + '_name'] = 'TBA';
+            }
+
+        }
+
+
         function getSrfItems(dataSource, userInfo, readOnly) {
             var items = twcSrfItem.select(
                 {
@@ -107,6 +167,22 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
             );
 
+            var swappedItems = [];
+            var swappedItemsIds = [];
+            core.array.each(items, item => {
+                if (item[twcSrfItem.Fields.REQUEST_TYPE] == twcSrfItem.RequestType.SWAP) {
+                    swappedItemsIds.push(item[twcSrfItem.Fields.EQUIPMENT_ID]);
+                }
+            })
+            if (swappedItemsIds.length > 0) {
+                swappedItems = twcEq.select(
+                    {
+                        where: `and id in (${swappedItemsIds.join(',')})`,
+                        useNames: true
+                    }
+                );
+            }
+
             var tempItems = [];
             core.array.each(items, item => {
                 var parentId = item[twcSrfItem.Fields.TMI_ID_SRF];
@@ -120,8 +196,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         parent.relatedItems = [];
                         parent.expand = `<span class="twc-srf-item-expand" data-collapsed="${TME_CHILD_COLLAPSED}">${TME_CHILD_COLLAPSED ? '+' : '-'}</span>`;
                     }
+
+                    if (readOnly) {
+                        getSrfSwappedItem(item, swappedItems);
+                    } else {
+                        getSrfSwapItem(item, swappedItems);
+                    }
+
                     parent.relatedItems.push(item);
                 } else {
+                    getSrfSwappedItem(item, swappedItems);
                     tempItems.push(item);
                 }
             })
@@ -203,7 +287,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (!readOnly) {
                 var buttons = []
                 if (!dataSource[twcSrf.Fields.SRF_STATUS] || dataSource[twcSrf.Fields.SRF_STATUS] == twcUtils.SrfStatus.Draft) {
-                    buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-button', value: 'Save As Draft' });
+                    buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-srf-button', value: 'Save As Draft' });
                     buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'submit-srf-button', value: 'Submit SRF' })
                     buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'cancel-srf-button', value: 'Cancel SRF' })
                 } else if (dataSource[twcSrf.Fields.SRF_STATUS] == twcUtils.SrfStatus.FeedbackIssued) {

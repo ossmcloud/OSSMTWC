@@ -1,12 +1,17 @@
 
 SRF Swap:
     Swap ATME/FEEDER: we should make sure swapped stuff here is not swapped on the TME section and vice versa
-    Save =>
-        this should create the same number of SRF Items but 2 actions each
-    Load Saved =>
-        need to replicate the 'swapItem' property so it can be re-edited accordingly
+
+    Swap Item and 2 related items
+    Save, then edit and uncheck one of the 2 related items 
+    Save, the related item is not deleted
+        when unchecking a related swap item that was saved, ask for deletion and add item to .deleted_items collection
 
     Test SAF against Swap SRF
+        move children once installed
+        
+        SRF0000121
+        SRF0000123
 
 
 Re-Use SAF

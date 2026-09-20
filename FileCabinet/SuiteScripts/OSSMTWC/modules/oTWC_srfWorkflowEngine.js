@@ -59,48 +59,50 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             core.array.each(actions, action => {
                 // LOOP: 2 units (save rec) + 2 UNITS * 2 for submit = 6 units
                 var eq = twcEquipment.get(action.eq_id);
-                eq.site = action[twcSrf.Fields.SITE];
-                eq.customer = action[twcSrf.Fields.CUSTOMER];
-                eq.equipmentClass = action[twcSrfItem.Fields.STEP_TYPE];
-                eq.equipmentType = action[twcSrfItem.Fields.ITEM_TYPE];
-                eq.infrastructure = action[twcSrfItem.Fields.STRUCTURE];
-                eq.equipmentInstallStatus = twcUtils.EqInstallStatus.NotInstalled;
 
                 if (action.ea_type == twcUtils.EqActionType.Install || action.ea_type == twcUtils.EqActionType.Licence || action.ea_type == twcUtils.EqActionType.SwapLicence) {
                     eq.equipmentLicenceStatus = twcUtils.EqLicenseStatus.ReqtoLicence;
+
+                    eq.site = action[twcSrf.Fields.SITE];
+                    eq.customer = action[twcSrf.Fields.CUSTOMER];
+                    eq.equipmentClass = action[twcSrfItem.Fields.STEP_TYPE];
+                    eq.equipmentType = action[twcSrfItem.Fields.ITEM_TYPE];
+                    eq.infrastructure = action[twcSrfItem.Fields.STRUCTURE];
+                    eq.equipmentInstallStatus = twcUtils.EqInstallStatus.NotInstalled;
+                    eq.equipmentLibraryEntry = action[twcSrfItem.Fields.EQUIPMENT_LIBRARY];
+                    eq.useLibrary = (eq.equipmentLibraryEntry) ? twcUtils.EqLibUse.Yes : twcUtils.EqLibUse.No;
+                    eq.make = action[twcSrfItem.Fields.MAKE];
+                    eq.model = action[twcSrfItem.Fields.MODEL];
+                    eq.description = action[twcSrfItem.Fields.DESCRIPTION];
+                    eq.lengthmm = action[twcSrfItem.Fields.LENGTH_MM];
+                    eq.widthmm = action[twcSrfItem.Fields.WIDTH_MM];
+                    eq.heightDepthmm = action[twcSrfItem.Fields.DEPTH_MM];
+                    eq.weightkg = action[twcSrfItem.Fields.WEIGHT_KG];
+                    eq.heightonTowerm = action[twcSrfItem.Fields.HEIGHT_ON_TOWER];
+                    eq.azimuth = action[twcSrfItem.Fields.AZIMUTH];
+                    eq.b_End = action[twcSrfItem.Fields.B_END];
+                    eq.customerRef = action[twcSrfItem.Fields.CUSTOMER_REF];
+                    eq.inventoryFlag = action[twcSrfItem.Fields.INVENTORY_FLAG];
+                    eq.optType = action[twcSrfItem.Fields.TYPE_OPT];
+                    eq.voltageType = action[twcSrfItem.Fields.VOLTAGE_TYPE];
+                    eq.associatedEQUIP_ACTIONs = action.act_id;
+
+                    // get the parent equipment
+                    if (action[twcSrfItem.Fields.TMI_ID_SRF]) {
+                        var parent = actions.find(a => { return a.id == action[twcSrfItem.Fields.TMI_ID_SRF]; })
+                        eq.parentTMEID = parent?.eq_id;
+                    } else if (action[twcSrfItem.Fields.TMI_ID]) {
+                        eq.parentTMEID = action[twcSrfItem.Fields.TMI_ID]
+                    }
+
+
                 } else if (action.ea_type == twcUtils.EqActionType.Remove || action.ea_type == twcUtils.EqActionType.Unlicence || action.ea_type == twcUtils.EqActionType.SwapUnlicence) {
                     eq.equipmentLicenceStatus = twcUtils.EqLicenseStatus.ReqtoUnlicence;
                 } else {
                     // @@NOTE: this should not happen
-                    eq.equipmentLicenceStatus = twcUtils.EqLicenseStatus.Draft;
+                    throw new Error(`Invalid Eq. Action Type: ${action.ea_type}`);
                 }
-
-                eq.equipmentLibraryEntry = action[twcSrfItem.Fields.EQUIPMENT_LIBRARY];
-                eq.useLibrary = (eq.equipmentLibraryEntry) ? twcUtils.EqLibUse.Yes : twcUtils.EqLibUse.No;
-                eq.make = action[twcSrfItem.Fields.MAKE];
-                eq.model = action[twcSrfItem.Fields.MODEL];
-                eq.description = action[twcSrfItem.Fields.DESCRIPTION];
-                eq.lengthmm = action[twcSrfItem.Fields.LENGTH_MM];
-                eq.widthmm = action[twcSrfItem.Fields.WIDTH_MM];
-                eq.heightDepthmm = action[twcSrfItem.Fields.DEPTH_MM];
-                eq.weightkg = action[twcSrfItem.Fields.WEIGHT_KG];
-                eq.heightonTowerm = action[twcSrfItem.Fields.HEIGHT_ON_TOWER];
-                eq.azimuth = action[twcSrfItem.Fields.AZIMUTH];
-                eq.b_End = action[twcSrfItem.Fields.B_END];
-                eq.customerRef = action[twcSrfItem.Fields.CUSTOMER_REF];
-                eq.inventoryFlag = action[twcSrfItem.Fields.INVENTORY_FLAG];
-                eq.optType = action[twcSrfItem.Fields.TYPE_OPT];
-                eq.voltageType = action[twcSrfItem.Fields.VOLTAGE_TYPE];
-                eq.associatedEQUIP_ACTIONs = action.act_id;
-
-                // get the parent equipment
-                if (action[twcSrfItem.Fields.TMI_ID_SRF]) {
-                    var parent = actions.find(a => { return a.id == action[twcSrfItem.Fields.TMI_ID_SRF]; })
-                    eq.parentTMEID = parent?.eq_id;
-                } else if (action[twcSrfItem.Fields.TMI_ID]) {
-                    eq.parentTMEID = action[twcSrfItem.Fields.TMI_ID]
-                }
-
+                
                 eq.save();
                 action.eq_id = eq.id;
 

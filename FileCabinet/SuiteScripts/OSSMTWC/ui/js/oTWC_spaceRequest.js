@@ -38,8 +38,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 twcSrfItem.Fields.TME_ID,
                 `${twcSrfItem.Fields.TME_ID}_name`,
                 twcSrfItem.Fields.STRUCTURE,
-
-
+                twcSrfItem.Fields.EQUIPMENT_ID
             ]
 
             return swapFields.indexOf(k) >= 0;
@@ -154,7 +153,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             if (data.swapItem && data.swapItem[column.id] != value) {
                                 return `
                                         <div style="text-decoration: line-through; color: var(--label-color);">${formattedValue}</div>
-                                        <div style="font-weight: bold; color: var(--accent-fore-color);">${data.swapItem[column.id]}</div>
+                                        <div style="font-weight: bold; color: var(--accent-fore-color);">${data.swapItem[column.id] || ''}</div>
                                     `
                             }
                             return formattedValue;
@@ -246,6 +245,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         } else {
                             srfRelatedItem.dirty = true;
                         }
+                        if (swapParentItem) { swapParentItem.dirty = true; }
                         this.#relatedEqTable.render(this.#srfItem.relatedItems, true);
                         if (addAndCopy) { this.manageSRFSubItem(copySrfItem(srfNewRelatedItem), 'copy'); }
                     },
@@ -260,6 +260,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             render(callback, closeCallBack) {
                 var res = this.#page.postSync({ action: 'child-record' }, { srf: this.data.siteRequestInfo, item: this.#srfItem })
+
+                if (this.#srfItem[twcSrfItem.Fields.STEP_TYPE] == twcSrfItem.StepType.TME && this.#srfItem[twcSrfItem.Fields.REQUEST_TYPE] == twcSrfItem.RequestType.SWAP && this.#srfItem[twcSrfItem.Fields.EQUIPMENT_ID]) {
+                    var resChildern = this.#page.postSync({ action: 'get-equipment-children' }, { eq: this.#srfItem[twcSrfItem.Fields.EQUIPMENT_ID] })
+                    core.array.each(resChildern.data, eq => {
+                        if (!this.#srfItem.relatedItems.find(ri => { return ri[twcSrfItem.Fields.EQUIPMENT_ID] == eq[twcSrfItem.Fields.EQUIPMENT_ID] })) {
+                            eq[twcSrfItem.Fields.REQUEST_TYPE] = this.#srfItem[twcSrfItem.Fields.REQUEST_TYPE];
+                            this.#srfItem.relatedItems.push(eq);
+                        }
+                    })
+                    console.log(resChildern.data);
+                }
+
+
+
                 this.#form = twcUIPanel.ui(res);
                 this.#form.on('change', e => { this.setFormState(e); })
                 this.setFormState();
@@ -408,7 +422,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         // console.log(structures)
                         // @@HARDCODED: @@TODO: SRF: this should not be hardcoded
                         this.#form.getControl(twcSrfItem.Fields.STRUCTURE).hide = (this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).valueObj?.text == 'Outdoor');
-                        
+
                     }
                 }
 
@@ -483,7 +497,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (pickedEq) {
 
                     this.#srfItem.relatedItems = pickedEq.relatedItems;
-                    this.#srfItem[twcSrfItem.Fields.EQUIPMENT_LIBRARY] = pickedEq.id;
+                    // this.#srfItem[twcSrfItem.Fields.EQUIPMENT_LIBRARY] = pickedEq.id;
                     this.#srfItem[twcSrfItem.Fields.REQUEST_TYPE] = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
                     this.#srfItem[twcSrfItem.Fields.REQUEST_TYPE + '_name'] = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).valueObj.text;
                     this.#srfItem[twcSrfItem.Fields.TME_ID] = pickedEq[twcEquipment.Fields.PARENT_TME_ID];
@@ -815,6 +829,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         core.array.each(this.ui.controls, c => {
                             if (c.type !== 'table') { return; }
 
+                            // @@NOTE: function formatValue for each table column is replicated on the backend (FileCabinet\SuiteScripts\OSSMTWC\data\oTWC_srfItemUI.js)
+                            //         any change here needs to be reflected there
                             core.array.each(c.options.columns, col => {
                                 col.formatValue = (value, formattedValue, data, column) => {
                                     if (data.swappedItem && data.swappedItem[column.id] != value) {

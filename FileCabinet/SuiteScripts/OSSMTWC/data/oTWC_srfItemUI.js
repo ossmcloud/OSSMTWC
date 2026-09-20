@@ -232,7 +232,22 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 );
             }
 
-
+            // @@NOTE: function formatValue for each table column is replicated on the UI (FileCabinet\SuiteScripts\OSSMTWC\ui\modules\oTWC_siteRequestUtils.js)
+            //         any change here needs to be reflected there
+            for (var k in fields) {
+                if (k == 'expand') { continue; }
+                var col = fields[k];
+                col.formatValue = (value, formattedValue, data, column) => {
+                    if (data.swappedItem && data.swappedItem[column.id] != value) {
+                        return `
+                            <div style="text-decoration: line-through; color: var(--label-color);">${data.swappedItem[column.id] || '&nbsp;'}</div>
+                            <div style="font-weight: bold; color: var(--accent-fore-color);">${formattedValue}</div>
+                        `
+                    }
+                    return formattedValue;
+                }
+            }
+            
             return {
                 id: `${twcSrfItem.Type}_${stepType}`, recordType: twcSrfItem.Type, label: label,
                 fields: fields,

@@ -165,9 +165,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             for (var ok in field.fields[k]) {
                                 columnOptions[ok] = field.fields[k][ok]
                             }
+                        
                         } else {
                             columnOptions.title = field.fields[k];
                         }
+
+                        
                         columns.push(columnOptions);
                     }
 

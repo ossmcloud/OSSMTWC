@@ -140,7 +140,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
-        
+
         var _savingErrors = [];
         const SAVE_MIN_UNITS = 150;
         function saveSiteSrf_validateUnits(customLimit) {
@@ -168,7 +168,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         }
                     }
                 }
-
 
                 if (!payload.keepSaving) {
                     if (payload.id) {
@@ -294,8 +293,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (item.ss_actionSaved) { return; }
 
                 var requestType = item[twcSrfItem.Fields.REQUEST_TYPE];
-                //var equipmentId = item[twcSrfItem.Fields.EQUIPMENT_ID] || item[twcSrfItem.Fields.TME_ID];
-                var equipmentId = item[twcSrfItem.Fields.EQUIPMENT_ID]
+
+                var equipmentId = item[twcSrfItem.Fields.EQUIPMENT_ID];
+                if (requestType == twcSrfItem.RequestType.SWAP && item.swappedItem) {
+                    equipmentId = item.swappedItem[twcSrfItem.Fields.EQUIPMENT_ID];
+                }
+
                 saveEqAction(item, payload, equipmentId, (requestType == twcSrfItem.RequestType.SWAP) ? twcSrfItem.RequestType.REMOVE : requestType)
                 // SWAP (REMOVE + INSTALL)
                 if (requestType == twcSrfItem.RequestType.SWAP) { saveEqAction(item, payload, null, twcSrfItem.RequestType.INSTALL); }
@@ -332,6 +335,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             try {
                 if (parentItem) {
+                    // @@NOTE: if we have a swap sub-item we must also have a swapItem attached to it or it means the sub item was not set
+                    if (item[twcSrfItem.Fields.REQUEST_TYPE] == twcSrfItem.RequestType.SWAP) { if (!item.swapItem) { return; } }
                     item[twcSrfItem.Fields.TMI_ID_SRF] = parentItem.id;
                 }
 
@@ -346,6 +351,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (!srfItem.hasField(k)) { continue; }
                     srfItem.set(k, item[k])
                 }
+
+                if (item.swapItem) {
+                    // @@NOTE: this is a related item that was swapped with a new one, the swap Item is tyhe new one
+                    for (var k in item.swapItem) {
+                        if (k == twcSrfItem.Fields.STEP_TYPE) { continue; }
+                        if (!srfItem.hasField(k)) { continue; }
+                        srfItem.set(k, item.swapItem[k])
+                    }
+
+                } else if (item.swappedItem) {
+                    // @@NOTE this is a swapped item
+                    srfItem.set(twcSrfItem.Fields.EQUIPMENT_ID, item.swappedItem[twcSrfItem.Fields.EQUIPMENT_ID]);
+                }
+
                 if (!item.id) { item.isNew = true; }
                 item.id = srfItem.save();
 

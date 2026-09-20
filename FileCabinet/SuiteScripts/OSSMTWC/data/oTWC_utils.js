@@ -1229,17 +1229,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var srfActions = [];
             coreSQL.each(`
                 select  a.id as ea_id, a.custrecord_twc_eq_action_sts as custrecord_twc_saf_a_status, BUILTIN.DF(a.custrecord_twc_eq_action_sts) as custrecord_twc_saf_a_status_name,
-                        custrecord_twc_srf_itm_srf, BUILTIN.DF(custrecord_twc_srf_itm_srf) as custrecord_twc_srf_itm_srf_name, 
-                        custrecord_twc_eq_action_saf, BUILTIN.DF(custrecord_twc_eq_action_saf) as custrecord_twc_eq_action_saf_name,
-                        a.custrecord_twc_eq_action_eq, BUILTIN.DF(a.custrecord_twc_eq_action_eq) as custrecord_twc_eq_action_eq_name,
-                        a.custrecord_twc_eq_action_type, BUILTIN.DF(custrecord_twc_eq_action_type) as custrecord_twc_eq_action_type_name,
+                        custrecord_twc_srf_itm_srf,             BUILTIN.DF(custrecord_twc_srf_itm_srf) as custrecord_twc_srf_itm_srf_name, 
+                        custrecord_twc_eq_action_saf,           BUILTIN.DF(custrecord_twc_eq_action_saf) as custrecord_twc_eq_action_saf_name,
+                        a.custrecord_twc_eq_action_eq,          BUILTIN.DF(a.custrecord_twc_eq_action_eq) as custrecord_twc_eq_action_eq_name,
+                        a.custrecord_twc_eq_action_type,        BUILTIN.DF(custrecord_twc_eq_action_type) as custrecord_twc_eq_action_type_name,
+                        srfi.custrecord_twc_srf_itm_stype,      BUILTIN.DF(srfi.custrecord_twc_srf_itm_stype) as custrecord_twc_srf_itm_stype_name,
+                        srfi.custrecord_twc_srf_itm_req_type,   BUILTIN.DF(srfi.custrecord_twc_srf_itm_req_type) as custrecord_twc_srf_itm_req_type_name,
 
-                        srfi.custrecord_twc_srf_itm_stype, BUILTIN.DF(srfi.custrecord_twc_srf_itm_stype) as custrecord_twc_srf_itm_stype_name,
-                        srfi.custrecord_twc_srf_itm_type, BUILTIN.DF(srfi.custrecord_twc_srf_itm_type) as custrecord_twc_srf_itm_type_name,
-                        srfi.custrecord_twc_srf_itm_req_type, BUILTIN.DF(srfi.custrecord_twc_srf_itm_req_type) as custrecord_twc_srf_itm_req_type_name,
-                        srfi.custrecord_twc_srf_itm_desc, srfi.custrecord_twc_srf_itm_length_mm, srfi.custrecord_twc_srf_itm_width_mm, srfi.custrecord_twc_srf_itm_depth_mm,
-                        srfi.custrecord_twc_srf_itm_ht_on_twr, srfi.custrecord_twc_srf_itm_azimuth, srfi.custrecord_twc_srf_itm_b_end, 
-                        srfi.custrecord_twc_srf_itm_tme_srf as parent_srf_item, srfi.id as srf_item
+                        case when a.custrecord_twc_eq_action_type = 2 then e.custrecord_twc_equip_type              else srfi.custrecord_twc_srf_itm_type               end as custrecord_twc_srf_itm_type, 
+                        case when a.custrecord_twc_eq_action_type = 2 then BUILTIN.DF(e.custrecord_twc_equip_type)  else BUILTIN.DF(srfi.custrecord_twc_srf_itm_type)   end as custrecord_twc_srf_itm_type_name,                       
+                        case when a.custrecord_twc_eq_action_type = 2 then e.custrecord_twc_equip_description       else srfi.custrecord_twc_srf_itm_desc               end as custrecord_twc_srf_itm_desc, 
+                        case when a.custrecord_twc_eq_action_type = 2 then e.custrecord_twc_equip_length_mm         else srfi.custrecord_twc_srf_itm_length_mm          end as custrecord_twc_srf_itm_length_mm, 
+                        case when a.custrecord_twc_eq_action_type = 2 then e.custrecord_twc_equip_width_mm          else srfi.custrecord_twc_srf_itm_width_mm           end as custrecord_twc_srf_itm_width_mm,
+                        case when a.custrecord_twc_eq_action_type = 2 then e.custrecord_twc_equip_ht_depth_mm       else srfi.custrecord_twc_srf_itm_depth_mm           end as custrecord_twc_srf_itm_depth_mm,
+                        case when a.custrecord_twc_eq_action_type = 2 then e.custrecord_twc_equip_ht_on_twr_m       else srfi.custrecord_twc_srf_itm_ht_on_twr          end as custrecord_twc_srf_itm_ht_on_twr,
+                        case when a.custrecord_twc_eq_action_type = 2 then e.custrecord_twc_equip_azimuth           else srfi.custrecord_twc_srf_itm_azimuth            end as custrecord_twc_srf_itm_azimuth,
+                        case when a.custrecord_twc_eq_action_type = 2 then e.custrecord_twc_equip_b_end             else srfi.custrecord_twc_srf_itm_b_end              end as custrecord_twc_srf_itm_b_end,
+
+                        srfi.custrecord_twc_srf_itm_tme_srf as parent_srf_item, 
+                        srfi.id as srf_item
                 from    customrecord_twc_eq_action a
                 join 	customrecord_twc_srf_itm srfi on srfi.id = a.custrecord_twc_eq_action_srf_item
                 join    customrecord_twc_equip e on e.id = a.custrecord_twc_eq_action_eq
@@ -1256,7 +1264,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     action.select = `<input data-id="${action.ea_id}" data-srf-id="${action.srf_item}" data-srf-parent-id="${action.parent_srf_item || ''}" type="checkbox" />`;
                 }
                 action['saf-detach'] = `<span class="o-table-action twc-clickable" data-action="delete">${twcIcons.get('trash', 16, 'red')}</span>`
-
+                action['srf_eq_action_type'] = `${action['custrecord_twc_srf_itm_req_type_name']} /  ${action['custrecord_twc_eq_action_type_name']}`;
                 if (action.parent_srf_item) {
                     var parent = srfActions.find(a => { return a.srf_item == action.parent_srf_item })
                     if (!parent.relatedItems) {

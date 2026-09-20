@@ -564,7 +564,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF' },
                     { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
                     { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Eq. Type' },
-                    { id: twcSrfItem.Fields.REQUEST_TYPE + '_name', title: 'Type' },
+                    { id: 'srf_eq_action_type', title: 'Type' },
                     { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description', nullText: '' },
                     { id: twcSrfItem.Fields.LENGTH_MM, title: 'Length', nullText: '' },
                     { id: twcSrfItem.Fields.WIDTH_MM, title: 'Width', nullText: '' },
