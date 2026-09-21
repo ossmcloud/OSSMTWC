@@ -36,7 +36,6 @@ define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
                 ON company.id = saf.${twcSaf.Fields.PRIMARY_CONTRACTOR}
                 WHERE NVL(saf.${twcSaf.Fields.STATUS}, 0) != ${twcSaf.Status.AwaitingPhotos}
                 AND saf.${twcSaf.Fields.R_TYPE} = 4
-                AND saf.id = 23
                 AND (
                     SELECT MAX(tb.${twcTB.Fields.BLOCK_DATE})
                     FROM ${twcTB.Type} tb
