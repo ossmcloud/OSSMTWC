@@ -15,7 +15,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
 
             var html = '';
             if (context.request.parameters.siteId || context.request.parameters.recId) {
-                twcBaseView.underMaintenance(pageData.userInfo);
+                // twcBaseView.underMaintenance(pageData.userInfo);
 
                 pageData.siteRequestInfo = twcSiteRequestUtils.getSiteRequestInfo(pageData);
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteRequestInfo.siteId || context.request.parameters.siteId, pageData.userInfo);
