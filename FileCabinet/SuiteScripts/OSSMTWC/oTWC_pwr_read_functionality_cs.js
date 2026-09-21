@@ -41,11 +41,6 @@ define(['N/url','N/currentRecord'], (url,currentRec) => {
             }
 
             const data = await response.json();
-            
-            // var htmlField = rec.setValue({
-            //     fieldId: 'custrecord_twc_power_rd_table',
-            //     value: '<div id="powerReadingDiv"> </div>'
-            // });
 
             renderTable(data);
 
@@ -68,9 +63,6 @@ define(['N/url','N/currentRecord'], (url,currentRec) => {
 
         var html = '';
 
-        // Inline <style> so this works regardless of what CSS the Inline HTML
-        // field allows through. Scoped under .pwr-rdg-sublist to avoid
-        // bleeding into the rest of the page.
         html += '<style>';
         html += '.pwr-rdg-sublist { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #333; border: 1px solid #c3c3c3; border-collapse: collapse; width: 100%; }';
         html += '.pwr-rdg-sublist thead th { background: #eef2f5; border-bottom: 1px solid #c3c3c3; border-right: 1px solid #dcdcdc; color: #4a4a4a; font-weight: bold; text-align: left; padding: 5px 8px; white-space: nowrap; }';
@@ -84,7 +76,6 @@ define(['N/url','N/currentRecord'], (url,currentRec) => {
         html += '.pwr-rdg-sublist .pwr-rdg-error { text-align: center; color: #c0392b; padding: 8px; }';
         html += '</style>';
 
-        // html += '<div style="overflow-x:auto;">';
         html += '<div style="width: 340%; margin:0; padding:0; overflow-x:auto;">';
         html += '<table class="pwr-rdg-sublist">';
         html += '<thead><tr>';

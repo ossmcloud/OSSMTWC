@@ -5,6 +5,7 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_srfReview.js', '../data/oTWC_equipment.js', '../data/oTWC_equipAction.js', '../data/oTWC_srfItem.js', '../data/oTWC_sds.js', './oTWC_sdsEngine.js', '../data/oTWC_file.js'],
     function (core, coreSql, recu, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSrfReview, twcEquipment, twcEqAct, twcSrfItem, twcSds, twcSdsEngine, twcFile) {
 
+
         // @IMPORTANT NOTE: API Governance
         //      initEquipment = 10 units + 6 units per action
         //      after init equip = 58 units
@@ -58,47 +59,50 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             core.array.each(actions, action => {
                 // LOOP: 2 units (save rec) + 2 UNITS * 2 for submit = 6 units
                 var eq = twcEquipment.get(action.eq_id);
-                eq.site = action[twcSrf.Fields.SITE];
-                eq.customer = action[twcSrf.Fields.CUSTOMER];
-                eq.equipmentClass = action[twcSrfItem.Fields.STEP_TYPE];
-                eq.equipmentType = action[twcSrfItem.Fields.ITEM_TYPE];
-                eq.infrastructure = action[twcSrfItem.Fields.STRUCTURE];
-                eq.equipmentInstallStatus = twcUtils.EqInstallStatus.Draft;
+
                 if (action.ea_type == twcUtils.EqActionType.Install || action.ea_type == twcUtils.EqActionType.Licence || action.ea_type == twcUtils.EqActionType.SwapLicence) {
                     eq.equipmentLicenceStatus = twcUtils.EqLicenseStatus.ReqtoLicence;
+
+                    eq.site = action[twcSrf.Fields.SITE];
+                    eq.customer = action[twcSrf.Fields.CUSTOMER];
+                    eq.equipmentClass = action[twcSrfItem.Fields.STEP_TYPE];
+                    eq.equipmentType = action[twcSrfItem.Fields.ITEM_TYPE];
+                    eq.infrastructure = action[twcSrfItem.Fields.STRUCTURE];
+                    eq.equipmentInstallStatus = twcUtils.EqInstallStatus.NotInstalled;
+                    eq.equipmentLibraryEntry = action[twcSrfItem.Fields.EQUIPMENT_LIBRARY];
+                    eq.useLibrary = (eq.equipmentLibraryEntry) ? twcUtils.EqLibUse.Yes : twcUtils.EqLibUse.No;
+                    eq.make = action[twcSrfItem.Fields.MAKE];
+                    eq.model = action[twcSrfItem.Fields.MODEL];
+                    eq.description = action[twcSrfItem.Fields.DESCRIPTION];
+                    eq.lengthmm = action[twcSrfItem.Fields.LENGTH_MM];
+                    eq.widthmm = action[twcSrfItem.Fields.WIDTH_MM];
+                    eq.heightDepthmm = action[twcSrfItem.Fields.DEPTH_MM];
+                    eq.weightkg = action[twcSrfItem.Fields.WEIGHT_KG];
+                    eq.heightonTowerm = action[twcSrfItem.Fields.HEIGHT_ON_TOWER];
+                    eq.azimuth = action[twcSrfItem.Fields.AZIMUTH];
+                    eq.b_End = action[twcSrfItem.Fields.B_END];
+                    eq.customerRef = action[twcSrfItem.Fields.CUSTOMER_REF];
+                    eq.inventoryFlag = action[twcSrfItem.Fields.INVENTORY_FLAG];
+                    eq.optType = action[twcSrfItem.Fields.TYPE_OPT];
+                    eq.voltageType = action[twcSrfItem.Fields.VOLTAGE_TYPE];
+                    eq.associatedEQUIP_ACTIONs = action.act_id;
+
+                    // get the parent equipment
+                    if (action[twcSrfItem.Fields.TMI_ID_SRF]) {
+                        var parent = actions.find(a => { return a.id == action[twcSrfItem.Fields.TMI_ID_SRF]; })
+                        eq.parentTMEID = parent?.eq_id;
+                    } else if (action[twcSrfItem.Fields.TMI_ID]) {
+                        eq.parentTMEID = action[twcSrfItem.Fields.TMI_ID]
+                    }
+
+
                 } else if (action.ea_type == twcUtils.EqActionType.Remove || action.ea_type == twcUtils.EqActionType.Unlicence || action.ea_type == twcUtils.EqActionType.SwapUnlicence) {
                     eq.equipmentLicenceStatus = twcUtils.EqLicenseStatus.ReqtoUnlicence;
                 } else {
                     // @@NOTE: this should not happen
-                    eq.equipmentLicenceStatus = twcUtils.EqLicenseStatus.Draft;
+                    throw new Error(`Invalid Eq. Action Type: ${action.ea_type}`);
                 }
-
-                eq.equipmentLibraryEntry = action[twcSrfItem.Fields.EQUIPMENT_LIBRARY];
-                eq.useLibrary = (eq.equipmentLibraryEntry) ? twcUtils.EqLibUse.Yes : twcUtils.EqLibUse.No;
-                eq.make = action[twcSrfItem.Fields.MAKE];
-                eq.model = action[twcSrfItem.Fields.MODEL];
-                eq.description = action[twcSrfItem.Fields.DESCRIPTION];
-                eq.lengthmm = action[twcSrfItem.Fields.LENGTH_MM];
-                eq.widthmm = action[twcSrfItem.Fields.WIDTH_MM];
-                eq.heightDepthmm = action[twcSrfItem.Fields.DEPTH_MM];
-                eq.weightkg = action[twcSrfItem.Fields.WEIGHT_KG];
-                eq.heightonTowerm = action[twcSrfItem.Fields.HEIGHT_ON_TOWER];
-                eq.azimuth = action[twcSrfItem.Fields.AZIMUTH];
-                eq.b_End = action[twcSrfItem.Fields.B_END];
-                eq.customerRef = action[twcSrfItem.Fields.CUSTOMER_REF];
-                eq.inventoryFlag = action[twcSrfItem.Fields.INVENTORY_FLAG];
-                eq.optType = action[twcSrfItem.Fields.TYPE_OPT];
-                eq.voltageType = action[twcSrfItem.Fields.VOLTAGE_TYPE];
-                eq.associatedEQUIP_ACTIONs = action.act_id;
-
-                // get the parent equipment
-                if (action[twcSrfItem.Fields.TMI_ID_SRF]) {
-                    var parent = actions.find(a => { return a.id == action[twcSrfItem.Fields.TMI_ID_SRF]; })
-                    eq.parentTMEID = parent?.eq_id;
-                } else if (action[twcSrfItem.Fields.TMI_ID]) {
-                    eq.parentTMEID = action[twcSrfItem.Fields.TMI_ID]
-                }
-
+                
                 eq.save();
                 action.eq_id = eq.id;
 
@@ -174,13 +178,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     from    customrecord_twc_srf_wks 
                     where  	custrecord_twc_srf_wks_loop ='T'
                     order by custrecord_twc_srf_wks_seq_no
-                `, stage => {
+                `, (stage, idx) => {
                     plannedDate = addWorkingDays(plannedDate, stage.delta_days || 0);
 
                     var srfWorkflowItem = twcSrfWorkflowItem.get();
                     srfWorkflowItem.workflow = wkf.id;
                     srfWorkflowItem.workflowStage = stage.id;
-                    srfWorkflowItem.status = WORKFLOW_STATUS.NEW;
+                    srfWorkflowItem.status = (idx == 0) ? WORKFLOW_STATUS.IN_PROGRESS : WORKFLOW_STATUS.NEW;
                     srfWorkflowItem.planned = plannedDate;
                     srfWorkflowItem.save();
                 });
@@ -233,6 +237,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+        function getNextStepId(workflowId, stepId) {
+            return coreSql.first(`
+                select      wi.id
+                from        customrecord_twc_srf_wkfi wi
+                where       wi.custrecord_twc_srf_wkfi_parent = ${workflowId}
+                and         wi.custrecord_twc_srf_wkfi_stage = (
+                    select  ws.custrecord_twc_srf_wks_next 
+                    from    customrecord_twc_srf_wkfi wi2
+                    join    customrecord_twc_srf_wks ws on ws.id = wi2.custrecord_twc_srf_wkfi_stage
+                    where   wi2.id = ${stepId}
+                )
+                and wi.id > ${stepId}
+            `)?.id;
+        }
 
         function updateWorkflow(userInfo, options) {
             var response = { status: 'success' };
@@ -245,7 +263,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             if (items) {
-                var stepNotRequired = false;
+                var stepNotRequired = false; var someStepIsInProgress = false; var lastReviewStepId = null;
                 core.array.each(items, item => {
                     var fields = []; var values = [];
                     fields.push(twcSrfWorkflowItem.Fields.PROFILE);
@@ -253,15 +271,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     for (var k in item) {
                         if (!k.startsWith('cust')) { continue; }
                         fields.push(k);
-                        if (twcSrfWorkflowItem.getField(k)?.type == 'date') {
+                        var fieldType = twcSrfWorkflowItem.getField(k)?.type;
+                        if (fieldType == 'date') {
                             values.push(twcUtils.fromJsToNs(item[k]));
                         } else {
                             values.push(item[k]);
                         }
 
-                        if (k == twcSrfWorkflowItem.Fields.STATUS && item[k] == WORKFLOW_STATUS.NOT_REQUIRED) {
-                            stepNotRequired = true;
+                        if (k == twcSrfWorkflowItem.Fields.STATUS) {
+                            if (item[k] == WORKFLOW_STATUS.NOT_REQUIRED) {
+                                stepNotRequired = true;
+                            } else if (item[k] == WORKFLOW_STATUS.IN_PROGRESS) {
+                                if (item.isReview) { someStepIsInProgress = true; }
+                            }
                         }
+
+                        if (item.isReview) { lastReviewStepId = item.id; }
                     }
                     recu.submit(twcSrfWorkflowItem.Type, item.id, fields, values);
 
@@ -329,6 +354,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
 
                 })
+
+                if (!someStepIsInProgress && lastReviewStepId) {
+                    // @@NOTE: this can hapen if the 'Initial Review' or 'Re-Submit Review' (basically the TL Review and any feedback loop) was processed withiout selecting any review stage
+                    var nextStep = getNextStepId(options.wkf, lastReviewStepId);
+                    if (nextStep) {
+                        recu.submit(twcSrfWorkflowItem.Type, nextStep, twcSrfWorkflowItem.Fields.STATUS, WORKFLOW_STATUS.IN_PROGRESS);
+                        response.reload = true;
+                    }
+                }
 
                 if (options.setStatus) {
                     recu.submit(twcSrf.Type, options.srf, twcSrf.Fields.SRF_STATUS, options.setStatus);
@@ -446,7 +480,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         TO_CHAR(srf.custrecord_twc_srf_lic_pack_revd, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_revd,
                         TO_CHAR(srf.custrecord_twc_srf_lic_pack_issued, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_issued,
                         TO_CHAR(srf.custrecord_twc_srf_lic_pack_signed, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_signed,
-                        srf.custrecord_twc_srf_lic_pack_sign_by,
+                        srf.custrecord_twc_srf_lic_pack_sign_by, 
                         TO_CHAR(srf.custrecord_twc_srf_lic_pack_exec, 'YYYY-MM-DD') as custrecord_twc_srf_lic_pack_exec,
                         srf.custrecord_twc_srf_lic_pack_exec_by,
                         srf.custrecord_twc_srf_type, srf.custrecord_twc_srf_reveue_impact
@@ -527,13 +561,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (options.isTLSignature) {
                 formData = {
                     record: twcSrf.Type,
-                    [twcSrf.Fields.LICENCE_PACK_EXECUTED]: (new Date()).format(),
+                    [twcSrf.Fields.LICENCE_PACK_EXECUTED]: new Date(),
                     [twcSrf.Fields.LICENCE_PACK_EXECUTED_BY]: userInfo.recordId,
                 }
             } else {
                 formData = {
                     record: twcSrf.Type,
-                    [twcSrf.Fields.LICENCE_PACK_SIGNED]: (new Date()).format(),
+                    [twcSrf.Fields.LICENCE_PACK_SIGNED]: new Date(),
                     [twcSrf.Fields.LICENCE_PACK_SIGNED_BY]: userInfo.profile,
                 }
             }
@@ -759,6 +793,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
+        function setSRFCompleteStatus(srf) {
+            // @@TODO: we should check if all actions were cancelled than the SRF should be cancelled ????
+            var pendingActionCount = coreSql.first(`
+                select      count(*) as c
+                from        customrecord_twc_eq_action
+                where       custrecord_twc_eq_action_srf = ${srf}
+                and         custrecord_twc_eq_action_sts = ${twcUtils.EqActionStatus.Pending}
+            `)?.c;
+            if (pendingActionCount == 0) {
+                recu.submit(twcSrf.Type, srf, twcSrf.Fields.SRF_STATUS, twcUtils.SrfStatus.Completed)
+            }
+            
+        }
+
+
         return {
             WorkflowStatus: WORKFLOW_STATUS,
             initWorkFlow: initWorkFlow,
@@ -769,7 +818,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             isWaitingForSignature: isWaitingForSignature,
             postSignature: postSignature,
             acceptSrf: acceptSrf,
-            rejectSds: rejectSds
+            rejectSds: rejectSds,
+            setSRFCompleteStatus: setSRFCompleteStatus
 
         }
     });

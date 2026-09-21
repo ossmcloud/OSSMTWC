@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_sds.js', '../data/oTWC_file.js', '../data/oTWC_fileType.js', '../data/oTWC_site.js', './oTWC_sdsEngine.js'],
-    function (core, coreSql, recu, dialog, twcUI, twcUtils, twcSrf, twcSds, twcFile, twcFileType, twcSite, twcSdsEngine) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_sds.js', '../data/oTWC_file.js', '../data/oTWC_fileType.js', '../data/oTWC_site.js', './oTWC_sdsEngine.js'],
+    function (core, coreSql, b64, recu, dialog, twcUI, twcUtils, twcSrf, twcSds, twcFile, twcFileType, twcSite, twcSdsEngine) {
 
         function getDialogContent(srf) {
 
@@ -40,7 +40,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `);
 
             var srfDrawingFiles = twcSdsEngine.getSrfDrawingFiles(srf.id);
-            
+
             return jQuery(`
                 <div>
                     <div style=" display:flex; align-items:flex-start;">
@@ -140,7 +140,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     form.getControl(twcSds.Fields.INCLUDE_LICENSE_MAP).ui.parent().parent().remove();
                 }
                 //if (formData[twcSds.F INCLUDE_LICENSE_MAP])
-                
+
                 form.getControl(twcSds.Fields.FIBRE_PROVIDER).on('change', e => {
                     form.getControl(twcSds.Fields.FIBRE_OTHER_PROVIDER).visible = e.target.valueObj && e.target.valueObj?.text.toLowerCase().indexOf('other') >= 0;
                 })
@@ -224,9 +224,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function manageAgreementConditions(sdsConditions, sds) {
             if (!sdsConditions || sdsConditions.length == 0) { throw new Error('Please, specify a condition'); }
             var formData = sds.get(twcSds.Fields.AGREEMENT_CONDITIONS_DATA);
-
-            // @@TODO: SDS: we should probably b64 this one
-            formData = JSON.parse(formData || '{}');
+            if (formData) {
+                // @@NOTE: we try/catch to be backward compatible
+                try {
+                    formData = JSON.parse(b64.decode(formData) || '{}');
+                } catch (error) {
+                    formData = JSON.parse(formData || '{}');
+                }
+            }
+            
 
             var formUi = jQuery(`<div></div>`);
             core.array.each(sdsConditions, sdsCondition => {
@@ -261,18 +267,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             dialog.confirm({ title: 'SDS Agreement Conditions', message: form.ui, width: '750px', height: '675px', }, (dlg) => {
                 try {
                     formData = form.getValues();
-                    // @@TODO: SDS: we should probably b64 this one
-                    sds.set(twcSds.Fields.AGREEMENT_CONDITIONS_DATA, JSON.stringify(formData));
-
+                    sds.set(twcSds.Fields.AGREEMENT_CONDITIONS_DATA, b64.encode(JSON.stringify(formData)));
                     return true;
-
                 } catch (error) {
                     dialog.error(error);
                     return false;
                 }
             });
 
-            //
         }
 
         function printSDS(page, srf, fromFile) {
@@ -294,9 +296,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         ${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'terms-and-cond-agreed' })}
                     </div>
                 `
+
+                var signedByOperator = '';
                 if (isTL) {
-                    disclaimer = 'By clicking "Ok" you are entering into a legally binding agreement';
                     checkBox = '';
+                    disclaimer = 'By clicking "Ok" you are entering into a legally binding agreement';
+                    signedByOperator = `
+                        <div>
+                            <label>Signed by</label>
+                             ${srf.pack_sign_by_name} on ${srf.pack_sign_by_date}
+                        </div>
+                    `
                 }
 
                 var html = jQuery(`
@@ -305,6 +315,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             ${preview}
                         </div>
                         <div style="width: 550px">
+                            ${signedByOperator}
                             <div>
                                 <label>Disclaimer</label>
                                 ${disclaimer}

@@ -59,7 +59,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
             if (!f.id) {
                 // @@NOTE: if the PDF does not exist we create it at the 1st print
                 // @@TODO: should this go to site folder or company folder ?????
-                pdfFile.folder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${requestJSON.siteDetails.site_id}/SDS/${requestJSON.srf.name}`);
+                pdfFile.folder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/Sites/${requestJSON.siteDetails.site_id}/SDS/${requestJSON.srf.name}`);
 
                 f.file = pdfFile.save();
                 f.name = requestJSON.sds[twcSDS.Fields.NAME];
@@ -79,7 +79,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 //          the setStatus flag is true when the SDS is executed by TL
                 if (requestJSON.sds[twcSDS.Fields.STATUS] == twcUtils.SdsStatus.Draft || setStatus) {
                     // @@TODO: should this go to site folder or company folder ?????
-                    pdfFile.folder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/${requestJSON.siteDetails.site_id}/SDS/${requestJSON.srf.name}`);
+                    pdfFile.folder = nsFileUtils.createFolderIfNotExist(`${twcUtils.ROOT_FILE_FOLDER}/Sites/${requestJSON.siteDetails.site_id}/SDS/${requestJSON.srf.name}`);
                     f.file = pdfFile.save();
                     if (requestJSON.sds[twcSDS.Fields.STATUS] == twcUtils.SdsStatus.Draft) {
                         f.status = twcUtils.FileStatus.Pending;

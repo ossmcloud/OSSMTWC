@@ -67,7 +67,6 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.hide = !val;
             }
 
-            // @@TODO: we need to implement the disabled attr on arrow
             get disabled() {
                 return this.#input.attr("disabled") !== undefined;
             } set disabled(val) {
@@ -158,7 +157,6 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     this.#options.value = this.#dataSource[0].value;
                 }
 
-                // @@TODO: we need to implement the disabled attr 
                 var label = '';
                 if (this.#options.label) {
                     var mandatory = (this.#options.mandatory) ? ' *' : '';

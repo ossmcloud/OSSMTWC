@@ -20,7 +20,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     noSort: true,
                     sortIdx: 999,
                     initValue: (d) => {
-                        return `<a href="${safLink}&siteId=${d.id}">view</a>`;
+                        return `<a href="${safLink}&siteId=${d.site_id}&recId=${d.id}">view</a>`;
                     }
                 })
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
@@ -102,6 +102,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (this.data.siteInfo) {
                     this.initInventoryMode();
                     this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
+
+                    if (this.data.recId) {
+                        core.array.each(this.ui.controls, c => {
+                            if (c.type == 'table') {
+                                var row = c.rows.find(r => { return r.data?.id == this.data.recId });
+                                if (row) {
+                                    var divs = row.ui();
+                                    divs[0].scrollIntoView({
+                                        behavior: "smooth", // or "auto" or "instant"
+                                        block: 'center',    // vertical alignment: 'start' | 'center' | 'end' | 'nearest'
+                                        inline: 'nearest'   // horizontal alignment
+                                    });
+                                    divs = divs.find('div');
+                                    divs.addClass('app-pulse-red')
+                                    window.setTimeout(() => {
+                                        divs.removeClass('app-pulse-red')
+                                    }, 5000)
+                                    return false;
+                                }
+                            }
+                        })
+                    }
+
                 } else {
                     this.#sitesTable = new TWCSiteTable(this);
                     this.#sitePanel = twcSiteLocatorPanel.get({

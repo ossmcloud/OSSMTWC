@@ -62,7 +62,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#panelHidden.css('display', 'block')
                 }
                 this.#collapsed = !this.#collapsed;
+                
                 localStorage.setItem('site-panel-collapsed', this.#collapsed);
+                this.#page.resizeRightPane();
+
             }
         }
 

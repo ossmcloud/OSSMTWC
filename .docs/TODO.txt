@@ -1,13 +1,21 @@
-SRF:
-    // @@TODO: SRF
-	When swapping TME show list of ATME/Feeders with toggle
 
-SAF:
-    // @@TODO: SAF 
-    // @@TODO: currently we email the primary contractor, is this ok?
+SRF Swap:
+    Swap ATME/FEEDER: we should make sure swapped stuff here is not swapped on the TME section and vice versa
 
-SDS:
-    // @@TODO: should this go to site folder or company folder ?????
+    Swap Item and 2 related items
+    Save, then edit and uncheck one of the 2 related items 
+    Save, the related item is not deleted
+        when unchecking a related swap item that was saved, ask for deletion and add item to .deleted_items collection
+
+    Test SAF against Swap SRF
+        move children once installed
+        
+        SRF0000121
+        SRF0000123
+
+
+Re-Use SAF
+    see Mark long post
 
 Workflow:
 	Planned dates 

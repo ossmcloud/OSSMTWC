@@ -1,0 +1,216 @@
+﻿RADIX company_id,FILE TYPE,Blacknight Location,Blacknight Filename,File Suffix,Transfer Company Doc,Target Site Destination Folder,Target Site File Name,name,description
+4,Method Statement,/var/www/html/public/uploads/companies/4,27,.pdf,TRANSFER,,MS_Air_1_v1.0 - LOS Survey.pdf,MS_Air_1_v1.0 - LOS Survey.pdf,NULL
+4,Method Statement,/var/www/html/public/uploads/companies/4,29,.pdf,TRANSFER,,MS_Air_2_v1.0 - Install Steelwork.pdf,MS_Air_2_v1.0 - Install Steelwork.pdf,NULL
+4,Method Statement,/var/www/html/public/uploads/companies/4,30,.pdf,TRANSFER,,MS_Air_3_v1.0 - Link Install.pdf,MS_Air_3_v1.0 - Link Install.pdf,NULL
+4,Method Statement,/var/www/html/public/uploads/companies/4,31,.pdf,TRANSFER,,MS_Air_4_v1.0 - ODU Fault.pdf,MS_Air_4_v1.0 - ODU Fault.pdf,NULL
+4,Method Statement,/var/www/html/public/uploads/companies/4,32,.pdf,TRANSFER,,MS_Air_5_v1.0 - Pan Antenna.pdf,MS_Air_5_v1.0 - Pan Antenna.pdf,NULL
+4,H&S Plan,/var/www/html/public/uploads/companies/4,34,.pdf,TRANSFER,,H&S_Air_1_v1.0 - H&S Statement.pdf,H&S_Air_1_v1.0 - H&S Statement.pdf,NULL
+49,Method Statement,/var/www/html/public/uploads/companies/49,2756,.pdf,TRANSFER,,Link Swap - MS.pdf,Link Swap - MS.pdf,Link Swap MS
+60,H&S Plan,/var/www/html/public/uploads/companies/60,64,.pdf,TRANSFER,,H&S_SPE_1_v1.0 - Health and Safety Plan.pdf,H&S_SPE_1_v1.0 - Health and Safety Plan.pdf,NULL
+60,Method Statement,/var/www/html/public/uploads/companies/60,65,.pdf,TRANSFER,,MS_SPE_1_v1.0 - BSSM.pdf,MS_SPE_1_v1.0 - BSSM.pdf,NULL
+60,Method Statement,/var/www/html/public/uploads/companies/60,66,.pdf,TRANSFER,,MS_SPE_2_v1.0 - LOS.pdf,MS_SPE_2_v1.0 - LOS.pdf,NULL
+60,Method Statement,/var/www/html/public/uploads/companies/60,67,.pdf,TRANSFER,,MS_SPE_3_v1.0 - MEWP LOS.pdf,MS_SPE_3_v1.0 - MEWP LOS.pdf,NULL
+60,Method Statement,/var/www/html/public/uploads/companies/60,68,.pdf,TRANSFER,,MS_SPE_4_v1.0 - Climb Down.pdf,MS_SPE_4_v1.0 - Climb Down.pdf,NULL
+60,Method Statement,/var/www/html/public/uploads/companies/60,69,.pdf,TRANSFER,,MS_SPE_5_v1.0 - Pan Dish.pdf,MS_SPE_5_v1.0 - Pan Dish.pdf,NULL
+60,Method Statement,/var/www/html/public/uploads/companies/60,70,.pdf,TRANSFER,,MS_SPE_6_v1.0 - Sweep Test.pdf,MS_SPE_6_v1.0 - Sweep Test.pdf,NULL
+60,Method Statement,/var/www/html/public/uploads/companies/60,71,.pdf,TRANSFER,,MS_SPE_7_v1.0 - ODU Fault.pdf,MS_SPE_7_v1.0 - ODU Fault.pdf,NULL
+60,Method Statement,/var/www/html/public/uploads/companies/60,72,.pdf,TRANSFER,,MS_SPE_8_v1.0 - Install Steelwork.pdf,MS_SPE_8_v1.0 - Install Steelwork.pdf,NULL
+60,Method Statement,/var/www/html/public/uploads/companies/60,73,.pdf,TRANSFER,,MS_SPE_9_v1.0 - Link Install.pdf,MS_SPE_9_v1.0 - Link Install.pdf,NULL
+60,Method Statement,/var/www/html/public/uploads/companies/60,74,.pdf,TRANSFER,,MS_SPE_10_v1.0 - Remove Antenna.pdf,MS_SPE_10_v1.0 - Remove Antenna.pdf,NULL
+60,Method Statement,/var/www/html/public/uploads/companies/60,75,.pdf,TRANSFER,,MS_SPE_11_v1.0 - Replace Antenna.pdf,MS_SPE_11_v1.0 - Replace Antenna.pdf,NULL
+67,H&S Plan,/var/www/html/public/uploads/companies/67,76,.pdf,TRANSFER,,H&S_TC_1_v1.0 - Health & Safety Plan.pdf,H&S_TC_1_v1.0 - Health & Safety Plan.pdf,NULL
+67,Method Statement,/var/www/html/public/uploads/companies/67,77,.pdf,TRANSFER,,MS_TC_1_v1.0 - Civil Maintenance.pdf,MS_TC_1_v1.0 - Civil Maintenance.pdf,NULL
+67,Method Statement,/var/www/html/public/uploads/companies/67,78,.pdf,TRANSFER,,MS_TC_2_v1.0 - Install Antenna Steelwork.pdf,MS_TC_2_v1.0 - Install Antenna Steelwork.pdf,NULL
+67,Method Statement,/var/www/html/public/uploads/companies/67,79,.pdf,TRANSFER,,MS_TC_3_v1.0 - Tower Climbdown.pdf,MS_TC_3_v1.0 - Tower Climbdown.pdf,NULL
+4,Method Statement,/var/www/html/public/uploads/companies/4,207,.pdf,TRANSFER,,MS_Air_7_v1.0 - Internal Works.pdf,MS_Air_7_v1.0 - Internal Works.pdf,Internal works - radios/switches
+4,Method Statement,/var/www/html/public/uploads/companies/4,202,.pdf,TRANSFER,,MS_Air_6_v1.0 - Outdoor Enclosure.pdf,MS_Air_6_v1.0 - Outdoor Enclosure.pdf,Install Outdoor Enclosure
+116,Method Statement,/var/www/html/public/uploads/companies/116,2589,.pdf,TRANSFER,,MS-009_Sec_v1.0 - Microwave Decommissioning.pdf,MS-009_Sec_v1.0 - Microwave Decommissioning.pdf,Dish Decom
+60,Method Statement,/var/www/html/public/uploads/companies/60,177,.pdf,TRANSFER,,MS_SPE_12_v1.0 - Software or Frequency Change.pdf,MS_SPE_12_v1.0 - Software or Frequency Change.pdf,Software Upgrade or Frequency Change
+116,Method Statement,/var/www/html/public/uploads/companies/116,2581,.pdf,TRANSFER,,MS-002_Sec_v1.0 - Remove Manhole Covers.pdf,MS-002_Sec_v1.0 - Remove Manhole Covers.pdf,Remove Manhole Covers
+35,Method Statement,/var/www/html/public/uploads/companies/35,627,.pdf,TRANSFER,,MS_IBB_4_v1.0 - Replace Antenna_Equipment.pdf,MS_IBB_4_v1.0 - Replace Antenna_Equipment.pdf,Replace Antenna/Equipment
+35,Method Statement,/var/www/html/public/uploads/companies/35,626,.pdf,TRANSFER,,MS_IBB_3_v1.0 - Link Install.pdf,MS_IBB_3_v1.0 - Link Install.pdf,Link Install
+35,H&S Plan,/var/www/html/public/uploads/companies/35,625,.pdf,TRANSFER,,H&S_IBB_1_v1.0 - Safety & Health Plan.pdf,H&S_IBB_1_v1.0 - Safety & Health Plan.pdf,Safety & Health Plan
+116,Method Statement,/var/www/html/public/uploads/companies/116,2588,.pdf,TRANSFER,,MS-008_Sec_v1.0 - Microwave Installation.pdf,MS-008_Sec_v1.0 - Microwave Installation.pdf,Dish Install
+116,Method Statement,/var/www/html/public/uploads/companies/116,2590,.pdf,TRANSFER,,MS-010_Sec_v1.0 - LOS Survey.pdf,MS-010_Sec_v1.0 - LOS Survey.pdf,LOS Survey
+116,Method Statement,/var/www/html/public/uploads/companies/116,2591,.pdf,TRANSFER,,MS-011_Sec_v1.0 - Antenna System Install.pdf,MS-011_Sec_v1.0 - Antenna System Install.pdf,Antenna System Install
+35,Method Statement,/var/www/html/public/uploads/companies/35,624,.pdf,TRANSFER,,MS_IBB_2_v1.0 - LOS_Construction Survey.pdf,MS_IBB_2_v1.0 - LOS_Construction Survey.pdf,LOS/Construction Survey
+35,Method Statement,/var/www/html/public/uploads/companies/35,623,.pdf,TRANSFER,,MS_IBB_1_v1.0 - Climbdown_Tower Audit.pdf,MS_IBB_1_v1.0 - Climbdown_Tower Audit.pdf,Climbdown/Tower Audit
+59,H&S Plan,/var/www/html/public/uploads/companies/59,4078,.pdf,TRANSFER,,Safety Statement 2005 v13.1.pdf,Safety Statement 2005 v13.1.pdf,Safety Statement v13.1
+35,Method Statement,/var/www/html/public/uploads/companies/35,628,.pdf,TRANSFER,,MS_IBB_5_v1.0 - Antenna Steelwork Install or Removal.pdf,MS_IBB_5_v1.0 - Antenna Steelwork Install or Removal.pdf,Install/Remove Antenna Steelwork
+35,Method Statement,/var/www/html/public/uploads/companies/35,629,.pdf,TRANSFER,,MS_IBB_6_v1.0 - Antenna Tilt_Orientation Change.pdf,MS_IBB_6_v1.0 - Antenna Tilt_Orientation Change.pdf,Antenna Tilt/Orientation Change
+35,Method Statement,/var/www/html/public/uploads/companies/35,630,.pdf,TRANSFER,,MS_IBB_7_v1.0 - Antenna Decommission.pdf,MS_IBB_7_v1.0 - Antenna Decommission.pdf,Antenna Decommission
+35,Method Statement,/var/www/html/public/uploads/companies/35,631,.pdf,TRANSFER,,MS_IBB_8_v1.0 - Install Cabin or other ground equipment.pdf,MS_IBB_8_v1.0 - Install Cabin or other ground equipment.pdf,Cabin or other ground equipment install
+35,Method Statement,/var/www/html/public/uploads/companies/35,632,.pdf,TRANSFER,,MS_IBB_10_v1.0 - Installation of Temporary Generator.pdf,MS_IBB_10_v1.0 - Installation of Temporary Generator.pdf,Temp Generator Installation
+35,Method Statement,/var/www/html/public/uploads/companies/35,633,.pdf,TRANSFER,,MS_IBB_11_v1.0 - Steelwork De-Rigging.pdf,MS_IBB_11_v1.0 - Steelwork De-Rigging.pdf,Steelwork De-Rigging
+35,Method Statement,/var/www/html/public/uploads/companies/35,634,.pdf,TRANSFER,,MS_IBB_9_v1.0 - Generator Installation.pdf,MS_IBB_9_v1.0 - Generator Installation.pdf,Generator Installation
+35,Method Statement,/var/www/html/public/uploads/companies/35,635,.pdf,TRANSFER,,MS_IBB_12_v1.0 - Painting Antenna.pdf,MS_IBB_12_v1.0 - Painting Antenna.pdf,Antenna Painting
+49,H&S Plan,/var/www/html/public/uploads/companies/49,2755,.pdf,TRANSFER,,H&S_OBE_1_v1.0- Health & Safety Plan.pdf,H&S_OBE_1_v1.0- Health & Safety Plan.pdf,H&S Plan - Obelisk
+116,Method Statement,/var/www/html/public/uploads/companies/116,2587,.pdf,TRANSFER,,MS-007_Sec_v1.0 - Cable Tray Gantry Installation.pdf,MS-007_Sec_v1.0 - Cable Tray Gantry Installation.pdf,Cable Tray Gantry Install
+49,Method Statement,/var/www/html/public/uploads/companies/49,2753,.pdf,TRANSFER,,RRU Replacement - MS.pdf,RRU Replacement - MS.pdf,RRU Replace MS
+49,Method Statement,/var/www/html/public/uploads/companies/49,2752,.pdf,TRANSFER,,RET & Cable Replace - MS.pdf,RET & Cable Replace - MS.pdf,RET & cable replace MS
+123,Method Statement,/var/www/html/public/uploads/companies/123,882,.pdf,TRANSFER,,Exigent - Pan Antenna MS.pdf,Exigent - Pan Antenna MS.pdf,Exigent - Pan Antenna MS
+123,H&S Plan,/var/www/html/public/uploads/companies/123,883,.pdf,TRANSFER,,Exigent - H&S Plan.pdf,Exigent - H&S Plan.pdf,Exigent -  H&S Plan
+123,Method Statement,/var/www/html/public/uploads/companies/123,881,.pdf,TRANSFER,,Exigent - Replace Antenna MS.pdf,Exigent - Replace Antenna MS.pdf,Exigent - Replace antenna MS
+20,Method Statement,/var/www/html/public/uploads/companies/20,2456,.pdf,TRANSFER,,MS_2_FST_V1.0 - LOS Survey.pdf,MS_2_FST_V1.0 - LOS Survey.pdf,LOS Survey
+49,Method Statement,/var/www/html/public/uploads/companies/49,2751,.pdf,TRANSFER,,Replace Antenna - MS.pdf,Replace Antenna - MS.pdf,Replace Antenna MS
+49,Method Statement,/var/www/html/public/uploads/companies/49,2749,.pdf,TRANSFER,,RBS Card Replace - MS.pdf,RBS Card Replace - MS.pdf,RBS card replacement
+49,Method Statement,/var/www/html/public/uploads/companies/49,2750,.pdf,TRANSFER,,ODU Fault - MS.pdf,ODU Fault - MS.pdf,ODU Fault MS
+49,Method Statement,/var/www/html/public/uploads/companies/49,2746,.pdf,TRANSFER,,Link Decom - MS.pdf,Link Decom - MS.pdf,Link Decom MS
+32,Method Statement,/var/www/html/public/uploads/companies/32,1048,.pdf,TRANSFER,,MS_AT_1_v1.0 - Template.pdf,MS_AT_1_v1.0 - Template.pdf,AT Networks MS
+32,H&S Plan,/var/www/html/public/uploads/companies/32,1047,.pdf,TRANSFER,,H&S_AT_1_v1.0 - Safety Statement.pdf,H&S_AT_1_v1.0 - Safety Statement.pdf,AT Networks H&S
+125,Method Statement,/var/www/html/public/uploads/companies/125,1046,.pdf,TRANSFER,,MS_AT_1_v1.0 - Template.pdf,MS_AT_1_v1.0 - Template.pdf,Method Statement
+125,H&S Plan,/var/www/html/public/uploads/companies/125,1045,.pdf,TRANSFER,,H&S_AT_1_v1.0 - Safety Statement.pdf,H&S_AT_1_v1.0 - Safety Statement.pdf,Safety Statement
+20,Method Statement,/var/www/html/public/uploads/companies/20,2455,.pdf,TRANSFER,,MS_1_FST_V1.0 - Replace antenna.pdf,MS_1_FST_V1.0 - Replace antenna.pdf,Replace Antenna
+49,Method Statement,/var/www/html/public/uploads/companies/49,2748,.pdf,TRANSFER,,LOS Survey - MS.pdf,LOS Survey - MS.pdf,LOS Survey MS
+49,Method Statement,/var/www/html/public/uploads/companies/49,2747,.pdf,TRANSFER,,Link Install - MS.pdf,Link Install - MS.pdf,Link Install MS
+43,Method Statement,/var/www/html/public/uploads/companies/43,5055,.pdf,TRANSFER,,MS_KTL_11_v1.0 - Install_Remove Generator.pdf,MS_KTL_11_v1.0 - Install_Remove Generator.pdf,Install/Remove Generator
+116,Method Statement,/var/www/html/public/uploads/companies/116,2586,.pdf,TRANSFER,,MS-006_Sec_v1.0 - Site Earthing.pdf,MS-006_Sec_v1.0 - Site Earthing.pdf,Site Earthing
+116,Method Statement,/var/www/html/public/uploads/companies/116,2585,.pdf,TRANSFER,,MS-005_Sec_v1.0 - Fencing and Gate Installation.pdf,MS-005_Sec_v1.0 - Fencing and Gate Installation.pdf,Fence and Gate Install
+43,Method Statement,/var/www/html/public/uploads/companies/43,5057,.pdf,TRANSFER,,MS_KTL_12_v1.0 - Install_Cabin_BTS_Other_Ground_Equipment.pdf,MS_KTL_12_v1.0 - Install_Cabin_BTS_Other_Ground_Equipment.pdf,Install Cabin
+43,Method Statement,/var/www/html/public/uploads/companies/43,5056,.pdf,TRANSFER,,MS_KTL_10_v1.0 - Install_Ducting.pdf,MS_KTL_10_v1.0 - Install_Ducting.pdf,Install Ducting
+116,Method Statement,/var/www/html/public/uploads/companies/116,2584,.pdf,TRANSFER,,MS-004_Sec_v1.0 - Trenching and Ducting.pdf,MS-004_Sec_v1.0 - Trenching and Ducting.pdf,Ducting
+116,Method Statement,/var/www/html/public/uploads/companies/116,2583,.pdf,TRANSFER,,MS-001_Sec_v1.0 - Project Commencement.pdf,MS-001_Sec_v1.0 - Project Commencement.pdf,Project Commencement
+116,Method Statement,/var/www/html/public/uploads/companies/116,2582,.pdf,TRANSFER,,MS-003_Sec_v1.0 - Excavation and Outdoor Unit Installation.pdf,MS-003_Sec_v1.0 - Excavation and Outdoor Unit Installation.pdf,Outdoor Installation
+43,Method Statement,/var/www/html/public/uploads/companies/43,5054,.pdf,TRANSFER,,MS_KTL_9_v1.0 - Dig_Trial_Hole.pdf,MS_KTL_9_v1.0 - Dig_Trial_Hole.pdf,Dig Trial Hole
+49,Method Statement,/var/www/html/public/uploads/companies/49,2745,.pdf,TRANSFER,,Install_Remove Geny - MS.pdf,Install_Remove Geny - MS.pdf,Install_Remove Geny
+49,Method Statement,/var/www/html/public/uploads/companies/49,2744,.pdf,TRANSFER,,Fibre Replacement - MS.pdf,Fibre Replacement - MS.pdf,Fibre Replacement MS
+116,Method Statement,/var/www/html/public/uploads/companies/116,2592,.pdf,TRANSFER,,MS-012_Sec_v1.0 - Mast Fault Investigation.pdf,MS-012_Sec_v1.0 - Mast Fault Investigation.pdf,Mast Fault Investigation
+29,Method Statement,/var/www/html/public/uploads/companies/29,2684,.pdf,TRANSFER,,MS_9_v1.0 - Node B Upgrade.pdf,MS_9_v1.0 - Node B Upgrade.pdf,Node B Upgrade
+29,Method Statement,/var/www/html/public/uploads/companies/29,2683,.pdf,TRANSFER,,MS_8_v1.0 - New Rig Installation.pdf,MS_8_v1.0 - New Rig Installation.pdf,New Rig Install
+29,Method Statement,/var/www/html/public/uploads/companies/29,2682,.pdf,TRANSFER,,MS_7_v1.0 - Electrical Survey.pdf,MS_7_v1.0 - Electrical Survey.pdf,Electrical Survey
+29,Method Statement,/var/www/html/public/uploads/companies/29,2681,.pdf,TRANSFER,,MS_5_v1.0 - Antenna Upgrade.pdf,MS_5_v1.0 - Antenna Upgrade.pdf,Antenna Upgrade
+29,Method Statement,/var/www/html/public/uploads/companies/29,2680,.pdf,TRANSFER,,MS_3_v1.0 - Pan Antenna or Dish.pdf,MS_3_v1.0 - Pan Antenna or Dish.pdf,Pan Antenna/Dish
+116,Method Statement,/var/www/html/public/uploads/companies/116,2593,.pdf,TRANSFER,,MS-013_Sec_v1.0 - Ground or ODU Fault Investigation.pdf,MS-013_Sec_v1.0 - Ground or ODU Fault Investigation.pdf,Ground or ODU Fault
+116,Method Statement,/var/www/html/public/uploads/companies/116,2594,.pdf,TRANSFER,,MS-014_Sec_v1.0 - BT Ground Maintenance.pdf,MS-014_Sec_v1.0 - BT Ground Maintenance.pdf,BT Ground Maint
+49,Method Statement,/var/www/html/public/uploads/companies/49,2742,.pdf,TRANSFER,,Antenna Fault - MS.pdf,Antenna Fault - MS.pdf,Antenna Fault MS
+49,Method Statement,/var/www/html/public/uploads/companies/49,2743,.pdf,TRANSFER,,IDU Swap - MS.pdf,IDU Swap - MS.pdf,IDU Swap MS
+49,Method Statement,/var/www/html/public/uploads/companies/49,2754,.pdf,TRANSFER,,Trouble Shooting - MS.pdf,Trouble Shooting - MS.pdf,Trouble Shooting MS
+49,Method Statement,/var/www/html/public/uploads/companies/49,2741,.pdf,TRANSFER,,Climbdown Survey - MS.pdf,Climbdown Survey - MS.pdf,Climbdown survey MS
+29,Method Statement,/var/www/html/public/uploads/companies/29,2679,.pdf,TRANSFER,,MS_4_v1.0 - Link Upgrade.pdf,MS_4_v1.0 - Link Upgrade.pdf,Link Upgrade
+29,H&S Plan,/var/www/html/public/uploads/companies/29,2678,.pdf,TRANSFER,,H&S_1_v1.0 - Site Specific Safety Statement.pdf,H&S_1_v1.0 - Site Specific Safety Statement.pdf,H&S Plan
+29,Method Statement,/var/www/html/public/uploads/companies/29,2676,.pdf,TRANSFER,,MS_1_v1.0 - Climb Down.pdf,MS_1_v1.0 - Climb Down.pdf,Climbdown
+29,Method Statement,/var/www/html/public/uploads/companies/29,2677,.pdf,TRANSFER,,MS_2_v1.0 - New Link Install.pdf,MS_2_v1.0 - New Link Install.pdf,New Link Install
+59,Method Statement,/var/www/html/public/uploads/companies/59,4077,.pdf,TRANSFER,,MS_6_Viatel_v1.0 - Pan Antenna or Dish.pdf,MS_6_Viatel_v1.0 - Pan Antenna or Dish.pdf,Pan Antenna/Dish
+42,Method Statement,/var/www/html/public/uploads/companies/42,3562,.pdf,TRANSFER,,MS_KNN_8_v1.0 - Site Survey_Climbdown.pdf,MS_KNN_8_v1.0 - Site Survey_Climbdown.pdf,Climbdown Survey
+42,Method Statement,/var/www/html/public/uploads/companies/42,3561,.pdf,TRANSFER,,MS_KNN_7_v1.0 - Dish_Antenna Replacement.pdf,MS_KNN_7_v1.0 - Dish_Antenna Replacement.pdf,Replace Antenna
+42,Method Statement,/var/www/html/public/uploads/companies/42,3560,.pdf,TRANSFER,,MS_KNN_6_v1.0 - Dish_Antenna Removal.pdf,MS_KNN_6_v1.0 - Dish_Antenna Removal.pdf,Remove Antenna
+42,Method Statement,/var/www/html/public/uploads/companies/42,3559,.pdf,TRANSFER,,MS_KNN_5_v1.0 - Panning Link.pdf,MS_KNN_5_v1.0 - Panning Link.pdf,Panning Link
+59,Method Statement,/var/www/html/public/uploads/companies/59,4076,.pdf,TRANSFER,,MS_5_Viatel_v1.0 - ODU Fault.pdf,MS_5_Viatel_v1.0 - ODU Fault.pdf,ODU Fault
+42,Method Statement,/var/www/html/public/uploads/companies/42,3558,.pdf,TRANSFER,,MS_KNN_4_v1.0 - LOS Survey.pdf,MS_KNN_4_v1.0 - LOS Survey.pdf,LOS Survey
+42,Method Statement,/var/www/html/public/uploads/companies/42,3557,.pdf,TRANSFER,,MS_KNN_3_v1.0 - LOS using MEWP.pdf,MS_KNN_3_v1.0 - LOS using MEWP.pdf,MEWP LOS
+43,Method Statement,/var/www/html/public/uploads/companies/43,5053,.pdf,TRANSFER,,MS_KTL_7_v1.0 - Rigging_Maintenance_works.pdf,MS_KTL_7_v1.0 - Rigging_Maintenance_works.pdf,Rigging Maintenance
+42,Method Statement,/var/www/html/public/uploads/companies/42,3556,.pdf,TRANSFER,,MS_KNN_2_v1.0 - Link Install.pdf,MS_KNN_2_v1.0 - Link Install.pdf,Link Install
+42,Method Statement,/var/www/html/public/uploads/companies/42,3555,.pdf,TRANSFER,,MS_KNN_1_v1.0 - Replace ODU.pdf,MS_KNN_1_v1.0 - Replace ODU.pdf,Replace ODU
+142,H&S Plan,/var/www/html/public/uploads/companies/142,4774,.pdf,TRANSFER,,TSS Safety Statement Revision 9_Jan 15.pdf,TSS Safety Statement Revision 9_Jan 15.pdf,
+59,Method Statement,/var/www/html/public/uploads/companies/59,4075,.pdf,TRANSFER,,MS_4_Viatel_v1.0 - Climbdown.pdf,MS_4_Viatel_v1.0 - Climbdown.pdf,Climbdown
+59,Method Statement,/var/www/html/public/uploads/companies/59,4074,.pdf,TRANSFER,,MS_3_Viatel_v1.0 - Antenna Replace.pdf,MS_3_Viatel_v1.0 - Antenna Replace.pdf,Antenna Replace
+43,Method Statement,/var/www/html/public/uploads/companies/43,5052,.pdf,TRANSFER,,MS_KTL_8_v1.0 - Civil_Maintenance_works.pdf,MS_KTL_8_v1.0 - Civil_Maintenance_works.pdf,Civil Maintenance
+43,Method Statement,/var/www/html/public/uploads/companies/43,5051,.pdf,TRANSFER,,MS_KTL_6_v1.0 - Decommission_Dish or Antenna.pdf,MS_KTL_6_v1.0 - Decommission_Dish or Antenna.pdf,Decom Antenna
+43,Method Statement,/var/www/html/public/uploads/companies/43,5050,.pdf,TRANSFER,,MS_KTL_4_v1.0 - Antenna_Dish_ODU_RAU_Fault.pdf,MS_KTL_4_v1.0 - Antenna_Dish_ODU_RAU_Fault.pdf,Antenna Fault
+59,Method Statement,/var/www/html/public/uploads/companies/59,4073,.pdf,TRANSFER,,MS_2_Viatel_v1.0 - Link Decom.pdf,MS_2_Viatel_v1.0 - Link Decom.pdf,Link Decom
+59,Method Statement,/var/www/html/public/uploads/companies/59,4072,.pdf,TRANSFER,,MS_1_Digi_v1.0 - Link Install.pdf,MS_1_Digi_v1.0 - Link Install.pdf,Link Install
+43,H&S Plan,/var/www/html/public/uploads/companies/43,5046,.pdf,TRANSFER,,H&S_KTL_v1.0 - KTL H&S Plan_SHEQ-1093.pdf,H&S_KTL_v1.0 - KTL H&S Plan_SHEQ-1093.pdf,H&S Plan
+43,Method Statement,/var/www/html/public/uploads/companies/43,5049,.pdf,TRANSFER,,MS_KTL_5_v1.0 - Replace_Relocate_Antennae or Equipment.pdf,MS_KTL_5_v1.0 - Replace_Relocate_Antennae or Equipment.pdf,Replace Antenna
+43,Method Statement,/var/www/html/public/uploads/companies/43,5048,.pdf,TRANSFER,,MS_KTL_3_v1.0 - Link_Dish_Antenna Install.pdf,MS_KTL_3_v1.0 - Link_Dish_Antenna Install.pdf,Install Antenna/Dish
+43,Method Statement,/var/www/html/public/uploads/companies/43,5047,.pdf,TRANSFER,,MS_KTL_1_v1.0 - Climbdown_LOS_Panning.pdf,MS_KTL_1_v1.0 - Climbdown_LOS_Panning.pdf,Climbdown
+43,Method Statement,/var/www/html/public/uploads/companies/43,5045,.pdf,TRANSFER,,MS_KTL_2_v1.0 - Install_Antenna_Steelwork.pdf,MS_KTL_2_v1.0 - Install_Antenna_Steelwork.pdf,Install Steelwork
+67,Method Statement,/var/www/html/public/uploads/companies/67,5148,.pdf,TRANSFER,,MS_TC_5_v1 0 - Guy-wire upgrade.pdf,MS_TC_5_v1 0 - Guy-wire upgrade.pdf,Guy-wire Upgrade
+56,Method Statement,/var/www/html/public/uploads/companies/56,5869,.pdf,TRANSFER,,MS_RE_1_v1_MS_RA_Generator_Full Service.pdf,MS_RE_1_v1_MS_RA_Generator_Full Service.pdf,Generator Servicing MS
+59,Method Statement,/var/www/html/public/uploads/companies/59,6027,.pdf,TRANSFER,,MS_7_Viatel_v1.0 - Site Maintenance.pdf,MS_7_Viatel_v1.0 - Site Maintenance.pdf,Site Maintenance
+116,Method Statement,/var/www/html/public/uploads/companies/116,6259,.pdf,TRANSFER,,MS-015_Sec_v1.0 - Supplying Generator to Site.pdf,MS-015_Sec_v1.0 - Supplying Generator to Site.pdf,Supplying Generator
+148,Method Statement,/var/www/html/public/uploads/companies/148,6338,.pdf,TRANSFER,,MS_Realpower_1_v1.0 - eir-Towercom Generator Service.pdf,MS_Realpower_1_v1.0 - eir-Towercom Generator Service.pdf,Generator Maintenance
+56,Method Statement,/var/www/html/public/uploads/companies/56,6415,.pdf,TRANSFER,,MS_RE_1_v2_MS_RA_Generator_Full Service.PDF,MS_RE_1_v2_MS_RA_Generator_Full Service.PDF,MS_RE_1_v2_MS_RA_Generator_Full Service
+123,H&S Plan,/var/www/html/public/uploads/companies/123,6740,.pdf,TRANSFER,,2017 06 28 12.16  - Exigent Network Integration Ltd t.a ITS Irish Telecom Services Ltd Confirmation of Cover 2017 (1).pdf,2017 06 28 12.16  - Exigent Network Integration Ltd t.a ITS Irish Telecom Services Ltd Confirmation of Cover 2017 (1).pdf,EL & PL
+142,Method Statement,/var/www/html/public/uploads/companies/142,8076,.pdf,TRANSFER,,MS_TSS_1_v1.0 - Fibre Installation_RAMS.pdf,MS_TSS_1_v1.0 - Fibre Installation_RAMS.pdf,Fibre Install
+121,Method Statement,/var/www/html/public/uploads/companies/121,8077,.pdf,TRANSFER,,MS_Nova_1_v1.0 - Equipment Decommission.pdf,MS_Nova_1_v1.0 - Equipment Decommission.pdf,Equipment decommission
+121,Method Statement,/var/www/html/public/uploads/companies/121,8078,.pdf,TRANSFER,,MS_Nova_2_v1.0 - Installation & Maintenance.pdf,MS_Nova_2_v1.0 - Installation & Maintenance.pdf,Install & Maintenance 
+32,H&S Plan,/var/www/html/public/uploads/companies/32,8719,.pdf,TRANSFER,,Cert of EL PL cover 2018-2019.PDF,Cert of EL PL cover 2018-2019.PDF,EL & PL
+117,Method Statement,/var/www/html/public/uploads/companies/117,9009,.pdf,TRANSFER,,MS_4S_1_v1_Climbing Survey.pdf,MS_4S_1_v1_Climbing Survey.pdf,Climbing Survey
+117,Method Statement,/var/www/html/public/uploads/companies/117,9010,.pdf,TRANSFER,,MS_4S_3_V3_Structural Analysis - Climbdown Survey.pdf,MS_4S_3_V3_Structural Analysis - Climbdown Survey.pdf,SA Climbdown survey MS
+117,Method Statement,/var/www/html/public/uploads/companies/117,9011,.pdf,TRANSFER,,MS_4S_2_V2_Ground Visual Survey.pdf,MS_4S_2_V2_Ground Visual Survey.pdf,Ground Visual Survey MS
+62,Method Statement,/var/www/html/public/uploads/companies/62,9018,.pdf,TRANSFER,,MS_SUR_2 _v1_Ground_Works.pdf,MS_SUR_2 _v1_Ground_Works.pdf,Ground Works
+62,Method Statement,/var/www/html/public/uploads/companies/62,9019,.pdf,TRANSFER,,MS_SUR_3_v1_ Line_of_sight.pdf,MS_SUR_3_v1_ Line_of_sight.pdf,LOS
+62,Method Statement,/var/www/html/public/uploads/companies/62,9020,.pdf,TRANSFER,,MS_SUR_1_v1_Site_survey.pdf,MS_SUR_1_v1_Site_survey.pdf,Site Survey
+62,Method Statement,/var/www/html/public/uploads/companies/62,9021,.pdf,TRANSFER,,MS_SUR_4_v1_Link_installations.pdf,MS_SUR_4_v1_Link_installations.pdf,Link install
+62,Method Statement,/var/www/html/public/uploads/companies/62,9022,.pdf,TRANSFER,,MS_SUR_5_v1_New_Rig_Install.pdf,MS_SUR_5_v1_New_Rig_Install.pdf,New Rig install
+62,Method Statement,/var/www/html/public/uploads/companies/62,9023,.pdf,TRANSFER,,MS_SUR_6_v1_Pan_Antenna.pdf,MS_SUR_6_v1_Pan_Antenna.pdf,Pan Antenna
+118,Method Statement,/var/www/html/public/uploads/companies/118,9026,.pdf,TRANSFER,,MS_CRS_VM_2_v1_Antenna Install_New Steelwork.pdf,MS_CRS_VM_2_v1_Antenna Install_New Steelwork.pdf,Antenna Install - New steelwork
+118,Method Statement,/var/www/html/public/uploads/companies/118,9027,.pdf,TRANSFER,,MS_CRS_VM_1_v1_Antenna Install.pdf,MS_CRS_VM_1_v1_Antenna Install.pdf,Antenna Install
+118,Method Statement,/var/www/html/public/uploads/companies/118,9028,.pdf,TRANSFER,,MS_CRS_VM_3_v1_ODU_Replacement (Breakdown Scenario).pdf,MS_CRS_VM_3_v1_ODU_Replacement (Breakdown Scenario).pdf,ODU Replacement
+158,Method Statement,/var/www/html/public/uploads/companies/158,9238,.pdf,TRANSFER,,MS_NRE_1_v1_electrical_works.pdf,MS_NRE_1_v1_electrical_works.pdf,Electrical works MS
+119,Method Statement,/var/www/html/public/uploads/companies/119,10635,.doc,TRANSFER,,Method_Statement_Capard.doc,Method_Statement_Capard.doc,
+119,H&S Plan,/var/www/html/public/uploads/companies/119,10636,.pdf,TRANSFER,,Company saftey statement 2019.pdf,Company saftey statement 2019.pdf,
+13,Method Statement,/var/www/html/public/uploads/companies/13,11331,.docx,TRANSFER,,Method Statement_WDGLH_Gallows Hill_290719_KS.docx,Method Statement_WDGLH_Gallows Hill_290719_KS.docx,
+13,Method Statement,/var/www/html/public/uploads/companies/13,12207,.docx,TRANSFER,,Method Statement_CEBDH_Ben Dash_201119_KS.docx,Method Statement_CEBDH_Ben Dash_201119_KS.docx,
+13,Method Statement,/var/www/html/public/uploads/companies/13,12781,.docx,TRANSFER,,MS_Tallagh Ex_DNTLH_110220_KS.docx,MS_Tallagh Ex_DNTLH_110220_KS.docx,
+13,Method Statement,/var/www/html/public/uploads/companies/13,12821,.docx,TRANSFER,,MS_CKCHF_Churchfield Exchange_240220_KS.docx,MS_CKCHF_Churchfield Exchange_240220_KS.docx,
+13,Method Statement,/var/www/html/public/uploads/companies/13,12923,.docx,TRANSFER,,MS_GYGAL_Galway HPO_020320_KS.docx,MS_GYGAL_Galway HPO_020320_KS.docx,
+163,H&S Plan,/var/www/html/public/uploads/companies/163,13568,.pdf,TRANSFER,,Teo Air Solutions Insurance 2019  2020.pdf,Teo Air Solutions Insurance 2019  2020.pdf,
+163,Method Statement,/var/www/html/public/uploads/companies/163,13569,.pdf,TRANSFER,,MS_TA_1_v1_AC_Maintenance.pdf,MS_TA_1_v1_AC_Maintenance.pdf,MS_TA_1_v1_AC_Maintenance
+163,Method Statement,/var/www/html/public/uploads/companies/163,15440,.pdf,TRANSFER,,MS_TA_1_v2_AC_Service & Maintenance.pdf,MS_TA_1_v2_AC_Service & Maintenance.pdf,Service & Maintenance
+163,Method Statement,/var/www/html/public/uploads/companies/163,15441,.pdf,TRANSFER,,MS_TA_2_v1_AC_Installation.pdf,MS_TA_2_v1_AC_Installation.pdf,Installation
+67,Method Statement,/var/www/html/public/uploads/companies/67,16914,.pdf,TRANSFER,,TC-RAMS-01 Tower Climbdown Rev 01.pdf,TC-RAMS-01 Tower Climbdown Rev 01.pdf,Climbdown
+67,Method Statement,/var/www/html/public/uploads/companies/67,16915,.pdf,TRANSFER,,TC-RAMS-03 Install Antenna_Steelwork Rev 01.pdf,TC-RAMS-03 Install Antenna_Steelwork Rev 01.pdf,Install Antenna Steelwork
+67,Method Statement,/var/www/html/public/uploads/companies/67,16916,.pdf,TRANSFER,,TC-RAMS-02 Civil Maintenance Rev 01.pdf,TC-RAMS-02 Civil Maintenance Rev 01.pdf,Civil Maintenance
+67,Method Statement,/var/www/html/public/uploads/companies/67,16917,.pdf,TRANSFER,,TC-RAMS-06 Base Construction Rev 01.pdf,TC-RAMS-06 Base Construction Rev 01.pdf,Base Construction
+67,Method Statement,/var/www/html/public/uploads/companies/67,16918,.pdf,TRANSFER,,TC-RAMS-05 Ducting Rev 01.pdf,TC-RAMS-05 Ducting Rev 01.pdf,Ducting
+67,Method Statement,/var/www/html/public/uploads/companies/67,16919,.pdf,TRANSFER,,TC-RAMS-04 Locating Underground Services Rev 01.pdf,TC-RAMS-04 Locating Underground Services Rev 01.pdf,Locating Underground Services
+67,Method Statement,/var/www/html/public/uploads/companies/67,16920,.pdf,TRANSFER,,TC-RAMS-07 Removal of Exisiting Mast and Installation of New Mast Rev 01.pdf,TC-RAMS-07 Removal of Exisiting Mast and Installation of New Mast Rev 01.pdf,Mast Replacement
+67,Method Statement,/var/www/html/public/uploads/companies/67,16921,.pdf,TRANSFER,,TC-RAMS-08 Palisade Fencing and Gates Rev 01.pdf,TC-RAMS-08 Palisade Fencing and Gates Rev 01.pdf,Pallisade Fencing and Gates
+67,Method Statement,/var/www/html/public/uploads/companies/67,17641,.pdf,TRANSFER,,TC237 RAMS Tower upgrade_Plinth Installation_Gantry Erection.pdf,TC237 RAMS Tower upgrade_Plinth Installation_Gantry Erection.pdf,Tower Upgrade_Plinth Installation
+146,H&S Plan,/var/www/html/public/uploads/companies/146,18087,.pdf,TRANSFER,,TP Insurance 2022 EL.pdf,TP Insurance 2022 EL.pdf,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19932,.doc,TRANSFER,,MS_GRA_Work type 3_v1_Climb Down_TC.doc,MS_GRA_Work type 3_v1_Climb Down_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19933,.doc,TRANSFER,,MS_GRA_Work type 4_v1__Decommission Antenna.Equipment_TC.doc,MS_GRA_Work type 4_v1__Decommission Antenna.Equipment_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19934,.doc,TRANSFER,,MS_GRA_Work type 5_v1__Decommission Dish.Equipment_TC.doc,MS_GRA_Work type 5_v1__Decommission Dish.Equipment_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19935,.doc,TRANSFER,,MS_GRA_Work type 6_v1__Decommission Ground Equipment_TC.doc,MS_GRA_Work type 6_v1__Decommission Ground Equipment_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19936,.doc,TRANSFER,,MS_GRA_Work type 11_v1__Steel Install_TC.doc,MS_GRA_Work type 11_v1__Steel Install_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19937,.doc,TRANSFER,,MS_GRA_Work type 7_v1__Ducting_TC.doc,MS_GRA_Work type 7_v1__Ducting_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19938,.doc,TRANSFER,,"MS_GRA_Work type 12_v1__Install Cabn, BTS or Other ground equipment_TC.doc","MS_GRA_Work type 12_v1__Install Cabn, BTS or Other ground equipment_TC.doc",
+159,Method Statement,/var/www/html/public/uploads/companies/159,19939,.doc,TRANSFER,,MS_GRA_Work type 13_v1__Link Install_TC.doc,MS_GRA_Work type 13_v1__Link Install_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19940,.doc,TRANSFER,,MS_GRA_Work type 14_v1__LOS_TC.doc,MS_GRA_Work type 14_v1__LOS_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19941,.doc,TRANSFER,,MS_GRA_Work type 15_v1__MEWP LOS_TC.doc,MS_GRA_Work type 15_v1__MEWP LOS_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19942,.doc,TRANSFER,,MS_GRA_Work type 18_v1__ODU Fault_TC (1).doc,MS_GRA_Work type 18_v1__ODU Fault_TC (1).doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19943,.doc,TRANSFER,,MS_GRA_Work type 19_v1__Ducting Underground_TC.doc,MS_GRA_Work type 19_v1__Ducting Underground_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19944,.doc,TRANSFER,,MS_GRA_Work type 20_v1__Panning Equipment_TC.doc,MS_GRA_Work type 20_v1__Panning Equipment_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19945,.doc,TRANSFER,,MS_GRA_Work type 22_v1__Relocate Equipment_TC (1).doc,MS_GRA_Work type 22_v1__Relocate Equipment_TC (1).doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19946,.doc,TRANSFER,,MS_GRA_Work type 22_v1__Relocate Equipment_TC.doc,MS_GRA_Work type 22_v1__Relocate Equipment_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19947,.doc,TRANSFER,,MS_GRA_Work type 23_v1__Remove Antenna.Equipment_TC.doc,MS_GRA_Work type 23_v1__Remove Antenna.Equipment_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19948,.doc,TRANSFER,,MS_GRA_Work type 25_v1__Replace Antenna.Equipment_TC.doc,MS_GRA_Work type 25_v1__Replace Antenna.Equipment_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19949,.doc,TRANSFER,,MS_GRA_Work type 24_v1__Remove Dish.Equipment_TC.doc,MS_GRA_Work type 24_v1__Remove Dish.Equipment_TC.doc,
+159,Method Statement,/var/www/html/public/uploads/companies/159,19950,.doc,TRANSFER,,MS_GRA_Work type 26_v1__Site Maintenance_TC.doc,MS_GRA_Work type 26_v1__Site Maintenance_TC.doc,
+163,Method Statement,/var/www/html/public/uploads/companies/163,23087,.pdf,TRANSFER,,MS_TA_4_AC Installation_2023.pdf,MS_TA_4_AC Installation_2023.pdf,Installation 2023
+163,Method Statement,/var/www/html/public/uploads/companies/163,23088,.pdf,TRANSFER,,MS_TA_3_v1_AC_Service & Maintenance_2023.pdf,MS_TA_3_v1_AC_Service & Maintenance_2023.pdf,Service & Maintenance 2023
+167,Method Statement,/var/www/html/public/uploads/companies/167,24869,.docx,TRANSFER,,RAMS_LSV Elite Alpin_1_V1_Towercom equipment Fault Investigation.docx,RAMS_LSV Elite Alpin_1_V1_Towercom equipment Fault Investigation.docx,RAMS_LSV Elite Alpin_1_V1_Towercom equipment Fault Investigation
+167,Method Statement,/var/www/html/public/uploads/companies/167,24870,.docx,TRANSFER,,RAMS_LSV Elite Alpin_2_V1_Towercom equipment climbdown.docx,RAMS_LSV Elite Alpin_2_V1_Towercom equipment climbdown.docx,RAMS_LSV Elite Alpin_2_V1_Towercom equipment climbdown
+167,Method Statement,/var/www/html/public/uploads/companies/167,24871,.docx,TRANSFER,,RAMS_LSV Elite Alpin_3_V1_Towercom equipment replace relocate.docx,RAMS_LSV Elite Alpin_3_V1_Towercom equipment replace relocate.docx,RAMS_LSV Elite Alpin_3_V1_Towercom equipment replace relocate
+167,Method Statement,/var/www/html/public/uploads/companies/167,24872,.docx,TRANSFER,,RAMS_LSV Elite Alpin_4_V1_Towercom equipment install.docx,RAMS_LSV Elite Alpin_4_V1_Towercom equipment install.docx,RAMS_LSV Elite Alpin_4_V1_Towercom equipment install
+167,Method Statement,/var/www/html/public/uploads/companies/167,24873,.docx,TRANSFER,,RAMS_LSV Elite Alpin_5_V1_Towercom equipment Decom.docx,RAMS_LSV Elite Alpin_5_V1_Towercom equipment Decom.docx,RAMS_LSV Elite Alpin_5_V1_Towercom equipment Decom
+62,Employer Liability,/var/www/html/public/uploads/companies/62,26272,.pdf,TRANSFER,,,Certificate of Insurance - 2025-26 - Combined Liability & PI.pdf,EL/PL 25- 26
+62,Public Liability,/var/www/html/public/uploads/companies/62,26273,.pdf,TRANSFER,,,Certificate of Insurance - 2025-26 - PI & 3rd Party Cyber.pdf,Certificate of Insurance 2025 - 2026 PL
+116,Employer Liability,/var/www/html/public/uploads/companies/116,27023,.pdf,TRANSFER,,,20250529 Secto Liability Cover Note.pdf,
+116,Public Liability,/var/www/html/public/uploads/companies/116,27024,.pdf,TRANSFER,,,20250529 Secto Liability Cover Note (1).pdf,
+68,Employer Liability,/var/www/html/public/uploads/companies/68,27185,.pdf,TRANSFER,,,Public Liability 2025_2026.pdf,
+60,Employer Liability,/var/www/html/public/uploads/companies/60,27234,.pdf,TRANSFER,,, Cover Note 2024 2025 Extension .pdf,client cover  note extension 
+166,Method Statement,/var/www/html/public/uploads/companies/166,27253,.docx,TRANSFER,,RAMS_SK_2_v1.0_BT Faults.docx,RAMS_SK_2_v1.0_BT Faults.docx,BT Faults
+166,Method Statement,/var/www/html/public/uploads/companies/166,27254,.docx,TRANSFER,,RAMS_SK_1_v1.0_Maintenance Inspection.docx,RAMS_SK_1_v1.0_Maintenance Inspection.docx,Maintenance inspection
+60,Employer Liability,/var/www/html/public/uploads/companies/60,27284,.pdf,TRANSFER,,,Spectrum Cover Note 2025 2026 Liability (1).pdf,22nd June 2025 to 21st June 2026 inclusive
+60,Public Liability,/var/www/html/public/uploads/companies/60,27285,.pdf,TRANSFER,,,Spectrum Cover Note 2025 2026 Liability (2).pdf,22nd June 2025 to 21st June 2026 inclusive
+118,Public Liability,/var/www/html/public/uploads/companies/118,27830,.png,TRANSFER,,,2025 Policy (1).png,
+118,Employer Liability,/var/www/html/public/uploads/companies/118,27831,.png,TRANSFER,,,2025 Policy.png,
+166,Employer Liability,/var/www/html/public/uploads/companies/166,28582,.pdf,TRANSFER,,,Headed Insurance SK Utilities.pdf,
+166,Public Liability,/var/www/html/public/uploads/companies/166,28583,.pdf,TRANSFER,,,Headed Insurance SK Utilities (1).pdf,
+49,Public Liability,/var/www/html/public/uploads/companies/49,28611,.pdf,TRANSFER,,,PL COI - â‚¬6.5 - 2026.pdf,
+49,Employer Liability,/var/www/html/public/uploads/companies/49,28612,.pdf,TRANSFER,,,PL COI - â‚¬13 - 2026.pdf,
+67,Method Statement,/var/www/html/public/uploads/companies/67,28638,.pdf,TRANSFER,,TC-RAMS-01 Tower Climbdown Rev.02.pdf,TC-RAMS-01 Tower Climbdown Rev.02.pdf,Climbdown
+67,Method Statement,/var/www/html/public/uploads/companies/67,28639,.pdf,TRANSFER,,TC-RAMS-02 Civil Maintenance Rev.02.pdf,TC-RAMS-02 Civil Maintenance Rev.02.pdf,Civil Maintenance
+67,Method Statement,/var/www/html/public/uploads/companies/67,28640,.pdf,TRANSFER,,TC-RAMS-03 Install Antenna_Steelwork Rev.02.pdf,TC-RAMS-03 Install Antenna_Steelwork Rev.02.pdf,Install Antenna Steelwork
+67,Method Statement,/var/www/html/public/uploads/companies/67,28641,.pdf,TRANSFER,,TC-RAMS-04 Locating Underground Services Rev.02.pdf,TC-RAMS-04 Locating Underground Services Rev.02.pdf,Locating Underground Services
+67,Method Statement,/var/www/html/public/uploads/companies/67,28642,.pdf,TRANSFER,,TC-RAMS-06 Base Construction Rev.02.pdf,TC-RAMS-06 Base Construction Rev.02.pdf,Base Construction
+67,Method Statement,/var/www/html/public/uploads/companies/67,28643,.pdf,TRANSFER,,TC-RAMS-05 Ducting Rev.02.pdf,TC-RAMS-05 Ducting Rev.02.pdf,Ducting
+67,Method Statement,/var/www/html/public/uploads/companies/67,28644,.pdf,TRANSFER,,TC-RAMS-07 Removal of Exisiting Mast and Installation of New Mast Rev.02.pdf,TC-RAMS-07 Removal of Exisiting Mast and Installation of New Mast Rev.02.pdf,Mast Replacement
+67,Method Statement,/var/www/html/public/uploads/companies/67,28645,.pdf,TRANSFER,,TC-RAMS-08 Palisade Fencing and Gates Rev.02.pdf,TC-RAMS-08 Palisade Fencing and Gates Rev.02.pdf,Palisade Fencing and Gates
+62,Public Liability,/var/www/html/public/uploads/companies/62,29031,.pdf,TRANSFER,,,Certificate of Insurance - 2026-27 - Combined Liability & CAR.pdf,Exp 28/02/2027
+62,Employer Liability,/var/www/html/public/uploads/companies/62,29032,.pdf,TRANSFER,,,Certificate of Insurance - 2026-27 - Combined Liability & CAR.pdf,Exp 28/02/2027
+167,Employer Liability,/var/www/html/public/uploads/companies/167,29034,.pdf,TRANSFER,,,LSV_Insurance_2026_NSU26000353.pdf,
+117,Employer Liability,/var/www/html/public/uploads/companies/117,29346,.pdf,TRANSFER,,,Indigo Insurance - March 2027.pdf,Indigo Insurance Exp. March 2027
+117,Public Liability,/var/www/html/public/uploads/companies/117,29347,.pdf,TRANSFER,,,Indigo Insurance - March 2027 (1).pdf,Indigo Insurance Exp. March 2027

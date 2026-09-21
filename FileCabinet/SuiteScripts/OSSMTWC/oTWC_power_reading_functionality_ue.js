@@ -49,13 +49,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
 
                 USAGE_CALC.usageCalculations(context.newRecord)
+
                 if (context.type === context.UserEventType.CREATE) {
                     updateMeterRecord(context.newRecord)
                 }
 
             }
             catch (err) {
-                core.logDebug('BEFORE-LOAD', error.message);
+                core.logDebug('BEFORE-LOAD', err.message);
             }
         }
 
@@ -105,8 +106,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         ${renderTable(results)}
     </div>
 `;
-
-                //htmlField.defaultValue = renderTable(results);
 
             } catch (e) {
 
@@ -297,7 +296,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     NIGHT_USAGE: 'custrecord_twc_pwr_rdg_night_unit_usage',
                     PEAK_USAGE: 'custrecord_twc_pwr_rdg_peak_unit_usage',
                     KWH_READING: 'custrecord_twc_pwr_rdg_kwh_usage',
-                    KWH_AMP_CHECK: 'custrecord_twc_pwr_rdg_amp_check_usage'
+                    KWH_AMP_CHECK: 'custrecord_twc_pwr_rdg_amp_check_usage',
+                    SUPPLIER_INFORMED : 'custrecord_twc_pwr_rdg_supp_inf'
                 };
             },
 
@@ -333,7 +333,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     log.debug("kWhUsageReading", kWhUsageReading)
                     log.debug("kWhUsageAmpCheck", kWhUsageAmpCheck)
 
-                    // return returnData
                     if (daysSinceLastReading) pwrRec.setValue({ "fieldId": fields.DAYS_SINCE_LAST, value: parseInt(daysSinceLastReading) })
                     if (dayUnitsUsage) pwrRec.setValue({ "fieldId": fields.DAY_USAGE, value: parseInt(dayUnitsUsage) })
                     if (nightUnitsUsage) pwrRec.setValue({ "fieldId": fields.NIGHT_USAGE, value: parseInt(nightUnitsUsage) })
@@ -341,39 +340,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     if (kWhUsageReading) pwrRec.setValue({ "fieldId": fields.KWH_READING, value: parseInt(kWhUsageReading) })
                     if (kWhUsageAmpCheck) pwrRec.setValue({ "fieldId": fields.KWH_AMP_CHECK, value: parseInt(kWhUsageAmpCheck) })
 
-                    //     return pwrRec
                     var savedId = pwrRec.save({
                         enableSourcing: true,
                         ignoreMandatoryFields: false
                     });
-                    // var calculatedFields = {
-                    //     [fields.DAYS_SINCE_LAST]: daysSinceLastReading,
-                    //     [fields.DAY_USAGE]: dayUnitsUsage,
-                    //     [fields.NIGHT_USAGE]: nightUnitsUsage,
-                    //     [fields.PEAK_USAGE]: peakUnitsUsage,
-                    //     [fields.KWH_READING]: kWhUsageReading,
-                    //     [fields.KWH_AMP_CHECK]: kWhUsageAmpCheck
-                    // };
-
-                    // var values = {};
-                    // Object.keys(calculatedFields).forEach(function (fieldId) {
-                    //     if (calculatedFields[fieldId] !== null) values[fieldId] = calculatedFields[fieldId];
-                    // });
-                    // log.debug("VALUES",values)
-                    // log.debug("powerReadRec.type",powerReadRec.type)
-                    //log.debug("savedId", savedId)
-
-                    // if (Object.keys(values).length) {
-                    //     record.submitFields({
-                    //         type: powerReadRec.type,
-                    //         id: powerReadRec.id,
-                    //        // values: values,
-                    //        values :
-                    //        {"custrecord_twc_pwr_rdg_day_units_usage":15,
-                    //         "custrecord_twc_pwr_rdg_night_units_usage":30},
-                    //         options: { enableSourcing: false, ignoreMandatoryFields: true }
-                    //     });
-                    // }
+                    
                 } catch (err) {
                     log.error("error@usageCalculations", err);
                 }
@@ -398,19 +369,6 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 var results = query.runSuiteQL({ query: sql }).asMappedResults();
                 return results.length ? results[0] : null;
             },
-
-            // daysSinceLastReading: function (powerReadRec, prevRecReadingDate, fields) {
-            //     try {
-            //         var readingDate = powerReadRec.getText({ fieldId: fields.READING_DATE });
-            //         log.debug("readingDate.",readingDate)
-            //         if (!readingDate || !prevRecReadingDate) return null;
-            //         log.debug("Not null",new Date(readingDate) - new Date(prevRecReadingDate))
-            //         return Math.round((new Date(readingDate) - new Date(prevRecReadingDate)) / (24 * 60 * 60 * 1000));
-            //     } catch (err) {
-            //         log.error("error@daysSinceLastReading", err);
-            //         return null;
-            //     }
-            // },
 
             daysSinceLastReading: function (powerReadRec, prevRecReadingDate, fields) {
 
@@ -531,7 +489,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     custrecord_twc_pwr_mtr_last_night_read: fields.NIGHT_READING,
                     custrecord_twc_pwr_mtr_last_peak_read: fields.PEAK_READING,
                     custrecord_twc_pwr_mtr_last_usage: fields.KWH_READING,
-                    custrecord_twc_pwr_mtr_last_usage_amp: fields.KWH_AMP_CHECK
+                    custrecord_twc_pwr_mtr_last_usage_amp: fields.KWH_AMP_CHECK,
+                    custrecord_twc_pwr_mtr_supplier_informed: fields.SUPPLIER_INFORMED
                 };
 
                 var powerMeterRec = record.load({

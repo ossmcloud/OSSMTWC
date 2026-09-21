@@ -8,6 +8,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFields = {
             NAME: 'name',
             SDS: 'custrecord_twc_sds_item_parent',
+            SRF_ITEM: 'custrecord_twc_sds_item_srf_item',
             EQUIPMENT: 'custrecord_twc_sds_item_eq',
             PART_OF_SDS: 'custrecord_twc_sds_item_part_of',
             INCLUDE_IN_SDS: 'custrecord_twc_sds_item_include',
@@ -40,6 +41,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             SDS: { name: 'custrecord_twc_sds_item_parent', type: 'select', alias: 'sDS', display: 'normal', mandatory: false, recordType: 'customrecord_twc_sds' },
+            SRF_ITEM: { name: 'custrecord_twc_sds_item_srf_item', type: 'select', alias: 'sRFItem', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm' },
             EQUIPMENT: { name: 'custrecord_twc_sds_item_eq', type: 'select', alias: 'equipment', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip' },
             PART_OF_SDS: { name: 'custrecord_twc_sds_item_part_of', type: 'checkbox', alias: 'partofSDS', display: 'normal', mandatory: false },
             INCLUDE_IN_SDS: { name: 'custrecord_twc_sds_item_include', type: 'checkbox', alias: 'includeinSDS', display: 'normal', mandatory: false },
@@ -86,6 +88,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.SDS, value)
             }
             get sDSName() { return this.getText(_recordFields.SDS); }
+            
+            get sRFItem() {
+                return this.get(_recordFields.SRF_ITEM);
+            } set sRFItem(value) {
+                this.set(_recordFields.SRF_ITEM, value)
+            }
+            get sRFItemName() { return this.getText(_recordFields.SRF_ITEM); }
             
             get equipment() {
                 return this.get(_recordFields.EQUIPMENT);
@@ -273,8 +282,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_SDSEquipment,
 
-            get: function (id) {
-                var rec = new OSSMTWC_SDSEquipment(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_SDSEquipment(id, staticLoad);
                 rec.load();
                 return rec;
             }, 

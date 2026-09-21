@@ -324,7 +324,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             var crew = twcUtils.getProfiles({ id: crewIds });
 
-            // @@TODO: SAF: wherever e have Climber and Rescue Climber they need to be same person
+            // @@NOTE: SAF: wherever e have Climber and Rescue Climber they need to be same person
             //              i.e.: if I have 3 climber and 2 rescue the 2 rescue must be part fo the 3 climbers
             var climberCount = options.accessRequirements.conditions.find(cond => { return cond.cert?.code.toLowerCase() == twcUtils.Certs.CLIMBER.code })?.quantity;
             core.array.each(options.accessRequirements.conditions, cond => {
@@ -353,7 +353,6 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     if (certCount.length == 0 && certExCount.length == 0) {
                         validationErrors.push(`${cond.quantity} ${cond.name}${cond.quantity == 1 ? '' : 's'} must be certified, there are none in the crew`);
                     } else if (certCount.length == 0 && certExCount.length > 0) {
-                        // @@TODO: SAF: get expiry date
                         var crewNames = certExCount.map(i => { return `<li>${i.text}</li>` }).join('');
                         validationErrors.push(`${cond.quantity} ${cond.name}${cond.quantity == 1 ? '' : 's'} must be certified, there ${certExCount.length == 1 ? 'is' : 'are'} only ${certExCount.length} compliant in the crew but the cert is expired: <ul class="twc">${crewNames}</ul>`);
                     } else {

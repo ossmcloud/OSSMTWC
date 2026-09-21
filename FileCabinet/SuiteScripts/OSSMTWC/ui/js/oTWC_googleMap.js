@@ -98,6 +98,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var safLink = core.url.script('otwc_siteaccess_sl');
                 var srfLink = core.url.script('otwc_spacerequest_sl');
                 var tktLink = core.url.script('oTWC_troubleTicket_sl');
+                var eqLink = core.url.script('oTWC_inventory_sl');
                 
                 for (var dx = 0; dx < data.length; dx++) {
                     if (!this.getDataCoordinates(data[dx])) { continue; }
@@ -114,6 +115,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 <a class="twc" href="${safLink}&siteId=${data[dx].id}&edit=T" target="_blank">[S.A.F.]</a>
                                 <a class="twc" href="${srfLink}&siteId=${data[dx].id}&edit=T" target="_blank">[S.R.F.]</a>
                                 <a class="twc" href="${tktLink}&siteId=${data[dx].id}&edit=T" target="_blank">[T.T.]</a>
+                                <a class="twc" href="${eqLink}&siteId=${data[dx].id}" target="_blank">[Eq.]</a>
                             </div>
                         `,
                         ariaLabel: data[dx].name,

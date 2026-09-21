@@ -15,6 +15,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var siteInfraStructures = twcUtils.getInfraStructures({ siteId: srf.site }, userInfo.isEmployee);
             var siteStructures = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Structure })
+            var siteAccomodations = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Accommodation })
             var voltageTypes = twcUtils.getVoltageTypes(userInfo);
 
             var basicInfo = { id: 'srf-item-info', title: 'Basic Info', fields: [] };
@@ -34,7 +35,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
             }
 
-            basicInfo.fields.push({ id: twcSrfItem.Fields.ITEM_TYPE, label: 'Item Type', mandatory: true, hide: true, dataSource: twcEquipmentType.lookUp(srfItem.stepType) })
+            var itemTypes = twcEquipmentType.lookUp(srfItem.stepType);
+            if (srfItem.stepType == twcSrfItem.StepType.GIE) {
+                if (siteAccomodations.length == 0) {
+                    itemTypes.splice(0, 1);
+                }
+            }
+
+            basicInfo.fields.push({ id: twcSrfItem.Fields.ITEM_TYPE, label: 'Item Type', mandatory: true, hide: true, dataSource: itemTypes })
             basicInfo.fields.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'srf-pick-from-library', label: '', value: 'Pick From Library', lineBreak: true });
             basicInfo.fields.push({ type: twcUI.CTRL_TYPE.PANEL, id: 'srf-pick-from-library-msg', styles: { color: 'var(--accent-fore-color)', padding: '7px', display: 'none' } })
             basicInfo.fields.push({ id: twcSrfItem.Fields.DESCRIPTION, label: 'Description', width: '100%' })
@@ -43,7 +51,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 var dimensionInfo = { id: 'srf-item-dimension', title: 'Equipment Specifications', hide: isNewRecord, fields: [] };
                 fieldGroup.controls.push(dimensionInfo);
-                dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteStructures, mandatory: (srfItem.stepType != twcSrfItem.StepType.GIE), noAutoSelect: (srfItem.stepType == twcSrfItem.StepType.GIE) });
+                if (srfItem.stepType == twcSrfItem.StepType.GIE) {
+                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteAccomodations, mandatory: true, noAutoSelect: false });
+                } else {
+                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteStructures, mandatory: true });
+                }
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.MAKE, label: 'Make', mandatory: true })
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.MODEL, label: 'Model', mandatory: true })
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.LENGTH_MM, label: 'Length (mm)', mandatory: true })
@@ -67,6 +79,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 specInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteStructures, mandatory: true });
                 specInfo.fields.push({ id: twcSrfItem.Fields.TYPE_OPT, label: 'Type Opt', dataSource: twcUtils.getSrfItemTypeOpts(userInfo), mandatory: true })
 
+            } else if (srfItem.stepType == twcSrfItem.StepType.GIE) {
+                specInfo.fields.push({ id: twcSrfItem.Fields.CUSTOMER_REF, label: 'Customer Ref.', mandatory: true })
+
             }
 
             if (userInfo.isEmployee && srfItem.stepType != twcSrfItem.StepType.FEEDER) {
@@ -85,17 +100,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     type: twcUI.CTRL_TYPE.TABLE,
                     label: 'related equipment (ATME / FEEDERS)',
                     columns: [
+                        { id: 'toggle', title: '', nullText: '', noFilter: true, noSort: true, styles: { 'text-align': 'center' } },
+                        { id: twcSrfItem.Fields.NAME, title: 'Eq. Id', nullText: '' },
                         { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class', nullText: '' },
                         { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Type', nullText: '' },
                         { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description', nullText: '' },
                         { id: twcSrfItem.Fields.MAKE, title: 'Make', nullText: '' },
                         { id: twcSrfItem.Fields.MODEL, title: 'Model', nullText: '' },
                         { id: twcSrfItem.Fields.HEIGHT_ON_TOWER, title: 'Height on Tower', nullText: '' },
-                        // { id: twcSrfItem.Fields.LENGTH_MM, title: 'Length (mm)', nullText: '' },
-                        // { id: twcSrfItem.Fields.WIDTH_MM, title: 'Width (mm)', nullText: '' },
-                        // { id: twcSrfItem.Fields.DEPTH_MM, title: 'Depth (mm)', nullText: '' },
-                        // { id: twcSrfItem.Fields.WEIGHT_KG, title: 'Weight (kg)}', nullText: '' },
-                        // { id: twcSrfItem.Fields.INVENTORY_FLAG, title: 'Flag', styles: { width: '75px' }, hide: !userInfo.isEmployee, nullText: '' },
                         { id: twcSrfItem.Fields.TYPE_OPT + '_name', title: 'Type Opt', nullText: '' },
 
                     ],
@@ -176,7 +188,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
             for (var k in fields) {
-                if (k == 'expand' || k =='create_lib_item') { continue; }
+                if (k == 'expand' || k == 'create_lib_item') { continue; }
                 if (fields[k].constructor.name == 'String') {
                     fields[k] = { title: fields[k] }
                 }
@@ -186,14 +198,18 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
 
-            var label = '';
+            var label = ''; var eqClassName = '';
             if (stepType == twcSrfItem.StepType.TME) {
+                eqClassName = 'TME';
                 label = 'Request Tower Mounted Equipment (TME) Installation / Removal';
             } else if (stepType == twcSrfItem.StepType.ATME) {
+                eqClassName = 'ATME';
                 label = 'Request Additional Tower Mounted Equipment (ATME) Installation / Removal';
             } else if (stepType == twcSrfItem.StepType.GIE) {
+                eqClassName = 'GIE';
                 label = 'Request Ground/Indoor Equipment (GIE) Installation / Removal';
             } else if (stepType == twcSrfItem.StepType.FEEDER) {
+                eqClassName = 'FEEDER';
                 label = 'Request Feeders Installation / Removal';
             } else {
                 throw new Error(`Invalid SRF Item Step Type: ${stepType}`);
@@ -216,11 +232,36 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 );
             }
 
+            // @@NOTE: function formatValue for each table column is replicated on the UI (FileCabinet\SuiteScripts\OSSMTWC\ui\modules\oTWC_siteRequestUtils.js)
+            //         any change here needs to be reflected there
+            for (var k in fields) {
+                if (k == 'expand') { continue; }
+                var col = fields[k];
+                col.formatValue = (value, formattedValue, data, column) => {
+                    if (data.swappedItem && data.swappedItem[column.id] != value) {
+                        return `
+                            <div style="text-decoration: line-through; color: var(--label-color);">${data.swappedItem[column.id] || '&nbsp;'}</div>
+                            <div style="font-weight: bold; color: var(--accent-fore-color);">${formattedValue}</div>
+                        `
+                    }
+                    return formattedValue;
+                }
+            }
+            
             return {
                 id: `${twcSrfItem.Type}_${stepType}`, recordType: twcSrfItem.Type, label: label,
                 fields: fields,
                 dataSource: items,
                 FieldsInfo: twcSrfItem.FieldsInfo,
+                newToolBarButton: `
+                    <div class="twc-table-toolbar-button" data-eq-class="${twcSrfItem.StepType.ATME}">
+                        <div style="vertical-align: bottom; padding-bottom: 1px;">
+                            ${twcIcons.get('addNew', 16)}
+                        </div>
+                        <div>
+                            ADD ${eqClassName}
+                        </div>
+                    </div>`
             }
 
         }

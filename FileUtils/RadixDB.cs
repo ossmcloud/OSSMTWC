@@ -41,7 +41,7 @@ public class RadixDB {
             }
         }
 
-        if (info == null) { throw new Exception($"No Radif File record found for ID: {fileId}"); }
+        if (info == null) { throw new Exception($"No Radix File record found for ID: {fileId}"); }
 
         return info;
     }

@@ -20,6 +20,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
 
                     twcThemesUE.setForm(form);
                     
+                    form.buttonAdd('View Files', 'viewFiles');
                     form.buttonAdd('Upload File', 'uploadFile');
                 }
 

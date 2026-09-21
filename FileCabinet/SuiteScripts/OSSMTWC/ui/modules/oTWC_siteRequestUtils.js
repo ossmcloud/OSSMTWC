@@ -6,12 +6,81 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_utils.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js', '../../data/oTWC_config.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_equipmentLib.js', '../../data/oTWC_equipAction.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js', '../../modules/oTWC_srfWorkflowEngine.js'],
     (core, coreSQL, recu, twcUtils, twcSite, twcSrf, twcSrfItem, twcSrfUI, twcFile, nsFileUtils, twcConfig, twcUI, twcEqLib, twcEqAct, twcEquipmentUI, twcEquipment, twcSrfWorkflowEngine) => {
 
+        function renderSiteLocatorPanel(userInfo, featureId) {
+            var html = `
+                <script async defer src="https://maps.googleapis.com/maps/api/js?key=${twcConfig.cfg().GOOGLE_API_KEY}&loading=async"></script>
+                <div style="max-height: 60vh; overflow: hidden;">
+                <div id="site-finder-table" class="twc-div-table-t">
+                    <div class="twc-border" style="width: 50%;">
+                        <div id="twc-google-map-container" class="twc-animate-height">
+                            
+                        </div>
+                    </div>
+                    <div class="twc-border">
+                        <div id="twc-google-map-filters"  class="twc-animate-height" style="max-height: 59vh; overflow: auto;">
+                            <h3 class="twc">Space Request</h3>
+                            <div class="twc-div-table-r">
+                                <div>
+                                    {FILTER_NAME}
+                                </div>
+                                <div>
+                                    {FILTER_SRF_ID}
+                                    {FILTER_SRF_STATUS}
+                                </div>
+                                <div>
+                                    {FILTER_SITE_TYPE}
+                                    {FILTER_PORTFOLIO}
+                                </div>
+                                <div>
+                                    {FILTER_COUNTIES}
+                                </div>
+                                
+                            </div>
+
+                            <h3 class="twc">Filter by Location</h3>
+                            <div class="twc-div-table-r">
+                                <div>
+                                    {FILTER_LAT} {FILTER_LNG} {FILTER_RADIUS}
+                                </div>
+                            </div>
+
+
+                            <h3 class="twc">Actions</h3>
+                            <div class="twc-div-table-r">
+                                <div>
+                                    {ACTION_CLEAR_FILTERS}
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+
+            html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Name', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames(userInfo) }));
+            html = html.replace('{FILTER_SRF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SRF ID', width: 'calc(25% - 2px)', multiSelect: true, id: 'record_id', noEmpty: true, dataSource: twcUtils.getSrfIds() }));
+            html = html.replace('{FILTER_SRF_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SRF STATUS', width: 'calc(25% - 2px)', multiSelect: true, id: twcSrf.Fields.SRF_STATUS, noEmpty: true, dataSource: twcUtils.getSrfStatus() }));
+            html = html.replace('{FILTER_SITE_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Type', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));
+            html = html.replace('{FILTER_PORTFOLIO}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Portfolio', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_PORTFOLIO, noEmpty: true, dataSource: twcUtils.getPortfolios() }));
+            html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'County', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
+
+
+            html = html.replace('{FILTER_LAT}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Latitude', id: 'twc-coord-latitude', width: '250px' }));
+            html = html.replace('{FILTER_LNG}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Longitude', id: 'twc-coord-longitude', width: '250px' }));
+            html = html.replace('{FILTER_RADIUS}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Radius (Km)', id: 'twc-coord-radius', value: 5, width: '75px', min: 5, max: 300 }));
+
+            html = html.replace('{ACTION_CLEAR_FILTERS}', twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Clear Filters', id: 'twc-action-clear-filter' }));
+
+
+            return html;
+        }
+
         function getEquipment(options) {
             var fields = twcEquipmentUI.getInventoryTableFields();
             var fieldsSql = '';
             fields.map(f => {
                 if (f.field == twcEquipment.Fields.INFRASTRUCTURE || f.field == twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS || f.field == twcEquipment.Fields.CUSTOMER || f.field == twcEquipment.Fields.EQUIPMENT_TYPE) {
-                    fieldsSql += `BUILTIN.DF(eq.${f.field}) as ${f.field}, eq.${f.field} as ${f.field}_id, `
+                    fieldsSql += `BUILTIN.DF(eq.${f.field}) as ${f.field}_name, eq.${f.field}, `
                 } else {
                     fieldsSql += `eq.${f.field}, `
                 }
@@ -19,9 +88,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sql = `
                     select  eq.id, ${fieldsSql}, 
                             ${twcEquipment.Fields.DESCRIPTION},  
-                            ${twcEquipment.Fields.EQUIPMENT_TYPE}, BUILTIN.DF(${twcEquipment.Fields.EQUIPMENT_TYPE}) as ${twcEquipment.Fields.EQUIPMENT_TYPE}_name,
-
-                            
+                            ${twcEquipment.Fields.PARENT_TME_ID}, BUILTIN.DF(${twcEquipment.Fields.PARENT_TME_ID}) as ${twcEquipment.Fields.PARENT_TME_ID}_name,
+                           
                             
                     from    ${twcEquipment.Type} eq
                     join   customrecord_twc_infra infra on infra.id = eq.custrecord_twc_equip_str
@@ -38,7 +106,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var fieldsSql = '';
             fields.map(f => { fieldsSql += `eq.${f.field}, ` });
             var sql = `
-                    select  eq.id as ${twcSrfItem.Fields.EQUIPMENT_ID}, eq.custrecord_twc_equip_parent_tme_id as ${twcSrfItem.Fields.TME_ID}, ${fieldsSql}, 
+                    select  eq.id as ${twcSrfItem.Fields.EQUIPMENT_ID}, eq.name as ${twcSrfItem.Fields.EQUIPMENT_ID}_name, ${fieldsSql}, 
                             eq.${twcEquipment.Fields.EQUIPMENT_CLASS} as ${twcSrfItem.Fields.STEP_TYPE}, BUILTIN.DF(eq.${twcEquipment.Fields.EQUIPMENT_CLASS}) as ${twcSrfItem.Fields.STEP_TYPE}_name,
                             eq.${twcEquipment.Fields.EQUIPMENT_TYPE} as ${twcSrfItem.Fields.ITEM_TYPE},BUILTIN.DF(eq.${twcEquipment.Fields.EQUIPMENT_TYPE}) as ${twcSrfItem.Fields.ITEM_TYPE}_name,
                             eq.${twcEquipment.Fields.MAKE} ${twcSrfItem.Fields.MAKE},
@@ -50,6 +118,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             eq.${twcEquipment.Fields.HEIGHTDEPTH_MM} as ${twcSrfItem.Fields.DEPTH_MM},
                             eq.${twcEquipment.Fields.WEIGHT_KG} as ${twcSrfItem.Fields.WEIGHT_KG},
                             eq.${twcEquipment.Fields.INVENTORY_FLAG} as ${twcSrfItem.Fields.INVENTORY_FLAG},
+                            eq.${twcEquipment.Fields.OPT_TYPE} as ${twcSrfItem.Fields.TYPE_OPT},BUILTIN.DF(eq.${twcEquipment.Fields.OPT_TYPE}) as ${twcSrfItem.Fields.TYPE_OPT}_name,
+                            eq.${twcEquipment.Fields.PARENT_TME_ID} as ${twcSrfItem.Fields.TME_ID}, BUILTIN.DF(eq.${twcEquipment.Fields.PARENT_TME_ID}) as ${twcSrfItem.Fields.TME_ID}_name,
+                            
 
                     from    ${twcEquipment.Type} eq
                     left join   customrecord_twc_infra infra on infra.id = eq.custrecord_twc_equip_str
@@ -59,10 +130,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return coreSQL.run(sql);
         }
 
-        function submitSiteSrf(userInfo, payload) {
-            payload.profile = userInfo.profile;
-            twcSrfWorkflowEngine.initWorkFlow(payload);
+        function getAssignToEmployees(options) {
+            return coreSQL.run(`
+                select  id as value, entityid as text, custentity_twc_can_execute_pack as can_execute_pack
+                from    employee
+                where   isinactive = 'F'
+                order by entityid
+            `);
         }
+
+
 
         var _savingErrors = [];
         const SAVE_MIN_UNITS = 150;
@@ -72,7 +149,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
         }
         function saveSiteSrf(userInfo, payload) {
-            // @@TODO: SRF: error handling????
             try {
                 var srfCancelled = false;
                 var submitInfo = {};
@@ -92,7 +168,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         }
                     }
                 }
-
 
                 if (!payload.keepSaving) {
                     if (payload.id) {
@@ -218,16 +293,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (item.ss_actionSaved) { return; }
 
                 var requestType = item[twcSrfItem.Fields.REQUEST_TYPE];
-                //var equipmentId = item[twcSrfItem.Fields.EQUIPMENT_ID] || item[twcSrfItem.Fields.TME_ID];
-                var equipmentId = item[twcSrfItem.Fields.EQUIPMENT_ID]
+
+                var equipmentId = item[twcSrfItem.Fields.EQUIPMENT_ID];
+                if (requestType == twcSrfItem.RequestType.SWAP && item.swappedItem) {
+                    equipmentId = item.swappedItem[twcSrfItem.Fields.EQUIPMENT_ID];
+                }
+
                 saveEqAction(item, payload, equipmentId, (requestType == twcSrfItem.RequestType.SWAP) ? twcSrfItem.RequestType.REMOVE : requestType)
                 // SWAP (REMOVE + INSTALL)
                 if (requestType == twcSrfItem.RequestType.SWAP) { saveEqAction(item, payload, null, twcSrfItem.RequestType.INSTALL); }
 
             } catch (e) {
-                // @@TODO: this should stored in some log or something
-                log.error('Equip Action Save Failed', e);
-                log.error('Equip Action Save Failed', e.stack);
                 _savingErrors.push({
                     stage: 'Saving Equipment Action',
                     error: e.message,
@@ -259,6 +335,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             try {
                 if (parentItem) {
+                    // @@NOTE: if we have a swap sub-item we must also have a swapItem attached to it or it means the sub item was not set
+                    if (item[twcSrfItem.Fields.REQUEST_TYPE] == twcSrfItem.RequestType.SWAP) { if (!item.swapItem) { return; } }
                     item[twcSrfItem.Fields.TMI_ID_SRF] = parentItem.id;
                 }
 
@@ -273,6 +351,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (!srfItem.hasField(k)) { continue; }
                     srfItem.set(k, item[k])
                 }
+
+                if (item.swapItem) {
+                    // @@NOTE: this is a related item that was swapped with a new one, the swap Item is tyhe new one
+                    for (var k in item.swapItem) {
+                        if (k == twcSrfItem.Fields.STEP_TYPE) { continue; }
+                        if (!srfItem.hasField(k)) { continue; }
+                        srfItem.set(k, item.swapItem[k])
+                    }
+
+                } else if (item.swappedItem) {
+                    // @@NOTE this is a swapped item
+                    srfItem.set(twcSrfItem.Fields.EQUIPMENT_ID, item.swappedItem[twcSrfItem.Fields.EQUIPMENT_ID]);
+                }
+
                 if (!item.id) { item.isNew = true; }
                 item.id = srfItem.save();
 
@@ -448,102 +540,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
 
-
-        function renderSiteLocatorPanel(userInfo, featureId) {
-            var html = `
-                <script async defer src="https://maps.googleapis.com/maps/api/js?key=${twcConfig.cfg().GOOGLE_API_KEY}&loading=async"></script>
-                <div style="max-height: 60vh; overflow: hidden;">
-                <div id="site-finder-table" class="twc-div-table-t">
-                    <div class="twc-border" style="width: 50%;">
-                        <div id="twc-google-map-container" class="twc-animate-height">
-                            
-                        </div>
-                    </div>
-                    <div class="twc-border">
-                        <div id="twc-google-map-filters"  class="twc-animate-height" style="max-height: 59vh; overflow: auto;">
-                            <h3 class="twc">Space Request</h3>
-                            <div class="twc-div-table-r">
-                                <div>
-                                    {FILTER_NAME}
-                                </div>
-                                <div>
-                                    {FILTER_SRF_ID}
-                                    {FILTER_SRF_STATUS}
-                                </div>
-                                <div>
-                                    {FILTER_SITE_TYPE}
-                                    {FILTER_PORTFOLIO}
-                                </div>
-                                <div>
-                                    {FILTER_COUNTIES}
-                                </div>
-                                
-                            </div>
-
-                            <h3 class="twc">Filter by Location</h3>
-                            <div class="twc-div-table-r">
-                                <div>
-                                    {FILTER_LAT} {FILTER_LNG} {FILTER_RADIUS}
-                                </div>
-                            </div>
-
-
-                            <h3 class="twc">Actions</h3>
-                            <div class="twc-div-table-r">
-                                <div>
-                                    {ACTION_CLEAR_FILTERS}
-                                    
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-
-            html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Name', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames(userInfo) }));
-            html = html.replace('{FILTER_SRF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SRF ID', width: 'calc(25% - 2px)', multiSelect: true, id: 'record_id', noEmpty: true, dataSource: twcUtils.getSrfIds() }));
-            html = html.replace('{FILTER_SRF_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SRF STATUS', width: 'calc(25% - 2px)', multiSelect: true, id: twcSrf.Fields.SRF_STATUS, noEmpty: true, dataSource: twcUtils.getSrfStatus() }));
-            html = html.replace('{FILTER_SITE_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Type', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));
-            html = html.replace('{FILTER_PORTFOLIO}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Portfolio', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_PORTFOLIO, noEmpty: true, dataSource: twcUtils.getPortfolios() }));
-            html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'County', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
-
-
-            html = html.replace('{FILTER_LAT}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Latitude', id: 'twc-coord-latitude', width: '250px' }));
-            html = html.replace('{FILTER_LNG}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Longitude', id: 'twc-coord-longitude', width: '250px' }));
-            html = html.replace('{FILTER_RADIUS}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Radius (Km)', id: 'twc-coord-radius', value: 5, width: '75px', min: 5, max: 300 }));
-
-            html = html.replace('{ACTION_CLEAR_FILTERS}', twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Clear Filters', id: 'twc-action-clear-filter' }));
-
-
-            return html;
+        function submitSiteSrf(userInfo, payload) {
+            payload.profile = userInfo.profile;
+            twcSrfWorkflowEngine.initWorkFlow(payload);
         }
-
-
-        function getAssignToEmployees(options) {
-            return coreSQL.run(`
-                select  id as value, entityid as text, custentity_twc_can_execute_pack as can_execute_pack
-                from    employee
-                where   isinactive = 'F'
-                order by entityid
-            `);
-        }
-
 
         function deleteSrf(srfId) {
-
             coreSQL.each(`select id from customrecord_twc_eq_action where custrecord_twc_eq_action_srf = ${srfId}`, r => {
                 recu.del('customrecord_twc_eq_action', r.id);
             })
-
             coreSQL.each(`select id from customrecord_twc_srf_itm where custrecord_twc_srf_itm_srf = ${srfId} order by id desc`, r => {
                 recu.del('customrecord_twc_srf_itm', r.id);
             })
-
             // coreSQL.each(`select id from customrecord_twc_eq_action where custrecord_twc_eq_action_saf = ${safId}`, r => {
             //     recu.submit('customrecord_twc_eq_action', r.id, ['custrecord_twc_eq_action_saf', 'custrecord_twc_eq_action_sts'], [null, twcUtils.EqActionStatus.Pending]);
             // })
-
-
             recu.del('customrecord_twc_srf', srfId)
         }
 
@@ -578,7 +589,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSiteRequestInfo: (pageData) => {
                 var srf = {};
                 if (pageData.recId) {
-                    srf = coreSQL.first(`select * from ${twcSrf.Type} where id = ${pageData.recId}`);
+                    srf = coreSQL.first(`
+                        select *,
+                        BUILTIN.DF(custrecord_twc_srf_lic_pack_sign_by) as pack_sign_by_name,
+                        TO_CHAR(custrecord_twc_srf_lic_pack_signed, 'DD-MM-YYYY @ HH24:Mi:ss') pack_sign_by_date
+                        from ${twcSrf.Type} 
+                        where id = ${pageData.recId}
+                    `);
                     if (!srf) { throw new Error(`No SRF found using id ${pageData.recId}`) }
                     srf.siteId = srf[twcSrf.Fields.SITE];
 

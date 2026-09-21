@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_icons.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safAction.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_file.js', './oTWC_srfItem.js', './oTWC_equipAction.js'],
-    (runtime, core, coreSQL, twcIcons, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile, twcSrfItem, twcEqAct) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_icons.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safAction.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_file.js', './oTWC_srfItem.js', './oTWC_equipAction.js', './oTWC_company.js', './oTWC_profile.js', './oTWC_equipment.js'],
+    (runtime, core, coreSQL, twcIcons, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile, twcSrfItem, twcEqAct, twcCompany, twcProfile, twcEq) => {
         var _safUrl = null;
         var _allowedSafTypes = null;
         function getSafUrl() {
@@ -444,9 +444,25 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSAFInfoPanels_Existing(dataSource, userInfo) {
             var safLink = core.url.script('otwc_siteaccess_sl');
 
-            var safDetails = { id: 'ite-access-existing-safs', title: 'Existing SAFs', collapsed: true, fields: [] };
-            // safDetails.fields.push({ id: twcSaf.Fields.CUSTOMER, label: 'Customer' })
-            // safDetails.fields.push({ id: twcSaf.Fields.STATUS, label: 'Status' })
+            var whereClause = `where ${twcSaf.Fields.SITE} = ${dataSource.siteId} `;
+            var orderBy = `${twcSaf.Fields.CREATED} desc`;
+
+            if (!userInfo.isEmployee) {
+                if (userInfo.companyProfile?.isBoth) {
+                    whereClause += `and (
+                       ${twcSaf.Fields.PRIMARY_CONTRACTOR} = ${userInfo.companyProfile.id || 0}
+                    or ${twcSaf.Fields.CUSTOMER} = ${userInfo.companyProfile.id || 0}
+                )`;
+                } else if (userInfo.companyProfile?.isVendor) {
+                    whereClause += `and ${twcSaf.Fields.PRIMARY_CONTRACTOR} = ${userInfo.companyProfile.id || 0}`;
+                } else if (userInfo.companyProfile?.isCustomer) {
+                    whereClause += `and ${twcSaf.Fields.CUSTOMER} = ${userInfo.companyProfile.id || 0}`;
+                }
+            }
+
+            var safList = twcSaf.select({ where: whereClause, orderBy: orderBy,  useNames: true })
+
+            var safDetails = { id: 'site-access-existing-safs', title: 'Existing SAFs', collapsed: true, fields: [] };
             safDetails.fields.push({
                 id: `${twcSaf.Type}`, label: 'Saf Details',
                 fields: {
@@ -466,7 +482,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcSaf.Fields.DRONE_SURVEY]: 'Drone Survey',
 
                 },
-                where: { [twcSaf.Fields.SITE]: dataSource.siteId },
+                dataSource: safList,
                 FieldsInfo: twcSaf.FieldsInfo,
                 readOnly: true
             });
@@ -548,7 +564,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF' },
                     { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
                     { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Eq. Type' },
-                    { id: twcSrfItem.Fields.REQUEST_TYPE + '_name', title: 'Type' },
+                    { id: 'srf_eq_action_type', title: 'Type' },
                     { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description', nullText: '' },
                     { id: twcSrfItem.Fields.LENGTH_MM, title: 'Length', nullText: '' },
                     { id: twcSrfItem.Fields.WIDTH_MM, title: 'Width', nullText: '' },
@@ -622,9 +638,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var infoLists = { id: 'site-access-lists', collapsed: false, renderAsTable: { width: '100%' }, fields: [] };
             fieldGroup.controls.push(infoLists);
 
-            // @@TODO: use constant
-            var profileLink = core.url.record('customrecord_twc_prof');
-            var companyLink = core.url.record('customrecord_twc_company');
+            var profileLink = core.url.record(twcProfile.Type);
+            var companyLink = core.url.record(twcCompany.Type);
             infoLists.fields.push({
                 id: `${twcSafCrew.Type}`, label: 'Crew / Visitors',
                 fields: {
@@ -657,9 +672,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSAFInfoPanels_Info_Actions(dataSource, userInfo) {
             var eqActionsLists = { id: 'site-access-eq-actions', collapsed: false, renderAsTable: { width: '100%' }, fields: [] };
 
-            // @@TODO: use constant
-            var eaActionLink = (userInfo.isEmployee) ? { url: core.url.record('customrecord_twc_eq_action') + '&id=${ea_id}', valueField: 'ea_id' } : null;
-            var equipLink = (userInfo.isEmployee) ? { url: core.url.record('customrecord_twc_equip') + '&id=${' + twcEqAct.Fields.EA_EQUIPMENT + '}', valueField: twcEqAct.Fields.EA_EQUIPMENT } : null;
+            var eaActionLink = (userInfo.isEmployee) ? { url: core.url.record(twcEqAct.Type) + '&id=${ea_id}', valueField: 'ea_id' } : null;
+            var equipLink = (userInfo.isEmployee) ? { url: core.url.record(twcEq.Type) + '&id=${' + twcEqAct.Fields.EA_EQUIPMENT + '}', valueField: twcEqAct.Fields.EA_EQUIPMENT } : null;
 
             var fields = {};
             if (dataSource.showSelect) {
@@ -676,7 +690,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fields[twcEqAct.Fields.EA_TYPE + '_name'] = { title: 'Type' };
             fields[twcSafAction.Fields.SAF_ACTION_STATUS + '_name'] = { title: 'Status', styles: { width: '120px', 'text-align': 'center' } };
 
-            // @@TODO: we need to fix filters sorting with child rows before we can show
+            // @@REVIEW: we need to fix filters sorting (on table ui) with child rows before we can show
             for (var k in fields) {
                 fields[k].noSort = true;
                 fields[k].noFilter = true;
@@ -808,7 +822,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             getSafActionList: getSafActionList,
             getSafTableFields: getSafTableFields,
             getSAFInfoPanels: getSAFInfoPanels,
-            renderTimeBlocks: renderTimeBlocks
+            renderTimeBlocks: renderTimeBlocks,
+
+            getSafListPanel: getSAFInfoPanels_Existing
         }
     });
 

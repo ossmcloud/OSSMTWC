@@ -1,0 +1,40 @@
+
+00. Need to stop creating table/fields on SB IMPORTANT
+
+01. Update Schema on Live (many tables changed)
+	Dev can help list differences using tables:
+		customrecordtype
+		customfield
+
+02. Identify tbales with static data ad import in right sequence
+	They seem to be mostly there
+	Also, if tables have new fields they may need to be populated
+
+02b. Make sure all Numbering is properly set with prefixes and all
+
+03. Import Equipments MUST have the Radix id
+
+04. Update All scripts (Giuseppe)
+05. Sites/Company/Profile Files (Giuseppe)
+	I need the SFTP details of the new location
+
+06. SAF /SRF 
+	I need the latest Radix database backup
+	
+		SRF Historical/Pending
+			We may need some scripting here, we have few tables involved: SRF/SRF Item/Eq. Actions
+			
+			WORKFLOWS for histoprical SRF will NOT be imported
+		
+		SAF Historical 
+			No Construction		<= csv import(s) should od here, we need SA Header, Crew memebers and Time Slots (and Logs ??)
+			Construction 		<= this are more complex, need SAF Actions and need SRFs to be imported first
+			
+		SAF Pending
+			Construction 		<= this are more complex and we need SRF to exists, the volume is low so this will be done manually as last step
+			
+		SDS Records	
+		
+		Troubler Tickets
+		
+		Transaction Files (already have program for this)

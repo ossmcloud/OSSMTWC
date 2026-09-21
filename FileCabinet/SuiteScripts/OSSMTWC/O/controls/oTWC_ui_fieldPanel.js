@@ -3,7 +3,6 @@
  * @NModuleScope public
  */
 
-// @@TODO: @@REVIEW: do I want this on framework ???
 define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', '../../data/oTWC_icons.js', './oTWC_ui_ctrlBase.js', './oTWC_ui_ctrl.js'],
     (core, b64, twcIcons, ctrlBase, ui) => {
 

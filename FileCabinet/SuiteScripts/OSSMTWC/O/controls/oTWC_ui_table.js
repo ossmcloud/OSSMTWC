@@ -287,6 +287,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             #filters = null;
             #sortIdx = null;
             options = null;     // @@IMPORTANT: the options must not be private as we need to serialize it if the control is rendered on the server side
+            #formatValue = null;
             constructor(table, options) {
                 if (core.utils.isEmpty(table)) { throw new err.ONullArgument('table'); }
                 if (core.utils.isEmpty(options)) { throw new err.ONullArgument('options'); }
@@ -297,7 +298,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     this.#sortIdx = this.options.sortIdx;
                 }
 
-                this.formatValue = this.options.formatValue;
+                this.#formatValue = this.options.formatValue;
 
                 this.#filters = new HtmlTableColumnFilter(this);
             }
@@ -410,6 +411,13 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.options.cellMask = val;
             }
 
+            get formatValue() {
+                return this.#formatValue;
+            } set formatValue(val) {
+                if (!core.utils.isEmpty(val) && !core.utils.isFunc(val)) { throw new err.OInvalidArgumentType('val', 'function'); }
+                this.#formatValue = val;
+            }
+
             showFilter() {
                 this.#filters.open();
             }
@@ -500,7 +508,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 if (this.cellMask) { formattedValue = this.cellMask.replaceAll('${value}', formattedValue); }
 
-                if (this.formatValue) { formattedValue = this.formatValue(value, formattedValue, data, this); }
+                if (this.#formatValue) { formattedValue = this.#formatValue(value, formattedValue, data, this); }
 
                 if (asTableCell) {
                     return `<td style="${this.baseStyles('cell')}; padding: 3px; vertical-align: top; border-bottom: 1px solid silver; border-right: 1px solid silver;">${formattedValue}</td>`;
@@ -722,6 +730,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             #colResize = null;
             #filters = [];
             #toolBar = null;
+            #filtersApplied = null;
             constructor(options, data) {
                 if (core.utils.isEmpty(options)) { throw new err.ONullArgument('options'); }
 
@@ -829,6 +838,14 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#rowInit = val;
             }
 
+
+            get filtersApplied() {
+                return this.#filtersApplied;
+            } set filtersApplied(val) {
+                if (!core.utils.isEmpty(val) && !core.utils.isFunc(val)) { throw new err.OInvalidArgumentType('val', 'function'); }
+                this.#filtersApplied = val;
+            }
+
             getDataRows() {
                 return this.#rows.filter(r => { return !r.header && !r.footer; })
             }
@@ -882,6 +899,9 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     r.hide = r.filtered;
                 });
                 this.render();
+                if (this.filtersApplied) {
+                    this.filtersApplied(this.#filters);
+                }
             }
             applyFilter(r, filter) {
                 if (r.ui().hasClass('o-row-child')) { return true; }

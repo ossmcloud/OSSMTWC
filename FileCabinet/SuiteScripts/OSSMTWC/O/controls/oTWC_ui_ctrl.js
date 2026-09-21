@@ -56,6 +56,23 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 return obj;
             }
 
+            getValue(id, asObj) {
+                var ctrl = this.getControl(id);
+                if (!ctrl) { return undefined; }
+                if (asObj && ctrl.valueObj !== undefined) { return ctrl.valueObj; }
+                return ctrl.value;
+            }
+
+            setValue(id, value, doNotFireEvents) {
+                var ctrl = this.getControl(id);
+                if (!ctrl) { return; }
+                if (doNotFireEvents) {
+                    ctrl.setValue(value)
+                } else {
+                    ctrl.value = value;
+                }
+            }
+
             getControl(id) {
                 var obj = null;
                 core.array.each(this.#controls, c => {
@@ -77,6 +94,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 return obj;
             }
 
+           
             // addControl(options) {
 
             // }

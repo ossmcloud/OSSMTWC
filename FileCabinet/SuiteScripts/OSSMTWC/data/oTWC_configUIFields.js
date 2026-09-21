@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_srfItem.js', './oTWC_file.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_safAction.js', './oTWC_profile.js', './oTWC_troubleTickets.js', './oTWC_equipment.js'],
-    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSrfItem, twcFile, twcUI, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafTimeBlock, twcSafLog, twcSafAction, twcProfile, twcTroubleTkts, twcEquipment) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_srfItem.js', './oTWC_file.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_safAction.js', './oTWC_profile.js', './oTWC_troubleTickets.js', './oTWC_equipment.js', './oTWC_srf.js'],
+    (runtime, core, coreSQL, twcUtils, twcSite, twcLock, twcInfra, twcSrfItem, twcFile, twcUI, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafTimeBlock, twcSafLog, twcSafAction, twcProfile, twcTroubleTkts, twcEquipment, twcSrf) => {
 
         const FIELD_ACCESS_TYPE = {
             TL: 'TL',           // only TL Staff
@@ -18,7 +18,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 try {
                     _userInfo = twcUtils.userInfo();
                 } catch (error) {
-                    // @@TODO: this is run from client side and no permission to employee record
+                    // @@NOTE: this is run from client side and no permission to employee record
+                    //          it shoudl really not happen
                     return;
                 }
 
@@ -50,7 +51,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
 
-        // @@TODO: need to find a way to make this as handy as possible
+        // @@REVIEW: need to find a way to make this as handy as possible
         function getDataObject(recordType, callback) {
             if (recordType == twcLock.Type) { return twcLock; }
             if (recordType == twcInfra.Type) { return twcInfra; }
@@ -68,6 +69,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (recordType == twcProfile.Type) { return twcProfile; }
             if (recordType == twcTroubleTkts.Type) { return twcTroubleTkts; }
             if (recordType == twcEquipment.Type) { return twcEquipment; }
+            if (recordType == twcSrf.Type) { return twcSrf; }
 
             if (recordType.startsWith('no-rec')) { return; }
 
@@ -163,9 +165,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                             for (var ok in field.fields[k]) {
                                 columnOptions[ok] = field.fields[k][ok]
                             }
+                        
                         } else {
                             columnOptions.title = field.fields[k];
                         }
+
+                        
                         columns.push(columnOptions);
                     }
 
@@ -255,9 +260,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
 
 
-                // @@TODO: @@REVIEW: if the dataSource is a loaded object it would have property names determined by the alias
-                //                   but the field id could the the netsuite field id in which case we would not have got the vale with dataSource[fieldId]
-                //                   so we get the value using the .get method (NOTE: if the .get method is not there this may be a different object)
+                // @@REVIEW: if the dataSource is a loaded object it would have property names determined by the alias
+                //           but the field id could the the netsuite field id in which case we would not have got the vale with dataSource[fieldId]
+                //           so we get the value using the .get method (NOTE: if the .get method is not there this may be a different object)
                 if (control.value === undefined && dataSource.get) {
                     if (dataField?.field_type == 'Document') {
                         control.value = dataSource.getText(fieldId);

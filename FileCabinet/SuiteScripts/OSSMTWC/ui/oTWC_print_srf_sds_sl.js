@@ -21,7 +21,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 }
                 if (!pdfFile) {
                     // @@NOTE: this should only happen when the file is generated, reviewed, signed and executed
-                    pdfFile = sdsRender.renderSDS(context, context.request.parameters.recId);
+                    pdfFile = sdsRender.renderSDS(context, context.request.parameters.recId, context.request.parameters.forceSave == 'T');
                 }
                 context.response.writeFile({ file: pdfFile, isInline: true });
             } catch (e) {

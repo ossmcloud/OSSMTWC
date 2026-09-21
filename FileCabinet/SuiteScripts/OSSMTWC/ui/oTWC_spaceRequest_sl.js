@@ -15,6 +15,8 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
 
             var html = '';
             if (context.request.parameters.siteId || context.request.parameters.recId) {
+                // twcBaseView.underMaintenance(pageData.userInfo);
+
                 pageData.siteRequestInfo = twcSiteRequestUtils.getSiteRequestInfo(pageData);
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteRequestInfo.siteId || context.request.parameters.siteId, pageData.userInfo);
 
@@ -64,8 +66,9 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     pageData.eqLib = twcEqLib.select({ where: { [twcEqLib.Fields.LIBRARY_ENTRY_STATUS]: twcEqLib.EqLibStatus.Active, 'isinactive': 'F' }, noAlias: true });
 
                     // @@NOTES: if the SRF is submitted we still let users with full access to edit it but only if we are a Towercom employee 
+                    var canSubmit = false;
                     if (context.request.parameters.recId) {
-                        var canSubmit = pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued;
+                        canSubmit = pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Draft || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued;
                         pageData.forceViewOnly = !(canSubmit ? true : (pageData.userInfo.isEmployee && pageData.userInfo.permission.lvl == twcConfig.PERMISSION_LEVEL.FULL));
                         if (!pageData.forceViewOnly && (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.SRFCancelled || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted)) {
                             pageData.forceViewOnly = true;
@@ -73,6 +76,11 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     } else {
                         pageData.forceViewOnly = true;
                     }
+
+                    if (canSubmit && pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued) {
+                        pageData.forceViewOnly = true;
+                    }
+
 
                     html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_spaceRequest');
                     html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
@@ -95,12 +103,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     var printSDSButton = '';
                     if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceIssued || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenseSigned || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted) {
                         printSDSButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Print SDS', id: 'print-sds' });
-                        // if (!pageData.userInfo.isEmployee && pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceRequested) {
-                        //     printSDSButton = '';
-                        // }
                     }
-
-                   
 
                     var signSrfButton = '';
                     var signatureWorkflowItem = twcSrfWorkflowEngine.isWaitingForSignature(pageData.userInfo, pageData.siteRequestInfo)
@@ -119,7 +122,12 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     var submitSrfButton = ''; var cancelSrfButton = '';
                     if (canSubmit) {
                         cancelSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SRF', id: 'cancel-srf-button' });
-                        submitSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued ? 'Re-Submit' : 'Submit', id: 'submit-button' });
+                        if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued) {
+                            submitSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Edit & Re-Submit', id: 'edit-submit-button' });    
+                        } else {
+                            submitSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Submit', id: 'submit-button' });    
+                        }
+                        
                     }
                     var acceptApprovalButton = '';
                     if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.SRFApproved) {
