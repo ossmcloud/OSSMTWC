@@ -4,8 +4,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'N/format', './data/oTWC_config.js', './data/oTWC_troubleTickets.js', './data/oTWC_site.js', './data/oTWC_company.js'],
-    (runtime, core, oui, recu, format, twcConfig, twcTroubleTicket, twcSite, twcCompany) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'N/format', './data/oTWC_config.js', './data/oTWC_troubleTickets.js', './data/oTWC_site.js', './data/oTWC_company.js', 'SuiteBundles/Bundle 548734/O/core.sql.js'],
+    (runtime, core, oui, recu, format, twcConfig, twcTroubleTicket, twcSite, twcCompany, coreSql) => {
 
         function beforeLoad(context) {
         }
@@ -39,6 +39,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
                     recu.submit(newRec.type, newRec.id, twcTroubleTicket.Fields.CASE_REFERENCE, caseId);
 
                 }
+                if (context.type == context.UserEventType.EDIT) {
+                    updateCaseStatus(context.newRecord, context.oldRecord)
+                }
+
 
             }
             catch (error) {
@@ -46,6 +50,45 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
                 core.logDebug('AFTER-SUBMIT', `${context.newRecord.id}: ${error.message})`);
                 core.logDebug('AFTER-SUBMIT-STACK', `${context.newRecord.id}: ${error.stack || 'NO STACK'})`);
             }
+        }
+
+        function updateCaseStatus(newRec, oldRec) {
+            try {
+                var newStatus = newRec.getValue(twcTroubleTicket.Fields.STATUS)
+                var oldStatus = oldRec.getValue(twcTroubleTicket.Fields.STATUS)
+                var caseId = newRec.getValue(twcTroubleTicket.Fields.CASE_REFERENCE)
+                if (!caseId) return
+                var values = {}
+                if ((oldStatus || '') !== (newStatus || '')) {
+                    var caseStatus = getMappedStatus(newStatus)
+                    if (caseStatus) {
+                        values.status = caseStatus
+                    }
+                }
+                if (!Object.keys(values).length) return
+                recu.submit('supportcase', caseId, values);
+            }
+            catch (error) {
+                core.logDebug('AFTER-SUBMIT update case status', `${newRec.id}: ${error.message})`);
+                core.logDebug('AFTER-SUBMIT-STACK', `${newRec.id}: ${error.stack || 'NO STACK'})`);
+            }
+
+        }
+
+         function getMappedStatus(tktStatus) {
+            let caseStatus = null
+            coreSql.each(`
+                    SELECT
+                        custrecord_twc_case_tkt_sts_case
+                    FROM customrecord_twc_case_tkt_status
+                    WHERE isinactive = 'F'
+                    AND custrecord_twc_case_tkt_sts_tkt = '${tktStatus}'
+                    FETCH FIRST 1 ROW ONLY
+                `, row => {
+                caseStatus = row.custrecord_twc_case_tkt_sts_case
+            })
+            log.debug('caseStatus', caseStatus)
+            return caseStatus
         }
 
 

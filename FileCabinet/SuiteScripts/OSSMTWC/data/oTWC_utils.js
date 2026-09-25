@@ -1529,6 +1529,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `)?.customer_site_id || '';
         }
 
+         function getNSCustomers() {
+            return getLookUpTableValues('customer');
+        }
+
 
         return {
             // @@HARDCODED:
@@ -1607,6 +1611,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafStatusStyle: getSafStatusStyle,
             getSafStatusHtml: getSafStatusHtml,
 
+            getNSCustomers :getNSCustomers,
             tktStatus: TKT_STATUS,
             getTktStatusName: getTktStatusName,
             getTktStatusStyle: getTktStatusStyle,

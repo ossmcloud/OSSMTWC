@@ -99,12 +99,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var customer = dataSource[twcTrblTkts.Fields.CUSTOMER];
             var customers = twcUtils.getCustomers(userInfo);
             if (customers.length == 1) { customer = customers[0].value; }
+            var nsCustomers =  twcUtils.getNSCustomers()
+            var nsCustomer = dataSource[twcTrblTkts.Fields.ON_BEHALF];
 
             var statuses = twcUtils.getTicketStatus();
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.STATUS, label: 'Status', disabled: !userInfo.isEmployee, dataSource: statuses, value: dataSource[twcTrblTkts.Fields.STATUS] || statuses[0].value, allowAll: false })
             // newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.PRIORITY, label: 'Priority', disabled: !userInfo.isEmployee, dataSource: statuses, value: dataSource[twcTrblTkts.Fields.STATUS] || statuses[0].value, allowAll: false })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.SUBMITTED, label: 'Submitted', lineBreak: true, readOnly: true })
-            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.CUSTOMER, label: 'Customer', dataSource: customers, value: customer, mandatory: true })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.CUSTOMER, label: 'Raised by', dataSource: customers, value: customer })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.ON_BEHALF, label: 'On Behalf Of', dataSource: nsCustomers, value: nsCustomer })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.AUTHOR_PHONE_NUMBER, lineBreak: true, label: 'Your Phone Number', value: userInfo.profileInfo.phone })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.REPORT_ISSUE__WORKS_REQUIRED, lineBreak: true, width: '100%', rows: 5, label: 'Report Issue / Works Required', mandatory: true })
 
