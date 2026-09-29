@@ -523,6 +523,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Assessed: 2,
             Resolved: 3,
             Cancelled: 4,
+            InProgress : 5
         }
 
         const TKT_STATUS_STYLE = {
@@ -530,6 +531,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Assessed: { color: 'white', backgroundColor: 'orange' },
             Resolved: { color: 'white', backgroundColor: 'green' },
             Cancelled: { color: 'maroon', backgroundColor: 'yellow' },
+            InProgress: { color: 'white', backgroundColor: 'blue' },
         }
         function getTktStatusName(tktStatusNumber, asObject) {
             if (!tktStatusNumber) { tktStatusNumber = 1; }
@@ -1513,6 +1515,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getTicketPriority() {
             return getLookUpTableValues('customrecord_twc_trbl_tkt_priority');
         }
+        function getTktProfiles(){
+                return coreSQL.run(`select id as value, name as text from customrecord_twc_prof where isinactive = 'F'`)
+        }
 
         function getInventoryStatus() {
             return getLookUpTableValues('customrecord_twc_equip');
@@ -1616,6 +1621,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getTktStatusName: getTktStatusName,
             getTktStatusStyle: getTktStatusStyle,
             getTktStatusHtml: getTktStatusHtml,
+            getTktProfiles: getTktProfiles,
 
             tktPriority: TKT_PRIORITY,
             getTktPriorityName: getTktPriorityName,
