@@ -1518,6 +1518,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getTktProfiles(){
                 return coreSQL.run(`select id as value, name as text from customrecord_twc_prof where isinactive = 'F'`)
         }
+        function getTktCompanyProfiles(author){
+                var compProfile = author? coreSQL.run(`SELECT custrecord_twc_prof_company
+                              FROM customrecord_twc_prof WHERE id = ${author} AND isinactive = 'F'`): []
+                return compProfile.length ? compProfile[0].custrecord_twc_prof_company : null
+        }
 
         function getInventoryStatus() {
             return getLookUpTableValues('customrecord_twc_equip');
@@ -1536,6 +1541,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
          function getNSCustomers() {
             return getLookUpTableValues('customer');
+        }
+
+        function getRaisedOnBehalf() {
+            return getLookUpTableValues('customrecord_twc_company',"and custrecord_twc_cus_flag = 1");
         }
 
 
@@ -1622,6 +1631,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getTktStatusStyle: getTktStatusStyle,
             getTktStatusHtml: getTktStatusHtml,
             getTktProfiles: getTktProfiles,
+            getTktCompanyProfiles:getTktCompanyProfiles,
+            getRaisedOnBehalf: getRaisedOnBehalf,
 
             tktPriority: TKT_PRIORITY,
             getTktPriorityName: getTktPriorityName,

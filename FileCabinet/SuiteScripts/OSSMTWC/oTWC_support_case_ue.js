@@ -14,7 +14,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
             try {
                 var newRec = context.newRecord
                 var oldRec = context.oldRecord
-                
+
                 if (context.type == context.UserEventType.EDIT) {
                     updateTroubleTicket(oldRec, newRec)
                 }
@@ -31,35 +31,47 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
             if (!tktId) return
 
             var values = {}
+
+            updateStatus(values, oldRec, newRec)
+            updateIssue(values, oldRec, newRec)
+
+            if (!Object.keys(values).length) return
+            recu.submit(twcTroubleTicket.Type, tktId, values)
+        }
+
+        function updateStatus(values, oldRec, newRec) {
+
             var oldStatus = oldRec && oldRec.getValue('status')
             var newStatus = newRec.getValue('status')
 
-            if ((oldStatus || '') !== (newStatus || '')) {
-                var tktStatus = getMappedStatus(newStatus)
-                if (tktStatus) {
-                   values[twcTroubleTicket.Fields.STATUS] = tktStatus
-                }
-            }
-            log.debug("Value", values)
+            if ((oldStatus || '') === (newStatus || '')) return
 
-            if (!Object.keys(values).length) return
-            recu.submit(twcTroubleTicket.Type, tktId, values);
+            var mappedStatus = getMappedValue(newStatus, 'customrecord_twc_case_tkt_status', 'custrecord_twc_case_tkt_sts_case', 'custrecord_twc_case_tkt_sts_tkt')
+            log.debug("mappedValue - status", mappedStatus)
+            if (mappedStatus) values[twcTroubleTicket.Fields.STATUS] = mappedStatus
         }
 
-        function getMappedStatus(caseStatus) {
-            let tktStatus = null
-            coreSql.each(`
-                    SELECT
-                        custrecord_twc_case_tkt_sts_tkt
-                    FROM customrecord_twc_case_tkt_status
-                    WHERE isinactive = 'F'
-                    AND custrecord_twc_case_tkt_sts_case = '${caseStatus}'
-                `, row => {
-                tktStatus = row.custrecord_twc_case_tkt_sts_tkt
-            })
-            log.debug('tktStatus', tktStatus)
-            return tktStatus
+        function updateIssue(values, oldRec, newRec) {
+
+            var oldIssue = oldRec && oldRec.getValue('issue')
+            var newIssue = newRec.getValue('issue')
+
+            if ((oldIssue || '') === (newIssue || '')) return
+
+            var mappedIssue = getMappedValue(newIssue, 'customrecord_twc_case_tkt_category', 'custrecord_twc_case_tkt_case_issue', 'custrecord_twc_case_tkt_ctgry')
+            log.debug("mappedValue - issue", mappedIssue)
+            if (mappedIssue) values[twcTroubleTicket.Fields.CATEGORY] = mappedIssue
         }
+
+        function getMappedValue(value, record, caseField, tktField) {
+
+            var mappedValue = null
+            var sql = `SELECT ${tktField} FROM ${record} WHERE isinactive = 'F' AND ${caseField} = '${value}' ORDER BY id FETCH FIRST 1 ROW ONLY`
+            log.debug("SQL", sql)
+            coreSql.each(sql, row => mappedValue = row[tktField])
+            return mappedValue
+        }
+      
 
 
         return {
