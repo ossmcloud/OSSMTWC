@@ -45,11 +45,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 var uf = window.twc.page.data.data.inventoryInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
                 if (uf) {
-                    if (uf.label) { col.title = uf.label; }
+                    if (uf.label || uf.title) { col.title = uf.title || uf.label; }
                     if (uf.listRecord && !col.id.endsWith('_text')) { return false; }
                     col.type = uf.type?.toLowerCase() || '';
                     col.nullText = uf.nullText;
                     col.addCount = uf.addCount;
+                    if (uf.styles) { col.styles = uf.styles; }
                 }
 
                 if (col.id == 'site_id_text') {

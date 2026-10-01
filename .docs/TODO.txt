@@ -1,5 +1,7 @@
 
 SRF Swap:
+    only show installed eq.
+
     Swap ATME/FEEDER: we should make sure swapped stuff here is not swapped on the TME section and vice versa
 
     Swap Item and 2 related items

@@ -88,7 +88,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
 
                 this.#initialTableHeight = jQuery('#omt_sites').closest('ossm').height();
-                console.log(this.#initialTableHeight)
 
             }
 

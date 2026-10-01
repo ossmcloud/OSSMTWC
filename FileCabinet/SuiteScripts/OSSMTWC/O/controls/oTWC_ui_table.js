@@ -245,10 +245,16 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         }
                     });
 
-                    this.#ui.css('top', this.#colHeader.offset().top + this.#colHeader.height() + 10)
-                    this.#ui.css('left', this.#colHeader.offset().left);
-
                     this.#column.table.ui.append(this.#ui);
+
+                    this.#ui.css('top', this.#colHeader.offset().top + this.#colHeader.height() + 10)
+
+                    var l = this.#colHeader.offset().left;
+                    if (l + this.#ui.width() > window.innerWidth) { l = window.innerWidth - this.#ui.width(); }
+                    this.#ui.css('left', l);
+
+
+
                 }
             }
 

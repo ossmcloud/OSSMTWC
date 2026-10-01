@@ -80,7 +80,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 { field: twcInventory.Fields.NAME, title: 'Eq. ID', addCount: true },
                 { field: twcInventory.Fields.INFRASTRUCTURE, title: 'Structure' },
                 { field: twcInventory.Fields.CUSTOMER, title: 'Customer' },
-                { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS, title: 'Install<br />Status', sortIdx: 50 },
+                { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS, title: 'Install Status', styles: { width: '150px' }, sortIdx: 50 },
+                { field: twcInventory.Fields.EQUIPMENT_LICENCE_STATUS, title: 'Licence Status', styles: { width: '150px' }, sortIdx: 50 },
                 { field: twcInventory.Fields.EQUIPMENT_CLASS, title: 'Class', styles: { width: '100px' } },
                 { field: twcInventory.Fields.EQUIPMENT_TYPE, title: 'Type', styles: { width: '100px' } },
                 {
@@ -96,24 +97,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     title: 'Length / Width / Height ',
                     nullText: '',
                     sql: `
-                    CASE
-                        WHEN (
-                            ${twcInventory.Fields.LENGTH_MM} IS NULL
-                            AND ${twcInventory.Fields.WIDTH_MM} IS NULL
-                            AND ${twcInventory.Fields.HEIGHTDEPTH_MM} IS NULL
-                        )
-                        THEN ''
-                        ELSE
-                            NVL(${twcInventory.Fields.LENGTH_MM}, '') || ' / ' ||
-                            NVL(${twcInventory.Fields.WIDTH_MM}, '') || ' / ' ||
-                            NVL(${twcInventory.Fields.HEIGHTDEPTH_MM}, '')
-                    END
-                `
+                        CASE
+                            WHEN (
+                                ${twcInventory.Fields.LENGTH_MM} IS NULL
+                                AND ${twcInventory.Fields.WIDTH_MM} IS NULL
+                                AND ${twcInventory.Fields.HEIGHTDEPTH_MM} IS NULL
+                            )
+                            THEN ''
+                            ELSE
+                                NVL(${twcInventory.Fields.LENGTH_MM}, '') || ' / ' ||
+                                NVL(${twcInventory.Fields.WIDTH_MM}, '') || ' / ' ||
+                                NVL(${twcInventory.Fields.HEIGHTDEPTH_MM}, '')
+                        END
+                    `
                 },
-                // { field: twcInventory.Fields.LENGTH_MM, title: 'Length (mm)' },
-                // { field: twcInventory.Fields.WIDTH_MM, title: 'Width (mm)' },
-                // { field: twcInventory.Fields.HEIGHTDEPTH_MM, title: 'Depth<br />(mm)' },
                 { field: twcInventory.Fields.HEIGHT_ON_TOWER_M, title: 'Height on<br />Tower' },
+                { field: 'srf', sql: 'BUILTIN.DF(ea.custrecord_twc_eq_action_srf)', nullText: '', title: 'SRF' }
             ];
 
 
@@ -130,10 +129,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var inventoryDetails = coreSQL.run(`
                 select  s.name, ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO},
-                        BUILTIN.DF(i.custrecord_twc_infra_type) as infra_type, BUILTIN.DF(i.custrecord_twc_infra_str_type) as infra_str_type, i.custrecord_twc_infra_id as infra_id
+                        BUILTIN.DF(i.custrecord_twc_infra_type) as infra_type, BUILTIN.DF(i.custrecord_twc_infra_str_type) as infra_str_type, i.custrecord_twc_infra_id as infra_id,
+                        
                 from    ${twcInventory.Type} s
                 join    customrecord_twc_infra i on i.id = ${twcInventory.Fields.INFRASTRUCTURE}
                 join    ${twcSite.Type} site on site.id = s.${twcInventory.Fields.SITE}
+                left join customrecord_twc_eq_action ea on ea.id = s.custrecord_twc_equip_assoc_eq_action
+                
                 ${whereClause} 
                 ${orderBy}
             `)
