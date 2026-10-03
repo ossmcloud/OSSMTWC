@@ -8,6 +8,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFields = {
             NAME: 'name',
             CLASS: 'custrecord_twc_eq_type_class',
+            CREATE_LIBRARY_ITEM: 'custrecord_twc_eq_type_create_lib_item',
+            SORT_INDEX: 'custrecord_twc_eq_type_index',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -16,6 +18,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             CLASS: { name: 'custrecord_twc_eq_type_class', type: 'select', alias: 'class', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_class' },
+            CREATE_LIBRARY_ITEM: { name: 'custrecord_twc_eq_type_create_lib_item', type: 'checkbox', alias: 'createLibraryItem', display: 'normal', mandatory: false },
+            SORT_INDEX: { name: 'custrecord_twc_eq_type_index', type: 'integer', alias: 'sortIndex', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -38,6 +42,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.CLASS, value)
             }
             get className() { return this.getText(_recordFields.CLASS); }
+            
+            get createLibraryItem() {
+                return this.get(_recordFields.CREATE_LIBRARY_ITEM);
+            } set createLibraryItem(value) {
+                this.set(_recordFields.CREATE_LIBRARY_ITEM, value)
+            }
+            
+            get sortIndex() {
+                return this.get(_recordFields.SORT_INDEX);
+            } set sortIndex(value) {
+                this.set(_recordFields.SORT_INDEX, value)
+            }
             
             get created() {
                 return this.get(_recordFields.CREATED);
@@ -71,8 +87,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_EquipmentType,
 
-            get: function (id) {
-                var rec = new OSSMTWC_EquipmentType(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_EquipmentType(id, staticLoad);
                 rec.load();
                 return rec;
             }, 

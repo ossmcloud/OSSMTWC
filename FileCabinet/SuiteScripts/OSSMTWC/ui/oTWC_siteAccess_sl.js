@@ -96,13 +96,19 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
                 } else {
                     var timeBlocks = twcUI.render({ type: twcUI.CTRL_TYPE.TABLE, dataSource: twcSiteAccessUtils.getSafTimeBlocks(context.request.parameters.recId) })
-                    html = html.replaceAll('{CONDITION_OF_ACCESS}', `${pageData.siteAccessInfo[twcSaf.Fields.CONDITIONS_OF_ACCESS] || ''}`);
-                    html = html.replaceAll('{TIME_BLOCKS}', `<div class="twc-control-panel-title" style="padding: 6px;">Time Blocks</div>${timeBlocks}`);
-
+                    
                     var actions = '';
                     if (pageData.editMode) {
                         actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel', id: 'cancel-button' })
+
+                        html = html.replaceAll('{CONDITION_OF_ACCESS}', '');
+                        html = html.replaceAll('{TIME_BLOCKS}', '');
+
                     } else {
+
+                        html = html.replaceAll('{CONDITION_OF_ACCESS}', `${pageData.siteAccessInfo[twcSaf.Fields.CONDITIONS_OF_ACCESS] || ''}`);
+                        html = html.replaceAll('{TIME_BLOCKS}', `<div class="twc-control-panel-title" style="padding: 6px;">Time Blocks</div>${timeBlocks}`);
+
                         if (safRequiresSrf && (safStatus == twcSaf.Status.Approved || safStatus == twcSaf.Status.AwaitingPhotos || safStatus == twcSaf.Status.PhotosReceived || safStatus == twcSaf.Status.PartiallyComplete)) {
                             if (pageData.userInfo.isEmployee && (safStatus == twcSaf.Status.PhotosReceived || safStatus == twcSaf.Status.PartiallyComplete)) {
                                 if (pageData.siteAccessInfo[twcSaf.Fields.COMPLETION_REVIEWER] == pageData.userInfo.profile) {

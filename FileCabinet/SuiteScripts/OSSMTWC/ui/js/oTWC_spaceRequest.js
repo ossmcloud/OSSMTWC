@@ -364,12 +364,31 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 var text = 'add and duplicate';
                 if (this.#mode == 'edit') { text = 'save and duplicate'; }
-                this.#addAndCopyButton = jQuery(`<button id="o-dialog_ok_copy" style="display: none;">${text}</button>`);
+
+                var addAndCopyButtonDisplay = 'none';
+                if (this.#mode == 'copy' || this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value == twcSrfItem.RequestType.INSTALL) {
+                    addAndCopyButtonDisplay = 'inline-block';
+                }
+
+                this.#addAndCopyButton = jQuery(`<button id="o-dialog_ok_copy" style="display: ${addAndCopyButtonDisplay};">${text}</button>`);
                 dlg.dialog.find('#o-dialog_buttons').prepend(this.#addAndCopyButton);
                 this.#addAndCopyButton.click(e => {
                     dlg.dialog.find('#o-dialog_ok').data('add-and-copy', true);
                     dlg.dialog.find('#o-dialog_ok').click();
                 })
+
+                if (this.#mode == 'copy') {
+                    var popUpMessage = jQuery(`
+                        <div style="position: absolute; top: 125px; width: 50%; height: 50px; background-color: var(--accent-bkgd-color); color: var(--accent-fore-color);; z-index: 999; left: 25%; border-radius: 7px; border: 3px solid var(--accent-fore-color); text-align: center; line-height: 45px;transition: opacity 0.5s ease;">
+                            Duplicate Item Added
+                        </div>
+                    `)
+                    dlg.dialog.append(popUpMessage);
+                    window.setTimeout(() => {
+                        popUpMessage.css('opacity', 0);
+                        window.setTimeout(() => { popUpMessage.remove(); }, 750)
+                    }, 1500)
+                }
 
                 if (closeCallBack) {
                     dlg.dialog.find('#o-dialog_close, #o-dialog_title_x').click(e => { closeCallBack(); });
@@ -643,7 +662,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER]) { throw new Error('You need to specify a customer'); }
 
-                    var res = this.#page.postSync({ action: 'get-equipment' }, { site: this.data.siteInfo.site.id, customer: this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER], eqClass: eqClass })
+                    var res = this.#page.postSync({ action: 'get-equipment' }, {
+                        site: this.data.siteInfo.site.id,
+                        customer: this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER],
+                        eqClass: eqClass,
+                        reqType: this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value
+                    })
 
 
                     var fields = twcEqUI.getInventoryTableFields()
@@ -708,6 +732,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             static copy(page, srfItem, callback, closeCallBack) {
                 var form = new TWCSpaceRequestItemForm(page, srfItem, 'copy');
                 form.render(callback, closeCallBack);
+
             }
 
         }
@@ -815,6 +840,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         this.ui.getControl('sign-sds-tl')?.on('click', e => { twcSdsEngineUI.signSDSTL(this, this.data.siteRequestInfo) })
 
                         this.ui.on('change', e => {
+                            if (e.id.startsWith('twc-navigation')) { return; }
                             if (e.target.type != 'table') {
                                 this.data.siteRequestInfo[e.id] = e.value;
                                 this.dirty = true

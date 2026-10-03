@@ -5,14 +5,16 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_srfItem.js', '../data/oTWC_srfReview.js', '../data/oTWC_sds.js', '../data/oTWC_sdsEquipment.js', '../data/oTWC_fileType.js', '../data/oTWC_company.js', '../data/oTWC_site.js', '../data/oTWC_file.js'],
     function (core, coreSql, b64, recu, twcUtils, twcSrf, twcSrfItem, twcSrfReview, twcSds, twcSdsEquipment, twcFileType, twcCompany, twcSite, twcFile) {
 
-        function getSrfDrawingFiles(srfId) {
-            return twcUtils.getFiles({
-                filters: {
-                    [twcFile.Fields.RECORD_TYPE]: twcSrf.Type,
-                    [twcFile.Fields.RECORD_ID]: srfId,
-                    [twcFileType.Fields.DRAWING]: 'T'
-                }
-            });
+        function getSrfDrawingFiles(srfId, fileId) {
+            var filters = {
+                [twcFile.Fields.RECORD_TYPE]: twcSrf.Type,
+                [twcFile.Fields.RECORD_ID]: srfId,
+                [twcFileType.Fields.DRAWING]: 'T'
+            };
+            if (fileId) {
+                filters['f.id'] = fileId;
+            }
+            return twcUtils.getFiles({ filters: filters });
         }
         function getSiteLicenseMapFiles(siteId, companyId) {
             return twcUtils.getFiles({
@@ -83,7 +85,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     sdsCondData = JSON.parse(srfInfo.agreement.sds_cond_data || '{}');
                 }
             }
-            
+
             //srfInfo.sdsConditions = [];
             coreSql.each(`
                 SELECT  *
@@ -125,7 +127,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             var srfItems = coreSql.run(`
-                select  eq.id, eq.custrecord_twc_equip_parent_tme_id as parent_tme, BUILTIN.DF(sds.custrecord_twc_sds_srf) as srf_id, sdsi.custrecord_twc_sds_item_equipment_class as equip_class,
+                select  eq.id, eq.custrecord_twc_equip_parent_tme_id as parent_tme, BUILTIN.DF(eqAct.custrecord_twc_eq_action_srf) as srf_id, sdsi.custrecord_twc_sds_item_equipment_class as equip_class,
                         NVL(lsts.custrecord_twc_equip_licence_status_sds, lsts.name) as status, BUILTIN.DF(sdsi.custrecord_twc_sds_item_equipment_type) as type,
                         sdsi.custrecord_twc_sds_item_description as description, sdsi.custrecord_twc_sds_item_length as length,
                         sdsi.custrecord_twc_sds_item_width as width, sdsi.custrecord_twc_sds_item_depth as depth,
@@ -137,6 +139,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 join    customrecord_twc_sds sds on sds.id = sdsi.custrecord_twc_sds_item_parent 
                 join    customrecord_twc_equip eq on eq.id = sdsi.custrecord_twc_sds_item_eq
                 join    customrecord_twc_equip_licence_status lsts on lsts.id = sdsi.custrecord_twc_sds_item_license_status
+                left join customrecord_twc_eq_action eqAct on eqAct.id = eq.custrecord_twc_equip_assoc_eq_action
                 where   sds.custrecord_twc_sds_srf = ${recId}
                 and     sdsi.custrecord_twc_sds_item_include = 'T'
                 order by eq.custrecord_twc_equip_class, sdsi.created
@@ -154,7 +157,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         i.atme_count = i.items.length;
                         i.feeder_count = i.feeders.length;
                     }
-                    
+
                 }
             })
 
@@ -264,7 +267,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 sdsEq.sRFItem = eq.srf_eq_id;
                 sdsEq.equipment = eq.eq_id;
                 sdsEq.partofSDS = (eq.srf_eq_id) != null;
-                sdsEq.includeinSDS = true;  
+                sdsEq.includeinSDS = true;
 
                 for (var k in copyFields) {
                     sdsEq.set(k, eq[copyFields[k]])
@@ -273,7 +276,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (eq.srf_inventory_flag) {
                     sdsEq.set('custrecord_twc_sds_item_inventory_flag', eq.srf_inventory_flag);
                 }
-            
+
                 sdsEq.save();
 
             })

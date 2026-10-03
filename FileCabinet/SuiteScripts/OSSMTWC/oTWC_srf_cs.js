@@ -15,9 +15,13 @@ define(['N/currentRecord', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.
         }
 
         function deleteSrf() {
-            if (!confirm('Are you sure you want to delete this SRF?')) { return; }
-            twcSiteRequestUtils.deleteSrf(currentRecord.get().id);
-            location.href = core.url.record('customrecord_twc_srf').replace('custrecordentry', 'custrecordentrylist');
+           try {
+               if (!confirm('Are you sure you want to delete this SRF?')) { return; }
+               twcSiteRequestUtils.deleteSrf(currentRecord.get().id);
+               location.href = core.url.record('customrecord_twc_srf').replace('custrecordentry', 'custrecordentrylist');
+           } catch (error) {
+               dialog.error(error);
+           }
         }
 
 

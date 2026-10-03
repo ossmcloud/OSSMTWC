@@ -130,6 +130,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
                 this.ui.on('change', e => {
                     try {
+                        if (e.id.startsWith('twc-navigation')) { return; }
                         this.#changes[e.id] = e.value;
                         this.dirty = true
 

@@ -85,6 +85,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     fieldsSql += `eq.${f.field}, `
                 }
             });
+
+            var installStatusFilter = '';   // and    eq.custrecordtwc_eq_install_status > ${twcUtils.EqInstallStatus.Draft}
+            if (options.reqType == twcSrfItem.RequestType.SWAP) {
+                installStatusFilter = `and    eq.custrecordtwc_eq_install_status = ${twcUtils.EqInstallStatus.Installed}`;
+            }
+
             var sql = `
                     select  eq.id, ${fieldsSql}, 
                             ${twcEquipment.Fields.DESCRIPTION},  
@@ -96,7 +102,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     where  eq.custrecord_twc_equip_customer = ${options.customer}
                     and    eq.custrecord_twc_equip_class = ${options.eqClass}
                     and    infra.custrecord_twc_infra_site = ${options.site}
-                    --and    eq.custrecordtwc_eq_install_status > ${twcUtils.EqInstallStatus.Draft}
+                    ${installStatusFilter}
                     order by eq.name
                 `
             return coreSQL.run(sql);
@@ -158,8 +164,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // @@NOTE: fields with '___' means they are linked record fields, we first update the site info, then the linked records
                     var fieldPath = k.split('___');
                     if (fieldPath.length == 1) {
+
+                        var fValue = payload[k];
+                        if (fValue && fValue.length == 10 && fValue.split('-').length == 3) { fValue = twcUtils.fromJsToNs(fValue); }
+
                         submitInfo[twcSrf.Type].fields.push(k);
-                        submitInfo[twcSrf.Type].values.push(payload[k])
+                        submitInfo[twcSrf.Type].values.push(fValue)
 
                         if (k == twcSrf.Fields.SRF_STATUS) {
                             if (payload[k] == twcSrf.Status.SRFCancelled) {
@@ -238,10 +248,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     //         we need to make sure functions here have max units allowed
                     core.logDebug('TEMP-STAGE-7', core.env.units())
                     saveSiteSrf_validateUnits(930);
+
                     if (srfCancelled) {
                         twcSrfWorkflowEngine.cancelWorkflow({ srf: payload.id });
                     } else if (payload.submitOnSave) {
                         submitSiteSrf(userInfo, { srf: payload.id });
+                    } else {
+                        var s = recu.lookUp(twcSrf.Type, payload.id, twcSrf.Fields.SRF_STATUS);
+                        if (s == twcSrf.Status.Submitted || s == twcSrf.Status.UnderReview || s == twcSrf.Status.FeedbackIssued || s == twcSrf.Status.Resubmitted) {
+                            twcSrfWorkflowEngine.initEquipment({ srf: payload.id });
+                        }
                     }
                     payload.keepSaving.stage = 8;
                     payload.keepSaving.stageName = 'almost there...';
@@ -546,7 +562,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function deleteSrf(srfId) {
-            coreSQL.each(`select id from customrecord_twc_eq_action where custrecord_twc_eq_action_srf = ${srfId}`, r => {
+            coreSQL.each(`select id, custrecord_twc_eq_action_eq as eq from customrecord_twc_eq_action where custrecord_twc_eq_action_srf = ${srfId}`, r => {
+
+                var eq = coreSQL.first(`select id from customrecord_twc_equip where id = ${r.eq} and custrecord_twc_equip_assoc_eq_action = ${r.id}`);
+                if (eq) {
+                    recu.submit('customrecord_twc_equip', eq.id, 'custrecord_twc_equip_assoc_eq_action', null)
+                }
+
                 recu.del('customrecord_twc_eq_action', r.id);
             })
             coreSQL.each(`select id from customrecord_twc_srf_itm where custrecord_twc_srf_itm_srf = ${srfId} order by id desc`, r => {
@@ -589,13 +611,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSiteRequestInfo: (pageData) => {
                 var srf = {};
                 if (pageData.recId) {
-                    srf = coreSQL.first(`
-                        select *,
-                        BUILTIN.DF(custrecord_twc_srf_lic_pack_sign_by) as pack_sign_by_name,
-                        TO_CHAR(custrecord_twc_srf_lic_pack_signed, 'DD-MM-YYYY @ HH24:Mi:ss') pack_sign_by_date
-                        from ${twcSrf.Type} 
-                        where id = ${pageData.recId}
-                    `);
+
+                    var sql = twcSrf.select({ noAlias: true, getSql: true, where: { id: pageData.recId } });
+                    sql.query = sql.query.replace('from customrecord_twc_srf', `BUILTIN.DF(custrecord_twc_srf_lic_pack_sign_by) as pack_sign_by_name,TO_CHAR(custrecord_twc_srf_lic_pack_signed, 'DD-MM-YYYY @ HH24:Mi:ss') pack_sign_by_date from customrecord_twc_srf`)
+                    srf = coreSQL.first(sql);
+                    // srf = coreSQL.first(`
+                    //     select *,
+                    //     BUILTIN.DF(custrecord_twc_srf_lic_pack_sign_by) as pack_sign_by_name,
+                    //     TO_CHAR(custrecord_twc_srf_lic_pack_signed, 'DD-MM-YYYY @ HH24:Mi:ss') pack_sign_by_date
+                    //     from ${twcSrf.Type} 
+                    //     where id = ${pageData.recId}
+                    // `);
                     if (!srf) { throw new Error(`No SRF found using id ${pageData.recId}`) }
                     srf.siteId = srf[twcSrf.Fields.SITE];
 

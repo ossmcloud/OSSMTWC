@@ -39,6 +39,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (!options) { throw new Error('no parameters passed'); }
             if (!options.srf) { throw new Error('invalid parameters passed'); }
 
+            //
+            // @@IMPORTANT NOTE: The sorting of this query if very important DO NOT CHANGE
+            //                   The sorting ensures that in case of swap the 'Install' action comes first and the Remove next
+            //                   This is because function initEquipment will set the newly generated equipment id on the  srf item line
+            //                   However, for swap the eq. id should be the one being swapped, NOT the new one
+            //                   So the Install action will set the newly created eq. id into the srf line
+            //                   But then the 'Remove' action, processed AFTER because of the sorting, will put the old eq.id back
+            //
+            // @@REVIEW:         I am sure there is a better and safer way to do this but for now thiks is what it is
+            //                  
+            //
+            //
             return coreSql.run(`
                 select  act.id as act_id, act.custrecord_twc_eq_action_eq as eq_id, act.custrecord_twc_eq_action_type as ea_type,
                         srf.custrecord_twc_srf_site, srf.custrecord_twc_srf_cust, 
@@ -47,8 +59,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 join    customrecord_twc_srf_itm as srfi on srfi.id = act.custrecord_twc_eq_action_srf_item
                 join    customrecord_twc_srf as srf on srf.id = srfi.custrecord_twc_srf_itm_srf
                 where   act.custrecord_twc_eq_action_srf = ${options.srf}
-                order by custrecord_twc_srf_itm_tme_srf desc
+                order by custrecord_twc_eq_action_type, custrecord_twc_srf_itm_tme_srf desc
             `)
+            //
+            // @@IMPORTANT NOTE: END
+            //
+            //
         }
 
         function initEquipment(options) {
@@ -811,6 +827,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
             WorkflowStatus: WORKFLOW_STATUS,
             initWorkFlow: initWorkFlow,
+            initEquipment: initEquipment,
             getWorkFlow: getWorkFlow,
             updateWorkflow: updateWorkflow,
             deleteWorkflow: deleteWorkflow,
