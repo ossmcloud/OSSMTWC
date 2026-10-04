@@ -55,7 +55,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             NotInstalled: 2,
             Installed: 3,
             Removed: 4,
-            Cancelled: 5
+            Cancelled: 5,
+
+            lookUp: () => {
+                var res = [];
+                for (var k in EQ_INSTALL_STATUS) {
+                    if (k == 'lookUp') { continue; }
+                    res.push({value: EQ_INSTALL_STATUS[k], text: k})
+                }
+                return res;
+            }
         }
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const EQ_LICENSE_STATUS = {
@@ -72,7 +81,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Unlicenced: 11,
             Cancelled: 12,
             LicenceRetained: 13,
-            LicenceSwapped: 14
+            LicenceSwapped: 14,
+
+            lookUp: () => {
+                var res = [];
+                for (var k in EQ_LICENSE_STATUS) {
+                    if (k == 'lookUp') { continue; }
+                    res.push({ value: EQ_LICENSE_STATUS[k], text: k })
+                }
+                return res;
+            }
         }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids

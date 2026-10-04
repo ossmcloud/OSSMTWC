@@ -200,7 +200,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 sds.save();
             }
 
-            getSdsEquipments(sds.id);
+            setSdsEquipments(sds.id);
 
             return {
                 id: sds.id,
@@ -208,7 +208,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             };
         }
 
-        function getSdsEquipments(sdsId) {
+        function setSdsEquipments(sdsId) {
 
             var copyFields = {
                 'custrecord_twc_sds_item_equipment_id': 'name',
@@ -283,6 +283,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+        function updateSdsEquipments(payload) {
+            recu.submit(twcSdsEquipment.Type, payload.id, payload.field, payload.value);
+        }
+
+        function getSdsEquipments(sds) {
+            return twcSdsEquipment.select({ where: { [twcSdsEquipment.Fields.SDS]: sds.id }, useNames: true })
+        }
+
         function getFormData(srf) {
             return twcSds.select({ where: { [twcSds.Fields.SRF]: srf.id }, useNames: true, returnFirst: true });
         }
@@ -328,7 +336,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSiteLicenseMapFiles: getSiteLicenseMapFiles,
             getSiteAccessFiles: getSiteAccessFiles,
 
-            getSdsEquipments: getSdsEquipments
+            setSdsEquipments: setSdsEquipments,
+            getSdsEquipments: getSdsEquipments,
+            updateSdsEquipments: updateSdsEquipments,
         }
 
     });

@@ -3,8 +3,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_utils.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js', '../../data/oTWC_config.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_equipmentLib.js', '../../data/oTWC_equipAction.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js', '../../modules/oTWC_srfWorkflowEngine.js'],
-    (core, coreSQL, recu, twcUtils, twcSite, twcSrf, twcSrfItem, twcSrfUI, twcFile, nsFileUtils, twcConfig, twcUI, twcEqLib, twcEqAct, twcEquipmentUI, twcEquipment, twcSrfWorkflowEngine) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_utils.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js', '../../data/oTWC_config.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_equipmentLib.js', '../../data/oTWC_equipAction.js', '../../data/oTWC_safAction.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js', '../../modules/oTWC_srfWorkflowEngine.js'],
+    (core, coreSQL, recu, twcUtils, twcSite, twcSrf, twcSrfItem, twcSrfUI, twcFile, nsFileUtils, twcConfig, twcUI, twcEqLib, twcEqAct, twcSafAction, twcEquipmentUI, twcEquipment, twcSrfWorkflowEngine) => {
 
         function renderSiteLocatorPanel(userInfo, featureId) {
             var html = `
@@ -580,6 +580,49 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             recu.del('customrecord_twc_srf', srfId)
         }
 
+
+        function getEquipmentActions(payload) {
+
+            var actions = twcEqAct.select({
+                where: { [twcEqAct.Fields.EA_SRF]: payload.srf },
+                joins: {
+                    type: 'left',
+                    table: twcEquipment.Type,
+                    fx: twcEqAct.Fields.EA_EQUIPMENT,
+                    fields: [
+                        { name: `BUILTIN.DF(${twcEquipment.Fields.EQUIPMENT_TYPE})`, alias: twcEquipment.Fields.EQUIPMENT_TYPE },
+                        { name: `BUILTIN.DF(${twcEquipment.Fields.EQUIPMENT_CLASS})`, alias: twcEquipment.Fields.EQUIPMENT_CLASS },
+                        { name: `BUILTIN.DF(${twcEquipment.Fields.PARENT_TME_ID})`, alias: twcEquipment.Fields.PARENT_TME_ID },
+                        { name: twcEquipment.Fields.MAKE },
+                        { name: twcEquipment.Fields.MODEL },
+                    ]
+                },
+                orderBy: ['id'],
+                noAlias: true
+            })
+
+            var ids = [];
+            actions.map(a => {
+                a.sort_idx = a[twcEquipment.Fields.PARENT_TME_ID] || a[twcEqAct.Fields.EA_EQUIPMENT + '_name'] || 'Z'
+                ids.push(a.id);
+            })
+
+            actions.sort((a, b) => {
+                if (a.sort_idx > b.sort_idx) { return 1; }
+                if (a.sort_idx < b.sort_idx) { return -1; }
+                return 0;
+            })
+
+            var safActions = twcSafAction.select({ where: { [twcSafAction.Fields.SAF_ACTION_EA]: { values: ids } }, noAlias: true })
+
+
+
+            return {
+                eqActions: actions,
+                safActions: safActions
+            }
+        }
+
         return {
 
             getSRFInfoPanels: twcSrfUI.getSRFInfoPanels,
@@ -650,6 +693,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             renderSiteLocatorPanel: renderSiteLocatorPanel,
             getEquipment: getEquipment,
             getEquipmentChildren: getEquipmentChildren,
+            getEquipmentActions: getEquipmentActions,
             submitSiteSrf: submitSiteSrf,
 
             getAssignToEmployees: getAssignToEmployees,

@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_utils.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_file.js', '../../data/oTWC_equipmentLibUI.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js', '../../modules/oTWC_srfWorkflowEngineUI.js.js', '../../modules/oTWC_sdsEngineUI.js', '../../data/oTWC_icons.js'],
-    (core, coreSql, b64, twcPageBase, twcUtils, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, twcUI, uiTable, twcSite, twcSrf, twcSrfItem, twcUIPanel, twcFile, twcEqLibUI, twcEqUI, twcEquipment, twcSrfWorkflowEngineUI, twcSdsEngineUI, twcIcons) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_utils.js', '../../data/oTWC_config.js', './oTWC_googleMap.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', './oTWC_siteLocatorPanel.js', '../../O/controls/oTWC_ui_ctrl.js', '../../O/controls/oTWC_ui_table.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../O/controls/oTWC_ui_fieldPanel.js', '../../data/oTWC_file.js', '../../data/oTWC_equipmentLibUI.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js', '../../modules/oTWC_srfWorkflowEngineUI.js.js', '../../modules/oTWC_sdsEngineUI.js', '../../data/oTWC_icons.js', '../../data/oTWC_equipAction.js', '../../data/oTWC_safAction.js'],
+    (core, coreSql, b64, twcPageBase, twcUtils, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, twcUI, uiTable, twcSite, twcSrf, twcSrfItem, twcUIPanel, twcFile, twcEqLibUI, twcEqUI, twcEquipment, twcSrfWorkflowEngineUI, twcSdsEngineUI, twcIcons, twcEqAct, twcSafAct) => {
 
         const DEV = core.me();
 
@@ -737,6 +737,123 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+
+        class TWCEquipmentActionsForm {
+            #page = null;
+            #srf = null;
+            constructor(page, srf) {
+                this.#page = page;
+                this.#srf = srf;
+            }
+
+            render() {
+                var safLinkBase = core.url.script('otwc_siteaccess_sl');
+
+                var form = jQuery(`<div>${twcIcons.wait({ size: 64, message: 'loading...' })}</div>`);
+
+                dialog.message({ title: 'View Equipment Actions', message: form, width: '80%', height: '70vh' });
+
+                this.#page.post({ action: 'get-equipment-actions' }, { srf: this.#srf.id })
+                    .then(res => {
+                        console.log(res);
+                        var html = jQuery(`
+                            <div class="twc-div-table-r twc-div-table-rh">
+                                <div style="position: sticky; top: -7px;">
+                                    <div></div>
+                                    <div>Equipment</div>
+                                    <div>Class</div>
+                                    <div>Type</div>
+                                    <div>Make</div>
+                                    <div>Model</div>
+                                    <div>Action</div>
+                                    <div>Status</div>
+                                    <div>SAF</div>
+                                    <div>SAF Detach Reason</div>
+                                </div>
+                            </div>
+                        `);
+
+                        var sortIdx = '';
+                        core.array.each(res.eqActions, eqAction => {
+                            if (sortIdx != eqAction.sort_idx) {
+                                html.append(`<div style="border-top: 1px solid var(--grid-color); height: 11px;"></div>`);
+                                sortIdx = eqAction.sort_idx;
+                            }
+                            var safLink = '';
+                            // if (eqAction[twcEqAct.Fields.EA_SAF]) {
+                            //     safLink = `${safLinkBase}&recId=${eqAction[twcEqAct.Fields.EA_SAF]}`;
+                            //     safLink = `<a href="${safLink}" target="_blank">${eqAction[twcEqAct.Fields.EA_SAF + '_name']}</a>`
+                            // }
+                            var padding = eqAction[twcEquipment.Fields.PARENT_TME_ID] ? 'style="padding-left: 27px; font-style: italic; color: silver;"' : '';
+                            var icon = eqAction[twcEqAct.Fields.EA_STATUS] == twcUtils.EqActionStatus.Complete ? twcIcons.get('checkBox', 16, 'lime'):'';
+                            var eqActionHtml = jQuery(`
+                                <div>
+                                    <div style="width: 20px; text-align: center;">${icon}</div>
+                                    <div ${padding}>${eqAction[twcEqAct.Fields.EA_EQUIPMENT + '_name']}</div>
+                                    <div>${eqAction[twcEquipment.Fields.EQUIPMENT_CLASS]}</div>
+                                    <div>${eqAction[twcEquipment.Fields.EQUIPMENT_TYPE]}</div>
+                                    <div>${eqAction[twcEquipment.Fields.MAKE] || ''}</div>
+                                    <div>${eqAction[twcEquipment.Fields.MODEL] || ''}</div>
+                                    <div>${eqAction[twcEqAct.Fields.EA_TYPE + '_name']}</div>
+                                    <div>${eqAction[twcEqAct.Fields.EA_STATUS + '_name']}</div>
+                                    <div>${safLink}</div>
+                                </div>
+                            `)
+                            html.append(eqActionHtml);
+
+                            var safActions = res.safActions.filter(a => { return a[twcSafAct.Fields.SAF_ACTION_EA] == eqAction.id });
+                            core.array.each(safActions, safAction => {
+                                var safLink = '';
+                                if (safAction[twcSafAct.Fields.SAF]) {
+                                    safLink = `${safLinkBase}&recId=${safAction[twcSafAct.Fields.SAF]}`;
+                                    safLink = `<a href="${safLink}" target="_blank">${safAction[twcSafAct.Fields.SAF + '_name']}</a>`
+                                }
+
+                                var icon = '';
+                                if (safAction[twcSafAct.Fields.SAF_ACTION_STATUS] == twcUtils.SafActionStatus.Complete) {
+                                    icon = twcIcons.get('checkBox', 16, 'lime');
+                                } else if (safAction[twcSafAct.Fields.SAF_ACTION_STATUS] == twcUtils.SafActionStatus.Detached) {
+                                    icon = twcIcons.get('sadFace', 16, 'red');
+                                }
+                                var safActionHtml = jQuery(`
+                                    <div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div>${icon}<span style="font-style: italic; color: silver;">SAF Action</span></div>
+                                        <div>${safAction[twcSafAct.Fields.SAF_ACTION_STATUS + '_name']}</div>
+                                        <div>${safLink}</div>
+                                        <div>${safAction[twcSafAct.Fields.DETACH_REASON + '_name'] || ''}</div>
+                                    </div>
+                                `)
+                                html.append(safActionHtml);
+                            })
+
+                            // if (safActions.length > 0) {
+                            // if (!eqAction[twcEquipment.Fields.PARENT_TME_ID]) {
+                            //     html.append(`<div style="border-top: 1px solid var(--grid-color); height: 11px;"></div>`);
+                            // }
+                            // }
+                        })
+
+
+                        form.html(html)
+
+                    }).catch(err => {
+                        form.html(twcIcons.get('sadFace', 64, 'red'));
+                        dialog.error(err);
+                    });
+            }
+
+            static open(page, srf) {
+                var form = new TWCEquipmentActionsForm(page, srf);
+                form.render();
+            }
+        }
+
         class TWCSpaceRequestPage extends twcPageBase.TWCPageBase {
             #map = null;
             #sitesTable = null;
@@ -780,6 +897,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             this.uploadFile({ showParent: true, recordType: twcSrf.Type, recordId: this.data.siteRequestInfo.id, srf: this.data.siteRequestInfo }, (file, res) => {
                                 location.reload();
                             })
+                        })
+
+                        this.ui.getControl('view-equipment-actions')?.on('click', e => {
+                            TWCEquipmentActionsForm.open(this, this.data.siteRequestInfo);
                         })
 
                         //

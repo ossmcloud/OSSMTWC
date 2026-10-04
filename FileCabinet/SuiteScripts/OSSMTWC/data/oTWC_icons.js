@@ -504,13 +504,14 @@ define([],
 
         function wait(options) {
             var html = `    
-                <div>
+                <div style="width: 100%; text-align: center;">
                     <span class="twc-wait-cursor">
                         ${get('waitWheel', options?.size || 24, options?.color)}
                     </span>
             `;
             if (options?.message) {
                 html += `
+                    <br />
                     <span>
                         ${options.message}
                     </span>

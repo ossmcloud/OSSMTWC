@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_sds.js', '../data/oTWC_file.js', '../data/oTWC_fileType.js', '../data/oTWC_site.js', './oTWC_sdsEngine.js'],
-    function (core, coreSql, b64, recu, dialog, twcUI, twcUtils, twcSrf, twcSds, twcFile, twcFileType, twcSite, twcSdsEngine) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', '../data/oTWC_icons.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_sds.js', '../data/oTWC_sdsEquipment.js', '../data/oTWC_file.js', '../data/oTWC_fileType.js', '../data/oTWC_site.js', './oTWC_sdsEngine.js'],
+    function (core, coreSql, b64, recu, dialog, twcUI, twcIcons, twcUtils, twcSrf, twcSds, twcSdsEquipment, twcFile, twcFileType, twcSite, twcSdsEngine) {
 
         function getDialogContent(srf) {
 
@@ -129,7 +129,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         async function openDialog(page, srf, callback) {
-            //var formData = twcSdsEngine.getSds(srf);
             try {
 
                 var resp = await page.post({ action: 'get-sds' }, srf)
@@ -192,8 +191,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             }
                         }
                         formData.save();
-                        printSDS(page, srf);
-                        if (callback) { callback(); }
+                        manageSDEquipment(page, srf, formData, callback);
+                        // if (callback) { callback(); }
                         return true;
                     } catch (error) {
                         dialog.error(error);
@@ -232,7 +231,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     formData = JSON.parse(formData || '{}');
                 }
             }
-            
+
 
             var formUi = jQuery(`<div></div>`);
             core.array.each(sdsConditions, sdsCondition => {
@@ -274,6 +273,97 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     return false;
                 }
             });
+
+        }
+
+        async function manageSDEquipment(page, srf, sds, callback) {
+            //
+            var resp = await page.post({ action: 'get-sds-equipment' }, { id: sds.id });
+
+            var form = jQuery('<div></div>');
+
+            var sdsEqTable = jQuery(`
+                <div class="twc-div-table-r twc-div-table-rh">
+                    <div>   
+                        <div>Equipment</div>
+                        <div style="text-align: center;">Part of<br />SDS</div>
+                        <div style="text-align: center;">Include</div>
+                        <div>Class</div>
+                        <div>Type</div>
+                        <div>Make</div>
+                        <div>Model</div>
+                        <div>Install Status</div>
+                        <div>License Status</div>
+                        <div>B-End</div>
+                        <div>Customer Ref</div>
+                    </div>
+                </div>
+            `);
+            form.append(sdsEqTable);
+
+            core.array.each(resp.data, eq => {
+                var sdsEqTableRow = jQuery(`
+                    <div>   
+                        <div>${eq[twcSdsEquipment.Fields.EQUIPMENT_ID]}</div>
+                        <div style="text-align: center;">
+                            ${eq[twcSdsEquipment.Fields.PART_OF_SDS] == 'T' ? twcIcons.get('checkBox', 16) : ''}
+                        </div>
+                        <div style="text-align: center;">
+                            <input type="checkbox" id="${twcSdsEquipment.Fields.INCLUDE_IN_SDS}" style="transform: scale(1.5);" ${eq[twcSdsEquipment.Fields.INCLUDE_IN_SDS] == 'T' ? 'checked' : ''} />
+                        </div>
+                        <div>${eq[twcSdsEquipment.Fields.EQUIPMENT_CLASS + '_name']}</div>
+                        <div>${eq[twcSdsEquipment.Fields.EQUIPMENT_TYPE + '_name']}</div>
+                        <div>${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, id: twcSdsEquipment.Fields.MAKE, value: eq[twcSdsEquipment.Fields.MAKE], width: '100%' })}</div>
+                        <div>${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, id: twcSdsEquipment.Fields.MODEL, value: eq[twcSdsEquipment.Fields.MODEL], width: '100%' })}</div>
+                        <div>${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, id: twcSdsEquipment.Fields.INSTALL_STATUS, value: eq[twcSdsEquipment.Fields.INSTALL_STATUS], dataSource: twcUtils.EqInstallStatus.lookUp(), noEmpty: true, width: '100%' })}</div>
+                        <div>${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, id: twcSdsEquipment.Fields.LICENSE_STATUS, value: eq[twcSdsEquipment.Fields.LICENSE_STATUS], dataSource: twcUtils.EqLicenseStatus.lookUp(), noEmpty: true, width: '100%' })}</div>
+                        <div>${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, id: twcSdsEquipment.Fields.B_END, value: eq[twcSdsEquipment.Fields.B_END], width: '100%' })}</div>
+                        <div>${twcUI.render({ type: twcUI.CTRL_TYPE.CUSTOMER_REF, id: twcSdsEquipment.Fields.MODEL, value: eq[twcSdsEquipment.Fields.CUSTOMER_REF], width: '100%' })}</div>
+                    </div>
+                `);
+                sdsEqTable.append(sdsEqTableRow);
+
+                sdsEqTableRow.find('input, select').change(async e => {
+                    var input = jQuery(e.currentTarget);
+                    var wait = jQuery(twcIcons.wait());
+                    try {
+                        input.css('display', 'none');
+                        input.parent().append(wait);
+
+                        var val = input.val();
+                        if (input.attr('type') == 'checkbox') {
+                            val = input.is(':checked');
+                        }
+
+                        var payload = { id: eq.id, field: input.attr('id'), value: val };
+                        await page.post({ action: 'update-sds-equipment' }, payload);
+                        
+                    } catch (error) {
+                        dialog.error(error);
+                    } finally {
+                        input.css('display', 'inline-block');
+                        wait.remove();
+                    }
+
+
+                })
+            })
+
+
+
+
+
+            dialog.confirm({ title: 'SDS Equipments', message: form, width: '80%', height: '80vh', }, (dlg) => {
+                try {
+                    printSDS(page, srf);
+                    if (callback) { callback(); }
+                    return true;
+                } catch (error) {
+                    dialog.error(error);
+                    return false;
+                }
+            });
+
 
         }
 
