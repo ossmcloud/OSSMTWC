@@ -541,7 +541,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Assessed: 2,
             Resolved: 3,
             Cancelled: 4,
-            InProgress : 5
         }
 
         const TKT_STATUS_STYLE = {
@@ -549,7 +548,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Assessed: { color: 'white', backgroundColor: 'orange' },
             Resolved: { color: 'white', backgroundColor: 'green' },
             Cancelled: { color: 'maroon', backgroundColor: 'yellow' },
-            InProgress: { color: 'white', backgroundColor: 'blue' },
         }
         function getTktStatusName(tktStatusNumber, asObject) {
             if (!tktStatusNumber) { tktStatusNumber = 1; }
@@ -1533,14 +1531,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getTicketPriority() {
             return getLookUpTableValues('customrecord_twc_trbl_tkt_priority');
         }
-        function getTktProfiles(){
-                return coreSQL.run(`select id as value, name as text from customrecord_twc_prof where isinactive = 'F'`)
-        }
-        function getTktCompanyProfiles(author){
-                var compProfile = author? coreSQL.run(`SELECT custrecord_twc_prof_company
-                              FROM customrecord_twc_prof WHERE id = ${author} AND isinactive = 'F'`): []
-                return compProfile.length ? compProfile[0].custrecord_twc_prof_company : null
-        }
 
         function getInventoryStatus() {
             return getLookUpTableValues('customrecord_twc_equip');
@@ -1555,14 +1545,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 AND     custrecord_twc_cust_pres_cust = ${options.customer}
                 order by lastmodified desc
             `)?.customer_site_id || '';
-        }
-
-         function getNSCustomers() {
-            return getLookUpTableValues('customer');
-        }
-
-        function getRaisedOnBehalf() {
-            return getLookUpTableValues('customrecord_twc_company',"and custrecord_twc_cus_flag = 1");
         }
 
 
@@ -1643,14 +1625,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafStatusStyle: getSafStatusStyle,
             getSafStatusHtml: getSafStatusHtml,
 
-            getNSCustomers :getNSCustomers,
             tktStatus: TKT_STATUS,
             getTktStatusName: getTktStatusName,
             getTktStatusStyle: getTktStatusStyle,
             getTktStatusHtml: getTktStatusHtml,
-            getTktProfiles: getTktProfiles,
-            getTktCompanyProfiles:getTktCompanyProfiles,
-            getRaisedOnBehalf: getRaisedOnBehalf,
 
             tktPriority: TKT_PRIORITY,
             getTktPriorityName: getTktPriorityName,
