@@ -17,7 +17,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 // { field: twcSite.Fields.ADDRESS_REGION },
                 { field: twcTrblTkts.Fields.ASSIGNED_TO },
                 { field: twcTrblTkts.Fields.PRIORITY },
-                { field: twcTrblTkts.Fields.AUTHOR_PHONE_NUMBER },
+               // { field: twcTrblTkts.Fields.AUTHOR_PHONE_NUMBER },
                 { field: twcTrblTkts.Fields.CATEGORY },
                 { field: twcTrblTkts.Fields.CUSTOMER },
                 { field: twcTrblTkts.Fields.STATUS }
@@ -99,13 +99,24 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var customer = dataSource[twcTrblTkts.Fields.CUSTOMER];
             var customers = twcUtils.getCustomers(userInfo);
             if (customers.length == 1) { customer = customers[0].value; }
+            var onBehalfs =  twcUtils.getRaisedOnBehalf()
+            var onBehalf = dataSource[twcTrblTkts.Fields.ON_BEHALF];
+            var authors =  twcUtils.getTktProfiles()
+            var author = dataSource[twcTrblTkts.Fields.AUTHOR] || userInfo.profile
+           // throw new Error(JSON.stringify(author))
+            // var profileCompany = author? coreSQL.run(`SELECT custrecord_twc_prof_company
+            //                   FROM customrecord_twc_prof WHERE id = ${author} AND isinactive = 'F'`): []
+            var profileCompany = dataSource[twcTrblTkts.Fields.CUSTOMER] || twcUtils.getTktCompanyProfiles(author)
+            //throw new Error(JSON.stringify(profileCompany))
 
             var statuses = twcUtils.getTicketStatus();
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.STATUS, label: 'Status', disabled: !userInfo.isEmployee, dataSource: statuses, value: dataSource[twcTrblTkts.Fields.STATUS] || statuses[0].value, allowAll: false })
             // newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.PRIORITY, label: 'Priority', disabled: !userInfo.isEmployee, dataSource: statuses, value: dataSource[twcTrblTkts.Fields.STATUS] || statuses[0].value, allowAll: false })
-            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.SUBMITTED, label: 'Submitted', lineBreak: true, readOnly: true })
-            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.CUSTOMER, label: 'Customer', dataSource: customers, value: customer, mandatory: true })
-            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.AUTHOR_PHONE_NUMBER, lineBreak: true, label: 'Your Phone Number', value: userInfo.profileInfo.phone })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.SUBMITTED, label: 'Submitted', lineBreak: false, readOnly: true })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.CATEGORY, label: 'Category', lineBreak: true, value: dataSource[twcTrblTkts.Fields.CATEGORY], readOnly: true })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.AUTHOR, label: 'Logged by', dataSource: authors, value: author })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.CUSTOMER, label: 'Raising Company', value: profileCompany })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.ON_BEHALF, label: 'Raised on Behalf', dataSource : onBehalfs, value: onBehalf })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.REPORT_ISSUE__WORKS_REQUIRED, lineBreak: true, width: '100%', rows: 5, label: 'Report Issue / Works Required', mandatory: true })
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);

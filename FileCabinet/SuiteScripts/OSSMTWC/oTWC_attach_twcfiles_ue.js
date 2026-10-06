@@ -19,9 +19,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
                     form.f.clientScriptModulePath = './oTWC_attach_twcfiles_cs.js';
 
                     twcThemesUE.setForm(form);
-                    
-                    form.buttonAdd('View Files', 'viewFiles');
-                    form.buttonAdd('Upload File', 'uploadFile');
+
+                    if (context.newRecord.type != 'supportcase') {
+                        form.buttonAdd('View Files', 'viewFiles');
+                        form.buttonAdd('Upload File', 'uploadFile');
+                    }
                 }
 
                 if (context.newRecord.id) {
@@ -35,13 +37,22 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
         }
 
 
-        function attachTwcFiles(form, rec) {
+        function attachTwcFiles(form, curRec) {
             try {
+                var attachTab = 'media'
+                var rec = curRec
+
+                // @@NOTE : To show the files attached to trouble ticket referenced in case record
+                if (curRec.type == 'supportcase') {
+                    attachTab = 'interactions'
+                    rec = attachFilesOnCase(curRec)
+                }
+
                 let fileList = form.f.addSublist({
                     id: 'custpage_twc_files',
                     type: ui.SublistType.LIST,
                     label: 'Twc Files',
-                    tab: 'media'
+                    tab: attachTab
                 });
 
                 let line = 0;
@@ -53,7 +64,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
 
                 let getFieldType = key => {
                     if (key === 'file' || key === 'id') return ui.FieldType.URL;
-                    
+
                     if (key === 'file_description') return ui.FieldType.TEXTAREA;
                     return ui.FieldType.TEXT;
                 };
@@ -100,7 +111,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
                                 value = core.url.record(twcFile.Type, row.id)
                             } else if (key === 'file') {
                                 value = file.load({ id: value }).url;
-                                
+
                             }
                             fileList.setSublistValue({
                                 id: `custpage_${key.toLowerCase()}`,
@@ -117,7 +128,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
                 });
             } catch (error) {
                 core.logDebug('ERROR in Attaching files', error.message)
-                
+
+            }
+        }
+
+        function attachFilesOnCase(curRec) {
+            try {
+                var rec = {}
+                var tktId = curRec.type === 'supportcase' ? curRec.getValue('custevent_twc_trbl_tkt') : null
+                rec.type = tktId ? 'customrecord_twc_trbl_tkt' : curRec.type
+                rec.id = tktId || curRec.id
+                return rec
+            }
+            catch (error) {
+                core.logDebug('ERROR in Attaching files in case', error.message)
             }
         }
 

@@ -37,13 +37,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 // @@NOTE: an existing ticket that has not been resolved can be cancelled by anybody
                 if (pageData.trblTktInfo.id && tktStatus != twcTkt.Status.Resolved && tktStatus != twcTkt.Status.Cancelled) {
-                    actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel Ticket', id: 'cancel-ticket-button' });
+                    //actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel Ticket', id: 'cancel-ticket-button' });
                 }
 
                 if (pageData.trblTktInfo.id) {
                     if (pageData.userInfo.isEmployee) {
                         if (tktStatus != twcTkt.Status.Resolved) {
-                            actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Resolve', id: 'resolve-button' });
+                           // actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Resolve', id: 'resolve-button' });
                         }
                         if (tktStatus == twcTkt.Status.Resolved || tktStatus == twcTkt.Status.Assessed) {
                             actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Upload Resolution Photos', id: 'upload-resolution-photo' });

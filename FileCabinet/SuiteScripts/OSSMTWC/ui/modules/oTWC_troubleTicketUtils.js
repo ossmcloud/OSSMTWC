@@ -50,7 +50,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             var tickets = coreSQL.run(`
-                select  ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO}
+                select  ${sqlFields}
+                --site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO}
                 from    ${twcTrblTkts.Type} s
                 join    ${twcSite.Type} site on site.id = s.${twcTrblTkts.Fields.SITE}
                 ${whereClause} 

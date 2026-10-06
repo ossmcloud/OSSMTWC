@@ -25,6 +25,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SCHEDULED_COMPLETION_DATE: 'custrecord_twc_trbl_tkt_sch_compltn_date',
             CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE: 'custrecord_twc_trbl_tkt_cor_act_tkn_root',
             CASE_REFERENCE: 'custrecord_twc_trbl_tkt_case',
+            ON_BEHALF: 'custrecord_twc_trbl_tkt_on_behalf_cust',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -50,6 +51,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SCHEDULED_COMPLETION_DATE: { name: 'custrecord_twc_trbl_tkt_sch_compltn_date', type: 'date', alias: 'scheduledCompletionDate', display: 'normal', mandatory: false },
             CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE: { name: 'custrecord_twc_trbl_tkt_cor_act_tkn_root', type: 'clobtext', alias: 'correctiveActionTakeninclRootCause', display: 'normal', mandatory: false },
             CASE_REFERENCE: { name: 'custrecord_twc_trbl_tkt_case', type: 'select', alias: 'caseReference', display: 'normal', mandatory: false, recordType: '-23' },
+            ON_BEHALF: { name: 'custrecord_twc_trbl_tkt_on_behalf_cust', type: 'select', alias: 'onBehalf', display: 'normal', mandatory: false, recordType: '-2' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -184,6 +186,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get caseReferenceName() { return this.getText(_recordFields.CASE_REFERENCE); }
             
+            get onBehalf() {
+                return this.get(_recordFields.ON_BEHALF);
+            } set onBehalf(value) {
+                this.set(_recordFields.ON_BEHALF, value)
+            }
+            get onBehalfName() { return this.getText(_recordFields.ON_BEHALF); }
+
             get created() {
                 return this.get(_recordFields.CREATED);
             } set created(value) {
