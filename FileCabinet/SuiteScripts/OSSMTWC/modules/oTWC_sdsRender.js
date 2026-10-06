@@ -15,7 +15,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 })
             }
 
-            embedPdf(twcSdsEngine.getSrfDrawingFiles(requestedJson.srf.id));
+            embedPdf(twcSdsEngine.getSrfDrawingFiles(requestedJson.srf.id, requestedJson.sds[twcSDS.Fields.DRAWING] || 0));
             embedPdf(twcSdsEngine.getSiteLicenseMapFiles(requestedJson.siteDetails.id, requestedJson.srf.company_id));
             embedPdf(twcSdsEngine.getSiteAccessFiles(requestedJson.siteDetails.id));
 

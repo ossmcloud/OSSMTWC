@@ -41,6 +41,9 @@ SCHEMA: AFTER 2026-09-17
 
 SCHEMA:
 -------
+    customrecord_twc_eq_type
+        	custrecord_twc_eq_type_index
+
 	customrecord_twc_srf
 		custrecord_twc_srf_tl_drg_draft	=> remove, not used
 		custrecord_twc_srf_tl_drg_rev	=> remove, not used

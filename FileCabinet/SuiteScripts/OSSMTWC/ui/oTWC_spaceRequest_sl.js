@@ -101,7 +101,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     }
 
                     var printSDSButton = '';
-                    if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceIssued || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenseSigned || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted) {
+                    if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceIssued || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceSigned || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted) {
                         printSDSButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Print SDS', id: 'print-sds' });
                     }
 
@@ -141,6 +141,11 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
 
                     var attachFileButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Attach File', id: 'attach-file' });
 
+                    var viewEquipmentActionsButton = '';
+                    if (readOnly && pageData.userInfo.isEmployee && pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] != twcSrf.Status.Draft) {
+                        viewEquipmentActionsButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Equipment Actions', id: 'view-equipment-actions' });
+                    }
+
                     if (!readOnly) {
                         submitSrfButton = '';
                         acceptApprovalButton = '';
@@ -161,6 +166,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                             ${submitSrfButton}
                             ${cancelSrfButton}
                             ${attachFileButton}
+                            ${viewEquipmentActionsButton}
                         </div>
                     `);
                 }
@@ -231,6 +237,12 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
             } else if (context.request.parameters.action == 'get-sds') {
                 return twcSdsEngine.getSds(JSON.parse(context.request.body))
 
+            } else if (context.request.parameters.action == 'get-sds-equipment') {
+                return { data: twcSdsEngine.getSdsEquipments(JSON.parse(context.request.body)) }
+
+            } else if (context.request.parameters.action == 'update-sds-equipment') {
+                return { data: twcSdsEngine.updateSdsEquipments(JSON.parse(context.request.body)) }
+
             } else if (context.request.parameters.action == 'get-sds-twc-file') {
                 var f = coreSql.first(`select custrecord_twc_sds_pdf as twc_file from customrecord_twc_sds where custrecord_twc_sds_srf = ${JSON.parse(context.request.body).srf}`)?.twc_file;
                 return { twcFile: f }
@@ -249,9 +261,10 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
 
             } else if (context.request.parameters.action == 'get-customer-site-id') {
                 var payload = JSON.parse(context.request.body);
-                return twcUtils.getOperatorSiteId(payload)
+                return twcUtils.getOperatorSiteId(payload);
 
-                //
+            } else if (context.request.parameters.action == 'get-equipment-actions') {
+                return twcSiteRequestUtils.getEquipmentActions(JSON.parse(context.request.body));
 
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);

@@ -115,7 +115,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             { srf: twcSrfItem.Fields.TYPE_OPT, eq: twcEq.Fields.OPT_TYPE },
         ];
 
-        function getSrfSwapItem(item, swappedItems) {
+        function getSrfSwapItem(item, swappedItems, itemsToSwapWith) {
             // @@NOTE: this is for related items, for these the swapped item is in 'item' and the new info are in 'swapItem'
             if (item[twcSrfItem.Fields.REQUEST_TYPE] == twcSrfItem.RequestType.SWAP) {
                 var swappedEq = swappedItems.find(sw => { return sw.id == item[twcSrfItem.Fields.EQUIPMENT_ID] });
@@ -132,9 +132,17 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 item.swapItem[twcSrfItem.Fields.REQUEST_TYPE + '_name'] = item[twcSrfItem.Fields.REQUEST_TYPE + '_name'];
                 item.name = swappedEq.name;
                 item.swapItem.name = 'TBA';
+
+                // @@NOTE: after the SRF is submitted we want to show the created Equipment, not TBA
+                var itemToSwapWith = itemsToSwapWith.find(i => { return i.srf_item == item.id; })
+                if (itemToSwapWith?.eq_id) {
+                    // @@IMPORTANT: we only need the name to show, the id must be of the old item being swapped, this is due to the way the UI works
+                    // item.swapItem.id = itemToSwapWith.eq_id;
+                    item.swapItem.name = itemToSwapWith.eq_name;
+                }
             }
         }
-        function getSrfSwappedItem(item, swappedItems) {
+        function getSrfSwappedItem(item, swappedItems, itemsToSwapWith) {
             // @@NOTE: this is for main srf items (or view mode for all items), for these the swapped item is in 'swappedItem' and the new info are in 'item'
             if (item[twcSrfItem.Fields.REQUEST_TYPE] == twcSrfItem.RequestType.SWAP) {
                 var swappedEq = swappedItems.find(sw => { return sw.id == item[twcSrfItem.Fields.EQUIPMENT_ID] });
@@ -148,6 +156,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 item.swappedItem[twcSrfItem.Fields.REQUEST_TYPE] = item[twcSrfItem.Fields.REQUEST_TYPE];
                 item.swappedItem[twcSrfItem.Fields.REQUEST_TYPE + '_name'] = item[twcSrfItem.Fields.REQUEST_TYPE + '_name'];
                 item[twcSrfItem.Fields.EQUIPMENT_ID + '_name'] = 'TBA';
+
+                // @@NOTE: after the SRF is submitted we want to show the created Equipment, not TBA
+                var itemToSwapWith = itemsToSwapWith.find(i => { return i.srf_item == item.id; })
+                if (itemToSwapWith?.eq_id) {
+                    // @@IMPORTANT: we only need the name to show, the id must be of the old item being swapped, this is due to the way the UI works
+                    // item[twcSrfItem.Fields.EQUIPMENT_ID] = itemToSwapWith.eq_id;
+                    item[twcSrfItem.Fields.EQUIPMENT_ID + '_name'] = itemToSwapWith.eq_name;
+                }
             }
 
         }
@@ -183,6 +199,17 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 );
             }
 
+            // @@IMPORTANT NOTE: After Swap SRF is submitted the newly created Eq. will be atteched to the 'Install' action of the swap pair not on the SRF Item line
+            //                   On the UI we want to show the newly created Eq. No but the srf items only has the old one so we load the 'Install' action of the swap pair where the new eq. no is to match it for the UI
+            var itemsToSwapWith = [];
+            if (dataSource.id) {
+                itemsToSwapWith = coreSQL.run(`
+                    select  act.id as act_id, act.custrecord_twc_eq_action_eq as eq_id, BUILTIN.DF(act.custrecord_twc_eq_action_eq) as eq_name, act.custrecord_twc_eq_action_srf_item as srf_item
+                    from    customrecord_twc_eq_action as act
+                    where   act.custrecord_twc_eq_action_srf = ${dataSource.id}
+                    and     act.custrecord_twc_eq_action_type = ${twcUtils.EqActionType.Install}
+                `)
+            }
             var tempItems = [];
             core.array.each(items, item => {
                 var parentId = item[twcSrfItem.Fields.TMI_ID_SRF];
@@ -198,14 +225,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     }
 
                     if (readOnly) {
-                        getSrfSwappedItem(item, swappedItems);
+                        getSrfSwappedItem(item, swappedItems, itemsToSwapWith);
                     } else {
-                        getSrfSwapItem(item, swappedItems);
+                        getSrfSwapItem(item, swappedItems, itemsToSwapWith);
                     }
 
                     parent.relatedItems.push(item);
                 } else {
-                    getSrfSwappedItem(item, swappedItems);
+                    getSrfSwappedItem(item, swappedItems, itemsToSwapWith);
                     tempItems.push(item);
                 }
             })
@@ -291,10 +318,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'submit-srf-button', value: 'Submit SRF' })
                     buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'cancel-srf-button', value: 'Cancel SRF' })
                 } else if (dataSource[twcSrf.Fields.SRF_STATUS] == twcUtils.SrfStatus.FeedbackIssued) {
-                    buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-button', value: 'Save' });
+                    buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-srf-button', value: 'Save' });
                     buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'submit-srf-button', value: 'Re-Submit SRF' })
                 } else {
-                    buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-button', value: 'Save' });
+                    buttons.push({ type: twcUI.CTRL_TYPE.BUTTON, id: 'save-srf-button', value: 'Save' });
                 }
                 fieldGroup.controls.push({ id: 'site-request-step-7', fields: buttons });
             }

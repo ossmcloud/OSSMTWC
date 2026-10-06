@@ -19,6 +19,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             } else if (saf.id == null) {
                 return '<span style="font-weight: bold; color: silver">slot used</span>';
             }
+            if (saf.code == 'SAF') { return saf.code; }
             return `<a class="twc" href="${getSafUrl()}&recId=${saf.id}" target="_blank">${saf.code}</a>`
         }
 
@@ -390,7 +391,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 ],
                 dataSource: getSafCrew(dataSource),
                 showToolbar: true,
-                showEditDelete: true,
+                showEditDelete: { after: false },
                 newToolBarButton: `
                     <div class="twc-table-toolbar-button">
                         <div style="vertical-align: bottom; padding-bottom: 1px;">
@@ -460,7 +461,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
             }
 
-            var safList = twcSaf.select({ where: whereClause, orderBy: orderBy,  useNames: true })
+            var safList = twcSaf.select({ where: whereClause, orderBy: orderBy, useNames: true })
 
             var safDetails = { id: 'site-access-existing-safs', title: 'Existing SAFs', collapsed: true, fields: [] };
             safDetails.fields.push({

@@ -472,11 +472,17 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var errors = false;
 
             // time blocks
+            if (payload.id) {
+                coreSQL.each(`select id from customrecord_twc_saf_tm_blk where custrecord_twc_saf_tm_blk_saf = ${payload.id}`, r => {
+                    recu.del('customrecord_twc_saf_tm_blk', r.id);
+                })
+            }
             for (var d in options.accessRequirements.timeBlocks) {
                 if (!options.accessRequirements.timeBlocks[d]['t']) { continue; }
                 core.array.each(options.accessRequirements.timeBlocks[d]['t'].blocks, b => {
                     try {
-                        var tb = twcSafTimeBlock.get(b.id == 'new' ? null : b.id);
+                        //var tb = twcSafTimeBlock.get(b.id == 'new' ? null : b.id);
+                        var tb = twcSafTimeBlock.get();
                         tb.sAF = safId;
                         tb.blockDate = (new Date(d)).addHours(12);
                         tb.block = b.block.id;

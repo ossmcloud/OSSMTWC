@@ -245,10 +245,16 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         }
                     });
 
-                    this.#ui.css('top', this.#colHeader.offset().top + this.#colHeader.height() + 10)
-                    this.#ui.css('left', this.#colHeader.offset().left);
-
                     this.#column.table.ui.append(this.#ui);
+
+                    this.#ui.css('top', this.#colHeader.offset().top + this.#colHeader.height() + 10)
+
+                    var l = this.#colHeader.offset().left;
+                    if (l + this.#ui.width() > window.innerWidth) { l = window.innerWidth - this.#ui.width(); }
+                    this.#ui.css('left', l);
+
+
+
                 }
             }
 
@@ -763,7 +769,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                             id: 'action_edit_delete', title: '', unbound: true,
                             styles: { 'text-align': 'center', 'min-width': '34px', 'max-width': '75px', 'width': '75px' },
                             sticky: { left: '-1px' },
-                            noResize: true, noSort: true, after: true,
+                            noResize: true, noSort: true, after: (this.#options.showEditDelete.after === undefined) ? true : this.#options.showEditDelete.after,
                             initValue: (d) => {
                                 return `
                                     <span class="o-table-action" data-action="edit" data-id="${d.id}">${icons.get('pencil', 16)}</span>

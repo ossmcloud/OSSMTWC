@@ -36,7 +36,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 o.where = {};
                 o.where[twcEquipmentType.Fields.CLASS] = stepType || 0;
 
-                o.orderBy = [twcEquipmentType.Fields.NAME];
+                o.orderBy = [twcEquipmentType.Fields.SORT_INDEX, twcEquipmentType.Fields.NAME];
 
                 return this.select(o)
             },

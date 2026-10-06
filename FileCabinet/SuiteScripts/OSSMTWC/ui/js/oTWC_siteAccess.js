@@ -309,11 +309,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                         if (!this.#calendar.datesContent[timeBlockDate]) {
                             this.#calendar.datesContent[timeBlockDate] = [];
-                        } else {
-                            if (this.#calendar.datesContent[timeBlockDate].indexOf('SAF') < 0) {
-                                this.#calendar.datesContent[timeBlockDate].push('SAF');
-                            }
                         }
+                        if (!this.#calendar.datesContent[timeBlockDate].find(datesContent => { return datesContent.indexOf('SAF') >= 0; })) {
+                            this.#calendar.datesContent[timeBlockDate].push('SAF');
+                        }
+
                         this.#calendar.refresh();
                         this.#calendar.on('change', e);
 
@@ -341,6 +341,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         }
                     }
                 }
+                this.refreshAccessRequirements();
                 if (!this.data.siteAccessInfo.actions) { this.data.siteAccessInfo.actions = this.#page.ui.getControl('saf-eq-action-table').data; }
 
                 //this.ui.getControl('saf-vendor').on('change');
@@ -470,7 +471,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                                     if (this.#accessRequirements.timeBlocks[b.date]['t'].blocks.length == 0) {
                                         delete this.#accessRequirements.timeBlocks[b.date]['t'];
-                                        var idx = this.#calendar.datesContent[b.date].indexOf('This');
+                                        var idx = this.#calendar.datesContent[b.date].indexOf('SAF');
                                         if (idx >= 0) { this.#calendar.datesContent[b.date].splice(idx, 1) }
                                     }
 

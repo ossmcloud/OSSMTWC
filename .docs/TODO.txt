@@ -1,4 +1,11 @@
 
+
+2026-10-04: 
+    SWAP
+    issue 239
+    issue 204
+
+
 SRF Swap:
     Swap ATME/FEEDER: we should make sure swapped stuff here is not swapped on the TME section and vice versa
 
@@ -13,6 +20,9 @@ SRF Swap:
         SRF0000121
         SRF0000123
 
+SRF:
+    If we remove an item (install or swap) after the equipment is created we should delete the equipment I guess????
+    after status is SRFApproved wse should not let edit items
 
 Re-Use SAF
     see Mark long post

@@ -155,6 +155,10 @@ div.o-col-title-resize:hover {
     /* background-color: var(--accent-fore-color); */
 }
 
+div.o-table-col-filter-list-item {
+    white-space: nowrap;
+}
+
 div.o-row {
     display: table-row;
 }
