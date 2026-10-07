@@ -10,6 +10,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getTicketsTableFields() {
             var ticketFields = [
+                //{ field: twcTrblTkts.Fields.CASE_REFERENCE },
                 { field: 'name' },
                 { field: twcTrblTkts.Fields.SUBMITTED },
                 { field: twcTrblTkts.Fields.SITE },

@@ -4,8 +4,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'N/format', './data/oTWC_config.js', './data/oTWC_troubleTickets.js', './data/oTWC_site.js', './data/oTWC_company.js', 'SuiteBundles/Bundle 548734/O/core.sql.js'],
-    (runtime, core, oui, recu, format, twcConfig, twcTroubleTicket, twcSite, twcCompany, coreSql) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'N/format', './data/oTWC_config.js', './data/oTWC_troubleTickets.js', './data/oTWC_site.js', './data/oTWC_company.js', 'SuiteBundles/Bundle 548734/O/core.sql.js','N/record'],
+    (runtime, core, oui, recu, format, twcConfig, twcTroubleTicket, twcSite, twcCompany, coreSql, record) => {
 
         function beforeLoad(context) {
         }
@@ -35,7 +35,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
                     caseRecordNew.set('category', troubleTktType)
 
                     caseRecordNew.set('incomingmessage', newRec.getValue(twcTroubleTicket.Fields.REPORT_ISSUE__WORKS_REQUIRED))
-
+                    
                     let caseId = caseRecordNew.save(true)
                     recu.submit(newRec.type, newRec.id, twcTroubleTicket.Fields.CASE_REFERENCE, caseId);
 
@@ -100,15 +100,30 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
             return mappedValue
         }
 
-        function updateCaseFields(values, oldRec, newRec, caseIdss) {
+        function updateCaseFields(values, oldRec, newRec, caseId) {
             var oldWorksReq = oldRec && oldRec.getValue(twcTroubleTicket.Fields.REPORT_ISSUE__WORKS_REQUIRED)
             var newWorksReq = newRec.getValue(twcTroubleTicket.Fields.REPORT_ISSUE__WORKS_REQUIRED)
 
             if ((oldWorksReq || '') === (newWorksReq || '')) return
-            values.incomingmessage = newRec.getValue(twcTroubleTicket.Fields.REPORT_ISSUE__WORKS_REQUIRED)
+            createMessage(caseId, oldWorksReq, newWorksReq, newRec)
+
         }
 
+        function createMessage(caseId, oldWorksReq, newWorksReq, newRec ) {
+            let msgRec = recu.new(record.Type.MESSAGE, true)
+           
+            msgRec.set('activity', caseId)
+            msgRec.set('message', newWorksReq)
+            msgRec.set('incoming', true)
+            msgRec.set('emailed', false)
+                                
+            let cusTkt = newRec.getValue(twcTroubleTicket.Fields.CUSTOMER)
+            let customer = cusTkt ? recu.lookUp(twcCompany.Type, cusTkt, twcCompany.Fields.ENTITY)?.value : null;
+            msgRec.set('author', customer || twcConfig.TOWERCOM_ENTITY)
 
+            let msgId = msgRec.save(true)
+            log.audit('Message created', msgId);
+        }
 
         return {
             afterSubmit: afterSubmit
