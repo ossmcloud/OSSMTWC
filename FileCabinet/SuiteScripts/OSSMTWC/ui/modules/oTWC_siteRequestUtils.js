@@ -28,8 +28,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     {FILTER_SRF_STATUS}
                                 </div>
                                 <div>
-                                    {FILTER_SITE_TYPE}
-                                    {FILTER_PORTFOLIO}
+                                    {FILTER_SRF_CUSTOMER}
+                                    {FILTER_SRF_SUBMITTED_BY}
                                 </div>
                                 <div>
                                     {FILTER_COUNTIES}
@@ -60,8 +60,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Name', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames(userInfo) }));
             html = html.replace('{FILTER_SRF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SRF ID', width: 'calc(25% - 2px)', multiSelect: true, id: 'record_id', noEmpty: true, dataSource: twcUtils.getSrfIds() }));
             html = html.replace('{FILTER_SRF_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'SRF STATUS', width: 'calc(25% - 2px)', multiSelect: true, id: twcSrf.Fields.SRF_STATUS, noEmpty: true, dataSource: twcUtils.getSrfStatus() }));
-            html = html.replace('{FILTER_SITE_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site Type', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));
-            html = html.replace('{FILTER_PORTFOLIO}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Portfolio', width: 'calc(25% - 2px)', multiSelect: true, id: twcSite.Fields.SITE_PORTFOLIO, noEmpty: true, dataSource: twcUtils.getPortfolios() }));
+            html = html.replace('{FILTER_SRF_CUSTOMER}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Customer', width: 'calc(25% - 2px)', multiSelect: true, id: twcSrf.Fields.CUSTOMER, noEmpty: true, dataSource: twcUtils.getCustomers(userInfo), noAutoSelect: true }));
+            html = html.replace('{FILTER_SRF_SUBMITTED_BY}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Submitter Company', width: 'calc(25% - 2px)', multiSelect: true, id: 'cust_submit_by_company', noEmpty: true, dataSource: twcUtils.getCompaniesSrf(userInfo), noAutoSelect: true }));
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'County', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
 
 
@@ -254,7 +254,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     } else if (payload.submitOnSave) {
                         submitSiteSrf(userInfo, { srf: payload.id });
                     } else {
-                        var s = recu.lookUp(twcSrf.Type, payload.id, twcSrf.Fields.SRF_STATUS);
+                        var s = recu.lookUp(twcSrf.Type, payload.id, twcSrf.Fields.SRF_STATUS).value;
                         if (s == twcSrf.Status.Submitted || s == twcSrf.Status.UnderReview || s == twcSrf.Status.FeedbackIssued || s == twcSrf.Status.Resubmitted) {
                             twcSrfWorkflowEngine.initEquipment({ srf: payload.id });
                         }
@@ -315,9 +315,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     equipmentId = item.swappedItem[twcSrfItem.Fields.EQUIPMENT_ID];
                 }
 
-                saveEqAction(item, payload, equipmentId, (requestType == twcSrfItem.RequestType.SWAP) ? twcSrfItem.RequestType.REMOVE : requestType)
+                var eqActionType = null;
+                if (requestType == twcSrfItem.RequestType.SWAP) {
+                    // SWAP (REMOVE + INSTALL)
+                    eqActionType = twcUtils.EqActionType.SwapUnlicence;
+                } else if (requestType == twcSrfItem.RequestType.INSTALL) {
+                    eqActionType = twcUtils.EqActionType.Licence;
+                } else {
+                    eqActionType = twcUtils.EqActionType.Unlicence;
+                }
+
+                saveEqAction(item, payload, equipmentId, eqActionType)
                 // SWAP (REMOVE + INSTALL)
-                if (requestType == twcSrfItem.RequestType.SWAP) { saveEqAction(item, payload, null, twcSrfItem.RequestType.INSTALL); }
+                if (requestType == twcSrfItem.RequestType.SWAP) { saveEqAction(item, payload, null, twcUtils.EqActionType.SwapLicence); }
 
             } catch (e) {
                 _savingErrors.push({
@@ -425,7 +435,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                             if (action.eq_id) {
                                 // @@NOTE: we can remove the equipment if this was an install action
-                                if (action.type == twcUtils.EqActionType.Install) { recu.del(twcEquipment.Type, action.eq_id); }
+                                if (action.type == twcUtils.EqActionType.Licence || action.type == twcUtils.EqActionType.SwapLicence) {
+                                    recu.del(twcEquipment.Type, action.eq_id);
+                                }
                             }
                         } catch (eqErr) {
                             log.error('Failed Deleting Eq Action', eqErr.message);

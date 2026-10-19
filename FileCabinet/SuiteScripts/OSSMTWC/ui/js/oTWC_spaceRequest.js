@@ -21,8 +21,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function copySrfItem(srfItem) {
             var srfItemCopy = JSON.parse(JSON.stringify(srfItem));
             srfItemCopy.id = null;
+            // @@NOTE:
+            
+            srfItemCopy[twcSrfItem.Fields.EQUIPMENT_ID] = null;
+            srfItemCopy[twcSrfItem.Fields.EQUIPMENT_ID + '_name'] = 'TBA';
+
             if (srfItemCopy.relatedItems) {
-                srfItemCopy.relatedItems.map(i => { i.id = null; i.dirty = true; })
+                srfItemCopy.relatedItems.map(i => {
+                    i.id = null;
+                    i.dirty = true;
+                    // i[twcSrfItem.Fields.TMI_ID_SRF] = null;
+                    i[twcSrfItem.Fields.EQUIPMENT_ID] = null;
+                    // i[twcSrfItem.Fields.EQUIPMENT_ID + '_name'] = 'TBA';
+                })
             }
             return srfItemCopy;
         }
@@ -74,7 +85,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (col.id == 'id') { return false; }
                 if (col.id == 'record_id') { return false; }
                 if (col.id == 'site_id') { return false; }
-                if (col.id == twcSite.Fields.ADDRESS_COUNTY || col.id == twcSite.Fields.SITE_TYPE || col.id == twcSite.Fields.SITE_PORTFOLIO) { return false; }
+                if (col.id == twcSite.Fields.ADDRESS_COUNTY || col.id == twcSite.Fields.SITE_TYPE || col.id == twcSite.Fields.SITE_PORTFOLIO || col.id == 'cust_submit_by_company') { return false; }
                 if (col.id == 'name') {
                     col.title = 'SRF ID';
                     col.addCount = true;
@@ -107,6 +118,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (col.id == twcSrf.Fields.OPERATOR_SITE_ID) { col.nullText = ''; }
 
                 if (col.id == twcSite.Fields.SITE_LATITUDE || col.id == twcSite.Fields.SITE_LONGITUDE) { col.styles = { 'text-align': 'right' }; }
+
+                if (col.id == 'cust_submit_by_company_name') { col.title = 'SRF Submitted By Company'; }
             }
 
             refresh(data) {
@@ -437,11 +450,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#form.ui.find('#srf-related-eq').css('display', showPanels ? 'block' : 'none');
 
                     if (this.#srfItem[twcSrfItem.Fields.STEP_TYPE] == twcEqUI.EqClass.GIE) {
-                        // var structures = this.#form.getControl(twcSrfItem.Fields.STRUCTURE)?.getDataSource();
-                        // console.log(structures)
-                        // @@HARDCODED: @@TODO: SRF: this should not be hardcoded
-                        this.#form.getControl(twcSrfItem.Fields.STRUCTURE).hide = (this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).valueObj?.text == 'Outdoor');
-
+                        this.#form.getControl(twcSrfItem.Fields.STRUCTURE).hide = (this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).valueObj?.no_infra == 'T');
                     }
                 }
 
@@ -785,7 +794,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             //     safLink = `<a href="${safLink}" target="_blank">${eqAction[twcEqAct.Fields.EA_SAF + '_name']}</a>`
                             // }
                             var padding = eqAction[twcEquipment.Fields.PARENT_TME_ID] ? 'style="padding-left: 27px; font-style: italic; color: silver;"' : '';
-                            var icon = eqAction[twcEqAct.Fields.EA_STATUS] == twcUtils.EqActionStatus.Complete ? twcIcons.get('checkBox', 16, 'lime'):'';
+                            var icon = eqAction[twcEqAct.Fields.EA_STATUS] == twcUtils.EqActionStatus.Complete ? twcIcons.get('checkBox', 16, 'lime') : '';
                             var eqActionHtml = jQuery(`
                                 <div>
                                     <div style="width: 20px; text-align: center;">${icon}</div>

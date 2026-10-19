@@ -665,9 +665,9 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 recu.submit(twcSafAction.Type, sa.saf_action_id, [twcSafAction.Fields.SAF_ACTION_STATUS, twcSafAction.Fields.SAF_ACTION_COMPLETE], [twcUtils.SafActionStatus.Complete, true]);
                 recu.submit(twcEqAct.Type, sa.ea_action_id, twcEqAct.Fields.EA_STATUS, twcUtils.EaActionStatus.Complete);
 
-                if (sa.ea_type == twcUtils.EqActionType.Install) {
+                if (sa.ea_type == twcUtils.EqActionType.Licence || sa.ea_type == twcUtils.EqActionType.SwapLicence) {
                     recu.submit(twcEquipment.Type, sa.equip_id, twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcUtils.EqInstallStatus.Installed)
-                } else if (sa.ea_type == twcUtils.EqActionType.Remove) {
+                } else if (sa.ea_type == twcUtils.EqActionType.Unlicence || sa.ea_type == twcUtils.EqActionType.SwapUnlicence) {
                     recu.submit(twcEquipment.Type, sa.equip_id, twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcUtils.EqInstallStatus.Removed)
                 }
             })

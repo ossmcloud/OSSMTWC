@@ -76,7 +76,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // LOOP: 2 units (save rec) + 2 UNITS * 2 for submit = 6 units
                 var eq = twcEquipment.get(action.eq_id);
 
-                if (action.ea_type == twcUtils.EqActionType.Install || action.ea_type == twcUtils.EqActionType.Licence || action.ea_type == twcUtils.EqActionType.SwapLicence) {
+                if (action.ea_type == twcUtils.EqActionType.Licence || action.ea_type == twcUtils.EqActionType.SwapLicence) {
                     eq.equipmentLicenceStatus = twcUtils.EqLicenseStatus.ReqtoLicence;
 
                     eq.site = action[twcSrf.Fields.SITE];
@@ -112,7 +112,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
 
 
-                } else if (action.ea_type == twcUtils.EqActionType.Remove || action.ea_type == twcUtils.EqActionType.Unlicence || action.ea_type == twcUtils.EqActionType.SwapUnlicence) {
+                } else if (action.ea_type == twcUtils.EqActionType.Unlicence || action.ea_type == twcUtils.EqActionType.SwapUnlicence) {
                     eq.equipmentLicenceStatus = twcUtils.EqLicenseStatus.ReqtoUnlicence;
                 } else {
                     // @@NOTE: this should not happen
@@ -139,7 +139,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
                 var s = licenseStatus;
-                if (action.ea_type == twcUtils.EqActionType.Remove || action.ea_type == twcUtils.EqActionType.Unlicence || action.ea_type == twcUtils.EqActionType.SwapUnlicence) {
+                if (action.ea_type == twcUtils.EqActionType.Unlicence || action.ea_type == twcUtils.EqActionType.SwapUnlicence) {
                     // @@NOTE: this is called with 'license' stuff but we may have an unlicense
 
                     if (licenseStatus == twcUtils.EqLicenseStatus.ProptoLicence) {
@@ -399,7 +399,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     } else if (options.setStatus == twcUtils.SrfStatus.LicenceIssued) {
                         updateEquipment(options, twcUtils.EqLicenseStatus.ProptoLicence_LicenceIssued)
 
-                    } else if (options.setStatus == twcUtils.SrfStatus.LicenseSigned) {
+                    } else if (options.setStatus == twcUtils.SrfStatus.LicenceExecuted) {
                         updateEquipment(options, twcUtils.EqLicenseStatus.Licenced)
                         
                     }
@@ -496,8 +496,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         srf.custrecord_twc_srf_cust as customer, BUILTIN.DF(srf.custrecord_twc_srf_cust) as customer_name,
                         TO_CHAR(srf.custrecord_twc_srf_cust_plan_ins_date, 'YYYY-MM-DD') as customer_planned_date,
                         TO_CHAR(srf.custrecord_twc_srf_permit_date, 'YYYY-MM-DD') as works_permitted_date,
-                        TO_CHAR(srf.custrecord_twc_srf_tl_drg_draft, 'YYYY-MM-DD') as custrecord_twc_srf_tl_drg_draft,
-                        TO_CHAR(srf.custrecord_twc_srf_tl_drg_rev, 'YYYY-MM-DD') as custrecord_twc_srf_tl_drg_rev,
                         TO_CHAR(srf.custrecord_twc_srf_tl_drg_upl, 'YYYY-MM-DD') as custrecord_twc_srf_tl_drg_upl,
                         TO_CHAR(srf.custrecord_twc_srf_approval_date, 'YYYY-MM-DD') as custrecord_twc_srf_approval_date,
                         TO_CHAR(srf.custrecord_twc_srf_lic_req, 'YYYY-MM-DD') as custrecord_twc_srf_lic_req,
@@ -710,6 +708,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         formData: {
                             record: twcSrf.Type,
                             [twcSrf.Fields.LICENCE_REQUESTED]: (new Date()).format(),
+                            [twcSrf.Fields.LICENSE_REQUESTED_BY]: userInfo.profile,
                             [twcSrf.Fields.SRF_APPROVAL_DATE]: (new Date()).format(),
                         }
                     }

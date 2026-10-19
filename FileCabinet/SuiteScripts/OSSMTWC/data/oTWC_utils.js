@@ -40,10 +40,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const EQ_ACTION_TYPE = {
-            Install: 1,
-            Remove: 2,
-            Licence: 3,
-            Unlicence: 4,
+            Licence: 1,
+            Unlicence: 2,
             SwapLicence: 5,
             SwapUnlicence: 6
         }
@@ -1076,6 +1074,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getCompanies(o);
         }
 
+        function getCompaniesSrf(userInfo) {
+            var o = JSON.parse(JSON.stringify(userInfo));
+            o.srf = true;
+            return getCompanies(o);
+        }
+
 
         function getProfiles(options) {
             var filters = '';
@@ -1686,6 +1690,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getTktImages: getTktImages,
             getProfiles: getProfiles,
             getCompanies: getCompanies,
+            getCompaniesSrf: getCompaniesSrf,
             getCustomers: getCustomers,
             getVendors: getVendors,
             getEquipmentIds: getEquipmentIds,

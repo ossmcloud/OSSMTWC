@@ -32,6 +32,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 var o = { fields: { id: 'value' } };
                 o.fields[twcEquipmentType.Fields.NAME] = 'text';
+                o.fields[twcEquipmentType.Fields.NO_INFRASTRUCTURE] = 'no_infra';
 
                 o.where = {};
                 o.where[twcEquipmentType.Fields.CLASS] = stepType || 0;

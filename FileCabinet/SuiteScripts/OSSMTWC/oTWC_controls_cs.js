@@ -55,7 +55,8 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
             testFunction() {
 
                 try {
-                    console.log(twcSdsEngine.getFormData({ id: 133 }))
+                    twcSrfWorkflowEngine.initEquipment({ srf: 156 });
+                    //console.log(twcSdsEngine.getFormData({ id: 133 }))
 
                     //twcSrfWorkflowEngine.initWorkFlow({srf: 136})
                     //recu.submit('customrecord_twc_srf', 101, 'custrecord_twc_srf_lic_pack_signed', new Date(2026, 8, 18, 11, 25, 15))
