@@ -49,6 +49,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (col.id == 'id') { return false; }
                 if (col.id == 'record_id') { return false; }
                 if (col.id == 'site_id') { return false; }
+                if (col.id == 'custrecord_twc_trbl_tkt_case') { return false; }
 
                 var uf = window.twc.page.data.ticketsInfo.userFields.find(f => { return f.field == col.id.replace('_text', '') });
                 if (uf) {
@@ -66,6 +67,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 }
 
+                if (col.id == `${twcTkt.Fields.CASE_REFERENCE}_text`) {
+                    col.title = 'Case Id';
+                    col.link = {
+                        url: core.url.record('supportcase', 1).split('?')[0] + '?id=${custrecord_twc_trbl_tkt_case}',
+                        valueField: 'custrecord_twc_trbl_tkt_case'
+                    };
+                }
 
                 if (col.id == 'site_id_text') {
                     col.title = 'Site';

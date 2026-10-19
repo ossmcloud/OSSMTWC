@@ -11,7 +11,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var ticketFields = twcUtils.getFields(twcTrblTkts.Type);
             var userFields = twcTrblTktsUI.getTicketsTableFields();
 
-            var sqlFields = 's.id, s.id as record_id, s.name, s.custrecord_twc_trbl_tkt_site as site_id, BUILTIN.DF(s.custrecord_twc_trbl_tkt_site) as site_id_text';
+            var sqlFields = 's.id, s.id as record_id, s.name, s.custrecord_twc_trbl_tkt_case,  BUILTIN.DF(s.custrecord_twc_trbl_tkt_case) as custrecord_twc_trbl_tkt_case_text, s.custrecord_twc_trbl_tkt_site as site_id, BUILTIN.DF(s.custrecord_twc_trbl_tkt_site) as site_id_text';
             sqlFields += formatUserFields(ticketFields, userFields);
 
             var whereClause = 'where 1 = 1 ';
