@@ -144,14 +144,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     if (licenseStatus == twcUtils.EqLicenseStatus.ProptoLicence) {
                         s = twcUtils.EqLicenseStatus.ProptoUnlicence;
+
                     } else if (licenseStatus == twcUtils.EqLicenseStatus.ReqtoLicence) {
                         s = twcUtils.EqLicenseStatus.ReqtoUnlicence;
+
                     } else if (licenseStatus == twcUtils.EqLicenseStatus.ProptoLicence_LicenceRequested) {
                         s = twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceRequested;
+
                     } else if (licenseStatus == twcUtils.EqLicenseStatus.ProptoLicence_LicenceIssued) {
                         s = twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceIssued;
+
                     } else if (licenseStatus == twcUtils.EqLicenseStatus.Licenced) {
                         s = twcUtils.EqLicenseStatus.Unlicenced;
+
                     }
 
                 }
@@ -384,14 +389,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     recu.submit(twcSrf.Type, options.srf, twcSrf.Fields.SRF_STATUS, options.setStatus);
                     if (options.setStatus == twcUtils.SrfStatus.SRFApproved) {
                         updateEquipment(options, twcUtils.EqLicenseStatus.ProptoLicence)
+
                     } else if (options.setStatus == twcUtils.SrfStatus.Resubmitted) {
                         updateEquipment(options, twcUtils.EqLicenseStatus.ReqtoLicence)
+
                     } else if (options.setStatus == twcUtils.SrfStatus.LicenceRequested) {
                         updateEquipment(options, twcUtils.EqLicenseStatus.ProptoLicence_LicenceRequested)
+
                     } else if (options.setStatus == twcUtils.SrfStatus.LicenceIssued) {
                         updateEquipment(options, twcUtils.EqLicenseStatus.ProptoLicence_LicenceIssued)
+
                     } else if (options.setStatus == twcUtils.SrfStatus.LicenseSigned) {
                         updateEquipment(options, twcUtils.EqLicenseStatus.Licenced)
+                        
                     }
 
                     if (options.wkf) {
