@@ -91,6 +91,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 installStatusFilter = `and    eq.custrecordtwc_eq_install_status = ${twcUtils.EqInstallStatus.Installed}`;
             }
 
+            // @@NOTE: TME / ATME / FEEDER are filtered by the structure selected on the SRF (the client does not pass it for GIE)
+            var structureFilter = '';
+            if (options.structure) {
+                structureFilter = `and    eq.${twcEquipment.Fields.INFRASTRUCTURE} = ${parseInt(options.structure)}`;
+            }
+
             var sql = `
                     select  eq.id, ${fieldsSql}, 
                             ${twcEquipment.Fields.DESCRIPTION},  
@@ -103,6 +109,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     and    eq.custrecord_twc_equip_class = ${options.eqClass}
                     and    infra.custrecord_twc_infra_site = ${options.site}
                     ${installStatusFilter}
+                    ${structureFilter}
                     order by eq.name
                 `
             return coreSQL.run(sql);

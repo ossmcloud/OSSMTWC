@@ -17,6 +17,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var siteStructures = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Structure })
             var siteAccomodations = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Accommodation })
             var voltageTypes = twcUtils.getVoltageTypes(userInfo);
+            // @@NOTE: for TME / ATME / FEEDER the structure is picked at SRF level, here we just show it (read-only)
+            var srfStructure = srf.get(twcSrf.Fields.STRUCTURE) || srfItem.get(twcSrfItem.Fields.STRUCTURE);
 
             var basicInfo = { id: 'srf-item-info', title: 'Basic Info', fields: [] };
             fieldGroup.controls.push(basicInfo);
@@ -54,7 +56,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 if (srfItem.stepType == twcSrfItem.StepType.GIE) {
                     dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteAccomodations, mandatory: true, noAutoSelect: false });
                 } else {
-                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteStructures, mandatory: true });
+                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfStructure, dataSource: siteStructures, mandatory: true, readOnly: true });
                 }
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.MAKE, label: 'Make', mandatory: true })
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.MODEL, label: 'Model', mandatory: true })
@@ -76,7 +78,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 specInfo.fields.push({ id: twcSrfItem.Fields.CUSTOMER_REF, label: 'Customer Ref.', mandatory: true })
 
             } else if (srfItem.stepType == twcSrfItem.StepType.FEEDER) {
-                specInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteStructures, mandatory: true });
+                specInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfStructure, dataSource: siteStructures, mandatory: true, readOnly: true });
                 specInfo.fields.push({ id: twcSrfItem.Fields.TYPE_OPT, label: 'Type Opt', dataSource: twcUtils.getSrfItemTypeOpts(userInfo), mandatory: true })
 
             } else if (srfItem.stepType == twcSrfItem.StepType.GIE) {

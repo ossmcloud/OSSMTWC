@@ -14,6 +14,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 { field: twcSrf.Fields.NAME },
                 { field: twcSrf.Fields.SITE },
                 { field: twcSrf.Fields.OPERATOR_SITE_ID },
+                { field: twcSrf.Fields.STRUCTURE },
                 { field: twcSrf.Fields.SRF_STATUS },
                 { field: twcSrf.Fields.CUSTOMER },
                 { field: twcSrf.Fields.SRF_SUBMITTED_BY },
@@ -283,6 +284,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: !core.utils.isEmpty(dataSource.id), dataSource: customers, value: selectedCustomer, allowAll: false })
             basicInfo.fields.push({ id: twcSrf.Fields.OPERATOR_SITE_ID, label: 'Operator Site ID', mandatory: true })
+            // @@NOTE: the structure is picked once at SRF level and copied (read-only) on the TME / ATME / FEEDER items (GIE items still pick their own accommodation)
+            //         only infrastructures of type Structure are listed
+            var siteStructures = twcUtils.getInfraStructures({ siteId: dataSource[twcSrf.Fields.SITE] }, userInfo.isEmployee).filter(s => { return s.type == twcUtils.InfraType.Structure });
+            basicInfo.fields.push({ id: twcSrf.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, dataSource: siteStructures })
             if (userInfo.isEmployee) {
                 basicInfo.fields.push({ id: twcSrf.Fields.SRF_TYPE, label: 'SRF Type', dataSource: twcUtils.getSrfTypes(), allowAll: false })
                 basicInfo.fields.push({ id: twcSrf.Fields.REVENUE_IMPACTING, label: 'Revenue Impacting', dataSource: twcUtils.getSrfRevenueImpact(), allowAll: false })
@@ -401,6 +406,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 fields: {
                     [twcSrf.Fields.NAME]: { title: 'SRF ID', link: { url: srfLink + '&recId=${id}', valueField: 'id' } },
                     [twcSrf.Fields.OPERATOR_SITE_ID]: 'Operator Site ID',
+                    [twcSrf.Fields.STRUCTURE]: 'Structure',
                     [twcSrf.Fields.SRF_TYPE]: 'Type',
                     [twcSrf.Fields.SRF_STATUS]: 'Status',
                     [twcSrf.Fields.CUSTOMER]: 'Customer',

@@ -578,7 +578,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (pickedEq) {
                     this.#srfItem[twcSrfItem.Fields.TME_ID] = pickedEq.id;
                     this.#srfItem[twcSrfItem.Fields.TME_ID + '_name'] = pickedEq[twcEquipment.Fields.NAME];
-                    this.#form.getControl(twcSrfItem.Fields.STRUCTURE).value = pickedEq[twcEquipment.Fields.INFRASTRUCTURE];
+                    // @@NOTE: the structure comes from the SRF (read-only), the TME picker is already filtered by it
+                    if (!this.#form.getControl(twcSrfItem.Fields.STRUCTURE).readOnly) {
+                        this.#form.getControl(twcSrfItem.Fields.STRUCTURE).value = pickedEq[twcEquipment.Fields.INFRASTRUCTURE];
+                    }
                 }
                 this.#form.setValue('srf-tme-equipment', this.#srfItem[twcSrfItem.Fields.TME_ID + '_name'] || '');
             }
@@ -675,7 +678,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         site: this.data.siteInfo.site.id,
                         customer: this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER],
                         eqClass: eqClass,
-                        reqType: this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value
+                        reqType: this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value,
+                        // @@NOTE: TME / ATME / FEEDER can only be picked from the structure selected on the SRF
+                        structure: (eqClass == twcEqUI.EqClass.GIE) ? null : this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE]
                     })
 
 
@@ -869,6 +874,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #sitesTable = null;
             #sitePanel = null;
             #workflowForm = null;
+            #srfStructure = null;
             constructor() {
                 super({ scriptId: 'otwc_spaceRequest_sl' });
             }
@@ -982,6 +988,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     this.ui.getControl(twcSrf.Fields.OPERATOR_SITE_ID).value = res;
                                 })
                             }
+                            if (e.id == twcSrf.Fields.STRUCTURE) {
+                                this.onStructureChange(e);
+                            }
                         })
                         core.array.each(this.ui.controls, c => {
                             if (c.type !== 'table') { return; }
@@ -1022,6 +1031,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             // @@NOTE: this is in case we open the form with pre-selected customer
                             this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER] = this.ui.getControl(twcSrf.Fields.CUSTOMER).value
                         }
+                        if (!this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE] && this.ui.getControl(twcSrf.Fields.STRUCTURE)?.value) {
+                            // @@NOTE: same as above, in case the structure drop down auto-selected a value (i.e.: the site has only one structure)
+                            this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE] = this.ui.getControl(twcSrf.Fields.STRUCTURE).value
+                        }
+                        this.#srfStructure = this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE] || null;
 
 
                         // @@NOTE: this is a bit of a stretch for the ui table control Ihave as that does not support grouping (i.e.: it should but it does not)
@@ -1123,6 +1137,58 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
 
+            // @@NOTE: the structure is picked at SRF level and copied on all the TME / ATME / FEEDER items (GIE items have their own accommodation)
+            //         if we have items already we ask the user to confirm and update them, otherwise we revert to the previous value
+            onStructureChange(e) {
+                var structure = e.value || null;
+                var structureName = e.target.valueObj?.text || '';
+
+                var tables = [];
+                var itemsCount = 0;
+                core.array.each([twcSrfItem.StepType.TME, twcSrfItem.StepType.ATME, twcSrfItem.StepType.FEEDER], stepType => {
+                    var table = this.ui.getControl(`${twcSrfItem.Type}_${stepType}`);
+                    if (!table || !table.data?.length) { return; }
+                    tables.push({ table: table, stepType: stepType });
+                    core.array.each(table.data, item => { itemsCount += 1 + (item.relatedItems?.length || 0); });
+                })
+
+                if (itemsCount == 0) {
+                    this.#srfStructure = structure;
+                    return;
+                }
+
+                const setItemStructure = (item) => {
+                    item[twcSrfItem.Fields.STRUCTURE] = structure;
+                    item[twcSrfItem.Fields.STRUCTURE + '_name'] = structureName;
+                    item.dirty = true;
+                    // @@NOTE: swapItem is the new item of a swapped related item (swappedItem is the old one and must not change)
+                    if (item.swapItem) {
+                        item.swapItem[twcSrfItem.Fields.STRUCTURE] = structure;
+                        item.swapItem[twcSrfItem.Fields.STRUCTURE + '_name'] = structureName;
+                    }
+                    core.array.each(item.relatedItems, ri => { setItemStructure(ri); })
+                }
+
+                var confirmed = false;
+                var dlg = dialog.confirm(`The structure will be updated on ${itemsCount} SRF item(s) (TME / ATME / Feeders).<br />Do you want to continue?`, () => {
+                    confirmed = true;
+                    this.#srfStructure = structure;
+                    core.array.each(tables, t => {
+                        core.array.each(t.table.data, item => { setItemStructure(item); })
+                        // @@NOTE: same as manageSRFItem, make sure the items are in the collection that gets saved
+                        var itemList = `items_${t.stepType}`;
+                        if (!this.data.siteRequestInfo[itemList]) { this.data.siteRequestInfo[itemList] = t.table.data; }
+                        t.table.render(this.data.siteRequestInfo[itemList], true);
+                    })
+                    this.dirty = true;
+                })
+                dlg.dialog.find('#o-dialog_close, #o-dialog_title_x').click(() => {
+                    if (confirmed) { return; }
+                    this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE] = this.#srfStructure;
+                    this.ui.setValue(twcSrf.Fields.STRUCTURE, this.#srfStructure, true);
+                })
+            }
+
             deleteRecord(srfRecord, table) {
                 var deleteRecordCollectionName = table.id == twcFile.Type ? 'files_deleted' : 'items_deleted';
                 if (srfRecord.delete) {
@@ -1204,6 +1270,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (this.deleteRecord(srfItem, table)) { return; }
 
                     srfItem[twcSrfItem.Fields.STEP_TYPE] = table.id.replace('customrecord_twc_srf_itm_', '');
+
+                    // @@NOTE: TME / ATME / FEEDER items take the structure from the SRF so it must be selected first (GIE items pick their own accommodation)
+                    if (srfItem[twcSrfItem.Fields.STEP_TYPE] != twcSrfItem.StepType.GIE && !this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE]) {
+                        throw new Error('You need to select a structure');
+                    }
 
                     var method = mode || 'open';
                     TWCSpaceRequestItemForm[method](this, srfItem, (i, addAndCopy) => {

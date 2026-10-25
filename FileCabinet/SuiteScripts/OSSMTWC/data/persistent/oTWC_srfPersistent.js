@@ -12,6 +12,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             OPERATOR_SITE_ID: 'custrecord_twc_srf_op_site_id',
             SITE: 'custrecord_twc_srf_site',
             CUSTOMER: 'custrecord_twc_srf_cust',
+            STRUCTURE: 'custrecord_twc_srf_structure',
             SRF_SUBMITTED_BY: 'custrecord_twc_srf_sub_by',
             RELATED_EQUIPMENT_ACTIONS: 'custrecord_twc_srf_related_eqip_actions',
             APPLICATION_DATE: 'custrecord_twc_srf_app_date',
@@ -60,6 +61,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             OPERATOR_SITE_ID: { name: 'custrecord_twc_srf_op_site_id', type: 'text', alias: 'operatorSiteID', display: 'normal', mandatory: false },
             SITE: { name: 'custrecord_twc_srf_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
             CUSTOMER: { name: 'custrecord_twc_srf_cust', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
+            STRUCTURE: { name: 'custrecord_twc_srf_structure', type: 'select', alias: 'structure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
             SRF_SUBMITTED_BY: { name: 'custrecord_twc_srf_sub_by', type: 'select', alias: 'sRFSubmittedBy', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             RELATED_EQUIPMENT_ACTIONS: { name: 'custrecord_twc_srf_related_eqip_actions', type: 'select', alias: 'relatedEquipmentActions', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action' },
             APPLICATION_DATE: { name: 'custrecord_twc_srf_app_date', type: 'date', alias: 'applicationDate', display: 'normal', mandatory: false },
@@ -145,6 +147,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.CUSTOMER, value)
             }
             get customerName() { return this.getText(_recordFields.CUSTOMER); }
+            
+            get structure() {
+                return this.get(_recordFields.STRUCTURE);
+            } set structure(value) {
+                this.set(_recordFields.STRUCTURE, value)
+            }
+            get structureName() { return this.getText(_recordFields.STRUCTURE); }
             
             get sRFSubmittedBy() {
                 return this.get(_recordFields.SRF_SUBMITTED_BY);
