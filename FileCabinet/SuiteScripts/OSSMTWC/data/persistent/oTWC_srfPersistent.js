@@ -37,6 +37,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             TL_DRAWING_UPLOADED: 'custrecord_twc_srf_tl_drg_upl',
             LICENCE_MECHANISM: 'custrecord_twc_srf_lic_mech',
             LICENCE_REQUESTED: 'custrecord_twc_srf_lic_req',
+            LICENSE_REQUESTED_BY: 'custrecord_twc_srf_lic_req_by',
             LICENCE_PACK_PRODUCED: 'custrecord_twc_srf_lic_pack_prod',
             LICENCE_PACK_REVIEWER: 'custrecord_twc_srf_lic_pack_rev',
             LICENCE_PACK_REVIEWED: 'custrecord_twc_srf_lic_pack_revd',
@@ -46,9 +47,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LICENCE_PACK_EXECUTED: 'custrecord_twc_srf_lic_pack_exec',
             LICENCE_PACK_EXECUTED_BY: 'custrecord_twc_srf_lic_pack_exec_by',
             SDS_FORM_DATA: 'custrecord_twc_srf_sds_form_data',
-            TL_DRAWING_DRAFTED_OBSOLETE: 'custrecord_twc_srf_tl_drg_draft',
-            TL_DRAWING_REVIEWED_OBSOLETE: 'custrecord_twc_srf_tl_drg_rev',
-            TL_DRAWING_OBSOLETE: 'custrecord_twc_srf_tl_drg',
+            TL_NOTES: 'custrecord_twc_srf_notes',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -86,6 +85,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             TL_DRAWING_UPLOADED: { name: 'custrecord_twc_srf_tl_drg_upl', type: 'date', alias: 'tLDrawingUploaded', display: 'normal', mandatory: false },
             LICENCE_MECHANISM: { name: 'custrecord_twc_srf_lic_mech', type: 'select', alias: 'licenceMechanism', display: 'normal', mandatory: false, recordType: 'customrecord_twc_lic_mech' },
             LICENCE_REQUESTED: { name: 'custrecord_twc_srf_lic_req', type: 'date', alias: 'licenceRequested', display: 'normal', mandatory: false },
+            LICENSE_REQUESTED_BY: { name: 'custrecord_twc_srf_lic_req_by', type: 'select', alias: 'licenseRequestedBy', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             LICENCE_PACK_PRODUCED: { name: 'custrecord_twc_srf_lic_pack_prod', type: 'date', alias: 'licencePackProduced', display: 'normal', mandatory: false },
             LICENCE_PACK_REVIEWER: { name: 'custrecord_twc_srf_lic_pack_rev', type: 'select', alias: 'licencePackReviewer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             LICENCE_PACK_REVIEWED: { name: 'custrecord_twc_srf_lic_pack_revd', type: 'date', alias: 'licencePackReviewed', display: 'normal', mandatory: false },
@@ -95,9 +95,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LICENCE_PACK_EXECUTED: { name: 'custrecord_twc_srf_lic_pack_exec', type: 'datetimetz', alias: 'licencePackExecuted', display: 'normal', mandatory: false },
             LICENCE_PACK_EXECUTED_BY: { name: 'custrecord_twc_srf_lic_pack_exec_by', type: 'select', alias: 'licencePackExecutedBy', display: 'normal', mandatory: false, recordType: '-4' },
             SDS_FORM_DATA: { name: 'custrecord_twc_srf_sds_form_data', type: 'clobtext', alias: 'sDSFormData', display: 'hidden', mandatory: false },
-            TL_DRAWING_DRAFTED_OBSOLETE: { name: 'custrecord_twc_srf_tl_drg_draft', type: 'date', alias: 'tLDrawingDraftedOBSOLETE', display: 'normal', mandatory: false },
-            TL_DRAWING_REVIEWED_OBSOLETE: { name: 'custrecord_twc_srf_tl_drg_rev', type: 'date', alias: 'tLDrawingReviewedOBSOLETE', display: 'normal', mandatory: false },
-            TL_DRAWING_OBSOLETE: { name: 'custrecord_twc_srf_tl_drg', type: 'document', alias: 'tLDrawingOBSOLETE', display: 'normal', mandatory: false },
+            TL_NOTES: { name: 'custrecord_twc_srf_notes', type: 'textarea', alias: 'tLNotes', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -303,6 +301,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.LICENCE_REQUESTED, value)
             }
             
+            get licenseRequestedBy() {
+                return this.get(_recordFields.LICENSE_REQUESTED_BY);
+            } set licenseRequestedBy(value) {
+                this.set(_recordFields.LICENSE_REQUESTED_BY, value)
+            }
+            get licenseRequestedByName() { return this.getText(_recordFields.LICENSE_REQUESTED_BY); }
+            
             get licencePackProduced() {
                 return this.get(_recordFields.LICENCE_PACK_PRODUCED);
             } set licencePackProduced(value) {
@@ -360,22 +365,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.SDS_FORM_DATA, value)
             }
             
-            get tLDrawingDraftedOBSOLETE() {
-                return this.get(_recordFields.TL_DRAWING_DRAFTED_OBSOLETE);
-            } set tLDrawingDraftedOBSOLETE(value) {
-                this.set(_recordFields.TL_DRAWING_DRAFTED_OBSOLETE, value)
-            }
-            
-            get tLDrawingReviewedOBSOLETE() {
-                return this.get(_recordFields.TL_DRAWING_REVIEWED_OBSOLETE);
-            } set tLDrawingReviewedOBSOLETE(value) {
-                this.set(_recordFields.TL_DRAWING_REVIEWED_OBSOLETE, value)
-            }
-            
-            get tLDrawingOBSOLETE() {
-                return this.get(_recordFields.TL_DRAWING_OBSOLETE);
-            } set tLDrawingOBSOLETE(value) {
-                this.set(_recordFields.TL_DRAWING_OBSOLETE, value)
+            get tLNotes() {
+                return this.get(_recordFields.TL_NOTES);
+            } set tLNotes(value) {
+                this.set(_recordFields.TL_NOTES, value)
             }
             
             get created() {

@@ -218,7 +218,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var safType = dataSource[twcSaf.Fields.R_TYPE] || (_allowedSafTypes.length == 1 ? _allowedSafTypes[0].value : null);
             step1Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-template', label: 'Template', hide: isExistingSaf, allowAll: false, dataSource: [{ value: 'new', text: 'Create new SAF' }, { value: 'reuse', text: 'Reuse previous SAF' }] })
             step1Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-type', label: 'Type', hide: !isExistingSaf, allowAll: false, value: safType, dataSource: _allowedSafTypes });
-            step1Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-reuse', label: 'S.A.F.', hide: !dataSource.reUse, value: dataSource.id, noAutoSelect: true, allowAll: false, dataSource: twcUtils.getSafDropDown(dataSource) });
+            step1Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-reuse', label: 'S.A.F.', hide: !dataSource.reUse, value: dataSource.id, noAutoSelect: true, allowAll: false, dataSource: twcUtils.getSafDropDown(userInfo) });
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
@@ -741,7 +741,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroup.controls.push(workFlowLogsInfo);
 
             if (!userInfo.isEmployee) {
-                workFlowLogsInfo.fields.push({ id: twcSaf.Fields.REVIEW_COMMENT, width: '100%', rows: 5, label: 'Review Comment', lineBreak: true })
+                // workFlowLogsInfo.fields.push({ id: twcSaf.Fields.REVIEW_COMMENT, width: '100%', rows: 5, label: 'Review Comment', lineBreak: true })
             }
 
             workFlowLogsInfo.fields.push({
