@@ -43,6 +43,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 core.array.each(this.ui.controls, c => {
                     if (c.type != 'table') { return; }
+                    // @@NOTE: equipment tables (TME / GIE) have the related equipment as child rows
+                    twcPageBase.initTableExpandCollapse(c);
                     c.onToolbarClick = e => {
                         console.log(e)
                         if (e.action == 'add-new') {
