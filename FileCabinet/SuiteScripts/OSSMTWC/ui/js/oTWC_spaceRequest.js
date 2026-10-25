@@ -685,6 +685,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (!col.id.endsWith('_name')) { if (tbl.columns.find(c => { return c.id == `${col.id}_name`; })) { return false; } }
                         var cf = fields.find(cf => { return cf.field == col.id.replace('_name', '') });
                         if (!cf) { return false; }
+                        if (cf.field == twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS) { return false; }
                         for (var k in cf) { col[k] = cf[k]; }
                         col.nullText = '';
                         if (col.id == 'name') { col.addCount = true; }
