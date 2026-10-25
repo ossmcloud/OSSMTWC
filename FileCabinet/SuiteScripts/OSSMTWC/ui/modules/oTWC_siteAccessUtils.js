@@ -796,6 +796,13 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                         saf[twcSaf.Fields.STATUS] = twcSaf.Status.Pending;
                         saf[twcSaf.Fields.PICW] = null;
 
+                        // @@NOTE: the user can pick a different site when re-using a SAF (SAF locator re-use dialog)
+                        //         the structure belongs to the original site so it must be cleared (crews and actions are not copied on re-use anyway)
+                        if (pageData.siteId && pageData.siteId != saf[twcSaf.Fields.SITE]) {
+                            saf[twcSaf.Fields.SITE] = pageData.siteId;
+                            saf.siteId = pageData.siteId;
+                            saf[twcSaf.Fields.STRUCTURE] = null;
+                        }
                     }
 
                 } else {

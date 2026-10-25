@@ -7,9 +7,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, uiTable, twcSite, twcUtils, twcSaf, twcSafAction, twcSafUI, twcIcons, twcUIPanel, twcUI, twcFile) => {
 
         var _safLink = null;
-        function safReuseLink(id) {
+        function safReuseLink(id, siteId) {
             if (!_safLink) { _safLink = core.url.script('otwc_siteaccess_sl'); }
-            return `${_safLink}&recId=${id}&edit=T&reUse=T`
+            return `${_safLink}&recId=${id}&edit=T&reUse=T${siteId ? `&siteId=${siteId}` : ''}`
         }
 
         class TWCSiteTable {
@@ -25,7 +25,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     noSort: true,
                     sortIdx: 0,
                     initValue: (d) => {
-                        return `<a href="${safReuseLink(d.id)}">re-use</a>`;
+                        return `<a href="#" class="twc-saf-reuse" data-id="${d.id}">re-use</a>`;
                     }
                 })
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
@@ -35,9 +35,47 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     fitContainer: false
                 });
 
+                // @@NOTE: delegated so it survives table refresh / sort
+                jQuery('#twc_sites_table').on('click', '.twc-saf-reuse', e => {
+                    e.preventDefault();
+                    var safId = jQuery(e.currentTarget).data('id');
+                    var saf = this.#page.data.data.safInfo.safs.find(s => { return s.id == safId });
+                    if (saf) { this.reUseSaf(saf); }
+                });
+
             }
 
             get table() { return this.#table.table; }
+
+            reUseSaf(saf) {
+                var sites = this.#page.data.data.safInfo.sites.map(s => { return { value: s.id, text: s.name } });
+                // @@NOTE: the SAF site may not be in the list (e.g. non public site for non employees), make sure it is there so it can be preselected
+                if (!sites.find(s => { return s.value == saf.site_id })) {
+                    sites.unshift({ value: saf.site_id, text: saf.site_id_text });
+                }
+
+                var formConfig = {
+                    controls: [
+                        { type: twcUI.CTRL_TYPE.DROPDOWN, id: 'reuse-site', label: 'Site', dataSource: sites, value: saf.site_id, allowAll: false, width: '100%', mandatory: true, lineBreak: true },
+                    ]
+                }
+                var form = twcUI.init(formConfig);
+                dialog.open({
+                    title: `Re-use SAF ${saf.name}`,
+                    content: form.ui,
+                    size: { width: '450px', height: '200px' },
+                    ok: () => {
+                        try {
+                            var values = form.getValues(true);
+                            location.href = safReuseLink(saf.id, values['reuse-site'].value);
+                            return true;
+                        } catch (error) {
+                            dialog.error(error);
+                            return false;
+                        }
+                    }
+                });
+            }
 
             colInit(tbl, col) {
                 if (col.id == 'id') { return false; }
