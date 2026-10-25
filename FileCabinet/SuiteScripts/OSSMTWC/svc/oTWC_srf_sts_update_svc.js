@@ -41,7 +41,7 @@ define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
                     // @@TODO: we should probably  call setSRFCompleteStatus
 
                     recu.submit(twcSrf.Type, srf.id, twcSrf.Fields.SRF_STATUS, twcUtils.SrfStatus.Completed);
-                    if (core.env.units < 50) {
+                    if (core.env.units() < 50) {
                         restart = 'RESTART';
                         return false;
                     }
