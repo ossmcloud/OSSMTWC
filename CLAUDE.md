@@ -123,9 +123,13 @@ Each page is five pieces — copy `ui/oTWC_siteInfo_*` when adding one:
 
 `.docs/` (outdated — see above), `data_nx/`, `FileCabinet/Templates/`, `Objects/`, `AccountConfiguration/`, `FileUtils/`, `.temp/`.
 
-Do **not** ignore these, even though they look like leftovers:
+Ignore the following files as they only contain test/debug code:
+- FileCabinet\SuiteScripts\OSSMTWC\oTWC_controls_sl.js
+- FileCabinet\SuiteScripts\OSSMTWC\oTWC_controls_cs.js
+- FileCabinet\SuiteScripts\OSSMTWC\oTWC_otop_test.js (TOTP generator, only loaded by the two files above)
+
+Do **not** ignore this, even though it looks like a leftover:
 - `XML/oTwc_print_SDS.xml` — the template `modules/oTWC_sdsRender.js` uses to build the SDS PDF.
-- `oTWC_otop_test.js` — despite the name, a TOTP (one-time code) generator loaded by `oTWC_controls_sl.js` / `oTWC_controls_cs.js`.
 
 ## Known issues (don't "discover" these again)
 
