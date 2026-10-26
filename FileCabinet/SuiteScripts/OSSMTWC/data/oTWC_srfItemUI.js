@@ -153,7 +153,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var fields = {};
             var noSort = undefined;
-            if (readOnly && stepType == twcSrf.StepType.TME) {
+            // @@NOTE: TME / ATME / FEEDER tables show parent / child rows (view and edit mode), see oTWC_srfUI.js: flattenSrfItems
+            if (stepType != twcSrf.StepType.GIE) {
                 noSort = true;
                 fields['expand'] = { title: '', nullText: '', noFilter: true, noSort: true, styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
             }
@@ -234,7 +235,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 );
             }
 
-            // @@NOTE: function formatValue for each table column is replicated on the UI (FileCabinet\SuiteScripts\OSSMTWC\ui\modules\oTWC_siteRequestUtils.js)
+            // @@NOTE: function formatValue for each table column is replicated on the UI (FileCabinet\SuiteScripts\OSSMTWC\ui\js\oTWC_spaceRequest.js)
             //         any change here needs to be reflected there
             for (var k in fields) {
                 if (k == 'expand') { continue; }
@@ -244,6 +245,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         return `
                             <div style="text-decoration: line-through; color: var(--label-color);">${data.swappedItem[column.id] || '&nbsp;'}</div>
                             <div style="font-weight: bold; color: var(--accent-fore-color);">${formattedValue}</div>
+                        `
+                    }
+                    // @@NOTE: edit mode TME related items (child rows): the old values are on the item, the new ones on 'swapItem'
+                    if (data.swapItem && data.swapItem[column.id] != value) {
+                        return `
+                            <div style="text-decoration: line-through; color: var(--label-color);">${formattedValue}</div>
+                            <div style="font-weight: bold; color: var(--accent-fore-color);">${data.swapItem[column.id + '_name'] || data.swapItem[column.id] || '&nbsp;'}</div>
                         `
                     }
                     return formattedValue;

@@ -207,6 +207,9 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
             } else if (context.request.parameters.action == 'get-equipment-children') {
                 return { data: twcSiteRequestUtils.getEquipmentChildren(JSON.parse(context.request.body)) }
 
+            } else if (context.request.parameters.action == 'get-srf-parent-refs') {
+                return { data: twcSiteRequestUtils.getSrfParentRefRows(JSON.parse(context.request.body).tmeIds) }
+
             } else if (context.request.parameters.action == 'get-workflow') {
                 return twcSrfWorkflowEngine.getWorkFlow(userInfo, JSON.parse(context.request.body))
 

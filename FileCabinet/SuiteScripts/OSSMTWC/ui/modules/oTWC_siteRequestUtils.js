@@ -112,6 +112,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     ${structureFilter}
                     order by eq.name
                 `
+            
+            
             return coreSQL.run(sql);
         }
         function getEquipmentChildren(options) {
@@ -645,6 +647,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
 
             getSRFInfoPanels: twcSrfUI.getSRFInfoPanels,
+            getSrfParentRefRows: twcSrfUI.getSrfParentRefRows,
             getSrfChildRecord: (options, userInfo) => {
                 var srf = twcSrf.get(options.srf.id);
                 srf.copyFromObject(options.srf);

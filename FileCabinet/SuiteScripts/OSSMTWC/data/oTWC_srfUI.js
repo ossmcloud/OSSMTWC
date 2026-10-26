@@ -240,31 +240,79 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             items = tempItems;
             return items;
         }
-        function filterSrfItems(dataSource, stepType, readOnly) {
+        // @@NOTE: builds the (grayed out) parent rows of the ATME / FEEDER tables: these are the existing TME equipment the SRF items are attached to (TME_ID)
+        //         they are NOT part of the SRF, they are only displayed (flag: parentRef), the id is prefixed so it cannot clash with an SRF item id
+        //         also called from the client (action: get-srf-parent-refs) when an ATME / FEEDER item is attached to a TME not shown yet
+        function getSrfParentRefRows(tmeIds) {
+            tmeIds = (tmeIds || []).map(id => { return parseInt(id); }).filter(id => { return id > 0; });
+            if (tmeIds.length == 0) { return []; }
+            var tmes = twcEq.select({ where: `and id in (${tmeIds.join(',')})`, useNames: true });
+            return tmes.map(eq => {
+                var row = { id: `ref_${eq.id}`, parentRef: true };
+                core.array.each(SWAPPED_ITEM_FIELDS, f => {
+                    row[f.srf] = eq[f.eq];
+                    if (eq[f.eq + '_name']) { row[f.srf + '_name'] = eq[f.eq + '_name']; }
+                })
+                row.name = eq[twcEq.Fields.NAME];
+                row.expand = `<span class="twc-srf-item-expand" data-collapsed="${TME_CHILD_COLLAPSED}">${TME_CHILD_COLLAPSED ? '+' : '-'}</span>`;
+                return row;
+            })
+        }
+
+        // @@IMPORTANT: this logic is replicated on the client (FileCabinet\SuiteScripts\OSSMTWC\ui\js\oTWC_spaceRequest.js: renderStepTable) any change here needs to be reflected there
+        // @@NOTE: flattens the srf items of a step into parent / child rows (flag: childRow):
+        //              TME           : SRF TME followed by its related ATME / FEEDER srf items (flag: child)
+        //              ATME / FEEDER : existing TME (grayed out, not part of the SRF, flag: parentRef) followed by the srf items attached to it (TME_ID)
+        //              GIE           : flat list
+        function flattenSrfItems(dataSource, stepType) {
             var tempItems = dataSource.filter(i => { return i[twcSrfItem.Fields.STEP_TYPE] == stepType; })
-            if (readOnly && stepType == twcSrf.StepType.TME) {
-                items = [];
+            var items = [];
+            if (stepType == twcSrf.StepType.TME) {
                 core.array.each(tempItems, tempItem => {
                     items.push(tempItem);
-                    if (tempItem.relatedItems) {
-                        core.array.each(tempItem.relatedItems, ri => {
-                            items.push(ri);
-                        })
-                    }
+                    core.array.each(tempItem.relatedItems, ri => {
+                        ri.childRow = true;
+                        items.push(ri);
+                    })
                 })
-                return items
+
+            } else if (stepType == twcSrf.StepType.ATME || stepType == twcSrf.StepType.FEEDER) {
+                var tmeIds = [];
+                core.array.each(tempItems, i => {
+                    var tmeId = i[twcSrfItem.Fields.TME_ID];
+                    if (tmeId && tmeIds.indexOf(tmeId) < 0) { tmeIds.push(tmeId); }
+                })
+                var parentRefs = getSrfParentRefRows(tmeIds);
+                core.array.each(tempItems, i => {
+                    // @@NOTE: no TME (or TME not found) => plain row
+                    var parentRef = parentRefs.find(p => { return p[twcSrfItem.Fields.EQUIPMENT_ID] == i[twcSrfItem.Fields.TME_ID]; });
+                    if (!parentRef) { items.push(i); }
+                })
+                core.array.each(tmeIds, tmeId => {
+                    var parentRef = parentRefs.find(p => { return p[twcSrfItem.Fields.EQUIPMENT_ID] == tmeId; });
+                    if (!parentRef) { return; }
+                    items.push(parentRef);
+                    core.array.each(tempItems, i => {
+                        if (i[twcSrfItem.Fields.TME_ID] != parentRef[twcSrfItem.Fields.EQUIPMENT_ID]) { return; }
+                        i.childRow = true;
+                        items.push(i);
+                    })
+                })
+
             } else {
-                return tempItems;
+                items = tempItems;
             }
+            return items;
         }
-        function getTmeFields(items, userInfo, dataSource, readOnly) {
-            var fields = twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.TME, filterSrfItems(items, twcSrf.StepType.TME, readOnly), readOnly);
-            if (readOnly) {
-                fields.fields.expand.title = `<span class="twc-srf-item-expand-all" data-collapsed="${TME_CHILD_COLLAPSED}">${TME_CHILD_COLLAPSED ? '+' : '-'}</span>`;
-            }
+        function getStepFields(items, userInfo, dataSource, stepType, readOnly) {
+            var fields = twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, stepType, flattenSrfItems(items, stepType), readOnly);
+            if (stepType == twcSrf.StepType.GIE) { return fields; }
+
+            fields.fields.expand.title = `<span class="twc-srf-item-expand-all" data-collapsed="${TME_CHILD_COLLAPSED}">${TME_CHILD_COLLAPSED ? '+' : '-'}</span>`;
             fields.onRowInit = (table, row) => {
-                if (row.data.child) {
-                    row.cssClass += 'o-row-child';
+                if (row.data.parentRef) { row.cssClass += ' o-row-ref'; }
+                if (row.data.childRow) {
+                    row.cssClass += ' o-row-child';
                     if (TME_CHILD_COLLAPSED) { row.cssClass += ' o-row-hidden'; }
                 }
             }
@@ -297,10 +345,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
             var items = getSrfItems(dataSource, userInfo, readOnly);
-            fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 6 (TME)', fields: [getTmeFields(items, userInfo, dataSource, readOnly)] });
-            fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 6 (ATME)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.ATME, filterSrfItems(items, twcSrf.StepType.ATME, readOnly), readOnly)] });
-            fieldGroup.controls.push({ id: 'site-request-step-4', title: 'Step 3 of 6 (Feeders)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.FEEDER, filterSrfItems(items, twcSrf.StepType.FEEDER, readOnly), readOnly)] });
-            fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 4 of 6 (GIE)', fields: [twcSrfItemUI.getStepTableUIControl(userInfo, dataSource, twcSrf.StepType.GIE, filterSrfItems(items, twcSrf.StepType.GIE, readOnly), readOnly)] });
+            fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 6 (TME)', fields: [getStepFields(items, userInfo, dataSource, twcSrf.StepType.TME, readOnly)] });
+            fieldGroup.controls.push({ id: 'site-request-step-2', title: 'Step 2 of 6 (ATME)', fields: [getStepFields(items, userInfo, dataSource, twcSrf.StepType.ATME, readOnly)] });
+            fieldGroup.controls.push({ id: 'site-request-step-4', title: 'Step 3 of 6 (Feeders)', fields: [getStepFields(items, userInfo, dataSource, twcSrf.StepType.FEEDER, readOnly)] });
+            fieldGroup.controls.push({ id: 'site-request-step-3', title: 'Step 4 of 6 (GIE)', fields: [getStepFields(items, userInfo, dataSource, twcSrf.StepType.GIE, readOnly)] });
             fieldGroup.controls.push({ id: 'site-request-step-5', title: 'Step 5 of 6 (Attachments)', fields: [twcSrfItemUI.getFileTableUIControl(userInfo, dataSource)] });
 
             var step5 = {
@@ -428,6 +476,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             getSrfTableFields: getSrfTableFields,
             getSRFInfoPanels: getSRFUIPanels,
             getSrfChildRecord: getSrfChildRecord,
+            getSrfParentRefRows: getSrfParentRefRows,
 
             getSrfListPanel: getSRFInfoPanels_Existing
 

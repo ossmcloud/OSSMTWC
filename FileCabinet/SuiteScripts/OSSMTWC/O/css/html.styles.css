@@ -193,6 +193,22 @@ div.o-row-hidden {
 div.o-row-child>div {
     border: none !important;
 }
+div.o-row-child>div:nth-child(2) {
+    border-left: var(--grid-border) dotted var(--grid-color) !important;
+}
+div.o-row-child:last-child>div {
+    border-bottom: var(--grid-border) dotted var(--grid-color) !important;
+}
+div.o-row-child:last-child>div:first-child {
+    border: none !important;
+}
+/* @@NOTE: grayed out parent rows, displayed only (i.e.: SRF ATME / FEEDER tables, existing TME not part of the SRF) */
+div.o-row-ref>div,
+div.o-row-ref:hover>div {
+    color: var(--label-color);
+    background-color: var(--input-bkgd-color-disabled);
+    font-style: italic;
+}
 
 div.o-row-selected>div {
     color: var(--accent-fore-color);
