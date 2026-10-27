@@ -136,7 +136,29 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.#dataSource = dataSource;
                 if (!this.#dataSource) { this.#dataSource = []; }
 
-                this.#ui.find('data').html(JSON.stringify(dataSource));
+                // @@NOTE: only update the data blob (base64, same as render) - a plain find('data') would also overwrite the options blob
+                this.#ui.find(`#${this.#options.id}_data`).html(b64.encode(JSON.stringify(this.#dataSource)));
+
+                // @@NOTE: drop any selected value that is not in the new list, then apply the same auto-select rule as render()
+                var oldValue = this.#ui.attr('data-value') || '';
+                var newValue = '';
+                if (this.multiSelect) {
+                    newValue = oldValue.split(',').filter(v => { return v && this.#dataSource.find(ds => { return ds.value == v; }); }).join(',');
+                } else if (oldValue == '@@NONE@@' || this.#dataSource.find(ds => { return ds.value == oldValue; })) {
+                    newValue = oldValue;
+                }
+                if (!newValue && this.#dataSource.length == 1 && !this.#options.noAutoSelect) {
+                    newValue = this.#dataSource[0].value?.toString() || '';
+                }
+
+                this.#ui.attr('data-value', newValue);
+                if (this.multiSelect) {
+                    this.setMultiTextValue(newValue);
+                } else {
+                    this.#input.val(this.valueObj?.text || '');
+                }
+
+                if (newValue != oldValue) { this.on('change'); }
             }
 
             getDataSource(val) {

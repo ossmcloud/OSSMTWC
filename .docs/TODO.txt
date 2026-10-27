@@ -1,9 +1,27 @@
+Re-Use SAF
+
+For either Option A or Option B:
+x - The SAF Type is re-used
+- The Primary Contractor and Customer values are re-used IF, in each case, the company has an Accreditation Status of Accredited or ACA to be Renewed, ELSE the SAF Re-Use is rejected
+x - The Time Blocks are cleared and must be entered anew
+x - The Summary of Work text is re-used
+- The PICW is re-used IF the person is currently accredited and valid for PICW, ELSE must be entered anew
+- Each of the crew is re-used IF, in each case, the person is currently accredited, ELSE is removed
+- Each of the documentation is re-used IF, in each case, the document state is ok, ELSE is removed
+
+For Option A - same site
+x - The original target site is reused
+x - The Mast Access, TL Building Access, Electrical Works, Crane/Cherry Picker, Drone Use flags are all set as per the original SAF
+- The Structure and Accommodation fields are all set as per the original SAF
+
+For Option B - different site
+- The target site must be selected for the new SAF
+- The Electrical Works and Drone Use flags are all set as per the original SAF
+- The Mast Access, TL Building Access and Crane/Cherry Picker all need to be cleared and entered anew for the new SAF
+- The Structure and Accommodation fields are not reused and must be entered anew as appropriate
 
 
-2026-10-04: 
-    SWAP
-    issue 239
-    issue 204
+
 
 
 SRF Swap:
@@ -14,18 +32,10 @@ SRF Swap:
     Save, the related item is not deleted
         when unchecking a related swap item that was saved, ask for deletion and add item to .deleted_items collection
 
-    Test SAF against Swap SRF
-        move children once installed
-        
-        SRF0000121
-        SRF0000123
-
 SRF:
     If we remove an item (install or swap) after the equipment is created we should delete the equipment I guess????
     after status is SRFApproved wse should not let edit items
 
-Re-Use SAF
-    see Mark long post
 
 Workflow:
 	Planned dates 

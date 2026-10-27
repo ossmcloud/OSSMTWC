@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_icons.js', '../../data/oTWC_srf.js', '../../data/oTWC_saf.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_safUI.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js'],
-    (core, coreSQL, twcUtils, twcIcons, twcSrf, twcSaf, twcSrfUI, twcSafUI, twcSite, twcSiteUI, twcUI, twcConfig) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', '../../data/oTWC_utils.js', '../../data/oTWC_icons.js', '../../data/oTWC_srf.js', '../../data/oTWC_saf.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_safUI.js', '../../data/oTWC_site.js', '../../data/oTWC_siteUI.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_config.js', '../../data/oTWC_company.js', '../../data/oTWC_profile.js'],
+    (core, coreSQL, twcUtils, twcIcons, twcSrf, twcSaf, twcSrfUI, twcSafUI, twcSite, twcSiteUI, twcUI, twcConfig, twcCompany, twcProfile) => {
 
         function formatUserFields(fields, userFields) {
             var sqlFields = '';
@@ -72,14 +72,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
+            var sql = `
+                select  ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO}, 
+                        comp.id as cust_submit_by_company, comp.name as cust_submit_by_company_name,
 
-            var srfs = coreSQL.run(`
-                select  ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO}
                 from    ${twcSrf.Type} s
                 join    ${twcSite.Type} site on site.id = s.${twcSrf.Fields.SITE}
+                left join    ${twcProfile.Type} prof on prof.id = s.${twcSrf.Fields.SRF_SUBMITTED_BY}
+                left join    ${twcCompany.Type} comp on comp.id = prof.${twcProfile.Fields.COMPANY}
                 ${whereClause} 
                 ${orderBy}
-            `)
+            `;
+            var srfs = coreSQL.run(sql)
 
 
             return {

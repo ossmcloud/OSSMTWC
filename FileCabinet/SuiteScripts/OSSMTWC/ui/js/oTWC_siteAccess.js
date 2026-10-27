@@ -1104,7 +1104,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var html = jQuery(`
                     <div>
                         ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, id: 'upload-photo-button', value: 'Upload Photo' })}
-                        ${twcUI.render({ type: twcUI.CTRL_TYPE.FILE, id: 'upload-photo', accept: '.jpg, .jpeg, .png', hide: true })}
+                        ${twcUI.render({ type: twcUI.CTRL_TYPE.FILE, id: 'upload-photo', hide: true })}
                         <div id="upload-photo-list" class="twc-div-table-r">
                         </div>
                     </div>

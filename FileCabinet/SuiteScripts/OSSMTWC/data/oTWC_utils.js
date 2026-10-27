@@ -40,10 +40,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const EQ_ACTION_TYPE = {
-            Install: 1,
-            Remove: 2,
-            Licence: 3,
-            Unlicence: 4,
+            Licence: 1,
+            Unlicence: 2,
             SwapLicence: 5,
             SwapUnlicence: 6
         }
@@ -1076,6 +1074,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getCompanies(o);
         }
 
+        function getCompaniesSrf(userInfo) {
+            var o = JSON.parse(JSON.stringify(userInfo));
+            o.srf = true;
+            return getCompanies(o);
+        }
+
 
         function getProfiles(options) {
             var filters = '';
@@ -1202,14 +1206,26 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `)
         }
 
-        function getSafDropDown(options) {
+        function getSafDropDown(userInfo) {
+            var whereClause = 'where 1 = 1 ';
+            if (userInfo.companyProfile?.isBoth) {
+                whereClause += `and (
+                       custrecord_twc_saf_primary_contractor = ${userInfo.companyProfile.id || 0}
+                    or custrecord_twc_saf_customer = ${userInfo.companyProfile.id || 0}
+                )`;
+            } else if (userInfo.companyProfile?.isVendor) {
+                whereClause += `and custrecord_twc_saf_primary_contractor = ${userInfo.companyProfile.id || 0}`;
+            } else if (userInfo.companyProfile?.isCustomer) {
+                whereClause += `and custrecord_twc_saf_customer = ${userInfo.companyProfile.id || 0}`;
+            }
+
             var siteSafs = [];
             coreSQL.each(`
                 select  saf.id as value, saf.name, BUILTIN.DF(saf.custrecord_twc_saf_type) as type, saf.custrecord_twc_saf_start_time_block as date, c.name as customer,
                         BUILTIN.DF(saf.custrecord_twc_saf_site) as site
                 from    customrecord_twc_saf saf
                 join    customrecord_twc_company c on c.id = saf.custrecord_twc_saf_customer
-                where   saf.custrecord_twc_saf_site = ${options.siteId}
+                ${whereClause}
                 order by saf.custrecord_twc_saf_start_time_block desc
             `, saf => {
                 siteSafs.push({
@@ -1686,6 +1702,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getTktImages: getTktImages,
             getProfiles: getProfiles,
             getCompanies: getCompanies,
+            getCompaniesSrf: getCompaniesSrf,
             getCustomers: getCustomers,
             getVendors: getVendors,
             getEquipmentIds: getEquipmentIds,

@@ -207,7 +207,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     select  act.id as act_id, act.custrecord_twc_eq_action_eq as eq_id, BUILTIN.DF(act.custrecord_twc_eq_action_eq) as eq_name, act.custrecord_twc_eq_action_srf_item as srf_item
                     from    customrecord_twc_eq_action as act
                     where   act.custrecord_twc_eq_action_srf = ${dataSource.id}
-                    and     act.custrecord_twc_eq_action_type = ${twcUtils.EqActionType.Install}
+                    and     act.custrecord_twc_eq_action_type = ${twcUtils.EqActionType.SwapLicence}
                 `)
             }
             var tempItems = [];
@@ -286,9 +286,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (userInfo.isEmployee) {
                 basicInfo.fields.push({ id: twcSrf.Fields.SRF_TYPE, label: 'SRF Type', dataSource: twcUtils.getSrfTypes(), allowAll: false })
                 basicInfo.fields.push({ id: twcSrf.Fields.REVENUE_IMPACTING, label: 'Revenue Impacting', dataSource: twcUtils.getSrfRevenueImpact(), allowAll: false })
+                basicInfo.fields.push({ id: twcSrf.Fields.SRF_STATUS, lineBreak: true })
 
-
-                basicInfo.fields.push({ id: twcSrf.Fields.SRF_STATUS })
+                basicInfo.fields.push({ id: twcSrf.Fields.TL_NOTES, width: '100%', rows: 3 })
             }
 
             var items = getSrfItems(dataSource, userInfo, readOnly);

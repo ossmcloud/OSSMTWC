@@ -10,6 +10,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CLASS: 'custrecord_twc_eq_type_class',
             CREATE_LIBRARY_ITEM: 'custrecord_twc_eq_type_create_lib_item',
             SORT_INDEX: 'custrecord_twc_eq_type_index',
+            NO_INFRASTRUCTURE: 'custrecord_twc_eq_type_no_infra',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -20,6 +21,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CLASS: { name: 'custrecord_twc_eq_type_class', type: 'select', alias: 'class', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_class' },
             CREATE_LIBRARY_ITEM: { name: 'custrecord_twc_eq_type_create_lib_item', type: 'checkbox', alias: 'createLibraryItem', display: 'normal', mandatory: false },
             SORT_INDEX: { name: 'custrecord_twc_eq_type_index', type: 'integer', alias: 'sortIndex', display: 'normal', mandatory: false },
+            NO_INFRASTRUCTURE: { name: 'custrecord_twc_eq_type_no_infra', type: 'checkbox', alias: 'noInfrastructure', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -53,6 +55,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.SORT_INDEX);
             } set sortIndex(value) {
                 this.set(_recordFields.SORT_INDEX, value)
+            }
+            
+            get noInfrastructure() {
+                return this.get(_recordFields.NO_INFRASTRUCTURE);
+            } set noInfrastructure(value) {
+                this.set(_recordFields.NO_INFRASTRUCTURE, value)
             }
             
             get created() {
