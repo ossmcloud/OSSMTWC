@@ -29,7 +29,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     layoutType: serverWidget.FieldLayoutType.OUTSIDE
                 });
 
-                renderPowerReadings(context, htmlField);
+                renderPowerReadings(context, htmlField)
+                context.form.clientScriptModulePath = './oTWC_pwr_read_functionality_cs.js';
+                let meter=  context.newRecord.getValue('custrecord_twc_pwr_rdg_pwr_mtr')
+                context.form.addButton({
+                    id: 'custpage_update_reading_status',
+                    label: 'Update Latest status',
+                    functionName: "updateSelectedReadingStatus('" + meter + "')"
+                });
             }
             catch (err) {
                 log.error("error@beforeLoad", err)
@@ -127,17 +134,22 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             const sql = `
             SELECT
                 id AS internalid,
+                created as created,
                 custrecord_twc_pwr_rdg_id AS readingid,
                 BUILTIN.DF(custrecord_twc_pwr_rdg_pwr_mtr) AS meter,
                 custrecord_twc_pwr_rdg_date as reading_date,
-                created
+                custrecord_twc_pwr_rdg_day as day_reading,
+                custrecord_twc_pwr_rdg_night as night_reading,
+                custrecord_twc_pwr_rdg_peak_meter_wrap as peak_mtr_wrap,
+                custrecord_twc_pwr_rdg_kwh_usage as kwh_usage,
+                BUILTIN.DF(custrecord_twc_pwr_rdg_reading_status) as status
             FROM
                 customrecord_twc_pwr_rdg
             WHERE
                 custrecord_twc_pwr_rdg_pwr_mtr = ? 
                 ${whereClause}
             ORDER BY
-                created DESC
+                 created
         `;
 
             return query.runSuiteQL({
@@ -213,16 +225,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             html += '}';
 
             html += '</style>';
-
-            // html += '<div style="overflow-x:auto;">';
-            html += '<div style="width: 340%; margin:0; padding:0; overflow-x:auto;">';
-            html += '<table class="pwr-rdg-sublist">';
+            html += '<div style="width:100%; margin:0; padding:0; overflow-x:auto;">';
+            html += '<table class="pwr-rdg-sublist" style="width:100%; table-layout:fixed;">';
             html += '<thead><tr>';
-            html += '<th>Internal ID</th>';
-            html += '<th>Reading ID</th>';
-            html += '<th>Meter</th>';
-            html += '<th>Reading Date</th>';
-            html += '<th>Created</th>';
+            html += '<th style="width:9%; white-space:normal; word-wrap:break-word;">Select to update latest</th>';
+            html += '<th style="width:8%;">Internal ID</th>';
+            html += '<th style="width:9%;">Reading ID</th>';
+            html += '<th style="width:13%;">Meter</th>';
+            html += '<th style="width:13%;">Reading Status</th>';
+            html += '<th style="width:12%;">Reading Date</th>';
+            html += '<th style="width:12%;">Day Reading</th>';
+            html += '<th style="width:12%;">Night Reading</th>';
+            html += '<th style="width:13%;">Peak Meter Wrap</th>';
+            html += '<th style="width:15%;">kWh Usage - Reading</th>';
             html += '</tr></thead>';
             html += '<tbody>';
 
@@ -247,11 +262,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 data.forEach(function (row) {
 
                     html += '<tr>';
+                    html += '<td><input type="checkbox" class="pwr-reading-select" value="' + escapeHtml(row.internalid) + '"></td>';
                     html += '<td>' + escapeHtml(row.internalid) + '</td>';
                     html += '<td>' + escapeHtml(row.readingid) + '</td>';
                     html += '<td>' + escapeHtml(row.meter) + '</td>';
+                    html += '<td>' + escapeHtml(row.status) + '</td>';
                     html += '<td>' + escapeHtml(row.reading_date) + '</td>';
-                    html += '<td>' + escapeHtml(row.created) + '</td>';
+                    html += '<td>' + escapeHtml(row.day_reading) + '</td>';
+                    html += '<td>' + escapeHtml(row.night_reading) + '</td>';
+                    html += '<td>' + escapeHtml(row.peak_mtr_wrap) + '</td>';
+                    html += '<td>' + escapeHtml(row.kwh_usage) + '</td>';
                     html += '</tr>';
 
                 });
@@ -260,6 +280,21 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             html += '</tbody>';
             html += '</table>';
             html += '</div>';
+
+            html += '<script>';
+            html += '(function () {';
+            html += '    var container = document.getElementById("powerReadingDiv");';
+            html += '    if (!container || container.dataset.checkboxListenerAdded) return;';
+            html += '    container.dataset.checkboxListenerAdded = "true";';
+            html += '    container.addEventListener("change", function (event) {';
+            html += '        if (event.target && event.target.classList.contains("pwr-reading-select") && event.target.checked) {';
+            html += '            container.querySelectorAll(".pwr-reading-select").forEach(function (checkbox) {';
+            html += '                if (checkbox !== event.target) checkbox.checked = false;';
+            html += '            });';
+            html += '        }';
+            html += '    });';
+            html += '})();';
+            html += '</script>';
 
             return html;
         }
