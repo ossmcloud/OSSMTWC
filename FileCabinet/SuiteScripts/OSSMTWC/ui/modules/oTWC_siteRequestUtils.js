@@ -616,6 +616,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         { name: `BUILTIN.DF(${twcEquipment.Fields.PARENT_TME_ID})`, alias: twcEquipment.Fields.PARENT_TME_ID },
                         { name: twcEquipment.Fields.MAKE },
                         { name: twcEquipment.Fields.MODEL },
+                        { name: twcEquipment.Fields.HEIGHT_ON_TOWER_M },
+                        { name: twcEquipment.Fields.AZIMUTH },
+                        // @@NOTE: feeder type is held in the equipment 'Type Opt' field (custrecord_twc_equip_opt_type)
+                        { name: `BUILTIN.DF(${twcEquipment.Fields.OPT_TYPE})`, alias: twcEquipment.Fields.OPT_TYPE },
+                        { name: twcEquipment.Fields.B_END },
                     ]
                 },
                 orderBy: ['id'],

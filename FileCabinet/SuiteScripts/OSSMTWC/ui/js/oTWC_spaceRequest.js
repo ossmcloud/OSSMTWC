@@ -777,12 +777,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         var html = jQuery(`
                             <div class="twc-div-table-r twc-div-table-rh">
                                 <div style="position: sticky; top: -7px;">
-                                    <div></div>
+                                    <div style="width: 30px; text-align: center; padding: 0px;"><span class="twc-srf-item-expand-all" data-collapsed="false">-</span></div>
                                     <div>Equipment</div>
                                     <div>Class</div>
                                     <div>Type</div>
                                     <div>Make</div>
                                     <div>Model</div>
+                                    <div>Height on Tower</div>
+                                    <div>Azimuth</div>
+                                    <div>Feeder Type</div>
+                                    <div>B-End</div>
                                     <div>Action</div>
                                     <div>Status</div>
                                     <div>SAF</div>
@@ -791,12 +795,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             </div>
                         `);
 
+                        // @@NOTE: header / child collapse: a header is an equipment action on a TME / GIE (or on an ATME / Feeder whose parent has no action in this SRF)
+                        //         its children are the following ATME / Feeder actions of the same group (same sort_idx) and all the SAF action rows of the group
+                        //         rows are tagged with data-eqa-group, children also get 'twc-eqa-child' (hidden via 'o-row-hidden')
                         var sortIdx = '';
+                        var groupId = 0;
+                        var hasHeader = false;
                         core.array.each(res.eqActions, eqAction => {
                             if (sortIdx != eqAction.sort_idx) {
                                 html.append(`<div style="border-top: 1px solid var(--grid-color); height: 11px;"></div>`);
                                 sortIdx = eqAction.sort_idx;
+                                hasHeader = false;
                             }
+                            var isChild = hasHeader && !!eqAction[twcEquipment.Fields.PARENT_TME_ID];
+                            if (!isChild) { groupId++; hasHeader = true; }
                             var safLink = '';
                             // if (eqAction[twcEqAct.Fields.EA_SAF]) {
                             //     safLink = `${safLinkBase}&recId=${eqAction[twcEqAct.Fields.EA_SAF]}`;
@@ -805,13 +817,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             var padding = eqAction[twcEquipment.Fields.PARENT_TME_ID] ? 'style="padding-left: 27px; font-style: italic; color: silver;"' : '';
                             var icon = eqAction[twcEqAct.Fields.EA_STATUS] == twcUtils.EqActionStatus.Complete ? twcIcons.get('checkBox', 16, 'lime') : '';
                             var eqActionHtml = jQuery(`
-                                <div>
-                                    <div style="width: 20px; text-align: center;">${icon}</div>
-                                    <div ${padding}>${eqAction[twcEqAct.Fields.EA_EQUIPMENT + '_name']}</div>
+                                <div class="${isChild ? 'twc-eqa-child' : 'twc-eqa-header'}" data-eqa-group="${groupId}">
+                                    <div class="twc-eqa-toggle" style="width: 30px; text-align: center; padding: 0px;"></div>
+                                    <div ${padding}>${icon}${eqAction[twcEqAct.Fields.EA_EQUIPMENT + '_name']}</div>
                                     <div>${eqAction[twcEquipment.Fields.EQUIPMENT_CLASS]}</div>
                                     <div>${eqAction[twcEquipment.Fields.EQUIPMENT_TYPE]}</div>
                                     <div>${eqAction[twcEquipment.Fields.MAKE] || ''}</div>
                                     <div>${eqAction[twcEquipment.Fields.MODEL] || ''}</div>
+                                    <div>${eqAction[twcEquipment.Fields.HEIGHT_ON_TOWER_M] ?? ''}</div>
+                                    <div>${eqAction[twcEquipment.Fields.AZIMUTH] ?? ''}</div>
+                                    <div>${eqAction[twcEquipment.Fields.OPT_TYPE] || ''}</div>
+                                    <div>${eqAction[twcEquipment.Fields.B_END] || ''}</div>
                                     <div>${eqAction[twcEqAct.Fields.EA_TYPE + '_name']}</div>
                                     <div>${eqAction[twcEqAct.Fields.EA_STATUS + '_name']}</div>
                                     <div>${safLink}</div>
@@ -834,7 +850,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     icon = twcIcons.get('sadFace', 16, 'red');
                                 }
                                 var safActionHtml = jQuery(`
-                                    <div>
+                                    <div class="twc-eqa-child" data-eqa-group="${groupId}">
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
                                         <div></div>
                                         <div></div>
                                         <div></div>
@@ -857,6 +877,35 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             // }
                         })
 
+                        // @@NOTE: only headers that actually have children get the +/- toggle (expanded by default)
+                        html.find('.twc-eqa-header').each((idx, el) => {
+                            var header = jQuery(el);
+                            if (html.find(`.twc-eqa-child[data-eqa-group="${header.data('eqa-group')}"]`).length > 0) {
+                                header.find('.twc-eqa-toggle').html(`<span class="twc-srf-item-expand" data-collapsed="false">-</span>`);
+                            }
+                        });
+
+                        html.find('.twc-srf-item-expand').click(e => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            var toggle = jQuery(e.currentTarget);
+                            var collapse = !(toggle.data('collapsed') || false);
+                            toggle.data('collapsed', collapse);
+                            toggle.html(collapse ? '+' : '-');
+                            var group = toggle.closest('.twc-eqa-header').data('eqa-group');
+                            html.find(`.twc-eqa-child[data-eqa-group="${group}"]`).toggleClass('o-row-hidden', collapse);
+                        });
+
+                        html.find('.twc-srf-item-expand-all').click(e => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            var toggle = jQuery(e.currentTarget);
+                            var collapse = !(toggle.data('collapsed') || false);
+                            toggle.data('collapsed', collapse);
+                            toggle.html(collapse ? '+' : '-');
+                            html.find('.twc-srf-item-expand').data('collapsed', collapse).html(collapse ? '+' : '-');
+                            html.find('.twc-eqa-child').toggleClass('o-row-hidden', collapse);
+                        });
 
                         form.html(html)
 

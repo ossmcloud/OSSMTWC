@@ -2764,7 +2764,7 @@ div.twc-dashboard-content {
 span.twc-srf-item-expand-all {
     cursor: pointer;
     padding: 7px;
-    margin-bottom: -7px;
+    
     display: block;
 }
 
