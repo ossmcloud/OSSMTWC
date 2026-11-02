@@ -16,20 +16,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         const FEATURE_ID = {
             SITE_ACCESS: 'site_access',
             SPACE_REQUEST: 'space_request',
-            TROUBLE_TICKET: 'trouble_ticket'
+            TROUBLE_TICKET: 'trouble_ticket',
+
         }
 
-
-        const TEST_ROLE = 1;
-
         function loadPermissions(roleId) {
+            // @@NOTE: Administrator (role 3) gets FULL on every feature: we must NOT join the role permissions table
+            //         or each feature is returned once per role that has a permission row for it (duplicate menu items)
+            var isAdmin = roleId == 3;
             var sql = {
                 query: `
-                    select  f.id, ${roleId == 3 ? PERMISSION_LEVEL.FULL : 'custrecord_twc_role_perm_lvl'} as lvl, custrecord_twc_role_perm_own as own, f.name as text, 
+                    select  f.id, ${isAdmin ? PERMISSION_LEVEL.FULL : 'p.custrecord_twc_role_perm_lvl'} as lvl, ${isAdmin ? 'null' : 'p.custrecord_twc_role_perm_own'} as own, f.name as text,
                             f.custrecord_twc_role_feat_script as value, f.custrecord_twc_role_feat_nomenu as no_menu, f.custrecord_twc_role_feat_id as feature_id,
                     from    customrecord_twc_role_feat  f
-                    left join    customrecord_twc_role_perm p on f.id = p.custrecord_twc_role_perm_feat
-                    ${roleId == 3 ? '' : 'where   p.custrecord_twc_role_perm_role = ?'}
+                    ${isAdmin ? '' : 'join customrecord_twc_role_perm p on f.id = p.custrecord_twc_role_perm_feat and p.custrecord_twc_role_perm_role = ?'}
                     order by f.custrecord_twc_role_feat_sort
                 `,
             }
@@ -41,7 +41,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             var permissions = coreSQL.run(sql);
-            var menuItems = [{value: '', text: '-- menu items --'}];
+            var menuItems = [{ value: '', text: '-- menu items --' }];
             core.array.each(permissions, p => {
                 if (p.no_menu == 'T') { return; }
                 menuItems.push(p);
@@ -56,20 +56,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function get(context) {
 
             var roleId = core.env.role();
-            if (TEST_ROLE) {
-                roleId = TEST_ROLE;
-            } else {
-                if (roleId != 3) {
-                    roleId = coreSQL.scalar({
-                        query: `select custrecord_twc_role as r from role where id = ?`,
-                        params: [roleId]
-                    })
-                }
 
-                // @@NOTE: if the field on role is not set we'll get null, set to zero tp avoid query below to fail 
-                if (!roleId) { roleId = 0; }
-
+            if (roleId != 3) {
+                roleId = coreSQL.scalar({
+                    query: `select custrecord_twc_role as r from role where id = ?`,
+                    params: [roleId]
+                })
             }
+
+            // @@NOTE: if the field on role is not set we'll get null, set to zero tp avoid query below to fail 
+            if (!roleId) { roleId = 0; }
+
 
             var p = loadPermissions(roleId);
             var currentPermission = p.permissions.find(p => { return p.value == context.request.parameters.script })

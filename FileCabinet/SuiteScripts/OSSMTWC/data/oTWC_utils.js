@@ -1281,8 +1281,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         case when a.custrecord_twc_eq_action_type = 2 then e.custrecord_twc_equip_ht_on_twr_m       else srfi.custrecord_twc_srf_itm_ht_on_twr          end as custrecord_twc_srf_itm_ht_on_twr,
                         case when a.custrecord_twc_eq_action_type = 2 then e.custrecord_twc_equip_azimuth           else srfi.custrecord_twc_srf_itm_azimuth            end as custrecord_twc_srf_itm_azimuth,
                         case when a.custrecord_twc_eq_action_type = 2 then e.custrecord_twc_equip_b_end             else srfi.custrecord_twc_srf_itm_b_end              end as custrecord_twc_srf_itm_b_end,
+                        case when a.custrecord_twc_eq_action_type = ${EQ_ACTION_TYPE.Unlicence} then BUILTIN.DF(e.custrecord_twc_equip_opt_type) else BUILTIN.DF(srfi.custrecord_twc_srf_itm_type_opt) end as custrecord_twc_srf_itm_type_opt_name,
 
-                        srfi.custrecord_twc_srf_itm_tme_srf as parent_srf_item, 
+                        srfi.custrecord_twc_srf_itm_tme_srf as parent_srf_item,
                         srfi.id as srf_item
                 from    customrecord_twc_eq_action a
                 join 	customrecord_twc_srf_itm srfi on srfi.id = a.custrecord_twc_eq_action_srf_item
@@ -1301,6 +1302,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
                 action['saf-detach'] = `<span class="o-table-action twc-clickable" data-action="delete">${twcIcons.get('trash', 16, 'red')}</span>`
                 action['srf_eq_action_type'] = `${action['custrecord_twc_srf_itm_req_type_name']} /  ${action['custrecord_twc_eq_action_type_name']}`;
+                // @@NOTE: single L/W/D column (the table is sent to the client as JSON so we cannot use a formatValue function)
+                action['lwd'] = formatLWD(action['custrecord_twc_srf_itm_length_mm'], action['custrecord_twc_srf_itm_width_mm'], action['custrecord_twc_srf_itm_depth_mm']);
                 if (action.parent_srf_item) {
                     var parent = srfActions.find(a => { return a.srf_item == action.parent_srf_item })
                     if (!parent.relatedItems) {
@@ -1333,6 +1336,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (saf.actionStatus) {
                 actionStatusFilter = `and sa.custrecord_twc_saf_a_status = ${saf.actionStatus}`;
             }
+            // @@NOTE: height on tower / azimuth / b-end / type opt (feeder type) as in getSrfActions: Unlicence => values from the equipment, otherwise from the SRF item
+            //         (rows from getSrfActions are added to the SAF equipment actions table client side, so the two must return the same columns)
             coreSQL.each(`
                 select  sa.id, 
                         sa.custrecord_twc_saf_a_status, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as custrecord_twc_saf_a_status_name,
@@ -1344,7 +1349,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         srfi.custrecord_twc_srf_itm_type, BUILTIN.DF(srfi.custrecord_twc_srf_itm_type) as custrecord_twc_srf_itm_type_name,
                         srfi.custrecord_twc_srf_itm_req_type, BUILTIN.DF(srfi.custrecord_twc_srf_itm_req_type) as custrecord_twc_srf_itm_req_type_name,
                         srfi.custrecord_twc_srf_itm_desc, srfi.custrecord_twc_srf_itm_length_mm, srfi.custrecord_twc_srf_itm_width_mm, srfi.custrecord_twc_srf_itm_depth_mm,
-                        srfi.custrecord_twc_srf_itm_ht_on_twr, srfi.custrecord_twc_srf_itm_azimuth, srfi.custrecord_twc_srf_itm_b_end, 
+                        case when a.custrecord_twc_eq_action_type = ${EQ_ACTION_TYPE.Unlicence} then e.custrecord_twc_equip_ht_on_twr_m              else srfi.custrecord_twc_srf_itm_ht_on_twr                  end as custrecord_twc_srf_itm_ht_on_twr,
+                        case when a.custrecord_twc_eq_action_type = ${EQ_ACTION_TYPE.Unlicence} then e.custrecord_twc_equip_azimuth                  else srfi.custrecord_twc_srf_itm_azimuth                    end as custrecord_twc_srf_itm_azimuth,
+                        case when a.custrecord_twc_eq_action_type = ${EQ_ACTION_TYPE.Unlicence} then e.custrecord_twc_equip_b_end                    else srfi.custrecord_twc_srf_itm_b_end                      end as custrecord_twc_srf_itm_b_end,
+                        case when a.custrecord_twc_eq_action_type = ${EQ_ACTION_TYPE.Unlicence} then BUILTIN.DF(e.custrecord_twc_equip_opt_type)     else BUILTIN.DF(srfi.custrecord_twc_srf_itm_type_opt)       end as custrecord_twc_srf_itm_type_opt_name,
                         srfi.custrecord_twc_srf_itm_tme_srf as parent_srf_item, srfi.id as srf_item
                 from    customrecord_twc_saf_action sa
                 join    customrecord_twc_eq_action a on a.id = sa.custrecord_twc_saf_a_ea
@@ -1581,6 +1589,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getLookUpTableValues('customrecord_twc_company',"and custrecord_twc_cus_flag = 1");
         }
 
+        // @@NOTE: Length / Width / Depth (mm) shown as a single 'L/W/D' column, e.g.: '600 / 300 / 150' (missing values as '-', all missing => '')
+        //         used on the server and on the client (SRF step tables, SAF actions, equipment / library pick lists, site equipment)
+        function formatLWD(length, width, depth) {
+            const isEmpty = (v) => { return v === null || v === undefined || v === ''; };
+            if (isEmpty(length) && isEmpty(width) && isEmpty(depth)) { return ''; }
+            return [length, width, depth].map(v => { return isEmpty(v) ? '-' : v; }).join(' / ');
+        }
 
 
         return {
@@ -1678,6 +1693,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafTimeBlocks: getSafTimeBlocks,
             getSafReviewers: getSafReviewers,
             getSafActions: getSafActions,
+            formatLWD: formatLWD,
             getSafActionDetachReason: getSafActionDetachReason,
             getSrfDropDown: getSrfDropDown,
             getSrfActions: getSrfActions,

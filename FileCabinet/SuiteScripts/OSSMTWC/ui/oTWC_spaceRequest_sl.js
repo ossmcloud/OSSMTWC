@@ -55,9 +55,16 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
                     html = html.replaceAll('{SITE_REQUEST_DETAILS}', `<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 64)}</span>`);
 
+                    // @@NOTE: developer only: lets us open the SDS Equipments dialog on any SRF (e.g.: fully processed ones)
+                    var testSdsEquipmentButton = '';
+                    if (core.me()) {
+                        testSdsEquipmentButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Test', id: 'test-sds-equipment' });
+                    }
+
                     html = html.replaceAll('<div id="custom-actions"></div>', `
                         <div id="custom-actions">
                             ${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Open SRF', id: 'open-srf' })}
+                            ${testSdsEquipmentButton}
                         </div>
                     `);
 
@@ -206,6 +213,9 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
 
             } else if (context.request.parameters.action == 'get-equipment-children') {
                 return { data: twcSiteRequestUtils.getEquipmentChildren(JSON.parse(context.request.body)) }
+
+            } else if (context.request.parameters.action == 'get-srf-parent-refs') {
+                return { data: twcSiteRequestUtils.getSrfParentRefRows(JSON.parse(context.request.body).tmeIds) }
 
             } else if (context.request.parameters.action == 'get-workflow') {
                 return twcSrfWorkflowEngine.getWorkFlow(userInfo, JSON.parse(context.request.body))

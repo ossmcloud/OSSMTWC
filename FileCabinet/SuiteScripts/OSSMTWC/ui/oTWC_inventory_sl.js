@@ -33,7 +33,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 let actions = '';
 
-                // @@NOTES: User can add Inventory by clicking on Add Equipment Button. 
+                // @@NOTE: grouped view (default) shows TME / GIE with the related ATME / Feeders as child rows, ungrouped shows one table per equipment class
+                var grouped = context.request.parameters.grouped != 'F';
+                actions += `<div style="white-space: nowrap; width: 36px; margin-top: -11px;">${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'group-equipment-toggle', label: 'Group', labelNoWrap: true, value: grouped, small: true })}</div>`;
+
+                // @@NOTES: User can add Inventory by clicking on Add Equipment Button.
                 if (context.request.parameters.siteId && pageData.userInfo.isEmployee) {
                     actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Add Equipment', id: 'add-equipment-button' });
                 } else {
@@ -50,10 +54,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     readOnly = true;
                 }
 
-                var fieldGroups = twcInventoryUtils.getInvInfoPanels(pageData.siteInfo.site, pageData.userInfo);
+                var fieldGroups = twcInventoryUtils.getInvInfoPanels(pageData.siteInfo.site, pageData.userInfo, grouped);
                 html = html.replaceAll('{SITE_REQUEST_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
                 if (actions) {
-                    html = html.replaceAll('<div id="custom-actions"></div>', `<div id="custom-actions">${actions}</div>`);
+                    // @@NOTE: flex so the group toggle and the add button sit side by side
+                    html = html.replaceAll('<div id="custom-actions"></div>', `<div id="custom-actions"><div style="display: flex; align-items: center; gap: 7px;">${actions}</div></div>`);
                 }
 
             } else {

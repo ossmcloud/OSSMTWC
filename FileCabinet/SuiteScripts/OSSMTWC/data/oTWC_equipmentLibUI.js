@@ -15,9 +15,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 { field: twcEqLib.Fields.MAKE, title: 'Make', addCount: true },
                 { field: twcEqLib.Fields.MODEL, title: 'Model' },
                 { field: twcEqLib.Fields.DESCRIPTION, title: 'Description' },
-                { field: twcEqLib.Fields.LENGTH_MM, title: 'Length<br />(mm)', type: 'int', styles: { width: '100px' } },
-                { field: twcEqLib.Fields.WIDTH_MM, title: 'Width<br />(mm)', type: 'int' },
-                { field: twcEqLib.Fields.HEIGHTDEPTH_MM, title: 'Depth<br />(mm)', type: 'int' },
+                // @@NOTE: Length / Width / Depth shown as a single 'L/W/D' column (width / depth are still loaded but hidden)
+                {
+                    field: twcEqLib.Fields.LENGTH_MM, title: 'L/W/D', styles: { width: '120px', 'text-align': 'center' },
+                    formatValue: (v, fv, data, col) => { return twcUtils.formatLWD(data[twcEqLib.Fields.LENGTH_MM], data[twcEqLib.Fields.WIDTH_MM], data[twcEqLib.Fields.HEIGHTDEPTH_MM]); }
+                },
+                { field: twcEqLib.Fields.WIDTH_MM, hide: true },
+                { field: twcEqLib.Fields.HEIGHTDEPTH_MM, hide: true },
                 { field: twcEqLib.Fields.WEIGHT_KG, title: 'Weight<br />(Kg)', type: 'float' },
                 { field: twcEqLib.Fields.VOLTAGE_TYPE + '_name', title: 'Voltage<br />Type', styles: { 'text-align': 'center' } },
                 { field: twcEqLib.Fields.ALIAS, title: 'Alias' },

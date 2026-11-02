@@ -38,6 +38,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return srfItemCopy;
         }
 
+        // @@NOTE: step tables showing parent / child rows (see oTWC_srfUI.js: flattenSrfItems and TWCSpaceRequestPage.renderStepTable)
+        const TREE_STEP_TYPES = [twcSrfItem.StepType.TME, twcSrfItem.StepType.ATME, twcSrfItem.StepType.FEEDER];
+
         function isSwapSrfItemField(k) {
             var swapFields = [
                 twcSrfItem.Fields.SRF,
@@ -578,7 +581,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (pickedEq) {
                     this.#srfItem[twcSrfItem.Fields.TME_ID] = pickedEq.id;
                     this.#srfItem[twcSrfItem.Fields.TME_ID + '_name'] = pickedEq[twcEquipment.Fields.NAME];
-                    this.#form.getControl(twcSrfItem.Fields.STRUCTURE).value = pickedEq[twcEquipment.Fields.INFRASTRUCTURE];
+                    // @@NOTE: the structure comes from the SRF (read-only), the TME picker is already filtered by it
+                    if (!this.#form.getControl(twcSrfItem.Fields.STRUCTURE).readOnly) {
+                        this.#form.getControl(twcSrfItem.Fields.STRUCTURE).value = pickedEq[twcEquipment.Fields.INFRASTRUCTURE];
+                    }
                 }
                 this.#form.setValue('srf-tme-equipment', this.#srfItem[twcSrfItem.Fields.TME_ID + '_name'] || '');
             }
@@ -675,7 +681,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         site: this.data.siteInfo.site.id,
                         customer: this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER],
                         eqClass: eqClass,
-                        reqType: this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value
+                        reqType: this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value,
+                        // @@NOTE: TME / ATME / FEEDER can only be picked from the structure selected on the SRF
+                        structure: (eqClass == twcEqUI.EqClass.GIE) ? null : this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE]
                     })
 
 
@@ -769,12 +777,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         var html = jQuery(`
                             <div class="twc-div-table-r twc-div-table-rh">
                                 <div style="position: sticky; top: -7px;">
-                                    <div></div>
+                                    <div style="width: 30px; text-align: center; padding: 0px;"><span class="twc-srf-item-expand-all" data-collapsed="false">-</span></div>
                                     <div>Equipment</div>
                                     <div>Class</div>
                                     <div>Type</div>
                                     <div>Make</div>
                                     <div>Model</div>
+                                    <div>Height on Tower</div>
+                                    <div>Azimuth</div>
+                                    <div>Feeder Type</div>
+                                    <div>B-End</div>
                                     <div>Action</div>
                                     <div>Status</div>
                                     <div>SAF</div>
@@ -783,12 +795,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             </div>
                         `);
 
+                        // @@NOTE: header / child collapse: a header is an equipment action on a TME / GIE (or on an ATME / Feeder whose parent has no action in this SRF)
+                        //         its children are the following ATME / Feeder actions of the same group (same sort_idx) and all the SAF action rows of the group
+                        //         rows are tagged with data-eqa-group, children also get 'twc-eqa-child' (hidden via 'o-row-hidden')
                         var sortIdx = '';
+                        var groupId = 0;
+                        var hasHeader = false;
                         core.array.each(res.eqActions, eqAction => {
                             if (sortIdx != eqAction.sort_idx) {
                                 html.append(`<div style="border-top: 1px solid var(--grid-color); height: 11px;"></div>`);
                                 sortIdx = eqAction.sort_idx;
+                                hasHeader = false;
                             }
+                            var isChild = hasHeader && !!eqAction[twcEquipment.Fields.PARENT_TME_ID];
+                            if (!isChild) { groupId++; hasHeader = true; }
                             var safLink = '';
                             // if (eqAction[twcEqAct.Fields.EA_SAF]) {
                             //     safLink = `${safLinkBase}&recId=${eqAction[twcEqAct.Fields.EA_SAF]}`;
@@ -797,13 +817,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             var padding = eqAction[twcEquipment.Fields.PARENT_TME_ID] ? 'style="padding-left: 27px; font-style: italic; color: silver;"' : '';
                             var icon = eqAction[twcEqAct.Fields.EA_STATUS] == twcUtils.EqActionStatus.Complete ? twcIcons.get('checkBox', 16, 'lime') : '';
                             var eqActionHtml = jQuery(`
-                                <div>
-                                    <div style="width: 20px; text-align: center;">${icon}</div>
-                                    <div ${padding}>${eqAction[twcEqAct.Fields.EA_EQUIPMENT + '_name']}</div>
+                                <div class="${isChild ? 'twc-eqa-child' : 'twc-eqa-header'}" data-eqa-group="${groupId}">
+                                    <div class="twc-eqa-toggle" style="width: 30px; text-align: center; padding: 0px;"></div>
+                                    <div ${padding}>${icon}${eqAction[twcEqAct.Fields.EA_EQUIPMENT + '_name']}</div>
                                     <div>${eqAction[twcEquipment.Fields.EQUIPMENT_CLASS]}</div>
                                     <div>${eqAction[twcEquipment.Fields.EQUIPMENT_TYPE]}</div>
                                     <div>${eqAction[twcEquipment.Fields.MAKE] || ''}</div>
                                     <div>${eqAction[twcEquipment.Fields.MODEL] || ''}</div>
+                                    <div>${eqAction[twcEquipment.Fields.HEIGHT_ON_TOWER_M] ?? ''}</div>
+                                    <div>${eqAction[twcEquipment.Fields.AZIMUTH] ?? ''}</div>
+                                    <div>${eqAction[twcEquipment.Fields.OPT_TYPE] || ''}</div>
+                                    <div>${eqAction[twcEquipment.Fields.B_END] || ''}</div>
                                     <div>${eqAction[twcEqAct.Fields.EA_TYPE + '_name']}</div>
                                     <div>${eqAction[twcEqAct.Fields.EA_STATUS + '_name']}</div>
                                     <div>${safLink}</div>
@@ -826,7 +850,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     icon = twcIcons.get('sadFace', 16, 'red');
                                 }
                                 var safActionHtml = jQuery(`
-                                    <div>
+                                    <div class="twc-eqa-child" data-eqa-group="${groupId}">
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
                                         <div></div>
                                         <div></div>
                                         <div></div>
@@ -849,6 +877,35 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             // }
                         })
 
+                        // @@NOTE: only headers that actually have children get the +/- toggle (expanded by default)
+                        html.find('.twc-eqa-header').each((idx, el) => {
+                            var header = jQuery(el);
+                            if (html.find(`.twc-eqa-child[data-eqa-group="${header.data('eqa-group')}"]`).length > 0) {
+                                header.find('.twc-eqa-toggle').html(`<span class="twc-srf-item-expand" data-collapsed="false">-</span>`);
+                            }
+                        });
+
+                        html.find('.twc-srf-item-expand').click(e => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            var toggle = jQuery(e.currentTarget);
+                            var collapse = !(toggle.data('collapsed') || false);
+                            toggle.data('collapsed', collapse);
+                            toggle.html(collapse ? '+' : '-');
+                            var group = toggle.closest('.twc-eqa-header').data('eqa-group');
+                            html.find(`.twc-eqa-child[data-eqa-group="${group}"]`).toggleClass('o-row-hidden', collapse);
+                        });
+
+                        html.find('.twc-srf-item-expand-all').click(e => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            var toggle = jQuery(e.currentTarget);
+                            var collapse = !(toggle.data('collapsed') || false);
+                            toggle.data('collapsed', collapse);
+                            toggle.html(collapse ? '+' : '-');
+                            html.find('.twc-srf-item-expand').data('collapsed', collapse).html(collapse ? '+' : '-');
+                            html.find('.twc-eqa-child').toggleClass('o-row-hidden', collapse);
+                        });
 
                         form.html(html)
 
@@ -869,6 +926,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #sitesTable = null;
             #sitePanel = null;
             #workflowForm = null;
+            #srfStructure = null;
+            #srfParentRefs = {};
             constructor() {
                 super({ scriptId: 'otwc_spaceRequest_sl' });
             }
@@ -891,6 +950,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                         this.ui.getControl('open-srf').on('click', e => {
                             location.href = core.url.script('otwc_spacerequest_sl', { recId: this.data.siteRequestInfo.id });
+                        })
+
+                        // @@NOTE: developer only (button rendered only if core.me())
+                        this.ui.getControl('test-sds-equipment')?.on('click', e => {
+                            twcSdsEngineUI.testSDSEquipment(this, this.data.siteRequestInfo);
                         })
 
                     } else {
@@ -982,6 +1046,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     this.ui.getControl(twcSrf.Fields.OPERATOR_SITE_ID).value = res;
                                 })
                             }
+                            if (e.id == twcSrf.Fields.STRUCTURE) {
+                                this.onStructureChange(e);
+                            }
                         })
                         core.array.each(this.ui.controls, c => {
                             if (c.type !== 'table') { return; }
@@ -990,15 +1057,67 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             //         any change here needs to be reflected there
                             core.array.each(c.options.columns, col => {
                                 col.formatValue = (value, formattedValue, data, column) => {
+                                    // @@NOTE: single L/W/D column (built from the length / width / depth fields), same swap display as the other columns
+                                    if (column.id == twcSrfItem.Fields.LENGTH_MM) {
+                                        const lwd = (d) => { return twcUtils.formatLWD(d[twcSrfItem.Fields.LENGTH_MM], d[twcSrfItem.Fields.WIDTH_MM], d[twcSrfItem.Fields.DEPTH_MM]); };
+                                        var lwdValue = lwd(data);
+                                        if (data.swappedItem && lwd(data.swappedItem) != lwdValue) {
+                                            return `
+                                                <div style="text-decoration: line-through; color: var(--label-color);">${lwd(data.swappedItem) || '&nbsp;'}</div>
+                                                <div style="font-weight: bold; color: var(--accent-fore-color);">${lwdValue || '-'}</div>
+                                            `
+                                        }
+                                        if (data.swapItem && lwd(data.swapItem) != lwdValue) {
+                                            return `
+                                                <div style="text-decoration: line-through; color: var(--label-color);">${lwdValue || '-'}</div>
+                                                <div style="font-weight: bold; color: var(--accent-fore-color);">${lwd(data.swapItem) || '&nbsp;'}</div>
+                                            `
+                                        }
+                                        return lwdValue || '-';
+                                    }
+                                    // @@NOTE: TME table: feeder rows (related items) show the feeder type under the 'Description' column
+                                    if (c.id == `${twcSrfItem.Type}_${twcSrfItem.StepType.TME}` && column.id == twcSrfItem.Fields.DESCRIPTION && data[twcSrfItem.Fields.STEP_TYPE] == twcSrfItem.StepType.FEEDER) {
+                                        const feederType = (d) => { return d[twcSrfItem.Fields.TYPE_OPT + '_name'] || ''; };
+                                        var feederTypeValue = feederType(data);
+                                        if (data.swappedItem && feederType(data.swappedItem) != feederTypeValue) {
+                                            return `
+                                                <div style="text-decoration: line-through; color: var(--label-color);">${feederType(data.swappedItem) || '&nbsp;'}</div>
+                                                <div style="font-weight: bold; color: var(--accent-fore-color);">${feederTypeValue || '-'}</div>
+                                            `
+                                        }
+                                        if (data.swapItem && feederType(data.swapItem) != feederTypeValue) {
+                                            return `
+                                                <div style="text-decoration: line-through; color: var(--label-color);">${feederTypeValue || '-'}</div>
+                                                <div style="font-weight: bold; color: var(--accent-fore-color);">${feederType(data.swapItem) || '&nbsp;'}</div>
+                                            `
+                                        }
+                                        return feederTypeValue || '-';
+                                    }
                                     if (data.swappedItem && data.swappedItem[column.id] != value) {
                                         return `
                                             <div style="text-decoration: line-through; color: var(--label-color);">${data.swappedItem[column.id] || '&nbsp;'}</div>
                                             <div style="font-weight: bold; color: var(--accent-fore-color);">${formattedValue}</div>
                                         `
                                     }
+                                    // @@NOTE: edit mode TME related items (child rows): the old values are on the item, the new ones on 'swapItem'
+                                    if (data.swapItem && data.swapItem[column.id] != value) {
+                                        return `
+                                            <div style="text-decoration: line-through; color: var(--label-color);">${formattedValue}</div>
+                                            <div style="font-weight: bold; color: var(--accent-fore-color);">${data.swapItem[column.id + '_name'] || data.swapItem[column.id] || '&nbsp;'}</div>
+                                        `
+                                    }
                                     return formattedValue;
                                 }
                             })
+
+                            if (TREE_STEP_TYPES.find(st => { return c.id == `${twcSrfItem.Type}_${st}`; })) {
+                                // @@NOTE: same as onRowInit in oTWC_srfUI.js: getStepFields, needed when the table is re-rendered on the client
+                                c.onRowInit = (table, row) => {
+                                    if (row.data.parentRef) { row.cssClass += ' o-row-ref'; }
+                                    if (row.data.childRow) { row.cssClass += ' o-row-child'; }
+                                }
+                                c.onInitEvents = (table) => { initTreeTable(c); }
+                            }
 
                             c.onToolbarClick = e => {
                                 var manageMethod = e.table.id == twcFile.Type ? 'manageSRFFile' : 'manageSRFItem';
@@ -1022,28 +1141,36 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             // @@NOTE: this is in case we open the form with pre-selected customer
                             this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER] = this.ui.getControl(twcSrf.Fields.CUSTOMER).value
                         }
+                        if (!this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE] && this.ui.getControl(twcSrf.Fields.STRUCTURE)?.value) {
+                            // @@NOTE: same as above, in case the structure drop down auto-selected a value (i.e.: the site has only one structure)
+                            this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE] = this.ui.getControl(twcSrf.Fields.STRUCTURE).value
+                        }
+                        this.#srfStructure = this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE] || null;
 
 
                         // @@NOTE: this is a bit of a stretch for the ui table control Ihave as that does not support grouping (i.e.: it should but it does not)
                         //         this bit works only thanks to stuff done on the server side:
                         //              FileCabinet\SuiteScripts\OSSMTWC\data\oTWC_srfUI.js     : func: getSrfItems             => here we populate the 'expand' field with <span class="twc-srf-item-expand">
-                        //                                                                      : func: getTmeFields            => here we add onRowInit function to initially hide child rows
+                        //                                                                      : func: flattenSrfItems         => here we flatten the items into parent / child rows (TME => related items, ATME / FEEDER => grayed out existing TME)
+                        //                                                                      : func: getStepFields           => here we add onRowInit function to flag child / parent ref rows
                         //              FileCabinet\SuiteScripts\OSSMTWC\data\oTWC_srfItemUI.js : func: getStepTableUIControl   => here we add the 'expand' column to the table
-                        //         here we need a function: initTmeTableExpandCollapse because we need to call this at first load but also every time the table is re-render (filter selected)
-                        var tmeTable = this.ui.getControl('customrecord_twc_srf_itm_1');
-                        tmeTable.onInitEvents = (table) => { initTmeTableExpandCollapse(); }
-
-                        const initTmeTableExpandCollapse = () => {
-                            var collapsed = tmeTable.columns[0].title.indexOf('>+<') > 0;
-                            core.array.each(tmeTable.rows, row => {
-                                if (row.data?.child) {
-                                    row.cssClass += 'o-row-child';
+                        //         in edit mode the tables are re-rendered on the client with renderStepTable (same logic as flattenSrfItems)
+                        //         here we need a function: initTreeTable because we need to call this at first load but also every time the table is re-render (filter selected)
+                        const initTreeTable = (table) => {
+                            var collapsed = table.columns[0].title.indexOf('>+<') > 0;
+                            core.array.each(table.getDataRows(), row => {
+                                if (row.data?.parentRef) { row.ui().addClass('o-row-ref'); }
+                                if (row.data?.childRow) {
                                     row.ui().addClass('o-row-child')
                                     if (collapsed) { row.ui().addClass('o-row-hidden') }
                                 }
+                                // @@NOTE: the grayed out parent rows are not part of the SRF and the TME related items are edited from the TME dialog (related equipment) so no edit / delete
+                                if (row.data?.parentRef || (row.data?.childRow && row.data?.child)) {
+                                    row.ui().find('.o-table-action').remove();
+                                }
                             })
 
-                            tmeTable.ui.find('.twc-srf-item-expand-all').click(e => {
+                            table.ui.find('.twc-srf-item-expand-all').click(e => {
                                 e.preventDefault();
                                 e.stopPropagation();
 
@@ -1051,11 +1178,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 collapse = !collapse;
                                 jQuery(e.currentTarget).data('collapsed', collapse);
                                 jQuery(e.currentTarget).html(collapse ? '+' : '-');
-                                tmeTable.ui.find('.twc-srf-item-expand').data('collapsed', collapse);
-                                tmeTable.ui.find('.twc-srf-item-expand').html(collapse ? '+' : '-');
-                                var dataRows = tmeTable.getDataRows();
+                                table.ui.find('.twc-srf-item-expand').data('collapsed', collapse);
+                                table.ui.find('.twc-srf-item-expand').html(collapse ? '+' : '-');
+                                var dataRows = table.getDataRows();
                                 for (var x = 0; x < dataRows.length; x++) {
-                                    if (dataRows[x].data.child) {
+                                    if (dataRows[x].data.childRow) {
                                         if (collapse) {
                                             dataRows[x].ui().addClass('o-row-hidden')
                                         } else {
@@ -1065,7 +1192,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 }
                             });
 
-                            tmeTable.ui.find('.twc-srf-item-expand').click(e => {
+                            table.ui.find('.twc-srf-item-expand').click(e => {
                                 e.preventDefault();
                                 e.stopPropagation();
 
@@ -1075,9 +1202,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 jQuery(e.currentTarget).data('collapsed', collapse);
                                 jQuery(e.currentTarget).html(collapse ? '+' : '-');
 
-                                var dataRows = tmeTable.getDataRows();
+                                var dataRows = table.getDataRows();
                                 for (var x = (rowIndex + 1); x < dataRows.length; x++) {
-                                    if (!dataRows[x].data.child) { return; }
+                                    if (!dataRows[x].data.childRow) { return; }
                                     if (collapse) {
                                         dataRows[x].ui().addClass('o-row-hidden')
                                     } else {
@@ -1087,18 +1214,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                             })
 
-                            tmeTable.ui.find('.twc-srf-item-create-lib').click(e => {
+                            table.ui.find('.twc-srf-item-create-lib').click(e => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 var rowIndex = jQuery(e.currentTarget).closest('.o-row').data('idx');
-                                var dataRow = tmeTable.getDataRows()[rowIndex];
+                                var dataRow = table.getDataRows()[rowIndex];
                                 console.log(dataRow.data);
                                 var url = core.url.record(twcEqLibUI.Type, dataRow.data[twcSrfItem.Fields.EQUIPMENT_LIBRARY]);
                                 window.open(`${url}&srfItem=${dataRow.data.id}`);
 
                             })
                         }
-                        initTmeTableExpandCollapse();
+                        core.array.each(TREE_STEP_TYPES, stepType => {
+                            var table = this.ui.getControl(`${twcSrfItem.Type}_${stepType}`);
+                            if (table) { initTreeTable(table); }
+                        })
 
 
                         if (this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER] && !this.data.siteRequestInfo.id) {
@@ -1123,6 +1253,127 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
 
+            // @@NOTE: the structure is picked at SRF level and copied on all the TME / ATME / FEEDER items (GIE items have their own accommodation)
+            //         if we have items already we ask the user to confirm and update them, otherwise we revert to the previous value
+            onStructureChange(e) {
+                var structure = e.value || null;
+                var structureName = e.target.valueObj?.text || '';
+
+                var tables = [];
+                var itemsCount = 0;
+                core.array.each(TREE_STEP_TYPES, stepType => {
+                    var table = this.ui.getControl(`${twcSrfItem.Type}_${stepType}`);
+                    if (!table || !table.data?.length) { return; }
+                    tables.push({ table: table, stepType: stepType });
+                    // @@NOTE: table.data has the flattened rows (child / parent ref rows) we need the srf items only
+                    core.array.each(this.getStepItems(table), item => { itemsCount += 1 + (item.relatedItems?.length || 0); });
+                })
+
+                if (itemsCount == 0) {
+                    this.#srfStructure = structure;
+                    return;
+                }
+
+                const setItemStructure = (item) => {
+                    item[twcSrfItem.Fields.STRUCTURE] = structure;
+                    item[twcSrfItem.Fields.STRUCTURE + '_name'] = structureName;
+                    item.dirty = true;
+                    // @@NOTE: swapItem is the new item of a swapped related item (swappedItem is the old one and must not change)
+                    if (item.swapItem) {
+                        item.swapItem[twcSrfItem.Fields.STRUCTURE] = structure;
+                        item.swapItem[twcSrfItem.Fields.STRUCTURE + '_name'] = structureName;
+                    }
+                    core.array.each(item.relatedItems || [], ri => { setItemStructure(ri); })
+                }
+
+                var confirmed = false;
+                var dlg = dialog.confirm(`The structure will be updated on ${itemsCount} SRF item(s) (TME / ATME / Feeders).<br />Do you want to continue?`, () => {
+                    confirmed = true;
+                    this.#srfStructure = structure;
+                    core.array.each(tables, t => {
+                        core.array.each(this.getStepItems(t.table), item => { setItemStructure(item); })
+                        this.renderStepTable(t.table);
+                    })
+                    this.dirty = true;
+                })
+                dlg.dialog.find('#o-dialog_close, #o-dialog_title_x').click(() => {
+                    if (confirmed) { return; }
+                    this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE] = this.#srfStructure;
+                    this.ui.setValue(twcSrf.Fields.STRUCTURE, this.#srfStructure, true);
+                })
+            }
+
+            // @@IMPORTANT: the collection 'items_<step type>' is what gets saved, it must only have the srf items of the step (TME related items are in 'relatedItems')
+            //              table.data has the flattened rows (child rows / grayed out parent rows) so it must never be used as that collection
+            getStepItems(table) {
+                var stepType = table.id.replace(`${twcSrfItem.Type}_`, '');
+                var itemList = `items_${stepType}`;
+                if (!this.data.siteRequestInfo[itemList]) {
+                    this.data.siteRequestInfo[itemList] = (table.data || []).filter(r => { return !r.parentRef && !r.child; });
+                }
+                return this.data.siteRequestInfo[itemList];
+            }
+
+            // @@IMPORTANT: same logic as FileCabinet\SuiteScripts\OSSMTWC\data\oTWC_srfUI.js: flattenSrfItems any change here needs to be reflected there
+            renderStepTable(table) {
+                var stepType = table.id.replace(`${twcSrfItem.Type}_`, '');
+                var items = this.getStepItems(table);
+                if (!TREE_STEP_TYPES.find(st => { return st == stepType; })) {
+                    table.render(items, true);
+                    return;
+                }
+
+                const EXPAND_HTML = '<span class="twc-srf-item-expand" data-collapsed="false">-</span>';
+                var rows = [];
+                core.array.each(items, item => {
+                    delete item.childRow;
+                    delete item.expand;
+                })
+
+                if (stepType == twcSrfItem.StepType.TME) {
+                    core.array.each(items, item => {
+                        if (item.relatedItems?.length) { item.expand = EXPAND_HTML; }
+                        rows.push(item);
+                        core.array.each(item.relatedItems || [], ri => {
+                            ri.childRow = true;
+                            rows.push(ri);
+                        })
+                    })
+
+                } else {
+                    // @@NOTE: cache the parent rows we already have and load the missing ones (i.e.: item attached to a TME not shown yet)
+                    core.array.each(table.data, r => { if (r.parentRef) { this.#srfParentRefs[r[twcSrfItem.Fields.EQUIPMENT_ID]] = r; } })
+                    var tmeIds = [];
+                    core.array.each(items, item => {
+                        var tmeId = item[twcSrfItem.Fields.TME_ID];
+                        if (tmeId && tmeIds.indexOf(tmeId.toString()) < 0) { tmeIds.push(tmeId.toString()); }
+                    })
+                    var missingTmeIds = tmeIds.filter(tmeId => { return !this.#srfParentRefs[tmeId]; });
+                    if (missingTmeIds.length > 0) {
+                        var res = this.postSync({ action: 'get-srf-parent-refs' }, { tmeIds: missingTmeIds });
+                        core.array.each(res.data, r => { this.#srfParentRefs[r[twcSrfItem.Fields.EQUIPMENT_ID]] = r; })
+                    }
+
+                    // @@NOTE: no TME (or TME not found) => plain row
+                    core.array.each(items, item => {
+                        if (!this.#srfParentRefs[item[twcSrfItem.Fields.TME_ID]]) { rows.push(item); }
+                    })
+                    core.array.each(tmeIds, tmeId => {
+                        var parentRef = this.#srfParentRefs[tmeId];
+                        if (!parentRef) { return; }
+                        parentRef.expand = EXPAND_HTML;
+                        rows.push(parentRef);
+                        core.array.each(items, item => {
+                            if (item[twcSrfItem.Fields.TME_ID] != tmeId) { return; }
+                            item.childRow = true;
+                            rows.push(item);
+                        })
+                    })
+                }
+
+                table.render(rows, true);
+            }
+
             deleteRecord(srfRecord, table) {
                 var deleteRecordCollectionName = table.id == twcFile.Type ? 'files_deleted' : 'items_deleted';
                 if (srfRecord.delete) {
@@ -1130,8 +1381,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (!this.data.siteRequestInfo[deleteRecordCollectionName]) { this.data.siteRequestInfo[deleteRecordCollectionName] = []; }
                         this.data.siteRequestInfo[deleteRecordCollectionName].push(srfRecord);
                     }
-                    table.data.splice(table.data.indexOf(srfRecord), 1);
-                    table.render(table.data, true);
+                    if (table.id == twcFile.Type) {
+                        table.data.splice(table.data.indexOf(srfRecord), 1);
+                        table.render(table.data, true);
+                    } else {
+                        // @@NOTE: srf items: remove from the collection that gets saved (table.data has the flattened rows)
+                        var items = this.getStepItems(table);
+                        items.splice(items.indexOf(srfRecord), 1);
+                        this.renderStepTable(table);
+                    }
                     this.dirty = true
                     return true;
                 }
@@ -1205,13 +1463,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     srfItem[twcSrfItem.Fields.STEP_TYPE] = table.id.replace('customrecord_twc_srf_itm_', '');
 
+                    // @@NOTE: TME / ATME / FEEDER items take the structure from the SRF so it must be selected first (GIE items pick their own accommodation)
+                    if (srfItem[twcSrfItem.Fields.STEP_TYPE] != twcSrfItem.StepType.GIE && !this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE]) {
+                        throw new Error('You need to select a structure');
+                    }
+
                     var method = mode || 'open';
                     TWCSpaceRequestItemForm[method](this, srfItem, (i, addAndCopy) => {
-                        // @@NOTE: if we have anew item then add it to the collection 
-                        var itemList = `items_${srfItem.custrecord_twc_srf_itm_stype}`;
-                        if (!this.data.siteRequestInfo[itemList]) { this.data.siteRequestInfo[itemList] = table.data; }
-                        if (this.data.siteRequestInfo[itemList].indexOf(srfItem) < 0) { this.data.siteRequestInfo[itemList].push(srfItem); }
-                        table.render(this.data.siteRequestInfo[itemList], true)
+                        // @@NOTE: if we have anew item then add it to the collection
+                        var items = this.getStepItems(table);
+                        if (items.indexOf(srfItem) < 0) { items.push(srfItem); }
+                        this.renderStepTable(table);
 
                         if (addAndCopy) {
                             this.manageSRFItem(copySrfItem(srfItem), table, 'copy');
@@ -1245,7 +1507,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                         var srfItemsCount = 0;
                         for (var k in twcEquipment.StepType) {
-                            srfItemsCount += (this.ui.getControl(`${twcSrfItem.Type}_${twcEquipment.StepType[k]}`)?.data.length || 0);
+                            // @@NOTE: exclude the grayed out parent rows (not part of the SRF) and the TME related items (child rows)
+                            srfItemsCount += (this.ui.getControl(`${twcSrfItem.Type}_${twcEquipment.StepType[k]}`)?.data.filter(r => { return !r.parentRef && !r.child; }).length || 0);
                         }
                         if (srfItemsCount == 0) { throw new Error(`You need to specify at least one item`); }
                     }

@@ -30,19 +30,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 this.ui.on('click', e => {
                     console.log(e)
+                    // @@NOTE: new SAF / SRF / Trouble Ticket open in a new tab so the site page stays open (same as the map site pop-up links)
                     if (e.id == 'twc-action-new-saf') {
-                        location.href = core.url.script('otwc_siteaccess_sl', { siteId: this.data.siteInfo.site.id, edit: 'T' })
+                        window.open(core.url.script('otwc_siteaccess_sl', { siteId: this.data.siteInfo.site.id, edit: 'T' }), '_blank');
                     }
                     if(e.id == 'twc-action-new-srf') {
-                        location.href = core.url.script('otwc_spacerequest_sl', { siteId: this.data.siteInfo.site.id, edit: 'T' })
+                        window.open(core.url.script('otwc_spacerequest_sl', { siteId: this.data.siteInfo.site.id, edit: 'T' }), '_blank');
                     }
                     if(e.id == 'twc-action-new-trbltkt') {
-                        location.href = core.url.script('oTWC_troubleTicket_sl', { siteId: this.data.siteInfo.site.id, edit: 'T' })
+                        window.open(core.url.script('oTWC_troubleTicket_sl', { siteId: this.data.siteInfo.site.id, edit: 'T' }), '_blank');
                     }
                 })
 
                 core.array.each(this.ui.controls, c => {
                     if (c.type != 'table') { return; }
+                    // @@NOTE: equipment tables (TME / GIE) have the related equipment as child rows
+                    twcPageBase.initTableExpandCollapse(c);
                     c.onToolbarClick = e => {
                         console.log(e)
                         if (e.action == 'add-new') {

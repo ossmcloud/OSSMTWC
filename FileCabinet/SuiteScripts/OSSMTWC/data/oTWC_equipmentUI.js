@@ -29,45 +29,40 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 { field: twcInventory.Fields.EQUIPMENT_TYPE, title: 'Type', styles: { width: '100px' } },
                 { field: twcInventory.Fields.MAKE, title: 'Make', styles: { width: '100px' } },
                 { field: twcInventory.Fields.MODEL, title: 'Model' },
-                { field: twcInventory.Fields.LENGTH_MM, title: 'Length (mm)' },
-                { field: twcInventory.Fields.WIDTH_MM, title: 'Width (mm)' },
-                { field: twcInventory.Fields.HEIGHTDEPTH_MM, title: 'Depth<br />(mm)' },
+                // @@NOTE: Length / Width / Depth shown as a single 'L/W/D' column (width / depth are still selected but hidden)
+                {
+                    field: twcInventory.Fields.LENGTH_MM, title: 'L/W/D', styles: { 'text-align': 'center' },
+                    formatValue: (v, fv, data, col) => { return twcUtils.formatLWD(data[twcInventory.Fields.LENGTH_MM], data[twcInventory.Fields.WIDTH_MM], data[twcInventory.Fields.HEIGHTDEPTH_MM]); }
+                },
+                { field: twcInventory.Fields.WIDTH_MM, hide: true },
+                { field: twcInventory.Fields.HEIGHTDEPTH_MM, hide: true },
                 { field: twcInventory.Fields.HEIGHT_ON_TOWER_M, title: 'Height on<br />Tower' },
 
             ];
             return inventoryFields;
         }
 
-        function getInvInfoPanels_Type(dataSource, userInfo, eqClass) {
-            //throw new Error(JSON.stringify(dataSource.id   ))
-            const title = EQ_CLASS_TITLES[eqClass] || "Unknown Equipment";
-            var fieldGroup = { id: 'site-inventory', title: title, collapsed: false, controls: [] };
-
-            var tmeInventories = { id: 'site-inventory-info', fields: [] };
-            fieldGroup.controls.push(tmeInventories);
-
+        function getSiteInventoryTableFields() {
             var tableFields = {
+                [twcInventory.Fields.EQUIPMENT_CLASS]: 'Class',
                 [twcInventory.Fields.EQUIPMENT_INSTALL_STATUS]: 'Install Status',
                 [twcInventory.Fields.EQUIPMENT_LICENCE_STATUS]: 'License Status',
                 [twcInventory.Fields.CUSTOMER]: 'Customer',
-                [twcInventory.Fields.VOLTAGE_TYPE]: { title: 'Type' },
+                [twcInventory.Fields.VOLTAGE_TYPE]: {
+                    title: 'Type',
+                    // @@NOTE: feeders show the feeder type (OPT_TYPE) under the 'Type' column
+                    formatValue: (v, fv, data, col) => {
+                        if (data[twcInventory.Fields.EQUIPMENT_CLASS] == EQ_CLASS_ENUM.FEEDER) { return data[twcInventory.Fields.OPT_TYPE + '_name'] || '-'; }
+                        return fv;
+                    }
+                },
                 [twcInventory.Fields.DESCRIPTION]: 'Desc',
                 [twcInventory.Fields.LOCATION_NOTES]: 'Location',
                 [twcInventory.Fields.LENGTH_MM]: {
                     title: 'L/W/D',
                     styles: { 'text-align': 'center' },
                     formatValue: (v, fv, data, col) => {
-                        var l = data[twcInventory.Fields.LENGTH_MM] || '';
-                        var w = data[twcInventory.Fields.WIDTH_MM] || '';
-                        var d = data[twcInventory.Fields.HEIGHTDEPTH_MM] || '';
-
-                        var res = l;
-                        if (w) { res += ' / '; }
-                        res += w;
-                        if (d) { res += ' / '; }
-                        res += d;
-
-                        return res;
+                        return twcUtils.formatLWD(data[twcInventory.Fields.LENGTH_MM], data[twcInventory.Fields.WIDTH_MM], data[twcInventory.Fields.HEIGHTDEPTH_MM]);
                     }
                 },
                 [twcInventory.Fields.AZIMUTH]: { title: 'Az', styles: { width: '65px' } },
@@ -78,15 +73,23 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 // [twcInventory.Fields.FEEDERS]: 'Feeders',
                 [twcInventory.Fields.WIDTH_MM]: { hide: true },
                 [twcInventory.Fields.HEIGHTDEPTH_MM]: { hide: true },
+                [twcInventory.Fields.PARENT_TME_ID]: { hide: true },
+                [twcInventory.Fields.OPT_TYPE]: { hide: true },
             }
 
             for (var k in tableFields) {
                 if (tableFields[k].constructor.name == 'String') { tableFields[k] = { title: tableFields[k] } }
                 tableFields[k].nullText = '-';
             }
+            return tableFields;
+        }
 
-
-            var whereClause = { [twcInventory.Fields.SITE]: dataSource.id, [twcInventory.Fields.EQUIPMENT_CLASS]: eqClass };
+        // @@NOTE: loads all the site equipment in one go and nests the related equipment (ATME / Feeders, linked via PARENT_TME_ID) under its parent (TME / GIE)
+        //         same approach as the SRF (oTWC_srfUI.js: getSrfItems) and SAF (oTWC_utils.js: getSafActions) tables
+        //         each list is flattened as parent followed by its children (flagged with .child = true)
+        //         if not grouped we just split the equipment by class (one list per class, no child rows)
+        function getSiteEquipment(dataSource, userInfo, grouped) {
+            var whereClause = { [twcInventory.Fields.SITE]: dataSource.id };
 
             var allowedCustomers = twcConfig.getUserAllowedCustomers(userInfo, true);
             if (allowedCustomers != 'all') {
@@ -96,12 +99,92 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
             }
 
+            var items = twcInventory.select({ fields: getSiteInventoryTableFields(), where: whereClause, useNames: true });
+
+            if (!grouped) {
+                var byClass = { [EQ_CLASS_ENUM.TME]: [], [EQ_CLASS_ENUM.ATME]: [], [EQ_CLASS_ENUM.GIE]: [], [EQ_CLASS_ENUM.FEEDER]: [] };
+                core.array.each(items, item => {
+                    byClass[item[twcInventory.Fields.EQUIPMENT_CLASS]]?.push(item);
+                })
+                return byClass;
+            }
+
+            var parents = []; var unlinked = [];
+            core.array.each(items, item => {
+                var eqClass = item[twcInventory.Fields.EQUIPMENT_CLASS];
+                if (eqClass == EQ_CLASS_ENUM.TME || eqClass == EQ_CLASS_ENUM.GIE) {
+                    parents.push(item);
+                    return;
+                }
+                var parentId = item[twcInventory.Fields.PARENT_TME_ID];
+                var parent = (parentId) ? items.find(i => { return i.id == parentId; }) : null;
+                // @@NOTE: no parent (or parent not visible to this user, e.g.: other customer) => goes to the 'unlinked' list
+                if (!parent) {
+                    unlinked.push(item);
+                    return;
+                }
+                if (!parent.relatedItems) {
+                    parent.relatedItems = [];
+                    parent.expand = `<span class="twc-srf-item-expand" data-collapsed="true">+</span>`;
+                }
+                item.child = true;
+                parent.relatedItems.push(item);
+            })
+
+            var res = { [EQ_CLASS_ENUM.TME]: [], [EQ_CLASS_ENUM.GIE]: [], unlinked: unlinked };
+            core.array.each(parents, parent => {
+                var list = res[parent[twcInventory.Fields.EQUIPMENT_CLASS]];
+                list.push(parent);
+                if (parent.relatedItems) { list.push(...parent.relatedItems); }
+                // @@NOTE: we do not want to send this back to the client twice
+                delete parent.relatedItems;
+            })
+            return res;
+        }
+
+        // @@NOTE: columns hidden on the single class tables (not grouped view), the fields are still loaded (e.g.: class is needed for the grouping)
+        const CLASS_HIDDEN_FIELDS = {
+            [EQ_CLASS_ENUM.TME]: [twcInventory.Fields.EQUIPMENT_CLASS],
+            [EQ_CLASS_ENUM.ATME]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.AZIMUTH, twcInventory.Fields.B_END],
+            [EQ_CLASS_ENUM.GIE]: [twcInventory.Fields.AZIMUTH],
+            [EQ_CLASS_ENUM.FEEDER]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.LENGTH_MM, twcInventory.Fields.AZIMUTH, twcInventory.Fields.B_END, twcInventory.Fields.CUSTOMER_REF],
+        }
+
+        // @@NOTE: eqClass is only passed for the single class tables (not grouped view)
+        function getInvInfoPanels_Type(dataSource, title, items, withChildren, eqClass) {
+            var fieldGroup = { id: 'site-inventory', title: title, collapsed: false, controls: [] };
+
+            var tmeInventories = { id: 'site-inventory-info', fields: [] };
+            fieldGroup.controls.push(tmeInventories);
+
+            var tableFields = {};
+            if (withChildren) {
+                tableFields['expand'] = { title: `<span class="twc-srf-item-expand-all" data-collapsed="true">+</span>`, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
+            }
+            Object.assign(tableFields, getSiteInventoryTableFields());
+
+            if (eqClass) {
+                core.array.each(CLASS_HIDDEN_FIELDS[eqClass] || [], f => { tableFields[f].hide = true; });
+                // @@NOTE: the feeder table 'Type' column shows the feeder type (see formatValue in getSiteInventoryTableFields)
+                if (eqClass == EQ_CLASS_ENUM.FEEDER) { tableFields[twcInventory.Fields.VOLTAGE_TYPE].title = 'Feeder Type'; }
+            }
+
+            if (withChildren) {
+                // @@REVIEW: we need to fix filters sorting (on table ui) with child rows before we can enable them
+                for (var k in tableFields) {
+                    tableFields[k].noSort = true;
+                    tableFields[k].noFilter = true;
+                }
+            }
 
             tmeInventories.fields.push({
-                id: `${twcInventory.Type}`, label: 'Site TME Equipment',
+                id: `${twcInventory.Type}`, label: title,
                 fields: tableFields,
-                where: whereClause,
+                dataSource: items,
                 FieldsInfo: twcInventory.FieldsInfo,
+                onRowInit: (table, row) => {
+                    if (row.data.child) { row.cssClass += 'o-row-child o-row-hidden'; }
+                }
             });
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
@@ -109,14 +192,25 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return fieldGroup;
         }
 
-        function getInvInfoPanels(dataSource, userInfo) {
-            //throw new Error(JSON.stringify(dataSource))
+        // @@NOTE: grouped (default) => TME / GIE tables with the related ATME / Feeders as child rows (+ unlinked ATME / Feeders if any)
+        //         not grouped      => one table per equipment class (TME / ATME / Feeders / GIE)
+        function getInvInfoPanels(dataSource, userInfo, grouped) {
             dataSource.Type = twcSite.Type;
+            if (grouped === undefined) { grouped = true; }
+            var equipment = getSiteEquipment(dataSource, userInfo, grouped);
+
             var fieldGroups = [];
-            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_ENUM.TME))
-            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_ENUM.ATME))
-            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_ENUM.GIE))
-            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_ENUM.FEEDER))
+            if (!grouped) {
+                core.array.each([EQ_CLASS_ENUM.TME, EQ_CLASS_ENUM.ATME, EQ_CLASS_ENUM.FEEDER, EQ_CLASS_ENUM.GIE], eqClass => {
+                    fieldGroups.push(getInvInfoPanels_Type(dataSource, EQ_CLASS_TITLES[eqClass], equipment[eqClass], false, eqClass))
+                })
+                return fieldGroups;
+            }
+            fieldGroups.push(getInvInfoPanels_Type(dataSource, EQ_CLASS_TITLES[EQ_CLASS_ENUM.TME], equipment[EQ_CLASS_ENUM.TME], true))
+            fieldGroups.push(getInvInfoPanels_Type(dataSource, EQ_CLASS_TITLES[EQ_CLASS_ENUM.GIE], equipment[EQ_CLASS_ENUM.GIE], true))
+            if (equipment.unlinked.length > 0) {
+                fieldGroups.push(getInvInfoPanels_Type(dataSource, 'Unlinked ATME / Feeders', equipment.unlinked, false))
+            }
             return fieldGroups;
         }
 

@@ -17,6 +17,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var siteStructures = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Structure })
             var siteAccomodations = siteInfraStructures.filter(s => { return s.type == twcUtils.InfraType.Accommodation })
             var voltageTypes = twcUtils.getVoltageTypes(userInfo);
+            // @@NOTE: for TME / ATME / FEEDER the structure is picked at SRF level, here we just show it (read-only)
+            var srfStructure = srf.get(twcSrf.Fields.STRUCTURE) || srfItem.get(twcSrfItem.Fields.STRUCTURE);
 
             var basicInfo = { id: 'srf-item-info', title: 'Basic Info', fields: [] };
             fieldGroup.controls.push(basicInfo);
@@ -54,7 +56,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 if (srfItem.stepType == twcSrfItem.StepType.GIE) {
                     dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteAccomodations, mandatory: true, noAutoSelect: false });
                 } else {
-                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteStructures, mandatory: true });
+                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfStructure, dataSource: siteStructures, mandatory: true, readOnly: true });
                 }
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.MAKE, label: 'Make', mandatory: true })
                 dimensionInfo.fields.push({ id: twcSrfItem.Fields.MODEL, label: 'Model', mandatory: true })
@@ -76,8 +78,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 specInfo.fields.push({ id: twcSrfItem.Fields.CUSTOMER_REF, label: 'Customer Ref.', mandatory: true })
 
             } else if (srfItem.stepType == twcSrfItem.StepType.FEEDER) {
-                specInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfItem.get(twcSrfItem.Fields.STRUCTURE), dataSource: siteStructures, mandatory: true });
-                specInfo.fields.push({ id: twcSrfItem.Fields.TYPE_OPT, label: 'Type Opt', dataSource: twcUtils.getSrfItemTypeOpts(userInfo), mandatory: true })
+                specInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfStructure, dataSource: siteStructures, mandatory: true, readOnly: true });
+                specInfo.fields.push({ id: twcSrfItem.Fields.TYPE_OPT, label: 'Feeder Type', dataSource: twcUtils.getSrfItemTypeOpts(userInfo), mandatory: true })
 
             } else if (srfItem.stepType == twcSrfItem.StepType.GIE) {
                 specInfo.fields.push({ id: twcSrfItem.Fields.CUSTOMER_REF, label: 'Customer Ref.', mandatory: true })
@@ -108,7 +110,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         { id: twcSrfItem.Fields.MAKE, title: 'Make', nullText: '' },
                         { id: twcSrfItem.Fields.MODEL, title: 'Model', nullText: '' },
                         { id: twcSrfItem.Fields.HEIGHT_ON_TOWER, title: 'Height on Tower', nullText: '' },
-                        { id: twcSrfItem.Fields.TYPE_OPT + '_name', title: 'Type Opt', nullText: '' },
+                        { id: twcSrfItem.Fields.TYPE_OPT + '_name', title: 'Feeder Type', nullText: '' },
 
                     ],
                     dataSource: getSrfAdditionalEquipment(srf, srfItem, userInfo),
@@ -151,7 +153,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var fields = {};
             var noSort = undefined;
-            if (readOnly && stepType == twcSrf.StepType.TME) {
+            // @@NOTE: TME / ATME / FEEDER tables show parent / child rows (view and edit mode), see oTWC_srfUI.js: flattenSrfItems
+            if (stepType != twcSrf.StepType.GIE) {
                 noSort = true;
                 fields['expand'] = { title: '', nullText: '', noFilter: true, noSort: true, styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
             }
@@ -165,16 +168,17 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fields[twcSrfItem.Fields.DESCRIPTION] = 'Description';
 
             if (stepType == twcSrfItem.StepType.FEEDER) {
-                fields[twcSrfItem.Fields.TYPE_OPT] = 'Type Opt';
+                fields[twcSrfItem.Fields.TYPE_OPT] = 'Feeder Type';
                 //fields[twcSrfItem.Fields.DESCRIPTION] = 'Description';
             } else {
                 fields[twcSrfItem.Fields.MAKE] = 'Make';
                 fields[twcSrfItem.Fields.MODEL] = 'Model';
                 //fields[twcSrfItem.Fields.DESCRIPTION] = 'Description';
                 if (stepType == twcSrfItem.StepType.TME || stepType == twcSrfItem.StepType.ATME) { fields[twcSrfItem.Fields.HEIGHT_ON_TOWER] = 'Height on Tower'; }
-                fields[twcSrfItem.Fields.LENGTH_MM] = 'Length (mm)';
-                fields[twcSrfItem.Fields.WIDTH_MM] = 'Width (mm)';
-                fields[twcSrfItem.Fields.DEPTH_MM] = 'Depth (mm)';
+                // @@NOTE: Length / Width / Depth shown as a single 'L/W/D' column (formatValue below), width / depth are still selected but hidden
+                fields[twcSrfItem.Fields.LENGTH_MM] = { title: 'L/W/D', styles: { 'text-align': 'center' } };
+                fields[twcSrfItem.Fields.WIDTH_MM] = { hide: true };
+                fields[twcSrfItem.Fields.DEPTH_MM] = { hide: true };
                 if (stepType == twcSrfItem.StepType.TME || stepType == twcSrfItem.StepType.ATME) { fields[twcSrfItem.Fields.WEIGHT_KG] = 'Weight (kg)'; }
 
                 if (userInfo.isEmployee) {
@@ -232,16 +236,59 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 );
             }
 
-            // @@NOTE: function formatValue for each table column is replicated on the UI (FileCabinet\SuiteScripts\OSSMTWC\ui\modules\oTWC_siteRequestUtils.js)
+            // @@NOTE: function formatValue for each table column is replicated on the UI (FileCabinet\SuiteScripts\OSSMTWC\ui\js\oTWC_spaceRequest.js)
             //         any change here needs to be reflected there
             for (var k in fields) {
                 if (k == 'expand') { continue; }
                 var col = fields[k];
                 col.formatValue = (value, formattedValue, data, column) => {
+                    // @@NOTE: single L/W/D column (built from the length / width / depth fields), same swap display as the other columns
+                    if (column.id == twcSrfItem.Fields.LENGTH_MM) {
+                        const lwd = (d) => { return twcUtils.formatLWD(d[twcSrfItem.Fields.LENGTH_MM], d[twcSrfItem.Fields.WIDTH_MM], d[twcSrfItem.Fields.DEPTH_MM]); };
+                        var lwdValue = lwd(data);
+                        if (data.swappedItem && lwd(data.swappedItem) != lwdValue) {
+                            return `
+                                <div style="text-decoration: line-through; color: var(--label-color);">${lwd(data.swappedItem) || '&nbsp;'}</div>
+                                <div style="font-weight: bold; color: var(--accent-fore-color);">${lwdValue || '-'}</div>
+                            `
+                        }
+                        if (data.swapItem && lwd(data.swapItem) != lwdValue) {
+                            return `
+                                <div style="text-decoration: line-through; color: var(--label-color);">${lwdValue || '-'}</div>
+                                <div style="font-weight: bold; color: var(--accent-fore-color);">${lwd(data.swapItem) || '&nbsp;'}</div>
+                            `
+                        }
+                        return lwdValue || '-';
+                    }
+                    // @@NOTE: TME table: feeder rows (related items) show the feeder type under the 'Description' column
+                    if (stepType == twcSrfItem.StepType.TME && column.id == twcSrfItem.Fields.DESCRIPTION && data[twcSrfItem.Fields.STEP_TYPE] == twcSrfItem.StepType.FEEDER) {
+                        const feederType = (d) => { return d[twcSrfItem.Fields.TYPE_OPT + '_name'] || ''; };
+                        var feederTypeValue = feederType(data);
+                        if (data.swappedItem && feederType(data.swappedItem) != feederTypeValue) {
+                            return `
+                                <div style="text-decoration: line-through; color: var(--label-color);">${feederType(data.swappedItem) || '&nbsp;'}</div>
+                                <div style="font-weight: bold; color: var(--accent-fore-color);">${feederTypeValue || '-'}</div>
+                            `
+                        }
+                        if (data.swapItem && feederType(data.swapItem) != feederTypeValue) {
+                            return `
+                                <div style="text-decoration: line-through; color: var(--label-color);">${feederTypeValue || '-'}</div>
+                                <div style="font-weight: bold; color: var(--accent-fore-color);">${feederType(data.swapItem) || '&nbsp;'}</div>
+                            `
+                        }
+                        return feederTypeValue || '-';
+                    }
                     if (data.swappedItem && data.swappedItem[column.id] != value) {
                         return `
                             <div style="text-decoration: line-through; color: var(--label-color);">${data.swappedItem[column.id] || '&nbsp;'}</div>
                             <div style="font-weight: bold; color: var(--accent-fore-color);">${formattedValue}</div>
+                        `
+                    }
+                    // @@NOTE: edit mode TME related items (child rows): the old values are on the item, the new ones on 'swapItem'
+                    if (data.swapItem && data.swapItem[column.id] != value) {
+                        return `
+                            <div style="text-decoration: line-through; color: var(--label-color);">${formattedValue}</div>
+                            <div style="font-weight: bold; color: var(--accent-fore-color);">${data.swapItem[column.id + '_name'] || data.swapItem[column.id] || '&nbsp;'}</div>
                         `
                     }
                     return formattedValue;

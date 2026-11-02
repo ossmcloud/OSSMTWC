@@ -318,6 +318,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
                     { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Item' },
                     { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description' },
+                    { id: twcSrfItem.Fields.HEIGHT_ON_TOWER, title: 'Height on Tower', nullText: '' },
+                    { id: twcSrfItem.Fields.AZIMUTH, title: 'Azimuth', nullText: '' },
+                    { id: twcSrfItem.Fields.TYPE_OPT + '_name', title: 'Feeder Type', nullText: '' },
+                    { id: twcSrfItem.Fields.B_END, title: 'B-End', nullText: '' },
                     { id: twcEqAct.Fields.EA_TYPE + '_name', title: 'Type' },
                     { id: twcSafAction.Fields.SAF_ACTION_STATUS + '_name', title: 'Status' },
                     { id: 'saf-detach', title: '', styles: { 'width': '50px', 'text-align': 'center', 'padding': '0px' }, noSort: true, noFilter: true },
@@ -567,9 +571,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Eq. Type' },
                     { id: 'srf_eq_action_type', title: 'Type' },
                     { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description', nullText: '' },
-                    { id: twcSrfItem.Fields.LENGTH_MM, title: 'Length', nullText: '' },
-                    { id: twcSrfItem.Fields.WIDTH_MM, title: 'Width', nullText: '' },
-                    { id: twcSrfItem.Fields.DEPTH_MM, title: 'Depth', nullText: '' },
+                    { id: 'lwd', title: 'L/W/D', nullText: '' },
                     { id: twcSrfItem.Fields.HEIGHT_ON_TOWER, title: 'HtC', nullText: '' },
                     { id: twcSrfItem.Fields.AZIMUTH, title: 'Az', nullText: '' },
                     { id: twcSrfItem.Fields.B_END, title: 'B-End', nullText: '' },
@@ -688,6 +690,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fields[twcSrfItem.Fields.STEP_TYPE + '_name'] = { title: 'Class' };
             fields[twcSrfItem.Fields.ITEM_TYPE + '_name'] = { title: 'Item' };
             fields[twcSrfItem.Fields.DESCRIPTION] = { title: 'Description' };
+            fields[twcSrfItem.Fields.HEIGHT_ON_TOWER] = { title: 'Height on Tower', nullText: '' };
+            fields[twcSrfItem.Fields.AZIMUTH] = { title: 'Azimuth', nullText: '' };
+            fields[twcSrfItem.Fields.TYPE_OPT + '_name'] = { title: 'Feeder Type', nullText: '' };
+            fields[twcSrfItem.Fields.B_END] = { title: 'B-End', nullText: '' };
             fields[twcEqAct.Fields.EA_TYPE + '_name'] = { title: 'Type' };
             fields[twcSafAction.Fields.SAF_ACTION_STATUS + '_name'] = { title: 'Status', styles: { width: '120px', 'text-align': 'center' } };
 

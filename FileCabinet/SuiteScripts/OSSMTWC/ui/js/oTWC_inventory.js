@@ -104,11 +104,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.initInventoryMode();
                     this.#sitePanel = twcSiteInfoPanel.get({ page: this, data: window.twc.page.data.siteInfo.site });
 
+                    core.array.each(this.ui.controls, c => {
+                        if (c.type == 'table') { twcPageBase.initTableExpandCollapse(c); }
+                    })
+
                     if (this.data.recId) {
                         core.array.each(this.ui.controls, c => {
                             if (c.type == 'table') {
                                 var row = c.rows.find(r => { return r.data?.id == this.data.recId });
                                 if (row) {
+                                    // @@NOTE: ATME / Feeders are child rows (collapsed by default), expand the parent first
+                                    twcPageBase.expandTableRow(c, row);
                                     var divs = row.ui();
                                     divs[0].scrollIntoView({
                                         behavior: "smooth", // or "auto" or "instant"
@@ -140,6 +146,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.find('#add-equipment-button').on('click', async (e) => {
                     await this.addEquipment();
                 });
+                this.ui.on('change', e => {
+                    if (e.id != 'group-equipment-toggle') { return; }
+                    // @@NOTE: grouped / ungrouped view is rendered server side, reload the page with the 'grouped' parameter (grouped is the default so we only pass grouped=F)
+                    var url = new URL(location.href);
+                    if (!e.value || e.value == 'F') {
+                        url.searchParams.set('grouped', 'F');
+                    } else {
+                        url.searchParams.delete('grouped');
+                    }
+                    this.wait();
+                    location.href = url.toString();
+                })
             }
 
             async addEquipment() {

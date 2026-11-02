@@ -91,6 +91,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 installStatusFilter = `and    eq.custrecordtwc_eq_install_status = ${twcUtils.EqInstallStatus.Installed}`;
             }
 
+            // @@NOTE: TME / ATME / FEEDER are filtered by the structure selected on the SRF (the client does not pass it for GIE)
+            var structureFilter = '';
+            if (options.structure) {
+                structureFilter = `and    eq.${twcEquipment.Fields.INFRASTRUCTURE} = ${parseInt(options.structure)}`;
+            }
+
             var sql = `
                     select  eq.id, ${fieldsSql}, 
                             ${twcEquipment.Fields.DESCRIPTION},  
@@ -103,8 +109,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     and    eq.custrecord_twc_equip_class = ${options.eqClass}
                     and    infra.custrecord_twc_infra_site = ${options.site}
                     ${installStatusFilter}
+                    ${structureFilter}
                     order by eq.name
                 `
+            
+            
             return coreSQL.run(sql);
         }
         function getEquipmentChildren(options) {
@@ -607,6 +616,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         { name: `BUILTIN.DF(${twcEquipment.Fields.PARENT_TME_ID})`, alias: twcEquipment.Fields.PARENT_TME_ID },
                         { name: twcEquipment.Fields.MAKE },
                         { name: twcEquipment.Fields.MODEL },
+                        { name: twcEquipment.Fields.HEIGHT_ON_TOWER_M },
+                        { name: twcEquipment.Fields.AZIMUTH },
+                        // @@NOTE: feeder type is held in the equipment 'Type Opt' field (custrecord_twc_equip_opt_type)
+                        { name: `BUILTIN.DF(${twcEquipment.Fields.OPT_TYPE})`, alias: twcEquipment.Fields.OPT_TYPE },
+                        { name: twcEquipment.Fields.B_END },
                     ]
                 },
                 orderBy: ['id'],
@@ -638,6 +652,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         return {
 
             getSRFInfoPanels: twcSrfUI.getSRFInfoPanels,
+            getSrfParentRefRows: twcSrfUI.getSrfParentRefRows,
             getSrfChildRecord: (options, userInfo) => {
                 var srf = twcSrf.get(options.srf.id);
                 srf.copyFromObject(options.srf);

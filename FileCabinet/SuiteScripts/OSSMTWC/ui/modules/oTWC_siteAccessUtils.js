@@ -525,6 +525,20 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 })
             }
 
+            // @@NOTE: actions detached from another SAF while picking the actions (oTWC_siteAccess.js: TWCEqActionForm.detachOtherSaf)
+            //         applied now (on save) and before the actions below are attached to this SAF
+            if (payload.actions_detach_other) {
+                core.array.each(payload.actions_detach_other, d => {
+                    try {
+                        detachSafAction(d);
+                        saf.logInfo(`Eq. Action [${recu.lookUp(twcEqAct.Type, d.id, 'name')}] detached from SAF [${recu.lookUp(twcSaf.Type, d.saf, 'name')}]`);
+                    } catch (error) {
+                        saf.logEx('Error while detaching action from other SAF', error);
+                        errors = true;
+                    }
+                })
+            }
+
             if (payload.actions) {
                 core.array.each(payload.actions, a => {
                     try {
@@ -796,6 +810,13 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                         saf[twcSaf.Fields.STATUS] = twcSaf.Status.Pending;
                         saf[twcSaf.Fields.PICW] = null;
 
+                        // @@NOTE: the user can pick a different site when re-using a SAF (SAF locator re-use dialog)
+                        //         the structure belongs to the original site so it must be cleared (crews and actions are not copied on re-use anyway)
+                        if (pageData.siteId && pageData.siteId != saf[twcSaf.Fields.SITE]) {
+                            saf[twcSaf.Fields.SITE] = pageData.siteId;
+                            saf.siteId = pageData.siteId;
+                            saf[twcSaf.Fields.STRUCTURE] = null;
+                        }
                     }
 
                 } else {
@@ -822,7 +843,6 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             setSafReviewed: setSafReviewed,
             getSafTimeBlocks: getSafTimeBlocks,
 
-            detachSafAction: detachSafAction,
 
             deleteSaf: deleteSaf
 

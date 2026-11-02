@@ -7,9 +7,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, coreSql, b64, twcPageBase, twcConfig, googleMap, dialog, twcSiteInfoPanel, twcSiteLocatorPanel, uiTable, twcSite, twcUtils, twcSaf, twcSafAction, twcSafUI, twcIcons, twcUIPanel, twcUI, twcFile) => {
 
         var _safLink = null;
-        function safReuseLink(id) {
+        function safReuseLink(id, siteId) {
             if (!_safLink) { _safLink = core.url.script('otwc_siteaccess_sl'); }
-            return `${_safLink}&recId=${id}&edit=T&reUse=T`
+            return `${_safLink}&recId=${id}&edit=T&reUse=T${siteId ? `&siteId=${siteId}` : ''}`
         }
 
         class TWCSiteTable {
@@ -25,7 +25,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     noSort: true,
                     sortIdx: 0,
                     initValue: (d) => {
-                        return `<a href="${safReuseLink(d.id)}">re-use</a>`;
+                        return `<a href="#" class="twc-saf-reuse" data-id="${d.id}">re-use</a>`;
                     }
                 })
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
@@ -35,9 +35,47 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     fitContainer: false
                 });
 
+                // @@NOTE: delegated so it survives table refresh / sort
+                jQuery('#twc_sites_table').on('click', '.twc-saf-reuse', e => {
+                    e.preventDefault();
+                    var safId = jQuery(e.currentTarget).data('id');
+                    var saf = this.#page.data.data.safInfo.safs.find(s => { return s.id == safId });
+                    if (saf) { this.reUseSaf(saf); }
+                });
+
             }
 
             get table() { return this.#table.table; }
+
+            reUseSaf(saf) {
+                var sites = this.#page.data.data.safInfo.sites.map(s => { return { value: s.id, text: s.name } });
+                // @@NOTE: the SAF site may not be in the list (e.g. non public site for non employees), make sure it is there so it can be preselected
+                if (!sites.find(s => { return s.value == saf.site_id })) {
+                    sites.unshift({ value: saf.site_id, text: saf.site_id_text });
+                }
+
+                var formConfig = {
+                    controls: [
+                        { type: twcUI.CTRL_TYPE.DROPDOWN, id: 'reuse-site', label: 'Site', dataSource: sites, value: saf.site_id, allowAll: false, width: '100%', mandatory: true, lineBreak: true },
+                    ]
+                }
+                var form = twcUI.init(formConfig);
+                dialog.open({
+                    title: `Re-use SAF ${saf.name}`,
+                    content: form.ui,
+                    size: { width: '450px', height: '200px' },
+                    ok: () => {
+                        try {
+                            var values = form.getValues(true);
+                            location.href = safReuseLink(saf.id, values['reuse-site'].value);
+                            return true;
+                        } catch (error) {
+                            dialog.error(error);
+                            return false;
+                        }
+                    }
+                });
+            }
 
             colInit(tbl, col) {
                 if (col.id == 'id') { return false; }
@@ -831,8 +869,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             #form = null;
             #safActionsTable = null;
             #waitPanel = null;
+            // @@NOTE: detach from another SAF is not immediate: it is kept here and handed to the SAF (actions_detach_other) when the dialog is confirmed
+            //         the detach is then applied when the SAF is saved (see oTWC_siteAccessUtils.js: save, before the actions are attached)
+            #pendingDetaches = [];
             constructor(safBuilder) {
                 this.#safBuilder = safBuilder;
+                this.#pendingDetaches = [...(this.data.siteAccessInfo?.actions_detach_other || [])];
             }
 
             get page() { return this.#safBuilder.page; }
@@ -870,6 +912,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             selectSrf() {
                 this.waitShow();
                 this.page.post({ action: 'get-srf-actions' }, { srf: this.#form.getControl('saf-action-srf').value, thisSaf: this.data.siteAccessInfo?.id }).then(res => {
+                    core.array.each(res.data, action => { this.applyPendingDetach(action); });
                     this.#safActionsTable.render(res.data, true);
                     // this.#safActionsTable.ui.find('.twc-srf-item-expand').click(e => {
                     //     e.preventDefault();
@@ -900,14 +943,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     //     var checked = jQuery(e.currentTarget).is(':checked') ? 'checked' : '';
                     //     this.#safActionsTable.ui.find('input[type="checkbox"]').prop('checked', checked);
                     // })
-                    this.#safActionsTable.ui.find('span[data-action="detach"]').on('click', e => {
-                        this.detachOtherSaf(e);
-                    })
+                    this.bindDetachOtherSaf();
                     this.waitClose();
                 }).catch(err => {
                     dialog.error(err);
                     this.waitClose();
                 })
+            }
+
+            bindDetachOtherSaf() {
+                this.#safActionsTable.ui.find('span[data-action="detach"]').on('click', e => {
+                    this.detachOtherSaf(e);
+                })
+            }
+
+            // @@NOTE: an action attached to another SAF that is pending detach can be selected (checkbox) like a free one
+            applyPendingDetach(action) {
+                var pending = this.#pendingDetaches.find(d => { return d.id == action.ea_id; });
+                if (!pending) { return false; }
+                action.select = `
+                    <input data-id="${action.ea_id}" data-srf-id="${action.srf_item}" data-srf-parent-id="${action.parent_srf_item || ''}" type="checkbox" />
+                    <div style="font-size: 0.8em; font-style: italic; color: var(--accent-fore-color);">detach from<br />${action['custrecord_twc_eq_action_saf_name'] || ''}<br />on save</div>
+                `;
+                return true;
             }
 
             detachOtherSaf(e) {
@@ -918,20 +976,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     values.saf = safId;
                     values.id = eaId;
 
-                    dialog.saving(dlg);
+                    // @@NOTE: not saved now, applied when the SAF is saved
+                    this.#pendingDetaches = this.#pendingDetaches.filter(d => { return d.id != eaId; });
+                    this.#pendingDetaches.push({ saf: values.saf, id: values.id, reason: values.reason, comment: values.comment });
 
-                    this.page.post({ action: 'detach-saf-action' }, values).then(res => {
-                        this.selectSrf();
-                        dlg.close();
-                    }).catch(err => {
-                        dialog.savingError(dlg, err);
-                    })
+                    var action = this.#safActionsTable.data.find(a => { return a.ea_id == eaId; });
+                    if (action) { this.applyPendingDetach(action); }
+                    this.#safActionsTable.render(this.#safActionsTable.data, true);
+                    this.bindDetachOtherSaf();
 
-                    return false;
+                    return true;
                 })
-
-
-
             }
 
             render(safActions, table) {
@@ -956,7 +1011,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     dialog.confirm({ title: 'manage action', message: this.#form.ui, width: '1250px', height: '750px' }, () => {
                         try {
-                            if (this.#safActionsTable.ui.find('input[data-id]:checked').length == 0) { throw new Error('No actions selected'); }
+                            // @@NOTE: detaching from another SAF only (no action selected) is allowed
+                            if (this.#safActionsTable.ui.find('input[data-id]:checked').length == 0 && this.#pendingDetaches.length == 0) { throw new Error('No actions selected'); }
+                            this.data.siteAccessInfo.actions_detach_other = this.#pendingDetaches;
 
                             var tableActions = this.#safActionsTable.ui.find('input[data-id]').toArray();
                             if (!this.data.siteAccessInfo.actions) { this.data.siteAccessInfo.actions = []; }

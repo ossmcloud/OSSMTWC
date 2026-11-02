@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_srfItem.js', '../data/oTWC_srfReview.js', '../data/oTWC_sds.js', '../data/oTWC_sdsEquipment.js', '../data/oTWC_fileType.js', '../data/oTWC_company.js', '../data/oTWC_site.js', '../data/oTWC_file.js'],
-    function (core, coreSql, b64, recu, twcUtils, twcSrf, twcSrfItem, twcSrfReview, twcSds, twcSdsEquipment, twcFileType, twcCompany, twcSite, twcFile) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_utils.js', '../data/oTWC_srf.js', '../data/oTWC_srfItem.js', '../data/oTWC_srfReview.js', '../data/oTWC_sds.js', '../data/oTWC_sdsEquipment.js', '../data/oTWC_fileType.js', '../data/oTWC_company.js', '../data/oTWC_site.js', '../data/oTWC_file.js', '../data/oTWC_equipment.js'],
+    function (core, coreSql, b64, recu, twcUtils, twcSrf, twcSrfItem, twcSrfReview, twcSds, twcSdsEquipment, twcFileType, twcCompany, twcSite, twcFile, twcEquipment) {
 
         function getSrfDrawingFiles(srfId, fileId) {
             var filters = {
@@ -22,7 +22,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     [twcFile.Fields.RECORD_TYPE]: twcSite.Type,
                     [twcFile.Fields.RECORD_ID]: siteId,
                     [twcFileType.Fields.LICENSE_MAP]: 'T',
-                    [twcFile.Fields.META_DATA]: `c:${companyId}`,
+                    // @@IMPORTANT NOTE: License Maps are only available for Vodafone but it that changes we'll need to add a 'customer' field to the TWC File table and use it here
+                    // [twcFile.Fields.META_DATA]: `c:${companyId}`,
                 }
             });
         }
@@ -127,7 +128,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             var srfItems = coreSql.run(`
-                select  eq.id, eq.custrecord_twc_equip_parent_tme_id as parent_tme, BUILTIN.DF(eqAct.custrecord_twc_eq_action_srf) as srf_id, sdsi.custrecord_twc_sds_item_equipment_class as equip_class,
+                select  sds.id as sds_id, sdsi.id as sds_eq_id,
+                        eq.id, eq.custrecord_twc_equip_parent_tme_id as parent_tme, BUILTIN.DF(eqAct.custrecord_twc_eq_action_srf) as srf_id, sdsi.custrecord_twc_sds_item_equipment_class as equip_class,
                         NVL(lsts.custrecord_twc_equip_licence_status_sds, lsts.name) as status, BUILTIN.DF(sdsi.custrecord_twc_sds_item_equipment_type) as type,
                         sdsi.custrecord_twc_sds_item_description as description, sdsi.custrecord_twc_sds_item_length as length,
                         sdsi.custrecord_twc_sds_item_width as width, sdsi.custrecord_twc_sds_item_depth as depth,
@@ -145,6 +147,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 order by eq.custrecord_twc_equip_class, sdsi.created
             `)
 
+            // @@NOTE: print the equipment in the same order as the SDS equipment dialog (SRF oldest to newest, see getSdsEquipments)
+            //         the template groups by class (TME table / GIE table) and lists ATME then Feeders under each TME, each group keeps this order
+            if (srfItems.length > 0) {
+                var sdsEqOrder = {};
+                core.array.each(getSdsEquipments({ id: srfItems[0].sds_id }), (sdsEq, idx) => { sdsEqOrder[sdsEq.id] = idx; });
+                srfItems.sort((a, b) => {
+                    var idxA = sdsEqOrder[a.sds_eq_id] ?? Number.MAX_SAFE_INTEGER;
+                    var idxB = sdsEqOrder[b.sds_eq_id] ?? Number.MAX_SAFE_INTEGER;
+                    return idxA - idxB;
+                });
+            }
 
             srfInfo.srfItems = [];
             core.array.each(srfItems, i => {
@@ -239,9 +252,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 sqlFields += `eq.${copyFields[k]}, `;
             }
 
+            // @@NOTE: default licence status on the SDS (the equipment record is not changed):
+            //         'to licence' statuses   => Licenced
+            //         'to unlicence' statuses => Prop to Unlicence
+            var sdsLicenceStatusDefaults = {
+                [twcUtils.EqLicenseStatus.ReqtoLicence]: twcUtils.EqLicenseStatus.Licenced,
+                [twcUtils.EqLicenseStatus.ProptoLicence]: twcUtils.EqLicenseStatus.Licenced,
+                [twcUtils.EqLicenseStatus.ProptoLicence_LicenceRequested]: twcUtils.EqLicenseStatus.Licenced,
+                [twcUtils.EqLicenseStatus.ProptoLicence_LicenceIssued]: twcUtils.EqLicenseStatus.Licenced,
+                [twcUtils.EqLicenseStatus.ReqtoUnlicence]: twcUtils.EqLicenseStatus.ProptoUnlicence,
+                [twcUtils.EqLicenseStatus.ProptoUnlicence]: twcUtils.EqLicenseStatus.ProptoUnlicence,
+                [twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceRequested]: twcUtils.EqLicenseStatus.ProptoUnlicence,
+                [twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceIssued]: twcUtils.EqLicenseStatus.ProptoUnlicence,
+            };
 
             coreSql.each(`
                 select  eq.id as eq_id, sdsi.id as sds_eq_id, srfi.id as srf_eq_id, srfi.custrecord_twc_srf_itm_invent_flag as srf_inventory_flag,
+                        sdsi.${twcSdsEquipment.Fields.LICENSE_STATUS} as sds_licence_status,
                         ${sqlFields}
                 
                 from    customrecord_twc_sds sds 
@@ -259,18 +286,31 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 order by eq.created, BUILTIN.DF(eq.custrecord_twc_equip_class)
             `, eq => {
 
+                var sdsLicenceStatus = sdsLicenceStatusDefaults[eq.custrecord_twc_eq_licence_status];
+
                 // @@TODO: we should check if something has changed and update the sds eq. table???
-                if (eq.sds_eq_id) { return; }
+                if (eq.sds_eq_id) {
+                    // @@NOTE: existing sds eq.: apply the default licence status only if the user has not changed it (i.e.: still the same as the equipment)
+                    if (sdsLicenceStatus && eq.sds_licence_status == eq.custrecord_twc_eq_licence_status && sdsLicenceStatus != eq.sds_licence_status) {
+                        recu.submit(twcSdsEquipment.Type, eq.sds_eq_id, twcSdsEquipment.Fields.LICENSE_STATUS, sdsLicenceStatus);
+                    }
+                    return;
+                }
 
                 var sdsEq = twcSdsEquipment.get(eq.sds_eq_id);
                 sdsEq.sDS = sdsId;
                 sdsEq.sRFItem = eq.srf_eq_id;
                 sdsEq.equipment = eq.eq_id;
                 sdsEq.partofSDS = (eq.srf_eq_id) != null;
-                sdsEq.includeinSDS = true;
+                // @@NOTE: equipment with licence status Draft or Unlicenced is not included by default
+                sdsEq.includeinSDS = [twcUtils.EqLicenseStatus.Draft, twcUtils.EqLicenseStatus.Unlicenced].indexOf(parseInt(eq.custrecord_twc_eq_licence_status)) < 0;
 
                 for (var k in copyFields) {
                     sdsEq.set(k, eq[copyFields[k]])
+                }
+
+                if (sdsLicenceStatus) {
+                    sdsEq.set(twcSdsEquipment.Fields.LICENSE_STATUS, sdsLicenceStatus);
                 }
 
                 if (eq.srf_inventory_flag) {
@@ -287,8 +327,70 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             recu.submit(twcSdsEquipment.Type, payload.id, payload.field, payload.value);
         }
 
+        // @@NOTE: returns the sds equipment ordered as parent / child: each parent (TME / GIE) is followed by its related equipment (ATME / Feeders)
+        //         the relation comes from the equipment record (PARENT_TME_ID), children get child_level > 0
+        //         equipment whose parent is not in the list is shown as a parent (child_level = 0)
+        //         also adds: infra_id (infrastructure id of the structure) and srf_id / srf_name:
+        //              the SRF that licensed the equipment (SRF of the equipment 'associated eq. action', set on licence only)
+        //              @@IMPORTANT: same SRF as the 'SRF ID' column on the SDS PDF (getSrfInfo), which is also printed in this order
         function getSdsEquipments(sds) {
-            return twcSdsEquipment.select({ where: { [twcSdsEquipment.Fields.SDS]: sds.id }, useNames: true })
+            var sdsEquipments = twcSdsEquipment.select({
+                where: { [twcSdsEquipment.Fields.SDS]: sds.id },
+                orderBy: ['id'],
+                useNames: true
+            });
+
+            var extraInfo = {};
+            coreSql.each(`
+                select  sdsi.id,
+                        eq.${twcEquipment.Fields.PARENT_TME_ID} as parent_eq_id,
+                        infra.custrecord_twc_infra_id as infra_id,
+                        eqAct.custrecord_twc_eq_action_srf as srf_id, BUILTIN.DF(eqAct.custrecord_twc_eq_action_srf) as srf_name
+                from    ${twcSdsEquipment.Type} sdsi
+                left join ${twcEquipment.Type} eq on eq.id = sdsi.${twcSdsEquipment.Fields.EQUIPMENT}
+                left join customrecord_twc_infra infra on infra.id = sdsi.${twcSdsEquipment.Fields.INFRASTRUCTURE}
+                left join customrecord_twc_eq_action eqAct on eqAct.id = eq.custrecord_twc_equip_assoc_eq_action
+                where   sdsi.${twcSdsEquipment.Fields.SDS} = ${sds.id}
+            `, info => {
+                extraInfo[info.id] = info;
+            });
+
+            core.array.each(sdsEquipments, sdsEq => {
+                var info = extraInfo[sdsEq.id] || {};
+                sdsEq.parent_eq_id = info.parent_eq_id || null;
+                sdsEq.infra_id = info.infra_id || '';
+                sdsEq.srf_id = info.srf_id || null;
+                sdsEq.srf_name = info.srf_name || '';
+            });
+
+            // @@NOTE: order by SRF, oldest to newest (by SRF internal id), equipment with no SRF last, then by sds eq. id
+            //         applies to parents and to the children within each parent (nesting below keeps this order)
+            sdsEquipments.sort((a, b) => {
+                var srfA = parseInt(a.srf_id) || Number.MAX_SAFE_INTEGER;
+                var srfB = parseInt(b.srf_id) || Number.MAX_SAFE_INTEGER;
+                if (srfA != srfB) { return srfA - srfB; }
+                return parseInt(a.id) - parseInt(b.id);
+            });
+
+            var orderedEquipments = [];
+            var added = {};
+            const addWithChildren = (sdsEq, level) => {
+                if (added[sdsEq.id]) { return; }
+                added[sdsEq.id] = true;
+                sdsEq.child_level = level;
+                orderedEquipments.push(sdsEq);
+                var children = sdsEquipments.filter(c => { return c.parent_eq_id && c.parent_eq_id == sdsEq[twcSdsEquipment.Fields.EQUIPMENT]; });
+                core.array.each(children, child => { addWithChildren(child, level + 1); });
+            }
+
+            core.array.each(sdsEquipments, sdsEq => {
+                var hasParent = sdsEq.parent_eq_id && sdsEquipments.find(p => { return p[twcSdsEquipment.Fields.EQUIPMENT] == sdsEq.parent_eq_id; });
+                if (!hasParent) { addWithChildren(sdsEq, 0); }
+            });
+            // @@NOTE: safety net (e.g.: circular references), anything not added yet is shown as a parent
+            core.array.each(sdsEquipments, sdsEq => { addWithChildren(sdsEq, 0); });
+
+            return orderedEquipments;
         }
 
         function getFormData(srf) {
