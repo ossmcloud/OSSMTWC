@@ -16,11 +16,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         const FEATURE_ID = {
             SITE_ACCESS: 'site_access',
             SPACE_REQUEST: 'space_request',
-            TROUBLE_TICKET: 'trouble_ticket'
+            TROUBLE_TICKET: 'trouble_ticket',
+
         }
-
-
-        const TEST_ROLE = 1;
 
         function loadPermissions(roleId) {
             var sql = {
@@ -41,7 +39,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
             var permissions = coreSQL.run(sql);
-            var menuItems = [{value: '', text: '-- menu items --'}];
+            var menuItems = [{ value: '', text: '-- menu items --' }];
             core.array.each(permissions, p => {
                 if (p.no_menu == 'T') { return; }
                 menuItems.push(p);
@@ -56,20 +54,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function get(context) {
 
             var roleId = core.env.role();
-            if (TEST_ROLE) {
-                roleId = TEST_ROLE;
-            } else {
-                if (roleId != 3) {
-                    roleId = coreSQL.scalar({
-                        query: `select custrecord_twc_role as r from role where id = ?`,
-                        params: [roleId]
-                    })
-                }
 
-                // @@NOTE: if the field on role is not set we'll get null, set to zero tp avoid query below to fail 
-                if (!roleId) { roleId = 0; }
-
+            if (roleId != 3) {
+                roleId = coreSQL.scalar({
+                    query: `select custrecord_twc_role as r from role where id = ?`,
+                    params: [roleId]
+                })
             }
+
+            // @@NOTE: if the field on role is not set we'll get null, set to zero tp avoid query below to fail 
+            if (!roleId) { roleId = 0; }
+
 
             var p = loadPermissions(roleId);
             var currentPermission = p.permissions.find(p => { return p.value == context.request.parameters.script })
