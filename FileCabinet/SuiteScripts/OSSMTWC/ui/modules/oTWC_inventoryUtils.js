@@ -94,7 +94,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 },
                 {
                     field: 'length_width_height',
-                    title: 'Length / Width / Height ',
+                    title: 'L/W/D',
                     nullText: '',
                     sql: `
                         CASE

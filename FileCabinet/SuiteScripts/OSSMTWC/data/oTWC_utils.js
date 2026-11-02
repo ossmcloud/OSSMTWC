@@ -1302,6 +1302,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
                 action['saf-detach'] = `<span class="o-table-action twc-clickable" data-action="delete">${twcIcons.get('trash', 16, 'red')}</span>`
                 action['srf_eq_action_type'] = `${action['custrecord_twc_srf_itm_req_type_name']} /  ${action['custrecord_twc_eq_action_type_name']}`;
+                // @@NOTE: single L/W/D column (the table is sent to the client as JSON so we cannot use a formatValue function)
+                action['lwd'] = formatLWD(action['custrecord_twc_srf_itm_length_mm'], action['custrecord_twc_srf_itm_width_mm'], action['custrecord_twc_srf_itm_depth_mm']);
                 if (action.parent_srf_item) {
                     var parent = srfActions.find(a => { return a.srf_item == action.parent_srf_item })
                     if (!parent.relatedItems) {
@@ -1587,6 +1589,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getLookUpTableValues('customrecord_twc_company',"and custrecord_twc_cus_flag = 1");
         }
 
+        // @@NOTE: Length / Width / Depth (mm) shown as a single 'L/W/D' column, e.g.: '600 / 300 / 150' (missing values as '-', all missing => '')
+        //         used on the server and on the client (SRF step tables, SAF actions, equipment / library pick lists, site equipment)
+        function formatLWD(length, width, depth) {
+            const isEmpty = (v) => { return v === null || v === undefined || v === ''; };
+            if (isEmpty(length) && isEmpty(width) && isEmpty(depth)) { return ''; }
+            return [length, width, depth].map(v => { return isEmpty(v) ? '-' : v; }).join(' / ');
+        }
 
 
         return {
@@ -1684,6 +1693,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafTimeBlocks: getSafTimeBlocks,
             getSafReviewers: getSafReviewers,
             getSafActions: getSafActions,
+            formatLWD: formatLWD,
             getSafActionDetachReason: getSafActionDetachReason,
             getSrfDropDown: getSrfDropDown,
             getSrfActions: getSrfActions,

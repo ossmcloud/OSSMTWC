@@ -29,9 +29,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 { field: twcInventory.Fields.EQUIPMENT_TYPE, title: 'Type', styles: { width: '100px' } },
                 { field: twcInventory.Fields.MAKE, title: 'Make', styles: { width: '100px' } },
                 { field: twcInventory.Fields.MODEL, title: 'Model' },
-                { field: twcInventory.Fields.LENGTH_MM, title: 'Length (mm)' },
-                { field: twcInventory.Fields.WIDTH_MM, title: 'Width (mm)' },
-                { field: twcInventory.Fields.HEIGHTDEPTH_MM, title: 'Depth<br />(mm)' },
+                // @@NOTE: Length / Width / Depth shown as a single 'L/W/D' column (width / depth are still selected but hidden)
+                {
+                    field: twcInventory.Fields.LENGTH_MM, title: 'L/W/D', styles: { 'text-align': 'center' },
+                    formatValue: (v, fv, data, col) => { return twcUtils.formatLWD(data[twcInventory.Fields.LENGTH_MM], data[twcInventory.Fields.WIDTH_MM], data[twcInventory.Fields.HEIGHTDEPTH_MM]); }
+                },
+                { field: twcInventory.Fields.WIDTH_MM, hide: true },
+                { field: twcInventory.Fields.HEIGHTDEPTH_MM, hide: true },
                 { field: twcInventory.Fields.HEIGHT_ON_TOWER_M, title: 'Height on<br />Tower' },
 
             ];
@@ -44,24 +48,21 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 [twcInventory.Fields.EQUIPMENT_INSTALL_STATUS]: 'Install Status',
                 [twcInventory.Fields.EQUIPMENT_LICENCE_STATUS]: 'License Status',
                 [twcInventory.Fields.CUSTOMER]: 'Customer',
-                [twcInventory.Fields.VOLTAGE_TYPE]: { title: 'Type' },
+                [twcInventory.Fields.VOLTAGE_TYPE]: {
+                    title: 'Type',
+                    // @@NOTE: feeders show the feeder type (OPT_TYPE) under the 'Type' column
+                    formatValue: (v, fv, data, col) => {
+                        if (data[twcInventory.Fields.EQUIPMENT_CLASS] == EQ_CLASS_ENUM.FEEDER) { return data[twcInventory.Fields.OPT_TYPE + '_name'] || '-'; }
+                        return fv;
+                    }
+                },
                 [twcInventory.Fields.DESCRIPTION]: 'Desc',
                 [twcInventory.Fields.LOCATION_NOTES]: 'Location',
                 [twcInventory.Fields.LENGTH_MM]: {
                     title: 'L/W/D',
                     styles: { 'text-align': 'center' },
                     formatValue: (v, fv, data, col) => {
-                        var l = data[twcInventory.Fields.LENGTH_MM] || '';
-                        var w = data[twcInventory.Fields.WIDTH_MM] || '';
-                        var d = data[twcInventory.Fields.HEIGHTDEPTH_MM] || '';
-
-                        var res = l;
-                        if (w) { res += ' / '; }
-                        res += w;
-                        if (d) { res += ' / '; }
-                        res += d;
-
-                        return res;
+                        return twcUtils.formatLWD(data[twcInventory.Fields.LENGTH_MM], data[twcInventory.Fields.WIDTH_MM], data[twcInventory.Fields.HEIGHTDEPTH_MM]);
                     }
                 },
                 [twcInventory.Fields.AZIMUTH]: { title: 'Az', styles: { width: '65px' } },
@@ -73,6 +74,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 [twcInventory.Fields.WIDTH_MM]: { hide: true },
                 [twcInventory.Fields.HEIGHTDEPTH_MM]: { hide: true },
                 [twcInventory.Fields.PARENT_TME_ID]: { hide: true },
+                [twcInventory.Fields.OPT_TYPE]: { hide: true },
             }
 
             for (var k in tableFields) {
@@ -140,7 +142,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return res;
         }
 
-        function getInvInfoPanels_Type(dataSource, title, items, withChildren) {
+        // @@NOTE: columns hidden on the single class tables (not grouped view), the fields are still loaded (e.g.: class is needed for the grouping)
+        const CLASS_HIDDEN_FIELDS = {
+            [EQ_CLASS_ENUM.TME]: [twcInventory.Fields.EQUIPMENT_CLASS],
+            [EQ_CLASS_ENUM.ATME]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.AZIMUTH, twcInventory.Fields.B_END],
+            [EQ_CLASS_ENUM.GIE]: [twcInventory.Fields.AZIMUTH],
+            [EQ_CLASS_ENUM.FEEDER]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.LENGTH_MM, twcInventory.Fields.AZIMUTH, twcInventory.Fields.B_END, twcInventory.Fields.CUSTOMER_REF],
+        }
+
+        // @@NOTE: eqClass is only passed for the single class tables (not grouped view)
+        function getInvInfoPanels_Type(dataSource, title, items, withChildren, eqClass) {
             var fieldGroup = { id: 'site-inventory', title: title, collapsed: false, controls: [] };
 
             var tmeInventories = { id: 'site-inventory-info', fields: [] };
@@ -151,6 +162,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 tableFields['expand'] = { title: `<span class="twc-srf-item-expand-all" data-collapsed="true">+</span>`, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
             }
             Object.assign(tableFields, getSiteInventoryTableFields());
+
+            if (eqClass) {
+                core.array.each(CLASS_HIDDEN_FIELDS[eqClass] || [], f => { tableFields[f].hide = true; });
+                // @@NOTE: the feeder table 'Type' column shows the feeder type (see formatValue in getSiteInventoryTableFields)
+                if (eqClass == EQ_CLASS_ENUM.FEEDER) { tableFields[twcInventory.Fields.VOLTAGE_TYPE].title = 'Feeder Type'; }
+            }
 
             if (withChildren) {
                 // @@REVIEW: we need to fix filters sorting (on table ui) with child rows before we can enable them
@@ -176,7 +193,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         // @@NOTE: grouped (default) => TME / GIE tables with the related ATME / Feeders as child rows (+ unlinked ATME / Feeders if any)
-        //         not grouped      => one table per equipment class (TME / ATME / GIE / Feeders)
+        //         not grouped      => one table per equipment class (TME / ATME / Feeders / GIE)
         function getInvInfoPanels(dataSource, userInfo, grouped) {
             dataSource.Type = twcSite.Type;
             if (grouped === undefined) { grouped = true; }
@@ -184,8 +201,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var fieldGroups = [];
             if (!grouped) {
-                core.array.each([EQ_CLASS_ENUM.TME, EQ_CLASS_ENUM.ATME, EQ_CLASS_ENUM.GIE, EQ_CLASS_ENUM.FEEDER], eqClass => {
-                    fieldGroups.push(getInvInfoPanels_Type(dataSource, EQ_CLASS_TITLES[eqClass], equipment[eqClass], false))
+                core.array.each([EQ_CLASS_ENUM.TME, EQ_CLASS_ENUM.ATME, EQ_CLASS_ENUM.FEEDER, EQ_CLASS_ENUM.GIE], eqClass => {
+                    fieldGroups.push(getInvInfoPanels_Type(dataSource, EQ_CLASS_TITLES[eqClass], equipment[eqClass], false, eqClass))
                 })
                 return fieldGroups;
             }

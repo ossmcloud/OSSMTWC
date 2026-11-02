@@ -79,7 +79,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             } else if (srfItem.stepType == twcSrfItem.StepType.FEEDER) {
                 specInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfStructure, dataSource: siteStructures, mandatory: true, readOnly: true });
-                specInfo.fields.push({ id: twcSrfItem.Fields.TYPE_OPT, label: 'Type Opt', dataSource: twcUtils.getSrfItemTypeOpts(userInfo), mandatory: true })
+                specInfo.fields.push({ id: twcSrfItem.Fields.TYPE_OPT, label: 'Feeder Type', dataSource: twcUtils.getSrfItemTypeOpts(userInfo), mandatory: true })
 
             } else if (srfItem.stepType == twcSrfItem.StepType.GIE) {
                 specInfo.fields.push({ id: twcSrfItem.Fields.CUSTOMER_REF, label: 'Customer Ref.', mandatory: true })
@@ -110,7 +110,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         { id: twcSrfItem.Fields.MAKE, title: 'Make', nullText: '' },
                         { id: twcSrfItem.Fields.MODEL, title: 'Model', nullText: '' },
                         { id: twcSrfItem.Fields.HEIGHT_ON_TOWER, title: 'Height on Tower', nullText: '' },
-                        { id: twcSrfItem.Fields.TYPE_OPT + '_name', title: 'Type Opt', nullText: '' },
+                        { id: twcSrfItem.Fields.TYPE_OPT + '_name', title: 'Feeder Type', nullText: '' },
 
                     ],
                     dataSource: getSrfAdditionalEquipment(srf, srfItem, userInfo),
@@ -168,16 +168,17 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fields[twcSrfItem.Fields.DESCRIPTION] = 'Description';
 
             if (stepType == twcSrfItem.StepType.FEEDER) {
-                fields[twcSrfItem.Fields.TYPE_OPT] = 'Type Opt';
+                fields[twcSrfItem.Fields.TYPE_OPT] = 'Feeder Type';
                 //fields[twcSrfItem.Fields.DESCRIPTION] = 'Description';
             } else {
                 fields[twcSrfItem.Fields.MAKE] = 'Make';
                 fields[twcSrfItem.Fields.MODEL] = 'Model';
                 //fields[twcSrfItem.Fields.DESCRIPTION] = 'Description';
                 if (stepType == twcSrfItem.StepType.TME || stepType == twcSrfItem.StepType.ATME) { fields[twcSrfItem.Fields.HEIGHT_ON_TOWER] = 'Height on Tower'; }
-                fields[twcSrfItem.Fields.LENGTH_MM] = 'Length (mm)';
-                fields[twcSrfItem.Fields.WIDTH_MM] = 'Width (mm)';
-                fields[twcSrfItem.Fields.DEPTH_MM] = 'Depth (mm)';
+                // @@NOTE: Length / Width / Depth shown as a single 'L/W/D' column (formatValue below), width / depth are still selected but hidden
+                fields[twcSrfItem.Fields.LENGTH_MM] = { title: 'L/W/D', styles: { 'text-align': 'center' } };
+                fields[twcSrfItem.Fields.WIDTH_MM] = { hide: true };
+                fields[twcSrfItem.Fields.DEPTH_MM] = { hide: true };
                 if (stepType == twcSrfItem.StepType.TME || stepType == twcSrfItem.StepType.ATME) { fields[twcSrfItem.Fields.WEIGHT_KG] = 'Weight (kg)'; }
 
                 if (userInfo.isEmployee) {
@@ -241,6 +242,42 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 if (k == 'expand') { continue; }
                 var col = fields[k];
                 col.formatValue = (value, formattedValue, data, column) => {
+                    // @@NOTE: single L/W/D column (built from the length / width / depth fields), same swap display as the other columns
+                    if (column.id == twcSrfItem.Fields.LENGTH_MM) {
+                        const lwd = (d) => { return twcUtils.formatLWD(d[twcSrfItem.Fields.LENGTH_MM], d[twcSrfItem.Fields.WIDTH_MM], d[twcSrfItem.Fields.DEPTH_MM]); };
+                        var lwdValue = lwd(data);
+                        if (data.swappedItem && lwd(data.swappedItem) != lwdValue) {
+                            return `
+                                <div style="text-decoration: line-through; color: var(--label-color);">${lwd(data.swappedItem) || '&nbsp;'}</div>
+                                <div style="font-weight: bold; color: var(--accent-fore-color);">${lwdValue || '-'}</div>
+                            `
+                        }
+                        if (data.swapItem && lwd(data.swapItem) != lwdValue) {
+                            return `
+                                <div style="text-decoration: line-through; color: var(--label-color);">${lwdValue || '-'}</div>
+                                <div style="font-weight: bold; color: var(--accent-fore-color);">${lwd(data.swapItem) || '&nbsp;'}</div>
+                            `
+                        }
+                        return lwdValue || '-';
+                    }
+                    // @@NOTE: TME table: feeder rows (related items) show the feeder type under the 'Description' column
+                    if (stepType == twcSrfItem.StepType.TME && column.id == twcSrfItem.Fields.DESCRIPTION && data[twcSrfItem.Fields.STEP_TYPE] == twcSrfItem.StepType.FEEDER) {
+                        const feederType = (d) => { return d[twcSrfItem.Fields.TYPE_OPT + '_name'] || ''; };
+                        var feederTypeValue = feederType(data);
+                        if (data.swappedItem && feederType(data.swappedItem) != feederTypeValue) {
+                            return `
+                                <div style="text-decoration: line-through; color: var(--label-color);">${feederType(data.swappedItem) || '&nbsp;'}</div>
+                                <div style="font-weight: bold; color: var(--accent-fore-color);">${feederTypeValue || '-'}</div>
+                            `
+                        }
+                        if (data.swapItem && feederType(data.swapItem) != feederTypeValue) {
+                            return `
+                                <div style="text-decoration: line-through; color: var(--label-color);">${feederTypeValue || '-'}</div>
+                                <div style="font-weight: bold; color: var(--accent-fore-color);">${feederType(data.swapItem) || '&nbsp;'}</div>
+                            `
+                        }
+                        return feederTypeValue || '-';
+                    }
                     if (data.swappedItem && data.swappedItem[column.id] != value) {
                         return `
                             <div style="text-decoration: line-through; color: var(--label-color);">${data.swappedItem[column.id] || '&nbsp;'}</div>

@@ -1057,6 +1057,42 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             //         any change here needs to be reflected there
                             core.array.each(c.options.columns, col => {
                                 col.formatValue = (value, formattedValue, data, column) => {
+                                    // @@NOTE: single L/W/D column (built from the length / width / depth fields), same swap display as the other columns
+                                    if (column.id == twcSrfItem.Fields.LENGTH_MM) {
+                                        const lwd = (d) => { return twcUtils.formatLWD(d[twcSrfItem.Fields.LENGTH_MM], d[twcSrfItem.Fields.WIDTH_MM], d[twcSrfItem.Fields.DEPTH_MM]); };
+                                        var lwdValue = lwd(data);
+                                        if (data.swappedItem && lwd(data.swappedItem) != lwdValue) {
+                                            return `
+                                                <div style="text-decoration: line-through; color: var(--label-color);">${lwd(data.swappedItem) || '&nbsp;'}</div>
+                                                <div style="font-weight: bold; color: var(--accent-fore-color);">${lwdValue || '-'}</div>
+                                            `
+                                        }
+                                        if (data.swapItem && lwd(data.swapItem) != lwdValue) {
+                                            return `
+                                                <div style="text-decoration: line-through; color: var(--label-color);">${lwdValue || '-'}</div>
+                                                <div style="font-weight: bold; color: var(--accent-fore-color);">${lwd(data.swapItem) || '&nbsp;'}</div>
+                                            `
+                                        }
+                                        return lwdValue || '-';
+                                    }
+                                    // @@NOTE: TME table: feeder rows (related items) show the feeder type under the 'Description' column
+                                    if (c.id == `${twcSrfItem.Type}_${twcSrfItem.StepType.TME}` && column.id == twcSrfItem.Fields.DESCRIPTION && data[twcSrfItem.Fields.STEP_TYPE] == twcSrfItem.StepType.FEEDER) {
+                                        const feederType = (d) => { return d[twcSrfItem.Fields.TYPE_OPT + '_name'] || ''; };
+                                        var feederTypeValue = feederType(data);
+                                        if (data.swappedItem && feederType(data.swappedItem) != feederTypeValue) {
+                                            return `
+                                                <div style="text-decoration: line-through; color: var(--label-color);">${feederType(data.swappedItem) || '&nbsp;'}</div>
+                                                <div style="font-weight: bold; color: var(--accent-fore-color);">${feederTypeValue || '-'}</div>
+                                            `
+                                        }
+                                        if (data.swapItem && feederType(data.swapItem) != feederTypeValue) {
+                                            return `
+                                                <div style="text-decoration: line-through; color: var(--label-color);">${feederTypeValue || '-'}</div>
+                                                <div style="font-weight: bold; color: var(--accent-fore-color);">${feederType(data.swapItem) || '&nbsp;'}</div>
+                                            `
+                                        }
+                                        return feederTypeValue || '-';
+                                    }
                                     if (data.swappedItem && data.swappedItem[column.id] != value) {
                                         return `
                                             <div style="text-decoration: line-through; color: var(--label-color);">${data.swappedItem[column.id] || '&nbsp;'}</div>
