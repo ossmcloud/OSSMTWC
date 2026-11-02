@@ -270,7 +270,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (stepType == twcSrf.StepType.TME) {
                 core.array.each(tempItems, tempItem => {
                     items.push(tempItem);
-                    core.array.each(tempItem.relatedItems, ri => {
+                    core.array.each(tempItem.relatedItems || [], ri => {
                         ri.childRow = true;
                         items.push(ri);
                     })

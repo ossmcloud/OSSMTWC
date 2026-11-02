@@ -952,6 +952,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             location.href = core.url.script('otwc_spacerequest_sl', { recId: this.data.siteRequestInfo.id });
                         })
 
+                        // @@NOTE: developer only (button rendered only if core.me())
+                        this.ui.getControl('test-sds-equipment')?.on('click', e => {
+                            twcSdsEngineUI.testSDSEquipment(this, this.data.siteRequestInfo);
+                        })
+
                     } else {
                         this.ui.getControl('open-workflow-button')?.on('click', e => {
                             this.#workflowForm = twcSrfWorkflowEngineUI.getForm(this, { srf: this.data.siteRequestInfo.id })
@@ -1242,7 +1247,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         item.swapItem[twcSrfItem.Fields.STRUCTURE] = structure;
                         item.swapItem[twcSrfItem.Fields.STRUCTURE + '_name'] = structureName;
                     }
-                    core.array.each(item.relatedItems, ri => { setItemStructure(ri); })
+                    core.array.each(item.relatedItems || [], ri => { setItemStructure(ri); })
                 }
 
                 var confirmed = false;
@@ -1293,7 +1298,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     core.array.each(items, item => {
                         if (item.relatedItems?.length) { item.expand = EXPAND_HTML; }
                         rows.push(item);
-                        core.array.each(item.relatedItems, ri => {
+                        core.array.each(item.relatedItems || [], ri => {
                             ri.childRow = true;
                             rows.push(ri);
                         })

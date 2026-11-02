@@ -284,44 +284,57 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var sdsEqTable = jQuery(`
                 <div class="twc-div-table-r twc-div-table-rh">
-                    <div>   
-                        <div>Equipment</div>
-                        <div style="text-align: center;">Part of<br />SDS</div>
-                        <div style="text-align: center;">Include</div>
-                        <div>Class</div>
-                        <div>Type</div>
-                        <div>Make</div>
-                        <div>Model</div>
-                        <div>Install Status</div>
-                        <div>License Status</div>
-                        <div>B-End</div>
-                        <div>Customer Ref</div>
+                    <div>
+                        <div style="width: 30px; text-align: center; padding: 0px;"><span class="twc-srf-item-expand-all" data-collapsed="false">-</span></div>
+                        <div class="twc-sds-eq-sort" data-sort="equipment">Equipment<span class="twc-sds-eq-sort-dir"></span></div>
+                        <div class="twc-sds-eq-sort" data-sort="srf">SRF #<span class="twc-sds-eq-sort-dir"></span></div>
+                        <div class="twc-sds-eq-sort" data-sort="part" style="text-align: center;">Part of<br />SDS<span class="twc-sds-eq-sort-dir"></span></div>
+                        <div class="twc-sds-eq-sort" data-sort="include" style="text-align: center;">Include<span class="twc-sds-eq-sort-dir"></span></div>
+                        <div class="twc-sds-eq-sort" data-sort="infra">Infrastructure ID<span class="twc-sds-eq-sort-dir"></span></div>
+                        <div class="twc-sds-eq-sort" data-sort="class">Class<span class="twc-sds-eq-sort-dir"></span></div>
+                        <div class="twc-sds-eq-sort" data-sort="type">Type<span class="twc-sds-eq-sort-dir"></span></div>
+                        <div class="twc-sds-eq-sort" data-sort="makeModel">Make / Model<span class="twc-sds-eq-sort-dir"></span></div>
+                        <div class="twc-sds-eq-sort" data-sort="bEnd">B-End<span class="twc-sds-eq-sort-dir"></span></div>
+                        <div class="twc-sds-eq-sort" data-sort="install">Install Status<span class="twc-sds-eq-sort-dir"></span></div>
+                        <div class="twc-sds-eq-sort" data-sort="licence">Licence Status<span class="twc-sds-eq-sort-dir"></span></div>
                     </div>
                 </div>
             `);
+            sdsEqTable.find('.twc-sds-eq-sort').css({ cursor: 'pointer', 'user-select': 'none' });
             form.append(sdsEqTable);
 
+            // @@NOTE: parent / child: the server returns the equipment already ordered (parent followed by its children, see twcSdsEngine.getSdsEquipments)
+            //         each parent (child_level = 0) starts a group, children are tagged with the group id and can be collapsed (via 'o-row-hidden')
+            var srfLinkBase = core.url.script('otwc_spacerequest_sl');
+            var groupId = 0;
+            var sdsEqRows = [];
             core.array.each(resp.data, eq => {
+                var isChild = eq.child_level > 0;
+                if (!isChild) { groupId++; }
+                var eqIdStyle = isChild ? `style="padding-left: ${27 * eq.child_level}px; font-style: italic;"` : '';
+                var srfLink = eq.srf_id ? `<a href="${srfLinkBase}&recId=${eq.srf_id}" target="_blank">${eq.srf_name || eq.srf_id}</a>` : '';
                 var sdsEqTableRow = jQuery(`
-                    <div>   
-                        <div>${eq[twcSdsEquipment.Fields.EQUIPMENT_ID]}</div>
+                    <div class="${isChild ? 'twc-sds-eq-child' : 'twc-sds-eq-header'}" data-sds-eq-group="${groupId}">
+                        <div class="twc-sds-eq-toggle" style="width: 30px; text-align: center; padding: 0px;"></div>
+                        <div ${eqIdStyle}>${eq[twcSdsEquipment.Fields.EQUIPMENT_ID]}</div>
+                        <div>${srfLink}</div>
                         <div style="text-align: center;">
                             ${eq[twcSdsEquipment.Fields.PART_OF_SDS] == 'T' ? twcIcons.get('checkBox', 16) : ''}
                         </div>
                         <div style="text-align: center;">
                             <input type="checkbox" id="${twcSdsEquipment.Fields.INCLUDE_IN_SDS}" style="transform: scale(1.5);" ${eq[twcSdsEquipment.Fields.INCLUDE_IN_SDS] == 'T' ? 'checked' : ''} />
                         </div>
+                        <div>${eq.infra_id || ''}</div>
                         <div>${eq[twcSdsEquipment.Fields.EQUIPMENT_CLASS + '_name']}</div>
                         <div>${eq[twcSdsEquipment.Fields.EQUIPMENT_TYPE + '_name']}</div>
-                        <div>${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, id: twcSdsEquipment.Fields.MAKE, value: eq[twcSdsEquipment.Fields.MAKE], width: '100%' })}</div>
-                        <div>${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, id: twcSdsEquipment.Fields.MODEL, value: eq[twcSdsEquipment.Fields.MODEL], width: '100%' })}</div>
+                        <div>${[eq[twcSdsEquipment.Fields.MAKE], eq[twcSdsEquipment.Fields.MODEL]].filter(v => { return v; }).join(' / ')}</div>
+                        <div>${eq[twcSdsEquipment.Fields.B_END] || ''}</div>
                         <div>${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, id: twcSdsEquipment.Fields.INSTALL_STATUS, value: eq[twcSdsEquipment.Fields.INSTALL_STATUS], dataSource: twcUtils.EqInstallStatus.lookUp(), noEmpty: true, width: '100%' })}</div>
                         <div>${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, id: twcSdsEquipment.Fields.LICENSE_STATUS, value: eq[twcSdsEquipment.Fields.LICENSE_STATUS], dataSource: twcUtils.EqLicenseStatus.lookUp(), noEmpty: true, width: '100%' })}</div>
-                        <div>${twcUI.render({ type: twcUI.CTRL_TYPE.TEXT, id: twcSdsEquipment.Fields.B_END, value: eq[twcSdsEquipment.Fields.B_END], width: '100%' })}</div>
-                        <div>${twcUI.render({ type: twcUI.CTRL_TYPE.CUSTOMER_REF, id: twcSdsEquipment.Fields.MODEL, value: eq[twcSdsEquipment.Fields.CUSTOMER_REF], width: '100%' })}</div>
                     </div>
                 `);
                 sdsEqTable.append(sdsEqTableRow);
+                sdsEqRows.push({ eq: eq, row: sdsEqTableRow });
 
                 sdsEqTableRow.find('input, select').change(async e => {
                     var input = jQuery(e.currentTarget);
@@ -337,7 +350,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                         var payload = { id: eq.id, field: input.attr('id'), value: val };
                         await page.post({ action: 'update-sds-equipment' }, payload);
-                        
+
+                        // @@NOTE: include on a parent (TME / GIE) applies to all its children (ATME / Feeders), each child can then be changed on its own
+                        //         (the include change event of each child saves it)
+                        if (payload.field == twcSdsEquipment.Fields.INCLUDE_IN_SDS && sdsEqTableRow.hasClass('twc-sds-eq-header')) {
+                            sdsEqTable.find(`.twc-sds-eq-child[data-sds-eq-group="${sdsEqTableRow.data('sds-eq-group')}"] input[id="${twcSdsEquipment.Fields.INCLUDE_IN_SDS}"]`).each((idx, el) => {
+                                var childInclude = jQuery(el);
+                                if (childInclude.is(':checked') != val) { childInclude.prop('checked', val).trigger('change'); }
+                            });
+                        }
+
+                        // @@NOTE: equipment set to licence status Draft or Unlicenced is not included (the include change event saves it)
+                        if (payload.field == twcSdsEquipment.Fields.LICENSE_STATUS && [twcUtils.EqLicenseStatus.Draft, twcUtils.EqLicenseStatus.Unlicenced].indexOf(parseInt(val)) >= 0) {
+                            var include = sdsEqTableRow.find(`input[id="${twcSdsEquipment.Fields.INCLUDE_IN_SDS}"]`);
+                            if (include.is(':checked')) { include.prop('checked', false).trigger('change'); }
+                        }
+
                     } catch (error) {
                         dialog.error(error);
                     } finally {
@@ -349,9 +377,37 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 })
             })
 
+            initSDEquipmentSort(sdsEqTable, sdsEqRows);
 
+            // @@NOTE: only parents that actually have children get the +/- toggle (expanded by default)
+            sdsEqTable.find('.twc-sds-eq-header').each((idx, el) => {
+                var header = jQuery(el);
+                if (sdsEqTable.find(`.twc-sds-eq-child[data-sds-eq-group="${header.data('sds-eq-group')}"]`).length > 0) {
+                    header.find('.twc-sds-eq-toggle').html(`<span class="twc-srf-item-expand" data-collapsed="false">-</span>`);
+                }
+            });
 
+            sdsEqTable.find('.twc-srf-item-expand').click(e => {
+                e.preventDefault();
+                e.stopPropagation();
+                var toggle = jQuery(e.currentTarget);
+                var collapse = !(toggle.data('collapsed') || false);
+                toggle.data('collapsed', collapse);
+                toggle.html(collapse ? '+' : '-');
+                var group = toggle.closest('.twc-sds-eq-header').data('sds-eq-group');
+                sdsEqTable.find(`.twc-sds-eq-child[data-sds-eq-group="${group}"]`).toggleClass('o-row-hidden', collapse);
+            });
 
+            sdsEqTable.find('.twc-srf-item-expand-all').click(e => {
+                e.preventDefault();
+                e.stopPropagation();
+                var toggle = jQuery(e.currentTarget);
+                var collapse = !(toggle.data('collapsed') || false);
+                toggle.data('collapsed', collapse);
+                toggle.html(collapse ? '+' : '-');
+                sdsEqTable.find('.twc-srf-item-expand').data('collapsed', collapse).html(collapse ? '+' : '-');
+                sdsEqTable.find('.twc-sds-eq-child').toggleClass('o-row-hidden', collapse);
+            });
 
             dialog.confirm({ title: 'SDS Equipments', message: form, width: '80%', height: '80vh', }, (dlg) => {
                 try {
@@ -365,6 +421,91 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             });
 
 
+        }
+
+        // @@NOTE: column sorting on the SDS Equipments dialog
+        //         rows are kept as a tree (built from the server order using child_level): parents are sorted, children are sorted within their parent
+        //         clicking a column cycles: ascending => descending => original order (SRF, see twcSdsEngine.getSdsEquipments)
+        //         empty values always go last, ties keep the original order
+        //         Include / Install Status / Licence Status sort on the current (possibly just changed) value on screen
+        function initSDEquipmentSort(sdsEqTable, sdsEqRows) {
+            const selectedText = (row, field) => { return row.find(`select[id="${field}"] option:selected`).text(); };
+            const SORT_VALUES = {
+                equipment: (eq, row) => { return eq[twcSdsEquipment.Fields.EQUIPMENT_ID]; },
+                srf: (eq, row) => { return parseInt(eq.srf_id) || null; },
+                part: (eq, row) => { return eq[twcSdsEquipment.Fields.PART_OF_SDS] == 'T' ? 1 : 0; },
+                include: (eq, row) => { return row.find(`input[id="${twcSdsEquipment.Fields.INCLUDE_IN_SDS}"]`).is(':checked') ? 1 : 0; },
+                infra: (eq, row) => { return eq.infra_id; },
+                class: (eq, row) => { return eq[twcSdsEquipment.Fields.EQUIPMENT_CLASS + '_name']; },
+                type: (eq, row) => { return eq[twcSdsEquipment.Fields.EQUIPMENT_TYPE + '_name']; },
+                makeModel: (eq, row) => { return [eq[twcSdsEquipment.Fields.MAKE], eq[twcSdsEquipment.Fields.MODEL]].filter(v => { return v; }).join(' / '); },
+                bEnd: (eq, row) => { return eq[twcSdsEquipment.Fields.B_END]; },
+                install: (eq, row) => { return selectedText(row, twcSdsEquipment.Fields.INSTALL_STATUS); },
+                licence: (eq, row) => { return selectedText(row, twcSdsEquipment.Fields.LICENSE_STATUS); },
+            };
+
+            // @@NOTE: build the tree (server order is depth first: parent followed by its children)
+            var roots = [];
+            var path = [];
+            core.array.each(sdsEqRows, (sdsEqRow, idx) => {
+                var level = parseInt(sdsEqRow.eq.child_level) || 0;
+                var node = { eq: sdsEqRow.eq, row: sdsEqRow.row, idx: idx, children: [] };
+                path.length = level;
+                var parent = path[level - 1];
+                if (parent) { parent.children.push(node); } else { roots.push(node); }
+                path[level] = node;
+            });
+
+            const isEmpty = (v) => { return v === null || v === undefined || v === ''; };
+            const compare = (a, b, sortKey, dir) => {
+                if (sortKey) {
+                    var va = SORT_VALUES[sortKey](a.eq, a.row);
+                    var vb = SORT_VALUES[sortKey](b.eq, b.row);
+                    if (isEmpty(va) && !isEmpty(vb)) { return 1; }
+                    if (!isEmpty(va) && isEmpty(vb)) { return -1; }
+                    if (!isEmpty(va) && !isEmpty(vb)) {
+                        var res = (typeof va == 'number' && typeof vb == 'number')
+                            ? va - vb
+                            : String(va).localeCompare(String(vb), undefined, { numeric: true, sensitivity: 'base' });
+                        if (res != 0) { return res * dir; }
+                    }
+                }
+                return a.idx - b.idx;
+            };
+            const sortNodes = (nodes, sortKey, dir) => {
+                nodes.sort((a, b) => { return compare(a, b, sortKey, dir); });
+                core.array.each(nodes, n => { sortNodes(n.children, sortKey, dir); });
+            };
+            // @@NOTE: re-appending moves the existing rows (events, values and collapsed state are kept)
+            const appendNodes = (nodes) => {
+                core.array.each(nodes, n => {
+                    sdsEqTable.append(n.row);
+                    appendNodes(n.children);
+                });
+            };
+
+            var currentKey = null;
+            var currentDir = 0;
+            sdsEqTable.find('.twc-sds-eq-sort').click(e => {
+                var sortKey = jQuery(e.currentTarget).data('sort');
+                if (sortKey != currentKey) {
+                    currentKey = sortKey;
+                    currentDir = 1;
+                } else if (currentDir == 1) {
+                    currentDir = -1;
+                } else {
+                    currentKey = null;
+                    currentDir = 0;
+                }
+
+                sdsEqTable.find('.twc-sds-eq-sort-dir').html('');
+                if (currentKey) {
+                    jQuery(e.currentTarget).find('.twc-sds-eq-sort-dir').html(currentDir == 1 ? ' &#9650;' : ' &#9660;');
+                }
+
+                sortNodes(roots, currentKey, currentDir);
+                appendNodes(roots);
+            });
         }
 
         function printSDS(page, srf, fromFile) {
@@ -442,8 +583,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+        // @@NOTE: developer only (Test button on the SRF workflow view): opens the SDS Equipments dialog directly
+        //         goes through 'get-sds' like openDialog so the sds equipment records are created / updated (setSdsEquipments)
+        async function testSDSEquipment(page, srf) {
+            try {
+                var resp = await page.post({ action: 'get-sds' }, srf);
+                if (!resp?.id) { throw new Error('No SDS found for this SRF'); }
+                await manageSDEquipment(page, srf, { id: resp.id });
+            } catch (error) {
+                dialog.error(error);
+            }
+        }
+
         return {
             openDialog: openDialog,
+            testSDSEquipment: testSDSEquipment,
             printSDS: printSDS,
             signSDS: signSDS,
             signSDSTL: function (page, srf) {
