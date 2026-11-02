@@ -22,7 +22,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     [twcFile.Fields.RECORD_TYPE]: twcSite.Type,
                     [twcFile.Fields.RECORD_ID]: siteId,
                     [twcFileType.Fields.LICENSE_MAP]: 'T',
-                    [twcFile.Fields.META_DATA]: `c:${companyId}`,
+                    // @@IMPORTANT NOTE: License Maps are only available for Vodafone but it that changes we'll need to add a 'customer' field to the TWC File table and use it here
+                    // [twcFile.Fields.META_DATA]: `c:${companyId}`,
                 }
             });
         }
