@@ -101,6 +101,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     eq.inventoryFlag = action[twcSrfItem.Fields.INVENTORY_FLAG];
                     eq.optType = action[twcSrfItem.Fields.TYPE_OPT];
                     eq.voltageType = action[twcSrfItem.Fields.VOLTAGE_TYPE];
+                    // @@NOTE: SRF item 'Modified Antenna Location' => equipment custrecord_twc_equip_location (same list), SRF item 'GIE Location' => equipment 'GIE Location'
+                    eq.locationNotes = action[twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION];
+                    eq.gIELocation = action[twcSrfItem.Fields.GIE_LOCATION];
                     eq.associatedEQUIP_ACTIONs = action.act_id;
 
                     // get the parent equipment

@@ -66,8 +66,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         return fv;
                     }
                 },
-                [twcInventory.Fields.DESCRIPTION]: 'Desc',
-                [twcInventory.Fields.LOCATION_NOTES]: 'Location',
+                [twcInventory.Fields.DESCRIPTION]: { title: 'Desc', wrap: true, styles: { 'min-width': '200px' } },
+                // @@NOTE: custrecord_twc_equip_location is the 'Modified Antenna Location' (list: Cabin / Gantry / Rooftop, TME / ATME), GIE Location is free text (GIE)
+                [twcInventory.Fields.LOCATION_NOTES]: 'Antenna Location',
+                [twcInventory.Fields.GIE_LOCATION]: 'GIE Location',
                 [twcInventory.Fields.LENGTH_MM]: {
                     title: 'L/W/D',
                     styles: { 'text-align': 'center' },
@@ -187,10 +189,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         // @@NOTE: columns hidden on the single class tables (not grouped view), the fields are still loaded (e.g.: class is needed for the grouping)
         const CLASS_HIDDEN_FIELDS = {
-            [EQ_CLASS_ENUM.TME]: [twcInventory.Fields.EQUIPMENT_CLASS],
-            [EQ_CLASS_ENUM.ATME]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.AZIMUTH, twcInventory.Fields.B_END],
-            [EQ_CLASS_ENUM.GIE]: [twcInventory.Fields.AZIMUTH],
-            [EQ_CLASS_ENUM.FEEDER]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.LENGTH_MM, twcInventory.Fields.AZIMUTH, twcInventory.Fields.B_END, twcInventory.Fields.CUSTOMER_REF],
+            [EQ_CLASS_ENUM.TME]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.GIE_LOCATION],
+            [EQ_CLASS_ENUM.ATME]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.AZIMUTH, twcInventory.Fields.B_END, twcInventory.Fields.GIE_LOCATION],
+            [EQ_CLASS_ENUM.GIE]: [twcInventory.Fields.AZIMUTH, twcInventory.Fields.LOCATION_NOTES],
+            [EQ_CLASS_ENUM.FEEDER]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.LENGTH_MM, twcInventory.Fields.AZIMUTH, twcInventory.Fields.B_END, twcInventory.Fields.CUSTOMER_REF, twcInventory.Fields.LOCATION_NOTES, twcInventory.Fields.GIE_LOCATION],
         }
 
         // @@NOTE: eqClass is only passed for the single class tables (not grouped view)

@@ -67,6 +67,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     dimensionInfo.fields.push({ id: twcSrfItem.Fields.WEIGHT_KG, label: 'Weight (kg)', mandatory: true })
                     dimensionInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_TYPE, label: 'Voltage Type', dataSource: voltageTypes, mandatory: true })
                 }
+                // @@NOTE: location fields (optional), copied to the equipment on submit (modules/oTWC_srfWorkflowEngine.js: initEquipment)
+                //         TME / ATME => Modified Antenna Location (Cabin / Gantry / Rooftop), GIE => GIE Location (free text)
+                if (srfItem.stepType == twcSrfItem.StepType.TME || srfItem.stepType == twcSrfItem.StepType.ATME) {
+                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION, label: 'Modified Antenna Location', dataSource: twcUtils.getSrfItemLocationTypes() })
+                } else if (srfItem.stepType == twcSrfItem.StepType.GIE) {
+                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.GIE_LOCATION, label: 'GIE Location' })
+                }
                 dimensionInfo.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: twcSrfItem.Fields.EQUIPMENT_LIBRARY, label: 'Eq. Lib', hide: true })
             }
 

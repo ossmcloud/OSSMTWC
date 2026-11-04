@@ -39,8 +39,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             APPLICATION_DATE: 'custrecord_twc_srf_itm_app_date',
             APPLICATION_REFERENCE: 'custrecord_twc_srf_itm_app_ref',
             FEEDERS_DESCRIPTION: 'custrecord_twc_srf_itm_feeder_desc',
-            LOCATION_TEXT: 'custrecord_twc_srf_itm_loc_txt',
-            LOCATION_OBSOLETE: 'custrecord_twc_srf_itm_loc',
+            GIE_LOCATION: 'custrecord_twc_srf_itm_loc_txt',
+            MODIFIED_ANTENNA_LOCATION: 'custrecord_twc_srf_itm_loc',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -80,8 +80,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             APPLICATION_DATE: { name: 'custrecord_twc_srf_itm_app_date', type: 'date', alias: 'applicationdate', display: 'normal', mandatory: false },
             APPLICATION_REFERENCE: { name: 'custrecord_twc_srf_itm_app_ref', type: 'text', alias: 'applicationreference', display: 'normal', mandatory: false },
             FEEDERS_DESCRIPTION: { name: 'custrecord_twc_srf_itm_feeder_desc', type: 'text', alias: 'feedersDescription', display: 'normal', mandatory: false },
-            LOCATION_TEXT: { name: 'custrecord_twc_srf_itm_loc_txt', type: 'text', alias: 'locationText', display: 'normal', mandatory: false },
-            LOCATION_OBSOLETE: { name: 'custrecord_twc_srf_itm_loc', type: 'select', alias: 'locationOBSOLETE', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
+            GIE_LOCATION: { name: 'custrecord_twc_srf_itm_loc_txt', type: 'text', alias: 'gIELocation', display: 'normal', mandatory: false },
+            MODIFIED_ANTENNA_LOCATION: { name: 'custrecord_twc_srf_itm_loc', type: 'select', alias: 'modifiedAntennaLocation', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -216,7 +216,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get voltageTypeName() { return this.getText(_recordFields.VOLTAGE_TYPE); }
             
-            
             get azimuth() {
                 return this.get(_recordFields.AZIMUTH);
             } set azimuth(value) {
@@ -303,18 +302,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.FEEDERS_DESCRIPTION, value)
             }
             
-            get locationText() {
-                return this.get(_recordFields.LOCATION_TEXT);
-            } set locationText(value) {
-                this.set(_recordFields.LOCATION_TEXT, value)
+            get gIELocation() {
+                return this.get(_recordFields.GIE_LOCATION);
+            } set gIELocation(value) {
+                this.set(_recordFields.GIE_LOCATION, value)
             }
             
-            get locationOBSOLETE() {
-                return this.get(_recordFields.LOCATION_OBSOLETE);
-            } set locationOBSOLETE(value) {
-                this.set(_recordFields.LOCATION_OBSOLETE, value)
+            get modifiedAntennaLocation() {
+                return this.get(_recordFields.MODIFIED_ANTENNA_LOCATION);
+            } set modifiedAntennaLocation(value) {
+                this.set(_recordFields.MODIFIED_ANTENNA_LOCATION, value)
             }
-            get locationOBSOLETEName() { return this.getText(_recordFields.LOCATION_OBSOLETE); }
+            get modifiedAntennaLocationName() { return this.getText(_recordFields.MODIFIED_ANTENNA_LOCATION); }
             
             get created() {
                 return this.get(_recordFields.CREATED);
@@ -348,8 +347,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_SRFItem,
 
-            get: function (id) {
-                var rec = new OSSMTWC_SRFItem(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_SRFItem(id, staticLoad);
                 rec.load();
                 return rec;
             }, 

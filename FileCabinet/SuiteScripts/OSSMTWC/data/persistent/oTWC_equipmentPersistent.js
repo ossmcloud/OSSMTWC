@@ -64,7 +64,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EQUIPMENT_CLASS: { name: 'custrecord_twc_equip_class', type: 'select', alias: 'equipmentClass', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_class' },
             EQUIPMENT_TYPE: { name: 'custrecord_twc_equip_type', type: 'select', alias: 'equipmentType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_type' },
             INFRASTRUCTURE: { name: 'custrecord_twc_equip_str', type: 'select', alias: 'infrastructure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
-            LOCATION_NOTES: { name: 'custrecord_twc_equip_location', type: 'text', alias: 'locationNotes', display: 'normal', mandatory: false },
+            LOCATION_NOTES: { name: 'custrecord_twc_equip_location', type: 'select', alias: 'locationNotes', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
             EQUIPMENT_INSTALL_STATUS: { name: 'custrecordtwc_eq_install_status', type: 'select', alias: 'equipmentInstallStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_install_status' },
             EQUIPMENT_LICENCE_STATUS: { name: 'custrecord_twc_eq_licence_status', type: 'select', alias: 'equipmentLicenceStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_licence_status' },
             CUSTOMER: { name: 'custrecord_twc_equip_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
@@ -84,7 +84,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WIND_LOADING_NM2_REAR: { name: 'custrecord_twc_equip_wind_ldg_nm2_rear', type: 'integer', alias: 'windLoadingNm2Rear', display: 'normal', mandatory: false },
             WIND_LOADING_NM2_MAX: { name: 'custrecord_twc_equip_wind_ldg_nm2_max', type: 'integer', alias: 'windLoadingNm2Max', display: 'normal', mandatory: false },
             WIND_REGIME: { name: 'custrecord_twc_equip_wind_regime', type: 'select', alias: 'windRegime', display: 'normal', mandatory: false, recordType: 'customlist_twc_equip_wind_regime' },
-            VOLTAGE_TYPE: { name: 'custrecord_twc_equip_voltage_type', type: 'select', alias: 'voltageType', display: 'normal', mandatory: false, recordType: 'customlist_twc_equip_voltage_type' },
+            VOLTAGE_TYPE: { name: 'custrecord_twc_equip_voltage_type', type: 'select', alias: 'voltageType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_voltage_type' },
             CUSTOMER_NOTE: { name: 'custrecord_twc_cus_note', type: 'text', alias: 'customerNote', display: 'normal', mandatory: false },
             TL_NOTE: { name: 'custrecord_twc_equip_tl_note', type: 'text', alias: 'tLNote', display: 'normal', mandatory: false },
             ASSOCIATED_EQUIP_ACTIONS: { name: 'custrecord_twc_equip_assoc_eq_action', type: 'select', alias: 'associatedEQUIP_ACTIONs', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action' },
@@ -163,6 +163,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set locationNotes(value) {
                 this.set(_recordFields.LOCATION_NOTES, value)
             }
+            get locationNotesName() { return this.getText(_recordFields.LOCATION_NOTES); }
             
             get equipmentInstallStatus() {
                 return this.get(_recordFields.EQUIPMENT_INSTALL_STATUS);
@@ -292,7 +293,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.VOLTAGE_TYPE, value)
             }
             get voltageTypeName() { return this.getText(_recordFields.VOLTAGE_TYPE); }
-            
             
             get customerNote() {
                 return this.get(_recordFields.CUSTOMER_NOTE);
@@ -432,8 +432,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_Equipment,
 
-            get: function (id) {
-                var rec = new OSSMTWC_Equipment(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_Equipment(id, staticLoad);
                 rec.load();
                 return rec;
             }, 

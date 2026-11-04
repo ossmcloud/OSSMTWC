@@ -559,6 +559,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     srfItem[twcSrfItem.Fields.WIDTH_MM] = pickedEq[twcEquipment.Fields.WIDTH_MM];
                     srfItem[twcSrfItem.Fields.DEPTH_MM] = pickedEq[twcEquipment.Fields.HEIGHTDEPTH_MM];
                     srfItem[twcSrfItem.Fields.WEIGHT_KG] = pickedEq[twcEquipment.Fields.WEIGHT_KG];
+                    // @@NOTE: equipment location fields (see ui/modules/oTWC_siteRequestUtils.js: getEquipment)
+                    srfItem[twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION] = pickedEq[twcEquipment.Fields.LOCATION_NOTES];
+                    srfItem[twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION + '_name'] = pickedEq[twcEquipment.Fields.LOCATION_NOTES + '_name'];
+                    srfItem[twcSrfItem.Fields.GIE_LOCATION] = pickedEq[twcEquipment.Fields.GIE_LOCATION];
 
                     if (pickedEq.relatedItems) {
                         core.array.each(pickedEq.relatedItems, i => {

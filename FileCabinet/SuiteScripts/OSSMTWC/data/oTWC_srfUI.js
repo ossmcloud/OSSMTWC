@@ -114,6 +114,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             { srf: twcSrfItem.Fields.CUSTOMER_REF, eq: twcEq.Fields.CUSTOMER_REF },
             { srf: twcSrfItem.Fields.INVENTORY_FLAG, eq: twcEq.Fields.INVENTORY_FLAG },
             { srf: twcSrfItem.Fields.TYPE_OPT, eq: twcEq.Fields.OPT_TYPE },
+            { srf: twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION, eq: twcEq.Fields.LOCATION_NOTES },
+            { srf: twcSrfItem.Fields.GIE_LOCATION, eq: twcEq.Fields.GIE_LOCATION },
         ];
 
         function getSrfSwapItem(item, swappedItems, itemsToSwapWith) {
@@ -345,7 +347,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
             // @@NOTE: latest submission / re-submission comment, set by the submit process (modules/oTWC_srfWorkflowEngine.js: initWorkFlow) so read-only here
             //         visible to everyone (customers included), below the TL Notes for employees
-            basicInfo.fields.push({ id: twcSrf.Fields.SUBMISSION_NOTES, width: '100%', rows: 3, disabled: true })
+            //         not shown while the SRF is new / Draft (it is only set on submit)
+            if (dataSource[twcSrf.Fields.SRF_STATUS] && dataSource[twcSrf.Fields.SRF_STATUS] != twcUtils.SrfStatus.Draft) {
+                basicInfo.fields.push({ id: twcSrf.Fields.SUBMISSION_NOTES, width: '100%', rows: 3, disabled: true })
+            }
 
             var items = getSrfItems(dataSource, userInfo, readOnly);
             fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 6 (TME)', fields: [getStepFields(items, userInfo, dataSource, twcSrf.StepType.TME, readOnly)] });

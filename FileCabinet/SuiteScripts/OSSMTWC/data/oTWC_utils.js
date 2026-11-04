@@ -698,6 +698,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return getLookUpTableValues('currency');
         }
 
+        // @@NOTE: 'Modified Antenna Location' options (OSSMTWC - SRF Item Location Type), used by SRF items and equipment. Inactive values (Mast, Monopole, Pole) are excluded
+        function getSrfItemLocationTypes() {
+            return getLookUpTableValues('customrecord_twc_srf_itm_loc_type');
+        }
+
         function getVoltageTypes() {
             return getLookUpTableValues('customrecord_twc_equip_voltage_type', null, 'custrecord_twc_equip_voltage_type_sort');
         }
@@ -1747,6 +1752,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getOperatorSiteId: getOperatorSiteId,
 
             getVoltageTypes: getVoltageTypes,
+            getSrfItemLocationTypes: getSrfItemLocationTypes,
 
             formatLongDate: formatLongDate,
             fromJsToNs: fromJsToNs,

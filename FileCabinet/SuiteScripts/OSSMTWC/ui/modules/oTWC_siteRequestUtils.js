@@ -101,7 +101,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     select  eq.id, ${fieldsSql}, 
                             ${twcEquipment.Fields.DESCRIPTION},  
                             ${twcEquipment.Fields.PARENT_TME_ID}, BUILTIN.DF(${twcEquipment.Fields.PARENT_TME_ID}) as ${twcEquipment.Fields.PARENT_TME_ID}_name,
-                           
+                            eq.${twcEquipment.Fields.LOCATION_NOTES}, BUILTIN.DF(eq.${twcEquipment.Fields.LOCATION_NOTES}) as ${twcEquipment.Fields.LOCATION_NOTES}_name,
+                            eq.${twcEquipment.Fields.GIE_LOCATION},
                             
                     from    ${twcEquipment.Type} eq
                     join   customrecord_twc_infra infra on infra.id = eq.custrecord_twc_equip_str
@@ -135,7 +136,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             eq.${twcEquipment.Fields.INVENTORY_FLAG} as ${twcSrfItem.Fields.INVENTORY_FLAG},
                             eq.${twcEquipment.Fields.OPT_TYPE} as ${twcSrfItem.Fields.TYPE_OPT},BUILTIN.DF(eq.${twcEquipment.Fields.OPT_TYPE}) as ${twcSrfItem.Fields.TYPE_OPT}_name,
                             eq.${twcEquipment.Fields.PARENT_TME_ID} as ${twcSrfItem.Fields.TME_ID}, BUILTIN.DF(eq.${twcEquipment.Fields.PARENT_TME_ID}) as ${twcSrfItem.Fields.TME_ID}_name,
-                            
+                            eq.${twcEquipment.Fields.LOCATION_NOTES} as ${twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION}, BUILTIN.DF(eq.${twcEquipment.Fields.LOCATION_NOTES}) as ${twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION}_name,
+                            eq.${twcEquipment.Fields.GIE_LOCATION} as ${twcSrfItem.Fields.GIE_LOCATION},
 
                     from    ${twcEquipment.Type} eq
                     left join   customrecord_twc_infra infra on infra.id = eq.custrecord_twc_equip_str
