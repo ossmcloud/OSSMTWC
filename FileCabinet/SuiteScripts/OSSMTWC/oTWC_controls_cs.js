@@ -60,34 +60,34 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
                     // @@NOTE: ONE-OFF FIX - ATME / Feeders added to an existing TME via SRF were created without parent TME
                     //         (initEquipment read a non existing constant TMI_ID instead of TME_ID, fixed in modules/oTWC_srfWorkflowEngine.js)
                     //         sets the equipment Parent TME from the SRF item TME (custrecord_twc_srf_itm_tme_id)
-                    if (!confirm('Fix missing Parent TME on equipment created from SRF items?')) { return; }
-                    var fixed = 0; var failed = 0; var done = {};
-                    var toFix = coreSQL.run(`
-                        select  eq.id, eq.name, srfi.custrecord_twc_srf_itm_tme_id as parent_id, BUILTIN.DF(srfi.custrecord_twc_srf_itm_tme_id) as parent_name,
-                                BUILTIN.DF(srfi.custrecord_twc_srf_itm_srf) as srf
-                        from    customrecord_twc_equip eq
-                        join    customrecord_twc_eq_action ea on ea.custrecord_twc_eq_action_eq = eq.id
-                        join    customrecord_twc_srf_itm srfi on srfi.id = ea.custrecord_twc_eq_action_srf_item
-                        where   eq.custrecord_twc_equip_parent_tme_id is null
-                        and     srfi.custrecord_twc_srf_itm_tme_id is not null
-                        order by eq.id
-                    `);
-                    console.log(`EQUIPMENT TO FIX: ${toFix.length}`, toFix);
-                    core.array.each(toFix, e => {
-                        // @@NOTE: the same equipment could come back more than once (more than one action), only fix it once
-                        if (done[e.id]) { return; }
-                        done[e.id] = true;
-                        try {
-                            recu.submit(twcEquipment.Type, e.id, twcEquipment.Fields.PARENT_TME_ID, e.parent_id);
-                            fixed++;
-                            console.log(`FIXED: ${e.name} -> parent: ${e.parent_name} (${e.srf})`);
-                        } catch (error) {
-                            failed++;
-                            console.log(`FAILED: ${e.name} -> parent: ${e.parent_name} (${e.srf})`, error);
-                        }
-                    });
-                    console.log(`DONE - fixed: ${fixed} - failed: ${failed}`);
-                    alert(`Done - fixed: ${fixed} - failed: ${failed} (see console)`);
+                    // if (!confirm('Fix missing Parent TME on equipment created from SRF items?')) { return; }
+                    // var fixed = 0; var failed = 0; var done = {};
+                    // var toFix = coreSQL.run(`
+                        // select  eq.id, eq.name, srfi.custrecord_twc_srf_itm_tme_id as parent_id, BUILTIN.DF(srfi.custrecord_twc_srf_itm_tme_id) as parent_name,
+                                // BUILTIN.DF(srfi.custrecord_twc_srf_itm_srf) as srf
+                        // from    customrecord_twc_equip eq
+                        // join    customrecord_twc_eq_action ea on ea.custrecord_twc_eq_action_eq = eq.id
+                        // join    customrecord_twc_srf_itm srfi on srfi.id = ea.custrecord_twc_eq_action_srf_item
+                        // where   eq.custrecord_twc_equip_parent_tme_id is null
+                        // and     srfi.custrecord_twc_srf_itm_tme_id is not null
+                        // order by eq.id
+                    // `);
+                    // console.log(`EQUIPMENT TO FIX: ${toFix.length}`, toFix);
+                    // core.array.each(toFix, e => {
+                        // // @@NOTE: the same equipment could come back more than once (more than one action), only fix it once
+                        // if (done[e.id]) { return; }
+                        // done[e.id] = true;
+                        // try {
+                            // recu.submit(twcEquipment.Type, e.id, twcEquipment.Fields.PARENT_TME_ID, e.parent_id);
+                            // fixed++;
+                            // console.log(`FIXED: ${e.name} -> parent: ${e.parent_name} (${e.srf})`);
+                        // } catch (error) {
+                            // failed++;
+                            // console.log(`FAILED: ${e.name} -> parent: ${e.parent_name} (${e.srf})`, error);
+                        // }
+                    // });
+                    // console.log(`DONE - fixed: ${fixed} - failed: ${failed}`);
+                    // alert(`Done - fixed: ${fixed} - failed: ${failed} (see console)`);
                     //console.log(twcSdsEngine.getFormData({ id: 133 }))
 
                     //twcSrfWorkflowEngine.initWorkFlow({srf: 136})
