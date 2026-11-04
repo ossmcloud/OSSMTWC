@@ -42,8 +42,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return inventoryFields;
         }
 
-        function getSiteInventoryTableFields() {
+        function getSiteInventoryTableFields(userInfo) {
             var tableFields = {
+                // @@NOTE: employees can open the native equipment record (new tab), everyone else just sees the id
+                [twcInventory.Fields.NAME]: {
+                    title: 'Eq. ID',
+                    link: (userInfo?.isEmployee) ? { url: core.url.record(twcInventory.Type) + '&id=${id}', valueField: 'id' } : null
+                },
                 [twcInventory.Fields.EQUIPMENT_CLASS]: 'Class',
                 [twcInventory.Fields.EQUIPMENT_INSTALL_STATUS]: 'Install Status',
                 [twcInventory.Fields.EQUIPMENT_LICENCE_STATUS]: 'License Status',
@@ -51,8 +56,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 [twcInventory.Fields.VOLTAGE_TYPE]: {
                     title: 'Type',
                     // @@NOTE: feeders show the feeder type (OPT_TYPE) under the 'Type' column
+                    //         GIE have no voltage type (only asked for TME / ATME on the SRF) so they show the equipment type (EQUIPMENT_TYPE)
                     formatValue: (v, fv, data, col) => {
                         if (data[twcInventory.Fields.EQUIPMENT_CLASS] == EQ_CLASS_ENUM.FEEDER) { return data[twcInventory.Fields.OPT_TYPE + '_name'] || '-'; }
+                        if (data[twcInventory.Fields.EQUIPMENT_CLASS] == EQ_CLASS_ENUM.GIE) { return data[twcInventory.Fields.EQUIPMENT_TYPE + '_name'] || '-'; }
                         return fv;
                     }
                 },
@@ -75,6 +82,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 [twcInventory.Fields.HEIGHTDEPTH_MM]: { hide: true },
                 [twcInventory.Fields.PARENT_TME_ID]: { hide: true },
                 [twcInventory.Fields.OPT_TYPE]: { hide: true },
+                [twcInventory.Fields.EQUIPMENT_TYPE]: { hide: true },
             }
 
             for (var k in tableFields) {
@@ -99,7 +107,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
             }
 
-            var items = twcInventory.select({ fields: getSiteInventoryTableFields(), where: whereClause, useNames: true });
+            var items = twcInventory.select({ fields: getSiteInventoryTableFields(userInfo), where: whereClause, useNames: true });
 
             if (!grouped) {
                 var byClass = { [EQ_CLASS_ENUM.TME]: [], [EQ_CLASS_ENUM.ATME]: [], [EQ_CLASS_ENUM.GIE]: [], [EQ_CLASS_ENUM.FEEDER]: [] };
@@ -117,7 +125,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     return;
                 }
                 var parentId = item[twcInventory.Fields.PARENT_TME_ID];
-                var parent = (parentId) ? items.find(i => { return i.id == parentId; }) : null;
+                // @@NOTE: only TME can be a parent, GIE never have related items (anything pointing to a GIE ends up in the 'unlinked' list)
+                var parent = (parentId) ? items.find(i => { return i.id == parentId && i[twcInventory.Fields.EQUIPMENT_CLASS] == EQ_CLASS_ENUM.TME; }) : null;
                 // @@NOTE: no parent (or parent not visible to this user, e.g.: other customer) => goes to the 'unlinked' list
                 if (!parent) {
                     unlinked.push(item);
@@ -151,7 +160,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         // @@NOTE: eqClass is only passed for the single class tables (not grouped view)
-        function getInvInfoPanels_Type(dataSource, title, items, withChildren, eqClass) {
+        function getInvInfoPanels_Type(dataSource, userInfo, title, items, withChildren, eqClass) {
             var fieldGroup = { id: 'site-inventory', title: title, collapsed: false, controls: [] };
 
             var tmeInventories = { id: 'site-inventory-info', fields: [] };
@@ -161,12 +170,33 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (withChildren) {
                 tableFields['expand'] = { title: `<span class="twc-srf-item-expand-all" data-collapsed="true">+</span>`, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
             }
-            Object.assign(tableFields, getSiteInventoryTableFields());
+            Object.assign(tableFields, getSiteInventoryTableFields(userInfo));
 
             if (eqClass) {
                 core.array.each(CLASS_HIDDEN_FIELDS[eqClass] || [], f => { tableFields[f].hide = true; });
                 // @@NOTE: the feeder table 'Type' column shows the feeder type (see formatValue in getSiteInventoryTableFields)
                 if (eqClass == EQ_CLASS_ENUM.FEEDER) { tableFields[twcInventory.Fields.VOLTAGE_TYPE].title = 'Feeder Type'; }
+
+                // @@NOTE: ATME / Feeders tables show the parent TME right after the 'Eq. ID' column, clicking it highlights the TME row in the TME table (ui/js/oTWC_inventory.js: highlightEquipment)
+                //         we use the column 'link' option (and not formatValue) as it is serialized and so it survives the table being re-rendered on the client (sort / filter)
+                if (eqClass == EQ_CLASS_ENUM.ATME || eqClass == EQ_CLASS_ENUM.FEEDER) {
+                    var tmeField = tableFields[twcInventory.Fields.PARENT_TME_ID];
+                    tmeField.hide = false;
+                    tmeField.title = 'TME';
+                    tmeField.link = {
+                        url: 'onclick="twc.page.highlightEquipment(${' + twcInventory.Fields.PARENT_TME_ID + '}); return false;"',
+                        valueField: twcInventory.Fields.PARENT_TME_ID,
+                        target: '_self'
+                    };
+                    // @@NOTE: re-build the object so the TME column sits right after the 'Eq. ID' column (column order = key order)
+                    var orderedFields = {};
+                    for (var k in tableFields) {
+                        if (k == twcInventory.Fields.PARENT_TME_ID) { continue; }
+                        orderedFields[k] = tableFields[k];
+                        if (k == twcInventory.Fields.NAME) { orderedFields[twcInventory.Fields.PARENT_TME_ID] = tmeField; }
+                    }
+                    tableFields = orderedFields;
+                }
             }
 
             if (withChildren) {
@@ -202,14 +232,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var fieldGroups = [];
             if (!grouped) {
                 core.array.each([EQ_CLASS_ENUM.TME, EQ_CLASS_ENUM.ATME, EQ_CLASS_ENUM.FEEDER, EQ_CLASS_ENUM.GIE], eqClass => {
-                    fieldGroups.push(getInvInfoPanels_Type(dataSource, EQ_CLASS_TITLES[eqClass], equipment[eqClass], false, eqClass))
+                    fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_TITLES[eqClass], equipment[eqClass], false, eqClass))
                 })
                 return fieldGroups;
             }
-            fieldGroups.push(getInvInfoPanels_Type(dataSource, EQ_CLASS_TITLES[EQ_CLASS_ENUM.TME], equipment[EQ_CLASS_ENUM.TME], true))
-            fieldGroups.push(getInvInfoPanels_Type(dataSource, EQ_CLASS_TITLES[EQ_CLASS_ENUM.GIE], equipment[EQ_CLASS_ENUM.GIE], true))
+            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_TITLES[EQ_CLASS_ENUM.TME], equipment[EQ_CLASS_ENUM.TME], true))
+            // @@NOTE: GIE never have child rows so no expand / collapse column
+            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_TITLES[EQ_CLASS_ENUM.GIE], equipment[EQ_CLASS_ENUM.GIE], false))
             if (equipment.unlinked.length > 0) {
-                fieldGroups.push(getInvInfoPanels_Type(dataSource, 'Unlinked ATME / Feeders', equipment.unlinked, false))
+                fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, 'Unlinked ATME / Feeders', equipment.unlinked, false))
             }
             return fieldGroups;
         }

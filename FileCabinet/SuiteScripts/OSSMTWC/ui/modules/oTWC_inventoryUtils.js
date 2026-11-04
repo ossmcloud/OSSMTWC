@@ -58,8 +58,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames(userInfo) }));
             html = html.replace('{FILTER_SAF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Equipment ID', width: 'calc(25% - 2px)', multiSelect: true, id: 'record_id', noEmpty: true, dataSource: twcUtils.getEquipmentIds() }));
             html = html.replace('{FILTER_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Status', width: 'calc(25% - 2px)', multiSelect: true, id: twcEqip.Fields.EQUIPMENT_INSTALL_STATUS, noEmpty: true, dataSource: twcUtils.getEquipmentStatus() }));
-            //html = html.replace('{FILTER_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Type', width: '50%', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));
-            html = html.replace('{FILTER_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Type', width: '50%', multiSelect: true, id: twcEqip.Fields.EQUIPMENT_CLASS, noEmpty: true, dataSource: twcUtils.getEquipmentClass() }));
+            html = html.replace('{FILTER_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Class', width: '50%', multiSelect: true, id: twcEqip.Fields.EQUIPMENT_CLASS, noEmpty: true, dataSource: twcUtils.getEquipmentClass() }));
             html = html.replace('{FILTER_CUSTOMER}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Customer', width: '50%', multiSelect: true, id: twcEqip.Fields.CUSTOMER, noEmpty: true, dataSource: twcUtils.getCustomers(userInfo), noAutoSelect: true }));
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
 
@@ -127,13 +126,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 whereClause += `and ${twcInventory.Fields.CUSTOMER} in (${allowedCustomers.join(',')})`;
             }
 
+            // @@NOTE: left join on the infrastructure, equipment (e.g.: GIE) may not be associated to one
             var inventoryDetails = coreSQL.run(`
                 select  s.name, ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO},
                         BUILTIN.DF(i.custrecord_twc_infra_type) as infra_type, BUILTIN.DF(i.custrecord_twc_infra_str_type) as infra_str_type, i.custrecord_twc_infra_id as infra_id,
                         
                 from    ${twcInventory.Type} s
-                join    customrecord_twc_infra i on i.id = ${twcInventory.Fields.INFRASTRUCTURE}
-                join    ${twcSite.Type} site on site.id = s.${twcInventory.Fields.SITE}
+                left join customrecord_twc_infra i on i.id = s.${twcInventory.Fields.INFRASTRUCTURE}                join    ${twcSite.Type} site on site.id = s.${twcInventory.Fields.SITE}
                 left join customrecord_twc_eq_action ea on ea.id = s.custrecord_twc_equip_assoc_eq_action
                 
                 ${whereClause} 

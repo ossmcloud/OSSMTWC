@@ -108,29 +108,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (c.type == 'table') { twcPageBase.initTableExpandCollapse(c); }
                     })
 
-                    if (this.data.recId) {
-                        core.array.each(this.ui.controls, c => {
-                            if (c.type == 'table') {
-                                var row = c.rows.find(r => { return r.data?.id == this.data.recId });
-                                if (row) {
-                                    // @@NOTE: ATME / Feeders are child rows (collapsed by default), expand the parent first
-                                    twcPageBase.expandTableRow(c, row);
-                                    var divs = row.ui();
-                                    divs[0].scrollIntoView({
-                                        behavior: "smooth", // or "auto" or "instant"
-                                        block: 'center',    // vertical alignment: 'start' | 'center' | 'end' | 'nearest'
-                                        inline: 'nearest'   // horizontal alignment
-                                    });
-                                    divs = divs.find('div');
-                                    divs.addClass('app-pulse-red')
-                                    window.setTimeout(() => {
-                                        divs.removeClass('app-pulse-red')
-                                    }, 5000)
-                                    return false;
-                                }
-                            }
-                        })
-                    }
+                    if (this.data.recId) { this.highlightEquipment(this.data.recId); }
 
                 } else {
                     this.#sitesTable = new TWCSiteTable(this);
@@ -142,6 +120,33 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     });
                 }
             }
+            // @@NOTE: scrolls to the equipment row (in whichever table it is) and makes it pulse
+            //         used when the page is opened with a recId and by the 'TME' link on the ATME / Feeders tables (not grouped view, see data/oTWC_equipmentUI.js)
+            highlightEquipment(id) {
+                if (!id) { return; }
+                core.array.each(this.ui.controls, c => {
+                    if (c.type != 'table') { return; }
+                    var row = c.rows.find(r => { return r.data?.id == id });
+                    if (!row) { return; }
+                    // @@NOTE: ATME / Feeders are child rows (collapsed by default), expand the parent first
+                    twcPageBase.expandTableRow(c, row);
+                    var divs = row.ui();
+                    // @@NOTE: the row may not be rendered (e.g.: filtered out on the table)
+                    if (divs.length == 0) { return false; }
+                    divs[0].scrollIntoView({
+                        behavior: "smooth", // or "auto" or "instant"
+                        block: 'center',    // vertical alignment: 'start' | 'center' | 'end' | 'nearest'
+                        inline: 'nearest'   // horizontal alignment
+                    });
+                    divs = divs.find('div');
+                    divs.addClass('app-pulse-red')
+                    window.setTimeout(() => {
+                        divs.removeClass('app-pulse-red')
+                    }, 5000)
+                    return false;
+                })
+            }
+
             initInventoryMode(recId) {
                 this.ui.find('#add-equipment-button').on('click', async (e) => {
                     await this.addEquipment();
