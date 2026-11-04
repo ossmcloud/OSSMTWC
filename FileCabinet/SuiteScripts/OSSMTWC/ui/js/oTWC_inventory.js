@@ -84,6 +84,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 if (col.id == twcInventory.Fields.EQUIPMENT_ID) { col.addCount = true; }
 
+                // @@NOTE: (i) icon => equipment details dialog
+                if (col.id == 'name') { col.prefix = twcInventory.infoIconPrefix('id'); }
+
                 // @@NOTE: TL users (employees) can open the native equipment record (new tab)
                 if (col.id == 'name' && window.twc.page.data.userInfo?.isEmployee) {
                     col.link = {

@@ -323,7 +323,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
         return {
-            formatPanelFields: formatPanelFields
+            FieldAccessType: FIELD_ACCESS_TYPE,
+            formatPanelFields: formatPanelFields,
+            getFieldAccess: getFieldAccess,
         }
     });
 

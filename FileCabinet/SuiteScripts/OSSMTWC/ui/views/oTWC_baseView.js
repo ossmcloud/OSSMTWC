@@ -336,6 +336,58 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
                 return res;
             }
 
+            // @@NOTE: equipment details dialog, opened by the (i) icon shown before the equipment id in the tables (data/oTWC_equipment.js: infoIconHtml / infoIconPrefix)
+            //         data from oTWC_microSvc_sl.js action 'get-equipment-info' (data/oTWC_equipmentUI.js: getEquipmentInfo)
+            async showEquipmentInfo(eqId) {
+                return await TWCPageBase.showEquipmentInfoStatic(eqId);
+            }
+            static async showEquipmentInfoStatic(eqId) {
+                var content = jQuery(`<div><span class="twc-wait-cursor">${twcIcons.get('waitWheel', 32)}</span></div>`);
+                dialog.message({ title: 'Equipment Details', message: content, width: '700px', height: '75vh' });
+                try {
+                    var res = await https.promise.post({ url: core.url.script('otwc_microsvc_sl', { action: 'get-equipment-info' }), body: { id: eqId } });
+                    if (res.error) { throw res; }
+
+                    const esc = (v) => { return (v === null || v === undefined) ? '' : v.toString().replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('\n', '<br />'); };
+                    var rows = (res.fields || []).map(f => {
+                        var value = (f.value === '' || f.value === null || f.value === undefined) ? '<span style="color: var(--label-color); font-style: italic;">-</span>' : esc(f.value);
+                        // @@NOTE: data-search holds property + value (lower case) for the search box below
+                        var search = `${f.label || ''} ${f.value ?? ''}`.toLowerCase().replaceAll('"', '&quot;');
+                        return `
+                            <tr data-search="${search}">
+                                <td style="padding: 4px 7px; color: var(--label-color); white-space: nowrap; vertical-align: top; border-bottom: 1px solid var(--grid-color);">${esc(f.label)}</td>
+                                <td style="padding: 4px 7px; vertical-align: top; border-bottom: 1px solid var(--grid-color); overflow-wrap: anywhere;">${value}</td>
+                            </tr>`;
+                    }).join('');
+
+                    // @@NOTE: the header (eq. id + search box) sticks to the top while the properties scroll
+                    content.html(`
+                        <div style="position: sticky; top: -7px; z-index: 10; background-color: var(--main-bkgd-color); display: flex; align-items: center; gap: 11px; padding: 3px 7px 9px 7px; border-bottom: 1px solid var(--grid-color);">
+                            <div style="font-size: 18px; font-weight: bold; white-space: nowrap;">${esc(res.name)}</div>
+                            <div style="flex: 1; text-align: right;">
+                                <input type="text" class="twc twc-eq-info-search" placeholder="search property or value" style="width: 100%; max-width: 300px;" />
+                            </div>
+                        </div>
+                        <table class="twc-eq-info-table" style="width: 100%; border-collapse: collapse;">${rows}</table>
+                        <div class="twc-eq-info-no-match" style="display: none; padding: 7px; color: var(--label-color); font-style: italic;">no matching properties</div>
+                    `);
+
+                    // @@NOTE: filter while typing, matches property name or value (case insensitive)
+                    content.find('.twc-eq-info-search').on('input', e => {
+                        var text = (jQuery(e.currentTarget).val() || '').trim().toLowerCase();
+                        var visible = 0;
+                        content.find('.twc-eq-info-table tr').each((idx, tr) => {
+                            var match = !text || (jQuery(tr).attr('data-search') || '').indexOf(text) >= 0;
+                            jQuery(tr).css('display', match ? '' : 'none');
+                            if (match) { visible++; }
+                        });
+                        content.find('.twc-eq-info-no-match').css('display', visible == 0 ? 'block' : 'none');
+                    }).trigger('focus');
+                } catch (error) {
+                    content.html(`<div style="color: red; padding: 7px;">${error.error || error.message || error}</div>`);
+                }
+            }
+
             async previewFile(file, e, getHtml) {
                 return await TWCPageBase.previewFileStatic(file, e, getHtml);
             }

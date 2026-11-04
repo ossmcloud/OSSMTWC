@@ -110,7 +110,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     label: 'related equipment (ATME / FEEDERS)',
                     columns: [
                         { id: 'toggle', title: '', nullText: '', noFilter: true, noSort: true, styles: { 'text-align': 'center' } },
-                        { id: twcSrfItem.Fields.NAME, title: 'Eq. Id', nullText: '' },
+                        { id: twcSrfItem.Fields.NAME, title: 'Eq. Id', nullText: '', prefix: twcEquipment.infoIconPrefix(twcSrfItem.Fields.EQUIPMENT_ID) },
                         { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class', nullText: '' },
                         { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Type', nullText: '' },
                         { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description', nullText: '', wrap: true },
@@ -167,7 +167,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
             fields[twcSrfItem.Fields.REQUEST_TYPE] = { title: 'Request Type', styles: { width: '150px' } };
-            fields[twcSrfItem.Fields.EQUIPMENT_ID] = { title: 'Equipment', nullText: '', styles: { width: '200px' } };
+            // @@NOTE: (i) icon => equipment details dialog (only once the SRF item has an equipment)
+            fields[twcSrfItem.Fields.EQUIPMENT_ID] = { title: 'Equipment', nullText: '', styles: { width: '200px' }, prefix: twcEquipment.infoIconPrefix(twcSrfItem.Fields.EQUIPMENT_ID) };
             if (stepType == twcSrfItem.StepType.ATME || stepType == twcSrfItem.StepType.FEEDER) {
                 fields[twcSrfItem.Fields.TME_ID] = { title: 'TME', nullText: '', styles: { width: '200px' } };
             }

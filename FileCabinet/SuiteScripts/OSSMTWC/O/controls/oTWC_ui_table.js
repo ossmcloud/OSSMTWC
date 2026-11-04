@@ -393,6 +393,15 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.options.wrap = val;
             }
 
+            // @@NOTE: column option 'prefix': { field: 'data field name', html: 'html with {{id}} placeholder' }
+            //         the html is rendered before the cell value (e.g. the equipment (i) info icon), {{id}} is replaced with the row value of 'field'
+            //         nothing is rendered if that value is empty. It is a plain object (serialized) so it survives the table being re-rendered on the client
+            get prefix() {
+                return this.options.prefix;
+            } set prefix(val) {
+                this.options.prefix = val;
+            }
+
             get sticky() {
                 return this.options.sticky;
             } set sticky(val) {
@@ -527,6 +536,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 if (this.cellMask) { formattedValue = this.cellMask.replaceAll('${value}', formattedValue); }
 
                 if (this.#formatValue) { formattedValue = this.#formatValue(value, formattedValue, data, this); }
+
+                if (this.options.prefix?.html && !asTableCell) {
+                    var prefixValue = data ? data[this.options.prefix.field || 'id'] : null;
+                    if (prefixValue && prefixValue.value !== undefined) { prefixValue = prefixValue.value; }
+                    if (prefixValue) { formattedValue = this.options.prefix.html.replaceAll('{{id}}', prefixValue) + formattedValue; }
+                }
 
                 if (asTableCell) {
                     return `<td style="${this.baseStyles('cell')}; padding: 3px; vertical-align: top; border-bottom: 1px solid silver; border-right: 1px solid silver;">${formattedValue}</td>`;

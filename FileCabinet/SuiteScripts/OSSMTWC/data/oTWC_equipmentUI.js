@@ -50,6 +50,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 // @@NOTE: employees can open the native equipment record (new tab), everyone else just sees the id
                 [twcInventory.Fields.NAME]: {
                     title: 'Eq. ID',
+                    // @@NOTE: (i) icon => equipment details dialog
+                    prefix: twcInventory.infoIconPrefix('id'),
                     link: (userInfo?.isEmployee) ? { url: core.url.record(twcInventory.Type) + '&id=${id}', valueField: 'id' } : null
                 },
                 [twcInventory.Fields.EQUIPMENT_CLASS]: 'Class',
@@ -284,8 +286,45 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
 
+        // @@NOTE: all the equipment properties for the equipment details dialog ((i) icon, ui/views/oTWC_baseView.js: showEquipmentInfo, via oTWC_microSvc_sl.js action 'get-equipment-info')
+        //         labels are the NetSuite field labels, fields in the generated order. External users: only equipment of their allowed customers,
+        //         and fields flagged as TL only in the field access setup (customrecord_twc_fieldaccess) are left out
+        function getEquipmentInfo(options, userInfo) {
+            var eqId = parseInt(options?.id);
+            if (!eqId) { throw new Error('invalid parameters passed'); }
+
+            var eq = twcInventory.select({ where: { id: eqId }, useNames: true, returnFirst: true });
+            if (!eq) { throw new Error(`No equipment found using id ${eqId}`); }
+            if (!userInfo.isEmployee && !twcConfig.isUserAllowedCustomers(userInfo, eq[twcInventory.Fields.CUSTOMER])) {
+                throw new Error('You do not have access to see this equipment');
+            }
+
+            var labels = {};
+            core.array.each(twcConfig.getFields(twcInventory.Type), f => { labels[f.field_id] = f.field_label; });
+            const STD_LABELS = { name: 'Equipment ID', created: 'Date Created', lastmodified: 'Last Modified', owner: 'Created By' };
+
+            var fields = [];
+            for (var k in twcInventory.FieldsInfo) {
+                var f = twcInventory.FieldsInfo[k];
+                if (!userInfo.isEmployee) {
+                    var access = configUIFields.getFieldAccess({ Type: twcInventory.Type }, f.name);
+                    if (access?.access == configUIFields.FieldAccessType.TL) { continue; }
+                }
+                var value = eq[f.name];
+                if (f.type == 'select' || f.type == 'multiselect') {
+                    value = eq[f.name + '_name'];
+                } else if (f.type == 'checkbox') {
+                    value = (value == 'T' || value === true) ? 'Yes' : 'No';
+                }
+                fields.push({ id: f.name, label: labels[f.name] || STD_LABELS[f.name] || f.alias || f.name, value: (value === null || value === undefined) ? '' : value });
+            }
+
+            return { id: eqId, name: eq[twcInventory.Fields.NAME], fields: fields };
+        }
+
         return {
             EqClass: EQ_CLASS_ENUM,
+            getEquipmentInfo: getEquipmentInfo,
 
             getInventoryTableFields: getInventoryTableFields,
             getInvInfoPanels: getInvInfoPanels

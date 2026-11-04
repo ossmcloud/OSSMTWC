@@ -324,7 +324,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 columns: [
                     { id: 'ea_id', title: 'ID', styles: { width: '50px' }, noFilter: true, noSort: true },
                     { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF', styles: { width: '125px' } },
-                    { id: twcEqAct.Fields.EA_EQUIPMENT + '_name', title: 'Equipment' },
+                    { id: twcEqAct.Fields.EA_EQUIPMENT + '_name', title: 'Equipment', prefix: twcEq.infoIconPrefix(twcEqAct.Fields.EA_EQUIPMENT) },
                     { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
                     { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Item' },
                     { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description' },
@@ -699,7 +699,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fields['expand'] = { title: '', noSort: true, noFilter: true, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
             fields['ea_id'] = { title: 'ID', styles: { width: '50px' }, link: eaActionLink, noFilter: true, noSort: true };
             fields[twcSrfItem.Fields.SRF + '_name'] = { title: 'SRF', styles: { width: '125px' } };
-            fields[twcEqAct.Fields.EA_EQUIPMENT + '_name'] = { title: 'Equipment', link: equipLink };
+            // @@NOTE: (i) icon => equipment details dialog
+            fields[twcEqAct.Fields.EA_EQUIPMENT + '_name'] = { title: 'Equipment', link: equipLink, prefix: twcEq.infoIconPrefix(twcEqAct.Fields.EA_EQUIPMENT) };
             fields[twcSrfItem.Fields.STEP_TYPE + '_name'] = { title: 'Class' };
             fields[twcSrfItem.Fields.ITEM_TYPE + '_name'] = { title: 'Item' };
             fields[twcSrfItem.Fields.DESCRIPTION] = { title: 'Description' };

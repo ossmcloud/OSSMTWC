@@ -700,7 +700,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (cf.field == twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS) { return false; }
                         for (var k in cf) { col[k] = cf[k]; }
                         col.nullText = '';
-                        if (col.id == 'name') { col.addCount = true; }
+                        if (col.id == 'name') {
+                            col.addCount = true;
+                            // @@NOTE: (i) icon => equipment details dialog (the icon click does not pick the row)
+                            col.prefix = twcEquipment.infoIconPrefix('id');
+                        }
                     }
 
                     var container = jQuery(`
@@ -920,7 +924,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             var eqActionHtml = jQuery(`
                                 <div class="${isChild ? 'twc-eqa-child' : 'twc-eqa-header'}" data-eqa-group="${groupId}">
                                     <div class="twc-eqa-toggle" style="width: 30px; text-align: center; padding: 0px;"></div>
-                                    <div ${padding}>${icon}${eqAction[twcEqAct.Fields.EA_EQUIPMENT + '_name']}</div>
+                                    <div ${padding}>${icon}${twcEquipment.infoIconHtml(eqAction[twcEqAct.Fields.EA_EQUIPMENT])}${eqAction[twcEqAct.Fields.EA_EQUIPMENT + '_name']}</div>
                                     <div>${eqAction[twcEquipment.Fields.EQUIPMENT_CLASS]}</div>
                                     <div>${eqAction[twcEquipment.Fields.EQUIPMENT_TYPE]}</div>
                                     <div>${eqAction[twcEquipment.Fields.MAKE] || ''}</div>
