@@ -104,12 +104,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     eq.associatedEQUIP_ACTIONs = action.act_id;
 
                     // get the parent equipment
+                    // @@NOTE: TMI_ID_SRF = parent TME is a line of this SRF (its equipment is created above, the actions are sorted so TMEs come first)
+                    //         TME_ID     = parent TME is an existing equipment picked from the site (this used to read a non-existing 'TMI_ID' constant so the parent was never set)
+                    var parentEqId = null;
                     if (action[twcSrfItem.Fields.TMI_ID_SRF]) {
                         var parent = actions.find(a => { return a.id == action[twcSrfItem.Fields.TMI_ID_SRF]; })
-                        eq.parentTMEID = parent?.eq_id;
-                    } else if (action[twcSrfItem.Fields.TMI_ID]) {
-                        eq.parentTMEID = action[twcSrfItem.Fields.TMI_ID]
+                        parentEqId = parent?.eq_id;
                     }
+                    if (!parentEqId && action[twcSrfItem.Fields.TME_ID]) {
+                        parentEqId = action[twcSrfItem.Fields.TME_ID];
+                    }
+                    if (parentEqId) { eq.parentTMEID = parentEqId; }
 
 
                 } else if (action.ea_type == twcUtils.EqActionType.Unlicence || action.ea_type == twcUtils.EqActionType.SwapUnlicence) {
