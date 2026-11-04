@@ -189,14 +189,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             radioButton = `<div style="width: 30px;"><input type="radio" style="transform: scale(2);" name="pick_next_stage" data-id="${next.id}" ${this.#readOnly ? 'readonly' : 'checked'} /></div>`;
                         }
 
+                        // @@NOTE: a next step already completed (e.g.: the Initial Review is re-opened to assign one more check) is shown read-only
+                        //         and it is NOT touched when saving (see the confirm callback below), otherwise it would be reset to in progress
+                        var nextCompleted = next.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED;
+                        var nextReadOnly = this.#readOnly || nextCompleted;
+
                         var assignToDropDOwn = '';
                         if (next.is_review == 'T' || next.can_assign == 'T') {
-                            assignToDropDOwn = `<div>${twcUi.render({ type: twcUi.CTRL_TYPE.DROPDOWN, id: `assigned_to_${next.id}`, value: next.assigned_to, dataSource: this.#workflowForm.data.assignToList, hint: 'Assign to', readOnly: this.#readOnly })}</div>`;
+                            assignToDropDOwn = `<div>${twcUi.render({ type: twcUi.CTRL_TYPE.DROPDOWN, id: `assigned_to_${next.id}`, value: next.assigned_to, dataSource: this.#workflowForm.data.assignToList, hint: 'Assign to', readOnly: nextReadOnly })}</div>`;
                         }
 
                         var requiredToggle = '<div></div>';
                         if (next.can_skip == 'T') {
-                            requiredToggle = `<div style="width: 50px;">${twcUi.render({ type: twcUi.CTRL_TYPE.TOGGLE, id: `required_${next.id}`, value: next.status != twcSrfWorkflowEngine.WorkflowStatus.NOT_REQUIRED, readOnly: this.#readOnly })}</div>`;
+                            requiredToggle = `<div style="width: 50px;">${twcUi.render({ type: twcUi.CTRL_TYPE.TOGGLE, id: `required_${next.id}`, value: next.status != twcSrfWorkflowEngine.WorkflowStatus.NOT_REQUIRED, readOnly: nextReadOnly })}</div>`;
                         }
 
                         var nextStepPlannedDate = '';
@@ -213,6 +218,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     ${radioButton}
                                     <div style="width: 150px; padding: 0px 3px;">
                                         ${next.stage_alt_name || next.stage_name}
+                                        ${nextCompleted ? '<span style="color: var(--label-color); font-style: italic;">(completed)</span>' : ''}
                                     </div>
                                     ${requiredToggle}
                                     ${nextStepPlannedDate}
@@ -354,6 +360,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         var setStatus = this.#item.set_status;
                         core.array.each(nextSteps, next => {
                             if (pickedNextStage && pickedNextStage != next.id) { return; }
+                            // @@NOTE: never reset a next step that is already completed (status, assignee and form data are kept as they are)
+                            if (next.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED) { return; }
 
                             var required = values[`required_${next.id}`];
                             if (required === undefined) { required = true; }
