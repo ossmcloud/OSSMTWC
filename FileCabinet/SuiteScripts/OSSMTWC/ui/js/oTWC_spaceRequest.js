@@ -983,9 +983,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         })
 
                         this.ui.getControl('submit-button')?.on('click', e => {
-                            dialog.confirmAsync('Are you sure you want to submit this request?').then(() => {
+                            this.askSubmitComment(comment => {
                                 this.wait();
-                                this.post({ action: 'submit' }, { srf: this.data.siteRequestInfo.id })
+                                this.post({ action: 'submit' }, { srf: this.data.siteRequestInfo.id, submitComment: comment })
                                     .then(res => {
                                         location.reload();
                                     }).catch(err => {
@@ -998,7 +998,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             location.href = location.href + "&edit=T";
                         })
                         this.ui.getControl('submit-srf-button')?.on('click', e => {
-                            dialog.confirmAsync('Are you sure you wish to submit this SRF?').then(() => {
+                            this.askSubmitComment(comment => {
+                                this.data.siteRequestInfo.submitComment = comment;
                                 this.data.siteRequestInfo.submitOnSave = true;
                                 this.data.siteRequestInfo.dirty = true;
                                 this.dirty = true;
@@ -1486,6 +1487,31 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
+
+            // @@NOTE: submit / re-submit (after feedback issued) => the user must enter a comment, it is stored on the SRF Review record of the iteration
+            //         and on the SRF 'Submission Notes' field (see modules/oTWC_srfWorkflowEngine.js: initWorkFlow)
+            askSubmitComment(callback) {
+                var isResubmit = this.data.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcUtils.SrfStatus.FeedbackIssued;
+                var form = twcUI.init({
+                    controls: [
+                        {
+                            type: twcUI.CTRL_TYPE.TEXTAREA, id: 'submit_comment', width: '100%', rows: 12, mandatory: true,
+                            label: isResubmit ? 'Please enter a comment describing the changes made to this SRF' : 'Please enter a comment for this submission'
+                        }
+                    ]
+                });
+                var title = isResubmit ? 'Are you sure you wish to re-submit this SRF?' : 'Are you sure you wish to submit this SRF?';
+                dialog.confirm({ title: title, message: form.ui, width: '700px', height: '450px' }, dlg => {
+                    try {
+                        var comment = (form.getValues().submit_comment || '').trim();
+                        if (!comment) { throw new Error('Please, enter a comment'); }
+                        callback(comment);
+                    } catch (error) {
+                        dialog.error(error);
+                        return false;
+                    }
+                });
+            }
 
             async onSave(e) {
                 try {

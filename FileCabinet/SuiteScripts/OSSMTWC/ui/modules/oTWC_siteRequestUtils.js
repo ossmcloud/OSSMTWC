@@ -261,7 +261,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (srfCancelled) {
                         twcSrfWorkflowEngine.cancelWorkflow({ srf: payload.id });
                     } else if (payload.submitOnSave) {
-                        submitSiteSrf(userInfo, { srf: payload.id });
+                        submitSiteSrf(userInfo, { srf: payload.id, submitComment: payload.submitComment });
                     } else {
                         var s = recu.lookUp(twcSrf.Type, payload.id, twcSrf.Fields.SRF_STATUS).value;
                         if (s == twcSrf.Status.Submitted || s == twcSrf.Status.UnderReview || s == twcSrf.Status.FeedbackIssued || s == twcSrf.Status.Resubmitted) {

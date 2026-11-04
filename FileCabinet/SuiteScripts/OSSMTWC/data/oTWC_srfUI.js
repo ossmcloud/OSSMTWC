@@ -343,6 +343,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 basicInfo.fields.push({ id: twcSrf.Fields.TL_NOTES, width: '100%', rows: 3 })
             }
+            // @@NOTE: latest submission / re-submission comment, set by the submit process (modules/oTWC_srfWorkflowEngine.js: initWorkFlow) so read-only here
+            //         visible to everyone (customers included), below the TL Notes for employees
+            basicInfo.fields.push({ id: twcSrf.Fields.SUBMISSION_NOTES, width: '100%', rows: 3, disabled: true })
 
             var items = getSrfItems(dataSource, userInfo, readOnly);
             fieldGroup.controls.push({ id: 'site-request-step-1', title: 'Step 1 of 6 (TME)', fields: [getStepFields(items, userInfo, dataSource, twcSrf.StepType.TME, readOnly)] });

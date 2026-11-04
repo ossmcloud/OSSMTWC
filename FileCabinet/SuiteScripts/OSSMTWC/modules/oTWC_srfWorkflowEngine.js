@@ -177,6 +177,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (srf.state == 'new') { throw new Error(`No SRF Found for id: ${options.srf}`); }
             if (srf.sRFStatus != twcUtils.SrfStatus.Draft && srf.sRFStatus != twcUtils.SrfStatus.FeedbackIssued) { throw new Error(`Invalid SRF Status: ${srf.sRFStatusName}`); }
 
+            // @@NOTE: the user must enter a comment when submitting / re-submitting (ui/js/oTWC_spaceRequest.js: askSubmitComment)
+            var submitComment = (options.submitComment || '').trim();
+            if (!submitComment) { throw new Error(`A comment is required to submit the SRF`); }
+
             var wkf = coreSql.first(`select id from ${twcSrfWorkflow.Type} where ${twcSrfWorkflow.Fields.SRF} = ${options.srf}`)
             if (srf.sRFStatus == twcUtils.SrfStatus.FeedbackIssued) {
                 if (wkf == null) { throw new Error(`No Workflow Found for id: ${options.srf}`); }
@@ -212,8 +216,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 recu.submit(twcSrfWorkflowItem.Type, feedbackIssuedStage[0].id, [twcSrfWorkflowItem.Fields.STATUS, twcSrfWorkflowItem.Fields.ACTUAL], [WORKFLOW_STATUS.COMPLETED, new Date()]);
 
-                // increase feed back count
-                recu.submit(twcSrf.Type, options.srf, [twcSrf.Fields.SRF_STATUS, twcSrf.Fields.FEEDBACK_LOOP_ITERATIONS], [twcUtils.SrfStatus.Resubmitted, (srf.feedbackLoopIterations || 1) + 1]);
+                // increase feed back count (and keep the latest submission comment on the SRF)
+                recu.submit(twcSrf.Type, options.srf, [twcSrf.Fields.SRF_STATUS, twcSrf.Fields.FEEDBACK_LOOP_ITERATIONS, twcSrf.Fields.SUBMISSION_NOTES], [twcUtils.SrfStatus.Resubmitted, (srf.feedbackLoopIterations || 1) + 1, submitComment]);
+
+                saveSubmissionComment(options.srf, submitComment);
 
                 return;
             } else {
@@ -254,8 +260,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 srfWorkflowItem.save();
             })
 
-            recu.submit(twcSrf.Type, options.srf, [twcSrf.Fields.SRF_STATUS, twcSrf.Fields.FEEDBACK_LOOP_ITERATIONS], [twcUtils.SrfStatus.Submitted, 1]);
+            recu.submit(twcSrf.Type, options.srf, [twcSrf.Fields.SRF_STATUS, twcSrf.Fields.FEEDBACK_LOOP_ITERATIONS, twcSrf.Fields.SUBMISSION_NOTES], [twcUtils.SrfStatus.Submitted, 1, submitComment]);
 
+            saveSubmissionComment(options.srf, submitComment);
+        }
+
+        // @@NOTE: stores the submission / re-submission comment on the SRF Review record of the current iteration (SRF feedback loop count, so this must run after it is set)
+        //         the review record is created here if not there yet, the review stage (updateWorkflow) will then pick up this same record (twcUtils.getSrfReviewRecord)
+        function saveSubmissionComment(srfId, comment) {
+            var reviewRecordInfo = twcUtils.getSrfReviewRecord({ srf: srfId });
+            if (!reviewRecordInfo) { throw new Error(`Could not find the workflow for srf: ${srfId}`); }
+            var reviewRecord = twcSrfReview.get(reviewRecordInfo.id);
+            reviewRecord.name = `R${reviewRecordInfo.srf_name}_${reviewRecordInfo.feedback_loop_count}`;
+            if (!reviewRecordInfo.id) {
+                reviewRecord.sRF = reviewRecordInfo.srf;
+                reviewRecord.reviewIteration = reviewRecordInfo.feedback_loop_count;
+            }
+            reviewRecord.customerSubmissionComments = comment;
+            reviewRecord.save();
         }
 
         function getNextStepId(workflowId, stepId) {
