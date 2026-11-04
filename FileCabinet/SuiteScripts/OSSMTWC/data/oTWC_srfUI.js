@@ -355,7 +355,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 id: 'site-request-step-6', title: 'Step 6 of 6: (Power Supply)', fields: [
                     { id: twcSrf.Fields.POWER_SUPPLY_REQUESTED_FROM_TL, label: 'Power Required from Towercom', labelNoWrap: true, lineBreak: true },
                     { id: twcSrf.Fields.ALTERNATE_POWER_SUPPLIER, label: 'Alternate Supplier', lineBreak: true },
-                    { id: twcSrf.Fields.POWER_NOTES, label: 'Notes / Comments', width: '75%', rows: 3, lineBreak: true },
+                    { id: twcSrf.Fields.POWER_NOTES, label: 'Power Notes / Comments', width: '75%', rows: 3, lineBreak: true },
                     { id: twcSrf.Fields.APPLICATION_FOR_OWN_SUPPLY_MADE_TO_ESB, label: 'Application for own supply made to ESB', labelNoWrap: true, lineBreak: true },
                     { id: twcSrf.Fields.APPLICATION_DATE, label: 'Application Date' },
                     { id: twcSrf.Fields.APPLICATION_REFERENCE, label: 'Application Reference' },
