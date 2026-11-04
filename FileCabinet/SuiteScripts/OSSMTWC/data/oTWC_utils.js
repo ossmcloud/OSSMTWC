@@ -479,7 +479,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (SAF_STATUS[k] == safStatusNumber) {
                     if (asObject) {
 
-                        return { value: safStatusNumber, text: k, forceComment: safStatusNumber == SAF_STATUS.Rejected }
+                        // @@NOTE: a comment is mandatory when cancelling a SAF (also enforced on the server: oTWC_siteAccessUtils.js editSafStatus). Rejected is no longer used
+                        return { value: safStatusNumber, text: k, forceComment: safStatusNumber == SAF_STATUS.Rejected || safStatusNumber == SAF_STATUS.Cancelled }
                     }
                     return k;
                 }

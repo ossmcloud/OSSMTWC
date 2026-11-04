@@ -1132,7 +1132,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             var payload = form.getValues();
                             payload.saf = this.data.siteAccessInfo.id;
                             if (form.getControl('status').valueObj.forceComment) {
-                                if (!payload.comment) { throw new Error('Please, specify a comment'); }
+                                if (!(payload.comment || '').trim()) { throw new Error('Please, specify a comment'); }
                             }
                             this.post({ action: 'edit-saf-status' }, payload).then(resp => {
                                 if (resp.error) {

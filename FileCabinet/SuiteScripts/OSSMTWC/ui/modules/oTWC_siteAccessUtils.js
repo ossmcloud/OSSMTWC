@@ -402,6 +402,10 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             // main SAF record
             var saf = twcSaf.get(payload.reUse ? null : payload.id);
+            // @@NOTE: a cancelled (or old rejected) SAF cannot be edited / re-submitted, its actions have been detached. 'Re Use' (new SAF) is still allowed
+            if (!payload.reUse && payload.id && (saf.status == twcSaf.Status.Cancelled || saf.status == twcSaf.Status.Rejected)) {
+                throw new Error(`This SAF is ${saf.statusName} and cannot be changed, please use 'Re Use' to create a new SAF`);
+            }
             saf.site = payload.siteId;
             saf.r_type = payload['saf-type'];
             saf.status = options.accessRequirements.autoApprove ? twcSaf.Status.Approved : twcSaf.Status.Pending;
@@ -581,6 +585,16 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 var statusChanged = options.status ? saf.status != options.status : false;
                 var commentCHanged = options.comment ? saf.reviewComment != options.comment : false;
                 if (!statusChanged && !commentCHanged) { return; }
+
+                // @@NOTE: 'Rejected' is no longer used (it had the same effect as 'Cancelled'), a cancelled (or old rejected) SAF cannot be re-opened
+                if (statusChanged && options.status == twcSaf.Status.Rejected) { throw new Error(`The 'Rejected' status is no longer used, please use 'Cancelled'`); }
+                if (statusChanged && (saf.status == twcSaf.Status.Cancelled || saf.status == twcSaf.Status.Rejected)) {
+                    throw new Error(`This SAF is ${saf.statusName}, its status cannot be changed`);
+                }
+                // @@NOTE: a comment (the reason) is mandatory when cancelling a SAF
+                if (statusChanged && options.status == twcSaf.Status.Cancelled && !(options.comment || '').trim()) {
+                    throw new Error('Please, specify a comment (reason) to cancel the SAF');
+                }
 
                 var safRequiresSrf = twcUtils.getSafType(saf.r_type)?.requires_srf == 'T';
                 if (statusChanged && (options.status == twcSaf.Status.Cancelled || options.status == twcSaf.Status.Rejected)) {

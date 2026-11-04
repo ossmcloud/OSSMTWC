@@ -48,7 +48,9 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                     `
                 }
                 // @@NOTE: if we have no recId is because we have a new SAF, we have a submit button at the bottom of the page for it, we use the forceViewOnly to hide the Save/Cancel buttons
-                var canEdit = pageData.userInfo.isEmployee ? (safStatus != twcSaf.Status.Cancelled) : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Rejected || safStatus == twcSaf.Status.Approved);
+                // @@NOTE: a cancelled SAF (or an old 'Rejected' one, status no longer used) is closed: no edit, no status change, it cannot be re-submitted ('Re Use' creates a new SAF)
+                var safClosed = !!context.request.parameters.recId && (safStatus == twcSaf.Status.Cancelled || safStatus == twcSaf.Status.Rejected);
+                var canEdit = pageData.userInfo.isEmployee ? !safClosed : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Approved);
                 if (canEdit && safIsInThePast) {
                     if (!pageData.userInfo.powerUser) {
                         canEdit = false;
@@ -60,19 +62,22 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 }
 
 
+                // @@NOTE: a closed SAF cannot be opened in edit mode, not even by adding edit=T to the url
+                if (safClosed) { pageData.editMode = false; }
+
                 // @@NOTE: we set pageData.forceViewOnly = true because we do not want the baseView save/cancel buttons
                 pageData.forceViewOnly = canEdit ? context.request.parameters.recId === undefined : true;
                 if (pageData.editMode) { pageData.forceViewOnly = true; }
 
                 //
-                var canChangeStatus = (pageData.userInfo.isEmployee) ? safStatus != twcSaf.Status.Complete : false;
+                var canChangeStatus = (pageData.userInfo.isEmployee) ? (safStatus != twcSaf.Status.Complete && !safClosed) : false;
                 if (core.me()) { canChangeStatus = true; }
                 if (canChangeStatus) {
                     pageData.allowedStatues = [];
                     if (!safIsInThePast) { pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Pending, true)); }
                     if (pageData.userInfo.isEmployee) {
                         pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Approved, true));
-                        pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Rejected, true));
+                        // @@NOTE: 'Rejected' removed (same effect as 'Cancelled'), use 'Cancelled' instead
                         if (safRequiresSrf) {
                             pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.AwaitingPhotos, true));
                             pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.PhotosReceived, true));
@@ -86,7 +91,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteAccess');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
 
-                var readOnly = context.request.parameters.edit != 'T';
+                var readOnly = context.request.parameters.edit != 'T' || safClosed;
                 var fieldGroups = twcSiteAccessUtils.getSAFInfoPanels(pageData.siteAccessInfo, pageData.userInfo, { siteTimeBlocks: pageData.siteTimeBlocks, editMode: pageData.editMode });
                 html = html.replaceAll('{SITE_ACCESS_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
 
