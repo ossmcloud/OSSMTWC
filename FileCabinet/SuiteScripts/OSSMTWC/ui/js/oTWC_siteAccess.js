@@ -1108,6 +1108,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.getControl('change-status-button')?.on('click', e => { this.changeStatus(); })
                 this.ui.getControl('assign-reviewer-button')?.on('click', e => { this.assignReviewer(); })
                 this.ui.getControl('review-completion-button')?.on('click', e => { this.photosReviewed(); })
+                this.ui.getControl('approve-review-button')?.on('click', e => { this.approveReview(); })
 
                 this.#safActionTable = TWCSafActionTable.get(this.ui.getControl(twcSafAction.Type));
                 // var safActionsTable = this.ui.getControl(twcSafAction.Type);
@@ -1317,14 +1318,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 try {
                     var list = this.postSync({ action: 'saf-action-list' }, { id: this.data.siteAccessInfo.id, actionStatus: twcUtils.SafActionStatus.Pending, showSelect: true });
                     var formHtml = jQuery(`
-                        ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Review Comment', width: '100%', rows: 5, value: this.data.siteAccessInfo[twcSaf.Fields.REVIEW_COMMENT], mandatory: true, lineBreak: true })}
+                        <div style="padding: 3px 0px 7px 0px; color: var(--label-color); font-style: italic;">The review will be sent for approval before it is issued to the SAF submitter.</div>
+                        ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Review Comment', width: '100%', rows: 5, value: this.data.siteAccessInfo[twcSaf.Fields.PROPOSED_REVIEW_COMMENT] || this.data.siteAccessInfo[twcSaf.Fields.REVIEW_COMMENT], mandatory: true, lineBreak: true })}
                         ${list}
                     `);
                     var form = twcUI.init({}, formHtml);
                     var safActionsTable = TWCSafActionTable.get(form.getControl(twcSafAction.Type));
 
                     dialog.open({
-                        title: 'Completion photo reviewed',
+                        title: 'Completion photo reviewed (submit for approval)',
                         content: form.ui,
                         size: { width: '1000px', height: '70vh' },
                         ok: () => {
@@ -1334,7 +1336,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 var actions = safActionsTable.checked();
                                 if (actions.length == 0) { throw new Error('No action selected'); }
 
-                                this.postSync({ action: 'saf-set-reviewed' }, { saf: this.data.siteAccessInfo.id, comment: values.comment, actions: actions });
+                                var res = this.postSync({ action: 'saf-set-reviewed' }, { saf: this.data.siteAccessInfo.id, comment: values.comment, actions: actions });
+                                if (res?.error) { throw res; }
                                 location.reload();
                                 return true;
                             } catch (error) {
@@ -1343,6 +1346,68 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             }
 
                         }
+                    });
+
+                } catch (error) {
+                    dialog.error(error);
+                }
+            }
+
+            // @@NOTE: approver step of the completion photos review (employees with 'Can Approve SAF Photo Reviews' only, enforced on the server)
+            //         approve (the comment can be amended) => actions completed, status changed, comment issued to the submitter
+            //         send back => back to the reviewer with a note
+            approveReview() {
+                try {
+                    var review = this.postSync({ action: 'saf-get-pending-review' }, { saf: this.data.siteAccessInfo.id });
+                    if (review.error) { throw review; }
+
+                    const esc = (v) => { return (v || '').toString().replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;'); };
+                    var actionList = (review.actions || []).map(a => { return `<li>${esc(a.eq_action)} - ${esc(a.ea_type)} - ${esc(a.equipment)}</li>`; }).join('');
+
+                    var formHtml = jQuery(`
+                        <div>
+                            <div style="padding-bottom: 7px;"><label>Reviewed by</label> ${esc(review.reviewer)}</div>
+                            ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Review Comment (issued to the SAF submitter on approval, you can amend it)', width: '100%', rows: 7, value: review.comment, mandatory: true, lineBreak: true })}
+                            <div style="padding-top: 7px;"><label>Actions marked as completed by the reviewer</label><ul class="twc">${actionList || '<li>none</li>'}</ul></div>
+                            <div style="padding-top: 7px;">${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, id: 'send-back-review-button', value: 'Send Back to Reviewer' })}</div>
+                        </div>
+                    `);
+                    var form = twcUI.init({}, formHtml);
+
+                    var dlg = dialog.open({
+                        title: 'Approve completion photos review',
+                        content: form.ui,
+                        size: { width: '800px', height: '70vh' },
+                        ok: () => {
+                            try {
+                                var comment = (form.getValues().comment || '').trim();
+                                if (!comment) { throw new Error('Please, specify a review comment'); }
+                                var res = this.postSync({ action: 'saf-approve-review' }, { saf: this.data.siteAccessInfo.id, comment: comment });
+                                if (res?.error) { throw res; }
+                                location.reload();
+                                return true;
+                            } catch (error) {
+                                dialog.error(error);
+                                return false;
+                            }
+                        }
+                    });
+
+                    form.ui.find('#send-back-review-button').on('click', e => {
+                        e.preventDefault();
+                        var noteForm = twcUI.init({ controls: [{ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'note', label: 'Note for the reviewer', width: '100%', rows: 7, mandatory: true }] });
+                        dialog.confirm({ title: 'Send review back to the reviewer', message: noteForm.ui, width: '600px', height: '350px' }, () => {
+                            try {
+                                var note = (noteForm.getValues().note || '').trim();
+                                if (!note) { throw new Error('Please, specify a note for the reviewer'); }
+                                var res = this.postSync({ action: 'saf-send-back-review' }, { saf: this.data.siteAccessInfo.id, note: note });
+                                if (res?.error) { throw res; }
+                                location.reload();
+                            } catch (error) {
+                                dialog.error(error);
+                                return false;
+                            }
+                        });
                     });
 
                 } catch (error) {

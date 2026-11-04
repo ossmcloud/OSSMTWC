@@ -167,7 +167,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var userInfo = coreSQL.first({
                 query: `
-                    select  e.id, e.type, e.email, e.entitytitle as name, NVL(e.mobilephone, e.phone) as phone, emp.custentity_twc_prj_power_user as power_user, emp.custentity_twc_can_execute_pack as can_execute_pack
+                    select  e.id, e.type, e.email, e.entitytitle as name, NVL(e.mobilephone, e.phone) as phone, emp.custentity_twc_prj_power_user as power_user, emp.custentity_twc_can_execute_pack as can_execute_pack,
+                            emp.custentity_twc_saf_photo_approver as saf_photo_approver
                     from    entity e
                     left join employee emp on emp.id = e.id
                     where   e.id = ?
@@ -177,8 +178,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             userInfo.powerUser = userInfo.power_user == 'T';
             userInfo.canExecutePack = userInfo.can_execute_pack == 'T';
+            // @@NOTE: employee checkbox 'Can Approve SAF Photo Reviews', approves the completion photos reviews before they are issued to the SAF submitter
+            userInfo.canApproveSafReview = userInfo.saf_photo_approver == 'T';
             delete userInfo.power_user;
             delete userInfo.can_execute_pack;
+            delete userInfo.saf_photo_approver;
 
             if (context) { userInfo.permission = permissions.get(context); }
 

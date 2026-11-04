@@ -518,6 +518,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 if (requiresSrf) {
                     if (userInfo.isEmployee) { fieldGroups.push(getSAFInfoPanels_WorkFlowInfo(dataSource, userInfo)); }
                     fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Images(dataSource, userInfo));
+                    // @@NOTE: completion photos process log (PHOTOS category) in its own table
+                    fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo, twcSafLog.LogCategory.Photos));
                 }
 
                 fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Files(dataSource, userInfo));
@@ -736,6 +738,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             workFlowInfo.fields.push({ id: twcSaf.Fields.COMPLETION_PHOTOS_REQUESTED, label: 'Photos Requested' })
             workFlowInfo.fields.push({ id: twcSaf.Fields.COMPLETION_PHOTOS_RECEIVED, label: 'Photos Received', lineBreak: true })
             workFlowInfo.fields.push({ id: twcSaf.Fields.REVIEW_COMMENT, width: '100%', rows: 5, label: 'Review Comment', lineBreak: true })
+            // @@NOTE: completion photos review approval step (ui/modules/oTWC_siteAccessUtils.js: setSafReviewed / approveSafReview)
+            workFlowInfo.fields.push({ id: twcSaf.Fields.REVIEW_PENDING_APPROVAL, label: 'Review Pending Approval' })
+            workFlowInfo.fields.push({ id: twcSaf.Fields.REVIEW_APPROVED_BY, label: 'Review Approved By' })
+            workFlowInfo.fields.push({ id: twcSaf.Fields.REVIEW_APPROVED_DATE, label: 'Review Approved Date', lineBreak: true })
+            workFlowInfo.fields.push({ id: twcSaf.Fields.PROPOSED_REVIEW_COMMENT, width: '100%', rows: 5, label: 'Proposed Review Comment (reviewer)', lineBreak: true })
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
@@ -790,25 +797,37 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
-        function getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo) {
-            var fieldGroup = { id: 'site-access-workflow-logs', title: 'SAF Logs', collapsed: false, controls: [] };
+        // @@NOTE: category: empty = main SAF Log (everything but the PHOTOS category), twcSafLog.LogCategory.Photos = Completion Photos Log
+        function getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo, category) {
+            var isPhotos = category == twcSafLog.LogCategory.Photos;
+            var fieldGroup = { id: isPhotos ? 'site-access-photos-logs' : 'site-access-workflow-logs', title: isPhotos ? 'Completion Photos Log' : 'SAF Logs', collapsed: false, controls: [] };
+
+            var where = `where ${twcSafLog.Fields.SAF} = ${parseInt(dataSource.id) || 0}`;
+            if (isPhotos) {
+                where += `
+ and ${twcSafLog.Fields.CATEGORY} = '${twcSafLog.LogCategory.Photos}'`;
+            } else {
+                where += `
+ and (${twcSafLog.Fields.CATEGORY} is null or ${twcSafLog.Fields.CATEGORY} != '${twcSafLog.LogCategory.Photos}')`;
+            }
 
             // @@NOTE: TL users see the full log, external users only see status changes, comments and edit / re-submit entries (with their comment)
-            //         errors (stack traces), reviewer assignments, detach notes, etc. stay TL only
-            var where = { [twcSafLog.Fields.SAF]: dataSource.id };
+            //         errors (stack traces), reviewer assignments / reviews / approvals, detach notes, etc. stay TL only
             if (!userInfo.isEmployee) {
                 // @@NOTE: the message field is a long text (CLOB) in NetSuite, 'in' / '=' do not work on it in SuiteQL, 'like' does (no wildcards = exact match)
                 var msg = twcSafLog.LogMessage;
                 var msgFilter = [msg.StatusChanged, msg.Comment, msg.Edited].map(m => { return `${twcSafLog.Fields.MESSAGE} like '${m}'`; }).join(' or ');
-                where = `where ${twcSafLog.Fields.SAF} = ${parseInt(dataSource.id) || 0}
-                         and (${msgFilter})
+                where += `
+ and (${msgFilter})
                          and ${twcSafLog.Fields.LOG_TYPE} in ('${twcSafLog.LogType.INFO}', '${twcSafLog.LogType.WARNING}')`;
             }
 
-            var workFlowLogsInfo = { id: 'site-access-logs', collapsed: false, fields: [] };
+            var workFlowLogsInfo = { id: isPhotos ? 'site-access-photos-logs-info' : 'site-access-logs', collapsed: false, fields: [] };
             fieldGroup.controls.push(workFlowLogsInfo);
             workFlowLogsInfo.fields.push({
-                id: `${twcSafLog.Type}`,
+                // @@NOTE: the table control id must be unique on the page (two log tables), the record type is then taken from recordType
+                id: isPhotos ? `${twcSafLog.Type}_photos` : `${twcSafLog.Type}`,
+                recordType: twcSafLog.Type,
                 fields: {
                     [twcSafLog.Fields.LOG_TYPE]: { title: 'Type', styles: { width: '100px' } },
                     [twcSafLog.Fields.CREATED]: { title: 'Date/Time', styles: { width: '120px' } },

@@ -15,11 +15,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             log(type, msg, info, profile) {
                 twcSafLog.log(this.id, type, msg, info, profile);
             }
-            logInfo(msg, info, profile) {
-                twcSafLog.logInfo(this.id, msg, info, profile);
+            // @@NOTE: category (optional): twcSafLog.LogCategory, e.g.: Photos for the completion photos process
+            logInfo(msg, info, profile, category) {
+                twcSafLog.logInfo(this.id, msg, info, profile, category);
             }
-            logWarn(msg, info, profile) {
-                twcSafLog.logWarn(this.id, msg, info, profile);
+            logWarn(msg, info, profile, category) {
+                twcSafLog.logWarn(this.id, msg, info, profile, category);
             }
             logError(msg, info, profile) {
                 twcSafLog.logWarn(this.id, msg, info, profile);

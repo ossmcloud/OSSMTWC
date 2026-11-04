@@ -27,7 +27,15 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 pageData.timeBlocks = twcUtils.getSafTimeBlocks();
                 pageData.siteTimeBlocks = twcSiteAccessUtils.getAllSafTimeBlocks(pageData.siteAccessInfo, pageData.userInfo);
                 pageData.safActionDetachReason = twcUtils.getSafActionDetachReason();
-                pageData.recordStatus = `<div class="twc-div-span-table">${twcSaf.getSafStatusHtml(safStatus)}</div>`;
+                // @@NOTE: completion photos review pending approval: TL only badge right by the status (the submitter does not know about the approval step)
+                var reviewPending = pageData.siteAccessInfo?.[twcSaf.Fields.REVIEW_PENDING_APPROVAL] === true || pageData.siteAccessInfo?.[twcSaf.Fields.REVIEW_PENDING_APPROVAL] == 'T';
+                // @@NOTE: sent back = not pending but the reviewer's proposal is still there (it is cleared on approval, see oTWC_siteAccessUtils.js: approveSafReview)
+                var reviewSentBack = !reviewPending && !!pageData.siteAccessInfo?.[twcSaf.Fields.PROPOSED_REVIEW_COMMENT];
+                var reviewPendingBadge = '';
+                if (pageData.userInfo.isEmployee && (reviewPending || reviewSentBack)) {
+                    reviewPendingBadge = `<span style="width: 5px;"></span><span class="twc-record-status" style="padding: 0px 11px; vertical-align: middle; background-color: ${reviewPending ? 'orange' : 'crimson'}; color: white; white-space: nowrap;" title="${reviewPending ? 'The completion photos review is waiting for approval' : 'The approver sent the completion photos review back to the reviewer, see the Completion Photos Log'}">${reviewPending ? 'Review pending approval' : 'Review sent back'}</span>`;
+                }
+                pageData.recordStatus = `<div class="twc-div-span-table">${twcSaf.getSafStatusHtml(safStatus)}${reviewPendingBadge}</div>`;
                 if (context.request.parameters.recId) {
 
                     var safIsInThePastMsg = safIsInThePast ? `<span style="padding-right: 5px;text-align: right; vertical-align: middle;">SAF is in the past${pageData.userInfo.powerUser ? '<span style="display: block; font-size: 8px;">(you can edit the SAF because you have special permissions)</span>' : ''}</span><span style="vertical-align: middle;">${twcIcons.get('exclamation', 24)}</span><span style="width: 5px;"></span>` : '';
@@ -120,7 +128,12 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
                         if (safRequiresSrf && (safStatus == twcSaf.Status.Approved || safStatus == twcSaf.Status.AwaitingPhotos || safStatus == twcSaf.Status.PhotosReceived || safStatus == twcSaf.Status.PartiallyComplete)) {
                             if (pageData.userInfo.isEmployee && (safStatus == twcSaf.Status.PhotosReceived || safStatus == twcSaf.Status.PartiallyComplete)) {
-                                if (pageData.siteAccessInfo[twcSaf.Fields.COMPLETION_REVIEWER] == pageData.userInfo.profile) {
+                                // @@NOTE: completion photos review: reviewer reviews -> pending approval -> approver approves / sends back (ui/modules/oTWC_siteAccessUtils.js: setSafReviewed)
+                                if (reviewPending) {
+                                    if (pageData.userInfo.canApproveSafReview) {
+                                        actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Approve Review', id: 'approve-review-button' });
+                                    }
+                                } else if (pageData.siteAccessInfo[twcSaf.Fields.COMPLETION_REVIEWER] == pageData.userInfo.profile) {
                                     actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Completion Reviewed', id: 'review-completion-button' });
                                 } else {
                                     actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Assign Reviewer', id: 'assign-reviewer-button' });
@@ -209,12 +222,26 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
             } else if (context.request.parameters.action == 'saf-set-reviewer') {
                 var payload = JSON.parse(context.request.body);
-                twcSiteAccessUtils.setSafReviewer(payload);
+                twcSiteAccessUtils.setSafReviewer(payload, twcConfig.userInfo(context));
                 return { status: 'success' };
 
             } else if (context.request.parameters.action == 'saf-set-reviewed') {
                 var payload = JSON.parse(context.request.body);
-                twcSiteAccessUtils.setSafReviewed(payload);
+                twcSiteAccessUtils.setSafReviewed(payload, twcConfig.userInfo(context));
+                return { status: 'success' };
+
+            } else if (context.request.parameters.action == 'saf-get-pending-review') {
+                var payload = JSON.parse(context.request.body);
+                return twcSiteAccessUtils.getPendingSafReview(payload, twcConfig.userInfo(context));
+
+            } else if (context.request.parameters.action == 'saf-approve-review') {
+                var payload = JSON.parse(context.request.body);
+                twcSiteAccessUtils.approveSafReview(payload, twcConfig.userInfo(context));
+                return { status: 'success' };
+
+            } else if (context.request.parameters.action == 'saf-send-back-review') {
+                var payload = JSON.parse(context.request.body);
+                twcSiteAccessUtils.sendBackSafReview(payload, twcConfig.userInfo(context));
                 return { status: 'success' };
 
             } else {

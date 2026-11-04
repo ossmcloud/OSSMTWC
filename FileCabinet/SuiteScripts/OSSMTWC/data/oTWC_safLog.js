@@ -12,6 +12,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             SYSTEM: 'SYSTEM ERROR'
         }
 
+        // @@NOTE: log category, used to split the SAF Log in two tables (data/oTWC_safUI.js: getSAFInfoPanels_WorkFlowInfo_Logs)
+        //         empty = general SAF log, PHOTOS = completion photos process (status changes from Awaiting Photos on, reviewer, review / approval)
+        const LOG_CATEGORY = {
+            Photos: 'PHOTOS'
+        }
+
         var _profile = null;
 
         class OSSMTWC_SAFLog extends twcSafLog.PersistentRecord {
@@ -20,7 +26,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
         }
 
-        function log(saf, type, msg, info, profile) {
+        function log(saf, type, msg, info, profile, category) {
             try {
                 if (!profile) {
                     if (!_profile) {
@@ -54,6 +60,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 l.logType = type;
                 l.message = msg.substring(0, 300);
                 l.additionalInfo = info;
+                if (category) { l.category = category; }
                 l.save();
             } catch (error) {
                 core.logError('SAF-LOG-ERROR-MSG', `saf: ${saf} - type: ${type} - msg: ${msg}`);
@@ -67,12 +74,23 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             Fields: twcSafLog.Fields,
             FieldsInfo: twcSafLog.FieldsInfo,
             LogType: LOG_TYPE,
-            // @@IMPORTANT: these messages are also used to filter the SAF Log shown to external users (data/oTWC_safUI.js: getSAFInfoPanels_WorkFlowInfo_Logs)
-            //              changing the text would hide the existing log entries from external users
+            LogCategory: LOG_CATEGORY,
+            // @@IMPORTANT: StatusChanged / Comment / Edited are also used to filter the SAF Log shown to external users (data/oTWC_safUI.js: getSAFInfoPanels_WorkFlowInfo_Logs)
+            //              changing the text would hide the existing log entries from external users. The other messages are TL only
             LogMessage: {
                 StatusChanged: 'status changed',
                 Comment: 'Comment',
                 Edited: 'SAF Edited',
+                ReviewerAssigned: 'Reviewer assigned',
+                PhotosReviewed: 'Completion photos reviewed (pending approval)',
+                ReviewSentBack: 'Completion photos review sent back',
+                ReviewApproved: 'Completion photos review approved',
+            },
+
+            // @@NOTE: SAF statuses that belong to the completion photos process (their status change log goes to the PHOTOS category)
+            isPhotoStatus: (status) => {
+                var s = twcUtils.SafStatus;
+                return [s.AwaitingPhotos, s.PhotosReceived, s.PartiallyComplete, s.Complete].indexOf(parseInt(status)) >= 0;
             },
 
 
@@ -92,11 +110,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             },
 
 
-            logInfo: (saf, msg, info, profile) => {
-                log(saf, LOG_TYPE.INFO, msg, info, profile);
+            logInfo: (saf, msg, info, profile, category) => {
+                log(saf, LOG_TYPE.INFO, msg, info, profile, category);
             },
-            logWarn: (saf, msg, info, profile) => {
-                log(saf, LOG_TYPE.WARNING, msg, info, profile);
+            logWarn: (saf, msg, info, profile, category) => {
+                log(saf, LOG_TYPE.WARNING, msg, info, profile, category);
             },
             logError: (saf, msg, info, profile) => {
                 if (msg.message) {

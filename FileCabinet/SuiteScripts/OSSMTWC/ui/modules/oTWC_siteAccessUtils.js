@@ -632,20 +632,26 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
                 if (statusChanged && options.status == twcSaf.Status.Complete) {
                     validateAndCompleteActions(options.saf);
+                    // @@NOTE: completed manually: any completion photos review still pending approval is no longer relevant
+                    saf.reviewPendingApproval = false;
+                    saf.proposedReviewComment = null;
+                    saf.proposedCompletedActions = null;
                 }
 
                 saf.save();
 
+                // @@NOTE: status changes / comments in the completion photos phase go to the Completion Photos Log (PHOTOS category)
+                var logCategory = twcSafLog.isPhotoStatus(options.status || saf.status) ? twcSafLog.LogCategory.Photos : null;
                 if (statusChanged) {
                     if (options.status == twcSaf.Status.Rejected) {
-                        saf.logWarn(logMsgStatus, infoStatus);
+                        saf.logWarn(logMsgStatus, infoStatus, null, logCategory);
                     } else {
-                        saf.logInfo(logMsgStatus, infoStatus);
+                        saf.logInfo(logMsgStatus, infoStatus, null, logCategory);
                     }
                 }
 
                 if (commentCHanged) {
-                    saf.logInfo(twcSafLog.LogMessage.Comment, options.comment);
+                    saf.logInfo(twcSafLog.LogMessage.Comment, options.comment, null, logCategory);
                 }
             } catch (error) {
                 saf.logEx('Error while changing status/comments', error);
@@ -748,17 +754,90 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
         }
 
-        function setSafReviewer(options) {
+        // @@NOTE: completion photos review process (TL only):
+        //              1. an employee assigns a reviewer (setSafReviewer)
+        //              2. the reviewer reviews the photos: comment + completed actions are only PROPOSED, the SAF is flagged 'review pending approval' (setSafReviewed)
+        //              3. an approver (employee with 'Can Approve SAF Photo Reviews') amends the comment and approves (approveSafReview) or sends it back to the reviewer (sendBackSafReview)
+        //                 only on approval the actions are completed, the status changes and the comment is issued to the submitter (PHOTOS log 'status changed' + 'Comment')
+        //         all log entries go to the Completion Photos Log (PHOTOS category), only 'status changed' / 'Comment' are visible to external users
+        function setSafReviewer(options, userInfo) {
+            if (!userInfo.isEmployee) { throw new Error('You do not have permissions to assign a reviewer'); }
+            if (twcSaf.get(options.saf).reviewPendingApproval === true) { throw new Error('The review is pending approval, the reviewer cannot be changed'); }
             recu.submit(twcSaf.Type, options.saf, twcSaf.Fields.COMPLETION_REVIEWER, options.reviewer.value);
-            twcSafLog.logInfo(options.saf, `Reviewer [${options.reviewer.text}] assigned`);
+            twcSafLog.logInfo(options.saf, twcSafLog.LogMessage.ReviewerAssigned, options.reviewer.text, null, twcSafLog.LogCategory.Photos);
         }
 
-        function setSafReviewed(options) {
-            //
-            twcSafLog.logInfo(options.saf, `Completion photos reviewed`, `Comment: ${options.comment}`);
-            var completed = validateAndCompleteActions(options.saf, options.actions);
-            recu.submit(twcSaf.Type, options.saf, [twcSaf.Fields.STATUS, twcSaf.Fields.REVIEW_COMMENT], [completed ? twcSaf.Status.Complete : twcSaf.Status.PartiallyComplete, options.comment]);
+        function setSafReviewed(options, userInfo) {
+            var saf = twcSaf.get(options.saf);
+            if (!userInfo.isEmployee || saf.completionReviewer != userInfo.profile) { throw new Error('Only the assigned reviewer can review the completion photos'); }
+            if (saf.reviewPendingApproval) { throw new Error('The review is already pending approval'); }
+            var comment = (options.comment || '').trim();
+            if (!comment) { throw new Error('Please, specify a review comment'); }
+            if (!options.actions || options.actions.length == 0) { throw new Error('Please, select at least one completed action'); }
 
+            recu.submit(twcSaf.Type, options.saf,
+                [twcSaf.Fields.PROPOSED_REVIEW_COMMENT, twcSaf.Fields.PROPOSED_COMPLETED_ACTIONS, twcSaf.Fields.REVIEW_PENDING_APPROVAL],
+                [comment, JSON.stringify(options.actions.map(a => { return parseInt(a); })), true]);
+            twcSafLog.logInfo(options.saf, twcSafLog.LogMessage.PhotosReviewed, comment, null, twcSafLog.LogCategory.Photos);
+        }
+
+        function getPendingReview(safId, userInfo) {
+            if (!userInfo.canApproveSafReview) { throw new Error('You do not have permissions to approve completion photos reviews'); }
+            var saf = twcSaf.get(safId);
+            if (!saf.reviewPendingApproval) { throw new Error('There is no review pending approval for this SAF'); }
+            return saf;
+        }
+
+        // @@NOTE: data for the approver dialog (ui/js/oTWC_siteAccess.js: approveReview): proposed comment + the actions the reviewer marked as completed
+        function getPendingSafReview(options, userInfo) {
+            var saf = getPendingReview(options.saf, userInfo);
+            var actionIds = [];
+            try { actionIds = JSON.parse(saf.proposedCompletedActions || '[]').map(a => { return parseInt(a); }).filter(a => { return !isNaN(a); }); } catch (e) { actionIds = []; }
+            var actions = (actionIds.length == 0) ? [] : coreSQL.run(`
+                select  sa.id, ea.name as eq_action, BUILTIN.DF(ea.custrecord_twc_eq_action_type) as ea_type, BUILTIN.DF(ea.custrecord_twc_eq_action_eq) as equipment
+                from    customrecord_twc_saf_action sa
+                join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea
+                where   sa.id in (${actionIds.join(',')})
+            `);
+            return {
+                comment: saf.proposedReviewComment || '',
+                reviewer: saf.completionReviewerName || '',
+                actions: actions
+            }
+        }
+
+        function approveSafReview(options, userInfo) {
+            var saf = getPendingReview(options.saf, userInfo);
+            var comment = (options.comment || '').trim();
+            if (!comment) { throw new Error('Please, specify a review comment'); }
+
+            var actions = [];
+            try { actions = JSON.parse(saf.proposedCompletedActions || '[]'); } catch (e) { actions = []; }
+            if (actions.length == 0) { throw new Error('The review has no completed actions, please send it back to the reviewer'); }
+
+            var oldStatusName = saf.statusName;
+            var completed = validateAndCompleteActions(options.saf, actions);
+            var newStatus = completed ? twcSaf.Status.Complete : twcSaf.Status.PartiallyComplete;
+
+            // @@NOTE: the proposal is cleared on approval: 'not pending + proposed comment' means the review was sent back (badge in ui/oTWC_siteAccess_sl.js)
+            recu.submit(twcSaf.Type, options.saf,
+                [twcSaf.Fields.STATUS, twcSaf.Fields.REVIEW_COMMENT, twcSaf.Fields.REVIEW_PENDING_APPROVAL, twcSaf.Fields.REVIEW_APPROVED_BY, twcSaf.Fields.REVIEW_APPROVED_DATE, twcSaf.Fields.PROPOSED_REVIEW_COMMENT, twcSaf.Fields.PROPOSED_COMPLETED_ACTIONS],
+                [newStatus, comment, false, userInfo.profile || null, new Date(), null, null]);
+
+            var photos = twcSafLog.LogCategory.Photos;
+            twcSafLog.logInfo(options.saf, twcSafLog.LogMessage.ReviewApproved, (comment != (saf.proposedReviewComment || '').trim()) ? `Comment amended by the approver` : null, null, photos);
+            // @@NOTE: these two are visible to the submitter
+            twcSafLog.logInfo(options.saf, twcSafLog.LogMessage.StatusChanged, `status changed to: ${twcSaf.getSafStatusName(newStatus)} - old status: ${oldStatusName}`, null, photos);
+            twcSafLog.logInfo(options.saf, twcSafLog.LogMessage.Comment, comment, null, photos);
+        }
+
+        function sendBackSafReview(options, userInfo) {
+            getPendingReview(options.saf, userInfo);
+            var note = (options.note || '').trim();
+            if (!note) { throw new Error('Please, specify a note for the reviewer'); }
+            // @@NOTE: the proposed comment / actions are kept so the reviewer can amend them
+            recu.submit(twcSaf.Type, options.saf, twcSaf.Fields.REVIEW_PENDING_APPROVAL, false);
+            twcSafLog.logInfo(options.saf, twcSafLog.LogMessage.ReviewSentBack, note, null, twcSafLog.LogCategory.Photos);
         }
 
         function getSafTimeBlocks(id) {
@@ -869,6 +948,9 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             saveSafImage: saveSafImage,
             setSafReviewer: setSafReviewer,
             setSafReviewed: setSafReviewed,
+            getPendingSafReview: getPendingSafReview,
+            approveSafReview: approveSafReview,
+            sendBackSafReview: sendBackSafReview,
             getSafTimeBlocks: getSafTimeBlocks,
 
 

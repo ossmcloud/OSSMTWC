@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NScriptType ScheduledScript
  */
-define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'N/email', '../data/oTWC_config.js', '../data/oTWC_saf.js', '../data/oTWC_safTimeBlock.js', 'N/render', 'N/format', 'N/config'],
-    (runtime, task, core, coreSQL, recu, email, twcConfig, twcSaf, twcTB, render, format, config) => {
+define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'N/email', '../data/oTWC_config.js', '../data/oTWC_saf.js', '../data/oTWC_safTimeBlock.js', 'N/render', 'N/format', 'N/config', '../data/oTWC_safLog.js'],
+    (runtime, task, core, coreSQL, recu, email, twcConfig, twcSaf, twcTB, render, format, config, twcSafLog) => {
         
         function execute(context) {
             try {
@@ -38,7 +38,7 @@ define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
                 JOIN
                 customrecord_twc_company company
                 ON company.id = saf.${twcSaf.Fields.PRIMARY_CONTRACTOR}
-                WHERE NVL(saf.${twcSaf.Fields.STATUS}, 0) != ${twcSaf.Status.AwaitingPhotos}
+                WHERE saf.${twcSaf.Fields.STATUS} = ${twcSaf.Status.Approved}
                 AND saf.${twcSaf.Fields.R_TYPE} = 4
                 AND (
                     SELECT MAX(tb.${twcTB.Fields.BLOCK_DATE})
@@ -48,6 +48,8 @@ define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
 
             `;
 
+            // @@NOTE: only APPROVED SAFs are moved to Awaiting Photos (it used to pick any status but Awaiting Photos, so it re-opened Photos Received / Complete / Cancelled SAFs and re-sent the email on every run)
+            // @@HARDCODED @@GO-LIVE :: SAF type 4 (the only SAF type requesting completion photos) - should use the SAF type 'requires srf' flag
             var restart = '';
             core.logDebug('SQL', sql);
 
@@ -56,6 +58,8 @@ define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
                     core.logDebug('SAF-' + idx, `SAF: ${saf.saf_id} :: Customer: ${saf.contractor_id} :: Delay: ${saf.delay_days}`);
 
                     recu.submit(twcSaf.Type, saf.saf_id, twcSaf.Fields.STATUS, twcSaf.Status.AwaitingPhotos);
+                    // @@NOTE: Completion Photos Log (PHOTOS category), visible to the SAF submitter
+                    twcSafLog.logInfo(saf.saf_id, twcSafLog.LogMessage.StatusChanged, `status changed to: ${twcSaf.getSafStatusName(twcSaf.Status.AwaitingPhotos)} - old status: ${twcSaf.getSafStatusName(twcSaf.Status.Approved)}`, null, twcSafLog.LogCategory.Photos);
 
                     if (saf.vendor_id) {
                         var mergeResult = render.mergeEmail({
