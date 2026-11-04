@@ -900,7 +900,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (options.srf) {
                 // @@NOTE: for SRF the accreditation status does not apply
                 additionalFilters = '';
-                additionalFilters += ` and c.custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer} `
+                if (options.includeContractors) {
+                    // @@NOTE: SRF locator 'Submitter Company' filter (getCompaniesSrf): customers OR contractors (an SRF can be submitted by a contractor on behalf of a customer)
+                    additionalFilters += ` and (c.custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer} or c.custrecord_twc_con_flag = ${CONTRACTOR_FLAG.Contractor}) `
+                } else {
+                    additionalFilters += ` and c.custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer} `
+                }
 
                 if (!options.isEmployee) {
                     var agentPasses = [];
@@ -1077,6 +1082,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getCompaniesSrf(userInfo) {
             var o = JSON.parse(JSON.stringify(userInfo));
             o.srf = true;
+            o.includeContractors = true;
             return getCompanies(o);
         }
 
