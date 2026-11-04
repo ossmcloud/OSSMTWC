@@ -49,6 +49,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LICENCE_PACK_EXECUTED_BY: 'custrecord_twc_srf_lic_pack_exec_by',
             SDS_FORM_DATA: 'custrecord_twc_srf_sds_form_data',
             TL_NOTES: 'custrecord_twc_srf_notes',
+            SUBMISSION_NOTES: 'custrecord_twc_srf_submission_notes',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -98,6 +99,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LICENCE_PACK_EXECUTED_BY: { name: 'custrecord_twc_srf_lic_pack_exec_by', type: 'select', alias: 'licencePackExecutedBy', display: 'normal', mandatory: false, recordType: '-4' },
             SDS_FORM_DATA: { name: 'custrecord_twc_srf_sds_form_data', type: 'clobtext', alias: 'sDSFormData', display: 'hidden', mandatory: false },
             TL_NOTES: { name: 'custrecord_twc_srf_notes', type: 'textarea', alias: 'tLNotes', display: 'normal', mandatory: false },
+            SUBMISSION_NOTES: { name: 'custrecord_twc_srf_submission_notes', type: 'textarea', alias: 'submissionNotes', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -378,6 +380,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.TL_NOTES);
             } set tLNotes(value) {
                 this.set(_recordFields.TL_NOTES, value)
+            }
+            
+            get submissionNotes() {
+                return this.get(_recordFields.SUBMISSION_NOTES);
+            } set submissionNotes(value) {
+                this.set(_recordFields.SUBMISSION_NOTES, value)
             }
             
             get created() {
