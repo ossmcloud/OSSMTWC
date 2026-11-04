@@ -58,7 +58,9 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 // @@NOTE: if we have no recId is because we have a new SAF, we have a submit button at the bottom of the page for it, we use the forceViewOnly to hide the Save/Cancel buttons
                 // @@NOTE: a cancelled SAF (or an old 'Rejected' one, status no longer used) is closed: no edit, no status change, it cannot be re-submitted ('Re Use' creates a new SAF)
                 var safClosed = !!context.request.parameters.recId && (safStatus == twcSaf.Status.Cancelled || safStatus == twcSaf.Status.Rejected);
-                var canEdit = pageData.userInfo.isEmployee ? !safClosed : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Approved);
+                // @@NOTE: 'Feedback Issued' = TL sent the SAF back to the submitter, who can edit and re-submit it (with a comment, see requireResubmitComment)
+                var canEdit = pageData.userInfo.isEmployee ? !safClosed : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Approved || safStatus == twcSaf.Status.FeedbackIssued);
+                // @@NOTE: a SAF in the past cannot be edited (unless power user), also when feedback was issued: the submitter must use 'Re Use' to create a new SAF
                 if (canEdit && safIsInThePast) {
                     if (!pageData.userInfo.powerUser) {
                         canEdit = false;
@@ -89,7 +91,8 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                     if (!safIsInThePast) { pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Pending, true)); }
                     if (pageData.userInfo.isEmployee) {
                         pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Approved, true));
-                        // @@NOTE: 'Rejected' removed (same effect as 'Cancelled'), use 'Cancelled' instead
+                        // @@NOTE: 'Rejected' removed (same effect as 'Cancelled'), 'Feedback Issued' sends the SAF back to the submitter instead
+                        pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.FeedbackIssued, true));
                         if (safRequiresSrf) {
                             pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.AwaitingPhotos, true));
                             pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.PhotosReceived, true));

@@ -460,7 +460,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Complete: 5,
             Cancelled: 6,
             AwaitingPhotos: 7,
-            PhotosReceived: 8
+            PhotosReceived: 8,
+            // @@HARDCODED @@GO-LIVE :: 'Feedback Issued' (replaces 'Rejected', which is kept only for old SAFs): TL sends the SAF back to the submitter with a comment, the submitter can edit and re-submit
+            FeedbackIssued: 9
         }
         // @@TOD: these could be on the status table since we have one
         const SAF_STATUS_STYLE = {
@@ -472,6 +474,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Cancelled: { color: 'white', backgroundColor: 'silver' },
             AwaitingPhotos: { color: 'white', backgroundColor: 'orange' },
             PhotosReceived: { color: 'mediumblue', backgroundColor: 'limegreen' },
+            FeedbackIssued: { color: 'white', backgroundColor: 'crimson' },
         }
         function getSafStatusName(safStatusNumber, asObject) {
             if (!safStatusNumber) { safStatusNumber = 1; }
@@ -479,8 +482,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (SAF_STATUS[k] == safStatusNumber) {
                     if (asObject) {
 
-                        // @@NOTE: a comment is mandatory when cancelling a SAF (also enforced on the server: oTWC_siteAccessUtils.js editSafStatus). Rejected is no longer used
-                        return { value: safStatusNumber, text: k, forceComment: safStatusNumber == SAF_STATUS.Rejected || safStatusNumber == SAF_STATUS.Cancelled }
+                        // @@NOTE: a comment is mandatory when cancelling a SAF or issuing feedback (also enforced on the server: oTWC_siteAccessUtils.js editSafStatus). Rejected is no longer used
+                        return { value: safStatusNumber, text: k, forceComment: safStatusNumber == SAF_STATUS.Rejected || safStatusNumber == SAF_STATUS.Cancelled || safStatusNumber == SAF_STATUS.FeedbackIssued }
                     }
                     return k;
                 }

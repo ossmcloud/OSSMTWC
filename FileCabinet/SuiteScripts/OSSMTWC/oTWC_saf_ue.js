@@ -60,7 +60,7 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
 
                 if (String(oldStatus) === String(newStatus)) return
 
-                let statuses = [twcSaf.Status.Approved, twcSaf.Status.Rejected, twcSaf.Status.Cancelled]
+                let statuses = [twcSaf.Status.Approved, twcSaf.Status.Rejected, twcSaf.Status.Cancelled, twcSaf.Status.FeedbackIssued]
 
                 if (statuses.indexOf(Number(newStatus)) == -1) return
                 var safData = recu.lookUp(rec.type, rec.id, [twcSaf.Fields.SAF_AUTHOR, twcSaf.Fields.SAF_ID, twcSaf.Fields.NAME])

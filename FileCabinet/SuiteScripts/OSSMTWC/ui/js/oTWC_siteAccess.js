@@ -1144,6 +1144,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     ]
                 }
                 var form = twcUI.init(formConfig);
+                // @@NOTE: statuses with forceComment (Feedback Issued, Cancelled) make the comment mandatory (checked again on OK and on the server)
+                const setCommentMandatory = () => {
+                    form.getControl('comment').mandatory = !!form.getControl('status').valueObj?.forceComment;
+                }
+                form.getControl('status').on('change', e => { setCommentMandatory(); });
+                setCommentMandatory();
                 dialog.open({
                     title: 'Change Status / Comment',
                     content: form.ui,

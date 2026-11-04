@@ -294,6 +294,8 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
 
             const validateCompanyInsurance = (companyId) => {
+                // @@NOTE: a missing customer / contractor is already reported above ('Specify a customer' / 'Specify a primary contractor'), the query below would fail without an id
+                if (!parseInt(companyId)) { return; }
                 var insuranceInfo = twcUtils.getCompanyInsuranceDetails(companyId);
                 for (var k in twcUtils.Insurances) {
                     if (insuranceInfo[twcUtils.Insurances[k].field] == twcUtils.NoActiveExpired.Active) {
@@ -325,6 +327,9 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 }
             })
 
+            // @@NOTE: a missing PICW (e.g. editing a SAF whose PICW is no longer valid, so the drop down is empty) is already reported above ('Specify a PICW')
+            //         remove empty ids, the profile query would fail with 'in (,x,y)'
+            crewIds = crewIds.filter(id => { return !!parseInt(id); });
             var crew = twcUtils.getProfiles({ id: crewIds });
 
             // @@NOTE: SAF: wherever e have Climber and Rescue Climber they need to be same person
@@ -604,6 +609,10 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 // @@NOTE: a comment (the reason) is mandatory when cancelling a SAF
                 if (statusChanged && options.status == twcSaf.Status.Cancelled && !(options.comment || '').trim()) {
                     throw new Error('Please, specify a comment (reason) to cancel the SAF');
+                }
+                // @@NOTE: 'Feedback Issued' sends the SAF back to the submitter: the comment (the feedback) is mandatory, the actions stay attached (unlike Cancelled)
+                if (statusChanged && options.status == twcSaf.Status.FeedbackIssued && !(options.comment || '').trim()) {
+                    throw new Error('Please, specify the feedback (comment) for the SAF submitter');
                 }
 
                 var safRequiresSrf = twcUtils.getSafType(saf.r_type)?.requires_srf == 'T';

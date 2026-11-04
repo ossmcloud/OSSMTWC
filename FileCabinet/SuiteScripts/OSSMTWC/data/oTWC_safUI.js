@@ -290,6 +290,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var primaryContractors = getPrimaryContractors(userInfo, dataSource);
             var primaryContractor = dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR] || (primaryContractors.length == 1 ? primaryContractors[0].value : null);
 
+            // @@NOTE: editing an existing SAF: the saved customer / primary contractor must be in their drop down lists, otherwise the value is lost
+            //         and the SAF cannot be re-submitted (e.g. external user editing a SAF whose customer / contractor is not in the companies they can act for)
+            if (isExistingSaf) {
+                const ensureOption = (list, value, text) => {
+                    if (value && !list.find(c => { return c.value == value; })) { list.unshift({ value: value, text: text || '???' }); }
+                }
+                ensureOption(customers, dataSource[twcSaf.Fields.CUSTOMER], dataSource[twcSaf.Fields.CUSTOMER + '_name']);
+                ensureOption(primaryContractors, dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR], dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR + '_name']);
+            }
+
             var step3Info = { id: 'site-access-step-3a', fields: [] };
             fieldGroup.controls.push(step3Info);
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-customer', label: 'Customer', allowAll: false, value: customer, dataSource: customers });
