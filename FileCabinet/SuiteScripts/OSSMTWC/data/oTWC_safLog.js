@@ -67,6 +67,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             Fields: twcSafLog.Fields,
             FieldsInfo: twcSafLog.FieldsInfo,
             LogType: LOG_TYPE,
+            // @@IMPORTANT: these messages are also used to filter the SAF Log shown to external users (data/oTWC_safUI.js: getSAFInfoPanels_WorkFlowInfo_Logs)
+            //              changing the text would hide the existing log entries from external users
+            LogMessage: {
+                StatusChanged: 'status changed',
+                Comment: 'Comment',
+                Edited: 'SAF Edited',
+            },
 
 
             get: function (id) {

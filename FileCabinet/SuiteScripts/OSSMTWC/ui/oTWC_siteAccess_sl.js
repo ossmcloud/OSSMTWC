@@ -65,6 +65,10 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 // @@NOTE: a closed SAF cannot be opened in edit mode, not even by adding edit=T to the url
                 if (safClosed) { pageData.editMode = false; }
 
+                // @@NOTE: external users editing / re-submitting an existing SAF (not 'Re Use') must enter a comment (ui/js/oTWC_siteAccess.js: saf-submit)
+                //         computed here because pageData.userInfo is removed from the client page in production (oTWC_baseView_ue.js)
+                pageData.requireResubmitComment = !pageData.userInfo.isEmployee && !!context.request.parameters.recId && !!pageData.editMode && context.request.parameters.reUse != 'T';
+
                 // @@NOTE: we set pageData.forceViewOnly = true because we do not want the baseView save/cancel buttons
                 pageData.forceViewOnly = canEdit ? context.request.parameters.recId === undefined : true;
                 if (pageData.editMode) { pageData.forceViewOnly = true; }

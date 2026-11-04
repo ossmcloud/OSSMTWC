@@ -185,6 +185,26 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#accessConditionsSection = this.ui.ui.find('#saf-access-condition-info-2');
 
                 this.ui.getControl('saf-submit').on('click', e => {
+                    // @@NOTE: external users editing / re-submitting a SAF must describe their changes, the comment goes on the SAF Log
+                    //         (flag set server side in ui/oTWC_siteAccess_sl.js, pageData.userInfo is not available client side in production)
+                    if (this.data.requireResubmitComment) {
+                        var form = twcUI.init({
+                            controls: [
+                                { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'resubmit_comment', label: 'Please describe the changes made to this SAF', width: '100%', rows: 10, mandatory: true }
+                            ]
+                        });
+                        dialog.confirm({ title: 'Are you sure you wish to re-submit the Access Request?', message: form.ui, width: '650px', height: '400px' }, dlg => {
+                            try {
+                                var comment = (form.getValues().resubmit_comment || '').trim();
+                                if (!comment) { throw new Error('Please, enter a comment'); }
+                                this.submitForm(comment);
+                            } catch (error) {
+                                dialog.error(error);
+                                return false;
+                            }
+                        });
+                        return;
+                    }
                     dialog.confirm('Are you sure you wish to submit the Access Request?', () => {
                         this.submitForm();
                     })
@@ -709,7 +729,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
 
-            submitForm() {
+            submitForm(resubmitComment) {
                 try {
 
                     this.#page.wait();
@@ -717,6 +737,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var values = this.ui.getValues();
                     var saf = this.data.siteAccessInfo;
                     for (var k in values) { saf[k] = values[k]; }
+                    if (resubmitComment) { saf.resubmitComment = resubmitComment; }
                     saf['saf-picw-staff-name'] = this.ui.getControl('saf-picw-staff').valueObj?.text;
 
                     if (this.#vendorDocuments) { saf.documents = this.#vendorDocuments.getValues(); }

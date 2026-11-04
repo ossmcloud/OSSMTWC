@@ -288,6 +288,9 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             if (!payload['saf-picw-staff']) { validationErrors.push(`Specify a PICW`); }
             if (payload['saf-mast-access'] == 'T' && !payload['saf-structure']) { validationErrors.push(`Specify a structure`); }
             if (payload['saf-building-access'] == 'T' && !payload['saf-accommodation']) { validationErrors.push(`Specify an accommodation`); }
+            // @@NOTE: external users must describe their changes when editing / re-submitting a SAF (logged on the SAF Log, see below)
+            var resubmitComment = (payload.resubmitComment || '').trim();
+            if (payload.id && !payload.reUse && !userInfo.isEmployee && !resubmitComment) { validationErrors.push(`Specify a comment describing the changes made to the SAF`); }
 
 
             const validateCompanyInsurance = (companyId) => {
@@ -406,6 +409,9 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             if (!payload.reUse && payload.id && (saf.status == twcSaf.Status.Cancelled || saf.status == twcSaf.Status.Rejected)) {
                 throw new Error(`This SAF is ${saf.statusName} and cannot be changed, please use 'Re Use' to create a new SAF`);
             }
+            // @@NOTE: keep the old status (edit only) to log the status change caused by the re-submit
+            var oldStatus = (payload.id && !payload.reUse) ? saf.status : null;
+            var oldStatusName = (payload.id && !payload.reUse) ? saf.statusName : null;
             saf.site = payload.siteId;
             saf.r_type = payload['saf-type'];
             saf.status = options.accessRequirements.autoApprove ? twcSaf.Status.Approved : twcSaf.Status.Pending;
@@ -467,7 +473,11 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 if (payload.reUse) {
                     saf.logInfo('SAF Reused from: ' + recu.lookUp(twcSaf.Type, payload.id, 'name'));
                 } else {
-                    saf.logInfo('SAF Edited');
+                    // @@NOTE: SAF Log messages are filtered for external users, use the shared constants (data/oTWC_safLog.js: LogMessage)
+                    saf.logInfo(twcSafLog.LogMessage.Edited, resubmitComment || null);
+                    if (oldStatus && oldStatus != saf.status) {
+                        saf.logInfo(twcSafLog.LogMessage.StatusChanged, `status changed to: ${twcSaf.getSafStatusName(saf.status)} - old status: ${oldStatusName}`);
+                    }
                 }
             } else {
                 saf.logInfo('SAF Created');
@@ -603,7 +613,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
                 var logMsgStatus = ''; var infoStatus = '';
                 if (statusChanged) {
-                    logMsgStatus = 'status changed';
+                    logMsgStatus = twcSafLog.LogMessage.StatusChanged;
                     infoStatus = `status changed to: ${twcSaf.getSafStatusName(options.status)} - old status: ${saf.statusName}`;
                 }
 
@@ -635,7 +645,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 }
 
                 if (commentCHanged) {
-                    saf.logInfo('Comment', options.comment);
+                    saf.logInfo(twcSafLog.LogMessage.Comment, options.comment);
                 }
             } catch (error) {
                 saf.logEx('Error while changing status/comments', error);

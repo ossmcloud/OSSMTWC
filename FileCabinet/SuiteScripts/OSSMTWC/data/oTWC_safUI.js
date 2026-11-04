@@ -522,7 +522,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Files(dataSource, userInfo));
 
-                if (userInfo.isEmployee) { fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo)); }
+                // @@NOTE: external users see the log too, limited to status changes and comments (see getSAFInfoPanels_WorkFlowInfo_Logs)
+                fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo));
 
             }
             fieldGroups.push(getSAFInfoPanels_Existing(dataSource, userInfo));
@@ -791,6 +792,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         function getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo) {
             var fieldGroup = { id: 'site-access-workflow-logs', title: 'SAF Logs', collapsed: false, controls: [] };
+
+            // @@NOTE: TL users see the full log, external users only see status changes, comments and edit / re-submit entries (with their comment)
+            //         errors (stack traces), reviewer assignments, detach notes, etc. stay TL only
+            var where = { [twcSafLog.Fields.SAF]: dataSource.id };
+            if (!userInfo.isEmployee) {
+                // @@NOTE: the message field is a long text (CLOB) in NetSuite, 'in' / '=' do not work on it in SuiteQL, 'like' does (no wildcards = exact match)
+                var msg = twcSafLog.LogMessage;
+                var msgFilter = [msg.StatusChanged, msg.Comment, msg.Edited].map(m => { return `${twcSafLog.Fields.MESSAGE} like '${m}'`; }).join(' or ');
+                where = `where ${twcSafLog.Fields.SAF} = ${parseInt(dataSource.id) || 0}
+                         and (${msgFilter})
+                         and ${twcSafLog.Fields.LOG_TYPE} in ('${twcSafLog.LogType.INFO}', '${twcSafLog.LogType.WARNING}')`;
+            }
+
             var workFlowLogsInfo = { id: 'site-access-logs', collapsed: false, fields: [] };
             fieldGroup.controls.push(workFlowLogsInfo);
             workFlowLogsInfo.fields.push({
@@ -800,10 +814,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     [twcSafLog.Fields.CREATED]: { title: 'Date/Time', styles: { width: '120px' } },
                     [twcSafLog.Fields.PROFILE]: { title: 'Profile', styles: { width: '100px' } },
                     [twcSafLog.Fields.MESSAGE]: { title: 'Message', styles: { width: '100px' } },
-                    [twcSafLog.Fields.ADDITIONAL_INFO]: { title: 'Info', nullText: '' },
+                    [twcSafLog.Fields.ADDITIONAL_INFO]: { title: 'Info', nullText: '', wrap: true },
 
                 },
-                where: { [twcSafLog.Fields.SAF]: dataSource.id },
+                where: where,
                 orderBy: { created: 'desc' },
                 showToolbar: false,
                 FieldsInfo: twcSafLog.FieldsInfo,
