@@ -106,7 +106,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         { id: twcSrfItem.Fields.NAME, title: 'Eq. Id', nullText: '' },
                         { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class', nullText: '' },
                         { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Type', nullText: '' },
-                        { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description', nullText: '' },
+                        { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description', nullText: '', wrap: true },
                         { id: twcSrfItem.Fields.MAKE, title: 'Make', nullText: '' },
                         { id: twcSrfItem.Fields.MODEL, title: 'Model', nullText: '' },
                         { id: twcSrfItem.Fields.HEIGHT_ON_TOWER, title: 'Height on Tower', nullText: '' },
@@ -165,7 +165,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 fields[twcSrfItem.Fields.TME_ID] = { title: 'TME', nullText: '', styles: { width: '200px' } };
             }
             fields[twcSrfItem.Fields.ITEM_TYPE] = { title: 'Type', nullText: '', styles: { width: '150px' } };
-            fields[twcSrfItem.Fields.DESCRIPTION] = 'Description';
+            fields[twcSrfItem.Fields.DESCRIPTION] = { title: 'Description', wrap: true };
 
             if (stepType == twcSrfItem.StepType.FEEDER) {
                 fields[twcSrfItem.Fields.TYPE_OPT] = 'Feeder Type';
@@ -333,7 +333,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 fields[twcFile.Fields.REVISION] = { title: 'Revision', nullText: '' };
             }
 
-            fields[twcFile.Fields.DESCRIPTION] = { title: 'Description', nullText: '' };
+            fields[twcFile.Fields.DESCRIPTION] = { title: 'Description', nullText: '', wrap: true };
             fields[twcFile.Fields.UPLOADED_BY + '_name'] = { title: 'Upload by', nullText: '', type: 'text', styles: { width: '160px' } };
             fields[twcFile.Fields.CREATED] = { title: 'Upload Date', nullText: '', type: 'datetime', styles: { width: '160px', 'text-align': 'center' } };
 

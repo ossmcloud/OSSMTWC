@@ -387,6 +387,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 this.options.styles = val;
             }
 
+            get wrap() {
+                return this.options.wrap;
+            } set wrap(val) {
+                this.options.wrap = val;
+            }
+
             get sticky() {
                 return this.options.sticky;
             } set sticky(val) {
@@ -449,6 +455,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     styles += 'text-align: center;';
                 } else if (this.type == 'date' || this.type == 'datetime') {
                     styles += 'text-align: center;';
+                }
+
+                // @@NOTE: cells are 'white-space: nowrap' by default (html.styles.css: div.o-row>div), the column option 'wrap: true' lets the cell text wrap
+                //         (header excluded, it keeps the ellipsis). any 'styles' set on the column are applied after so they can still override this
+                if (this.wrap && type == 'cell') {
+                    styles += 'white-space: normal; overflow-wrap: anywhere;';
                 }
 
                 if (this.styles) {
