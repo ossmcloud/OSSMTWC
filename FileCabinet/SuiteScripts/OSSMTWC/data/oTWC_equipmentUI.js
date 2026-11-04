@@ -60,17 +60,17 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 [twcInventory.Fields.CUSTOMER]: 'Customer',
                 [twcInventory.Fields.VOLTAGE_TYPE]: {
                     title: 'Type',
-                    // @@NOTE: feeders show the feeder type (OPT_TYPE) under the 'Type' column
+                    // @@NOTE: feeders show the feeder type (FEEDER_TYPE) under the 'Type' column
                     //         GIE have no voltage type (only asked for TME / ATME on the SRF) so they show the equipment type (EQUIPMENT_TYPE)
                     formatValue: (v, fv, data, col) => {
-                        if (data[twcInventory.Fields.EQUIPMENT_CLASS] == EQ_CLASS_ENUM.FEEDER) { return data[twcInventory.Fields.OPT_TYPE + '_name'] || '-'; }
+                        if (data[twcInventory.Fields.EQUIPMENT_CLASS] == EQ_CLASS_ENUM.FEEDER) { return data[twcInventory.Fields.FEEDER_TYPE + '_name'] || '-'; }
                         if (data[twcInventory.Fields.EQUIPMENT_CLASS] == EQ_CLASS_ENUM.GIE) { return data[twcInventory.Fields.EQUIPMENT_TYPE + '_name'] || '-'; }
                         return fv;
                     }
                 },
                 [twcInventory.Fields.DESCRIPTION]: { title: 'Desc', wrap: true, styles: { 'min-width': '200px' } },
                 // @@NOTE: custrecord_twc_equip_location is the 'Modified Antenna Location' (list: Cabin / Gantry / Rooftop, TME / ATME), GIE Location is free text (GIE)
-                [twcInventory.Fields.LOCATION_NOTES]: 'Antenna Location',
+                [twcInventory.Fields.MODIFIED_ANTENNA_LOCATION]: 'Antenna Location',
                 [twcInventory.Fields.GIE_LOCATION]: 'GIE Location',
                 [twcInventory.Fields.LENGTH_MM]: {
                     title: 'L/W/D',
@@ -93,7 +93,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 [twcInventory.Fields.WIDTH_MM]: { hide: true },
                 [twcInventory.Fields.HEIGHTDEPTH_MM]: { hide: true },
                 [twcInventory.Fields.PARENT_TME_ID]: { hide: true },
-                [twcInventory.Fields.OPT_TYPE]: { hide: true },
+                [twcInventory.Fields.FEEDER_TYPE]: { hide: true },
                 [twcInventory.Fields.EQUIPMENT_TYPE]: { hide: true },
             }
 
@@ -193,8 +193,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         const CLASS_HIDDEN_FIELDS = {
             [EQ_CLASS_ENUM.TME]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.GIE_LOCATION],
             [EQ_CLASS_ENUM.ATME]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.AZIMUTH, twcInventory.Fields.B_END, twcInventory.Fields.GIE_LOCATION],
-            [EQ_CLASS_ENUM.GIE]: [twcInventory.Fields.AZIMUTH, twcInventory.Fields.LOCATION_NOTES],
-            [EQ_CLASS_ENUM.FEEDER]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.LENGTH_MM, twcInventory.Fields.AZIMUTH, twcInventory.Fields.B_END, twcInventory.Fields.CUSTOMER_REF, twcInventory.Fields.LOCATION_NOTES, twcInventory.Fields.GIE_LOCATION],
+            [EQ_CLASS_ENUM.GIE]: [twcInventory.Fields.AZIMUTH, twcInventory.Fields.MODIFIED_ANTENNA_LOCATION],
+            [EQ_CLASS_ENUM.FEEDER]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.LENGTH_MM, twcInventory.Fields.AZIMUTH, twcInventory.Fields.B_END, twcInventory.Fields.CUSTOMER_REF, twcInventory.Fields.MODIFIED_ANTENNA_LOCATION, twcInventory.Fields.GIE_LOCATION],
         }
 
         // @@NOTE: eqClass is only passed for the single class tables (not grouped view)

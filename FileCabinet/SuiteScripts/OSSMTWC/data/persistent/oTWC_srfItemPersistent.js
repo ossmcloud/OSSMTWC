@@ -30,7 +30,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CUSTOMER_REF: 'custrecord_twc_srf_itm_cust_ref',
             INVENTORY_FLAG: 'custrecord_twc_srf_itm_invent_flag',
             FEEDER_COUNT: 'custrecord_twc_srf_itm_feeder_count',
-            TYPE_OPT: 'custrecord_twc_srf_itm_type_opt',
+            FEEDER_TYPE: 'custrecord_twc_srf_itm_type_opt',
             FILENAME: 'custrecord_twc_srf_itm_filename',
             POWER_REQUESTED_FROM_TC: 'custrecord_twc_srf_itm_pwr_req_from_tc',
             ALTERNATE_SUPPLIER: 'custrecord_twc_srf_itm_alt_sup',
@@ -71,7 +71,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CUSTOMER_REF: { name: 'custrecord_twc_srf_itm_cust_ref', type: 'text', alias: 'customerRef', display: 'normal', mandatory: false },
             INVENTORY_FLAG: { name: 'custrecord_twc_srf_itm_invent_flag', type: 'select', alias: 'inventoryFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_inv_flag' },
             FEEDER_COUNT: { name: 'custrecord_twc_srf_itm_feeder_count', type: 'text', alias: 'feederCount', display: 'normal', mandatory: false },
-            TYPE_OPT: { name: 'custrecord_twc_srf_itm_type_opt', type: 'select', alias: 'typeopt', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_typ_opt' },
+            FEEDER_TYPE: { name: 'custrecord_twc_srf_itm_type_opt', type: 'select', alias: 'feederType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_typ_opt' },
             FILENAME: { name: 'custrecord_twc_srf_itm_filename', type: 'document', alias: 'filename', display: 'normal', mandatory: false },
             POWER_REQUESTED_FROM_TC: { name: 'custrecord_twc_srf_itm_pwr_req_from_tc', type: 'checkbox', alias: 'powerrequestedfromTC', display: 'normal', mandatory: false },
             ALTERNATE_SUPPLIER: { name: 'custrecord_twc_srf_itm_alt_sup', type: 'text', alias: 'alternateSupplier', display: 'normal', mandatory: false },
@@ -247,12 +247,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.FEEDER_COUNT, value)
             }
             
-            get typeopt() {
-                return this.get(_recordFields.TYPE_OPT);
-            } set typeopt(value) {
-                this.set(_recordFields.TYPE_OPT, value)
+            get feederType() {
+                return this.get(_recordFields.FEEDER_TYPE);
+            } set feederType(value) {
+                this.set(_recordFields.FEEDER_TYPE, value)
             }
-            get typeoptName() { return this.getText(_recordFields.TYPE_OPT); }
+            get feederTypeName() { return this.getText(_recordFields.FEEDER_TYPE); }
             
             get filename() {
                 return this.get(_recordFields.FILENAME);

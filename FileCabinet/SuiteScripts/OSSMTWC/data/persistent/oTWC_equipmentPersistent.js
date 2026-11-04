@@ -13,7 +13,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EQUIPMENT_CLASS: 'custrecord_twc_equip_class',
             EQUIPMENT_TYPE: 'custrecord_twc_equip_type',
             INFRASTRUCTURE: 'custrecord_twc_equip_str',
-            LOCATION_NOTES: 'custrecord_twc_equip_location',
+            MODIFIED_ANTENNA_LOCATION: 'custrecord_twc_equip_location',
             EQUIPMENT_INSTALL_STATUS: 'custrecordtwc_eq_install_status',
             EQUIPMENT_LICENCE_STATUS: 'custrecord_twc_eq_licence_status',
             CUSTOMER: 'custrecord_twc_equip_customer',
@@ -50,7 +50,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CUSTOMER_REF: 'custrecord_twc_equip_cust_ref',
             INVENTORY_FLAG: 'custrecord_twc_equip_inv_flag',
             PACKAGE: 'custrecord_twc_equip_package',
-            OPT_TYPE: 'custrecord_twc_equip_opt_type',
+            FEEDER_TYPE: 'custrecord_twc_equip_opt_type',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -64,7 +64,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EQUIPMENT_CLASS: { name: 'custrecord_twc_equip_class', type: 'select', alias: 'equipmentClass', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_class' },
             EQUIPMENT_TYPE: { name: 'custrecord_twc_equip_type', type: 'select', alias: 'equipmentType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_type' },
             INFRASTRUCTURE: { name: 'custrecord_twc_equip_str', type: 'select', alias: 'infrastructure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
-            LOCATION_NOTES: { name: 'custrecord_twc_equip_location', type: 'select', alias: 'locationNotes', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
+            MODIFIED_ANTENNA_LOCATION: { name: 'custrecord_twc_equip_location', type: 'select', alias: 'modifiedAntennaLocation', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
             EQUIPMENT_INSTALL_STATUS: { name: 'custrecordtwc_eq_install_status', type: 'select', alias: 'equipmentInstallStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_install_status' },
             EQUIPMENT_LICENCE_STATUS: { name: 'custrecord_twc_eq_licence_status', type: 'select', alias: 'equipmentLicenceStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_licence_status' },
             CUSTOMER: { name: 'custrecord_twc_equip_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
@@ -101,7 +101,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CUSTOMER_REF: { name: 'custrecord_twc_equip_cust_ref', type: 'text', alias: 'customerRef', display: 'normal', mandatory: false },
             INVENTORY_FLAG: { name: 'custrecord_twc_equip_inv_flag', type: 'select', alias: 'inventoryFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_inv_flag' },
             PACKAGE: { name: 'custrecord_twc_equip_package', type: 'select', alias: 'package', display: 'normal', mandatory: false, recordType: 'customrecord_twc_package' },
-            OPT_TYPE: { name: 'custrecord_twc_equip_opt_type', type: 'select', alias: 'optType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_typ_opt' },
+            FEEDER_TYPE: { name: 'custrecord_twc_equip_opt_type', type: 'select', alias: 'feederType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_typ_opt' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -158,12 +158,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get infrastructureName() { return this.getText(_recordFields.INFRASTRUCTURE); }
             
-            get locationNotes() {
-                return this.get(_recordFields.LOCATION_NOTES);
-            } set locationNotes(value) {
-                this.set(_recordFields.LOCATION_NOTES, value)
+            get modifiedAntennaLocation() {
+                return this.get(_recordFields.MODIFIED_ANTENNA_LOCATION);
+            } set modifiedAntennaLocation(value) {
+                this.set(_recordFields.MODIFIED_ANTENNA_LOCATION, value)
             }
-            get locationNotesName() { return this.getText(_recordFields.LOCATION_NOTES); }
+            get modifiedAntennaLocationName() { return this.getText(_recordFields.MODIFIED_ANTENNA_LOCATION); }
             
             get equipmentInstallStatus() {
                 return this.get(_recordFields.EQUIPMENT_INSTALL_STATUS);
@@ -393,12 +393,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get packageName() { return this.getText(_recordFields.PACKAGE); }
             
-            get optType() {
-                return this.get(_recordFields.OPT_TYPE);
-            } set optType(value) {
-                this.set(_recordFields.OPT_TYPE, value)
+            get feederType() {
+                return this.get(_recordFields.FEEDER_TYPE);
+            } set feederType(value) {
+                this.set(_recordFields.FEEDER_TYPE, value)
             }
-            get optTypeName() { return this.getText(_recordFields.OPT_TYPE); }
+            get feederTypeName() { return this.getText(_recordFields.FEEDER_TYPE); }
             
             get created() {
                 return this.get(_recordFields.CREATED);

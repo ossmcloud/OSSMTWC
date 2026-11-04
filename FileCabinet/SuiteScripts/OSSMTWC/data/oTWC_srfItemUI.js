@@ -68,10 +68,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     dimensionInfo.fields.push({ id: twcSrfItem.Fields.VOLTAGE_TYPE, label: 'Voltage Type', dataSource: voltageTypes, mandatory: true })
                 }
                 // @@NOTE: location fields (optional), copied to the equipment on submit (modules/oTWC_srfWorkflowEngine.js: initEquipment)
-                //         TME / ATME => Modified Antenna Location (Cabin / Gantry / Rooftop), GIE => GIE Location (free text)
-                if (srfItem.stepType == twcSrfItem.StepType.TME || srfItem.stepType == twcSrfItem.StepType.ATME) {
-                    dimensionInfo.fields.push({ id: twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION, label: 'Modified Antenna Location', dataSource: twcUtils.getSrfItemLocationTypes() })
-                } else if (srfItem.stepType == twcSrfItem.StepType.GIE) {
+                //         GIE => GIE Location (free text), TME / ATME => Modified Antenna Location is in the Deployment Details section below
+                if (srfItem.stepType == twcSrfItem.StepType.GIE) {
                     dimensionInfo.fields.push({ id: twcSrfItem.Fields.GIE_LOCATION, label: 'GIE Location' })
                 }
                 dimensionInfo.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: twcSrfItem.Fields.EQUIPMENT_LIBRARY, label: 'Eq. Lib', hide: true })
@@ -83,10 +81,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 specInfo.fields.push({ id: twcSrfItem.Fields.AZIMUTH, label: 'Azimuth', min: 0, max: 360, mandatory: true })
                 specInfo.fields.push({ id: twcSrfItem.Fields.B_END, label: 'B-End', mandatory: true })
                 specInfo.fields.push({ id: twcSrfItem.Fields.CUSTOMER_REF, label: 'Customer Ref.', mandatory: true })
+                // @@NOTE: Modified Antenna Location (Cabin / Gantry / Rooftop, optional), copied to the equipment on submit
+                specInfo.fields.push({ id: twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION, label: 'Modified Antenna Location', dataSource: twcUtils.getSrfItemLocationTypes() })
 
             } else if (srfItem.stepType == twcSrfItem.StepType.FEEDER) {
                 specInfo.fields.push({ id: twcSrfItem.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, value: srfStructure, dataSource: siteStructures, mandatory: true, readOnly: true });
-                specInfo.fields.push({ id: twcSrfItem.Fields.TYPE_OPT, label: 'Feeder Type', dataSource: twcUtils.getSrfItemTypeOpts(userInfo), mandatory: true })
+                specInfo.fields.push({ id: twcSrfItem.Fields.FEEDER_TYPE, label: 'Feeder Type', dataSource: twcUtils.getSrfItemTypeOpts(userInfo), mandatory: true })
 
             } else if (srfItem.stepType == twcSrfItem.StepType.GIE) {
                 specInfo.fields.push({ id: twcSrfItem.Fields.CUSTOMER_REF, label: 'Customer Ref.', mandatory: true })
@@ -117,7 +117,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         { id: twcSrfItem.Fields.MAKE, title: 'Make', nullText: '' },
                         { id: twcSrfItem.Fields.MODEL, title: 'Model', nullText: '' },
                         { id: twcSrfItem.Fields.HEIGHT_ON_TOWER, title: 'Height on Tower', nullText: '' },
-                        { id: twcSrfItem.Fields.TYPE_OPT + '_name', title: 'Feeder Type', nullText: '' },
+                        { id: twcSrfItem.Fields.FEEDER_TYPE + '_name', title: 'Feeder Type', nullText: '' },
 
                     ],
                     dataSource: getSrfAdditionalEquipment(srf, srfItem, userInfo),
@@ -176,7 +176,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fields[twcSrfItem.Fields.DESCRIPTION] = { title: 'Description', wrap: true };
 
             if (stepType == twcSrfItem.StepType.FEEDER) {
-                fields[twcSrfItem.Fields.TYPE_OPT] = 'Feeder Type';
+                fields[twcSrfItem.Fields.FEEDER_TYPE] = 'Feeder Type';
                 //fields[twcSrfItem.Fields.DESCRIPTION] = 'Description';
             } else {
                 fields[twcSrfItem.Fields.MAKE] = 'Make';
@@ -270,7 +270,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     }
                     // @@NOTE: TME table: feeder rows (related items) show the feeder type under the 'Description' column
                     if (stepType == twcSrfItem.StepType.TME && column.id == twcSrfItem.Fields.DESCRIPTION && data[twcSrfItem.Fields.STEP_TYPE] == twcSrfItem.StepType.FEEDER) {
-                        const feederType = (d) => { return d[twcSrfItem.Fields.TYPE_OPT + '_name'] || ''; };
+                        const feederType = (d) => { return d[twcSrfItem.Fields.FEEDER_TYPE + '_name'] || ''; };
                         var feederTypeValue = feederType(data);
                         if (data.swappedItem && feederType(data.swappedItem) != feederTypeValue) {
                             return `

@@ -113,8 +113,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             { srf: twcSrfItem.Fields.B_END, eq: twcEq.Fields.B_END },
             { srf: twcSrfItem.Fields.CUSTOMER_REF, eq: twcEq.Fields.CUSTOMER_REF },
             { srf: twcSrfItem.Fields.INVENTORY_FLAG, eq: twcEq.Fields.INVENTORY_FLAG },
-            { srf: twcSrfItem.Fields.TYPE_OPT, eq: twcEq.Fields.OPT_TYPE },
-            { srf: twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION, eq: twcEq.Fields.LOCATION_NOTES },
+            { srf: twcSrfItem.Fields.FEEDER_TYPE, eq: twcEq.Fields.FEEDER_TYPE },
+            { srf: twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION, eq: twcEq.Fields.MODIFIED_ANTENNA_LOCATION },
             { srf: twcSrfItem.Fields.GIE_LOCATION, eq: twcEq.Fields.GIE_LOCATION },
         ];
 

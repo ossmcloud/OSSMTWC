@@ -99,10 +99,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     eq.b_End = action[twcSrfItem.Fields.B_END];
                     eq.customerRef = action[twcSrfItem.Fields.CUSTOMER_REF];
                     eq.inventoryFlag = action[twcSrfItem.Fields.INVENTORY_FLAG];
-                    eq.optType = action[twcSrfItem.Fields.TYPE_OPT];
+                    eq.feederType = action[twcSrfItem.Fields.FEEDER_TYPE];
                     eq.voltageType = action[twcSrfItem.Fields.VOLTAGE_TYPE];
                     // @@NOTE: SRF item 'Modified Antenna Location' => equipment custrecord_twc_equip_location (same list), SRF item 'GIE Location' => equipment 'GIE Location'
-                    eq.locationNotes = action[twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION];
+                    eq.modifiedAntennaLocation = action[twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION];
                     eq.gIELocation = action[twcSrfItem.Fields.GIE_LOCATION];
                     eq.associatedEQUIP_ACTIONs = action.act_id;
 

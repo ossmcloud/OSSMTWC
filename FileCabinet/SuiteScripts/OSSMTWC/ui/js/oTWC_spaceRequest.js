@@ -560,8 +560,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     srfItem[twcSrfItem.Fields.DEPTH_MM] = pickedEq[twcEquipment.Fields.HEIGHTDEPTH_MM];
                     srfItem[twcSrfItem.Fields.WEIGHT_KG] = pickedEq[twcEquipment.Fields.WEIGHT_KG];
                     // @@NOTE: equipment location fields (see ui/modules/oTWC_siteRequestUtils.js: getEquipment)
-                    srfItem[twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION] = pickedEq[twcEquipment.Fields.LOCATION_NOTES];
-                    srfItem[twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION + '_name'] = pickedEq[twcEquipment.Fields.LOCATION_NOTES + '_name'];
+                    srfItem[twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION] = pickedEq[twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION];
+                    srfItem[twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION + '_name'] = pickedEq[twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION + '_name'];
                     srfItem[twcSrfItem.Fields.GIE_LOCATION] = pickedEq[twcEquipment.Fields.GIE_LOCATION];
 
                     if (pickedEq.relatedItems) {
@@ -931,7 +931,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     <div>${eqAction[twcEquipment.Fields.MODEL] || ''}</div>
                                     <div>${eqAction[twcEquipment.Fields.HEIGHT_ON_TOWER_M] ?? ''}</div>
                                     <div>${eqAction[twcEquipment.Fields.AZIMUTH] ?? ''}</div>
-                                    <div>${eqAction[twcEquipment.Fields.OPT_TYPE] || ''}</div>
+                                    <div>${eqAction[twcEquipment.Fields.FEEDER_TYPE] || ''}</div>
                                     <div>${eqAction[twcEquipment.Fields.B_END] || ''}</div>
                                     <div>${eqAction[twcEqAct.Fields.EA_TYPE + '_name']}</div>
                                     <div>${eqAction[twcEqAct.Fields.EA_STATUS + '_name']}</div>
@@ -1187,7 +1187,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     }
                                     // @@NOTE: TME table: feeder rows (related items) show the feeder type under the 'Description' column
                                     if (c.id == `${twcSrfItem.Type}_${twcSrfItem.StepType.TME}` && column.id == twcSrfItem.Fields.DESCRIPTION && data[twcSrfItem.Fields.STEP_TYPE] == twcSrfItem.StepType.FEEDER) {
-                                        const feederType = (d) => { return d[twcSrfItem.Fields.TYPE_OPT + '_name'] || ''; };
+                                        const feederType = (d) => { return d[twcSrfItem.Fields.FEEDER_TYPE + '_name'] || ''; };
                                         var feederTypeValue = feederType(data);
                                         if (data.swappedItem && feederType(data.swappedItem) != feederTypeValue) {
                                             return `

@@ -101,7 +101,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     select  eq.id, ${fieldsSql}, 
                             ${twcEquipment.Fields.DESCRIPTION},  
                             ${twcEquipment.Fields.PARENT_TME_ID}, BUILTIN.DF(${twcEquipment.Fields.PARENT_TME_ID}) as ${twcEquipment.Fields.PARENT_TME_ID}_name,
-                            eq.${twcEquipment.Fields.LOCATION_NOTES}, BUILTIN.DF(eq.${twcEquipment.Fields.LOCATION_NOTES}) as ${twcEquipment.Fields.LOCATION_NOTES}_name,
+                            eq.${twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION}, BUILTIN.DF(eq.${twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION}) as ${twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION}_name,
                             eq.${twcEquipment.Fields.GIE_LOCATION},
                             
                     from    ${twcEquipment.Type} eq
@@ -134,9 +134,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             eq.${twcEquipment.Fields.HEIGHTDEPTH_MM} as ${twcSrfItem.Fields.DEPTH_MM},
                             eq.${twcEquipment.Fields.WEIGHT_KG} as ${twcSrfItem.Fields.WEIGHT_KG},
                             eq.${twcEquipment.Fields.INVENTORY_FLAG} as ${twcSrfItem.Fields.INVENTORY_FLAG},
-                            eq.${twcEquipment.Fields.OPT_TYPE} as ${twcSrfItem.Fields.TYPE_OPT},BUILTIN.DF(eq.${twcEquipment.Fields.OPT_TYPE}) as ${twcSrfItem.Fields.TYPE_OPT}_name,
+                            eq.${twcEquipment.Fields.FEEDER_TYPE} as ${twcSrfItem.Fields.FEEDER_TYPE},BUILTIN.DF(eq.${twcEquipment.Fields.FEEDER_TYPE}) as ${twcSrfItem.Fields.FEEDER_TYPE}_name,
                             eq.${twcEquipment.Fields.PARENT_TME_ID} as ${twcSrfItem.Fields.TME_ID}, BUILTIN.DF(eq.${twcEquipment.Fields.PARENT_TME_ID}) as ${twcSrfItem.Fields.TME_ID}_name,
-                            eq.${twcEquipment.Fields.LOCATION_NOTES} as ${twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION}, BUILTIN.DF(eq.${twcEquipment.Fields.LOCATION_NOTES}) as ${twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION}_name,
+                            eq.${twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION} as ${twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION}, BUILTIN.DF(eq.${twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION}) as ${twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION}_name,
                             eq.${twcEquipment.Fields.GIE_LOCATION} as ${twcSrfItem.Fields.GIE_LOCATION},
 
                     from    ${twcEquipment.Type} eq
@@ -647,7 +647,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         { name: twcEquipment.Fields.HEIGHT_ON_TOWER_M },
                         { name: twcEquipment.Fields.AZIMUTH },
                         // @@NOTE: feeder type is held in the equipment 'Type Opt' field (custrecord_twc_equip_opt_type)
-                        { name: `BUILTIN.DF(${twcEquipment.Fields.OPT_TYPE})`, alias: twcEquipment.Fields.OPT_TYPE },
+                        { name: `BUILTIN.DF(${twcEquipment.Fields.FEEDER_TYPE})`, alias: twcEquipment.Fields.FEEDER_TYPE },
                         { name: twcEquipment.Fields.B_END },
                     ]
                 },
