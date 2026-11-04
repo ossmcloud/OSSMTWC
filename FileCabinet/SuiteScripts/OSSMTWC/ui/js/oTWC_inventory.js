@@ -40,6 +40,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (col.id == 'site_id') { return false; }
                  if (col.id == 'infra_type') { return false; }
                  if(col.id == 'custrecord_twc_equip_str_text'){return false}
+                if (col.id == 'srf_id') { return false; }
                 //if (col.id == 'name') { return false; }
                 if (col.id == twcSite.Fields.ADDRESS_COUNTY || col.id == twcSite.Fields.SITE_TYPE || col.id == twcSite.Fields.SITE_PORTFOLIO) { return false; }
 
@@ -82,6 +83,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
                 if (col.id == twcInventory.Fields.EQUIPMENT_ID) { col.addCount = true; }
+
+                // @@NOTE: TL users (employees) can open the native equipment record (new tab)
+                if (col.id == 'name' && window.twc.page.data.userInfo?.isEmployee) {
+                    col.link = {
+                        url: core.url.record(twcInventory.Type) + '&id=${id}',
+                        valueField: 'id'
+                    }
+                }
+
+                // @@NOTE: SRF associated to the equipment (via its equipment action, see oTWC_inventoryUtils.js: getInventoryData), opens the SRF page (view mode)
+                if (col.id == 'srf') {
+                    col.link = {
+                        url: core.url.script('otwc_spacerequest_sl') + '&recId=${srf_id}',
+                        valueField: 'srf_id'
+                    }
+                }
             }
             refresh(data) {
                 var resetCols = (this.#table.table?.data.length == 0)

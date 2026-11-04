@@ -130,6 +130,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var inventoryDetails = coreSQL.run(`
                 select  s.name, ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO},
                         BUILTIN.DF(i.custrecord_twc_infra_type) as infra_type, BUILTIN.DF(i.custrecord_twc_infra_str_type) as infra_str_type, i.custrecord_twc_infra_id as infra_id,
+                        ea.custrecord_twc_eq_action_srf as srf_id,
                         
                 from    ${twcInventory.Type} s
                 left join customrecord_twc_infra i on i.id = s.${twcInventory.Fields.INFRASTRUCTURE}                join    ${twcSite.Type} site on site.id = s.${twcInventory.Fields.SITE}

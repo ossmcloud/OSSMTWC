@@ -19,6 +19,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             [EQ_CLASS_ENUM.FEEDER]: "Feeders"
         };
 
+        // @@NOTE: site equipment tables, SRF column (not an equipment field, see getSiteEquipmentSrf)
+        const SRF_COLUMN = 'srf_name';
+
         function getInventoryTableFields() {
             var inventoryFields = [
                 { field: twcInventory.Fields.NAME, title: 'Eq. ID' },
@@ -76,7 +79,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 [twcInventory.Fields.B_END]: 'B-End',
                 [twcInventory.Fields.CUSTOMER_REF]: 'Cust. Ref',
                 [twcInventory.Fields.INVENTORY_FLAG]: 'Equipment Flag',
-                [twcInventory.Fields.CREATED]: 'Date',
+                // @@NOTE: not an equipment field, it is excluded from the select and filled by getSiteEquipmentSrf (SRF of the equipment action associated to the equipment)
+                //         the link opens the SRF page (view mode). Last visible column (the ones below are hidden)
+                [SRF_COLUMN]: {
+                    title: 'SRF',
+                    link: { url: core.url.script('otwc_spacerequest_sl') + '&recId=${srf_id}', valueField: 'srf_id' }
+                },
                 // [twcInventory.Fields.FEEDERS]: 'Feeders',
                 [twcInventory.Fields.WIDTH_MM]: { hide: true },
                 [twcInventory.Fields.HEIGHTDEPTH_MM]: { hide: true },
@@ -89,7 +97,25 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 if (tableFields[k].constructor.name == 'String') { tableFields[k] = { title: tableFields[k] } }
                 tableFields[k].nullText = '-';
             }
+            // @@NOTE: no SRF => empty (a '-' would be rendered inside the link)
+            tableFields[SRF_COLUMN].nullText = '';
             return tableFields;
+        }
+
+        // @@NOTE: SRF of the equipment action associated to each equipment of the site (one query for the whole site), keyed by equipment id
+        //         same join used on the Site Equipment locator (ui/modules/oTWC_inventoryUtils.js: getInventoryData)
+        function getSiteEquipmentSrf(siteId) {
+            var srfs = {};
+            coreSQL.each(`
+                select  eq.id, ea.custrecord_twc_eq_action_srf as srf_id, BUILTIN.DF(ea.custrecord_twc_eq_action_srf) as srf_name
+                from    ${twcInventory.Type} eq
+                join    customrecord_twc_eq_action ea on ea.id = eq.${twcInventory.Fields.ASSOCIATED_EQUIP_ACTIONS}
+                where   eq.${twcInventory.Fields.SITE} = ${parseInt(siteId)}
+                and     ea.custrecord_twc_eq_action_srf is not null
+            `, r => {
+                srfs[r.id] = r;
+            });
+            return srfs;
         }
 
         // @@NOTE: loads all the site equipment in one go and nests the related equipment (ATME / Feeders, linked via PARENT_TME_ID) under its parent (TME / GIE)
@@ -107,7 +133,15 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 }
             }
 
-            var items = twcInventory.select({ fields: getSiteInventoryTableFields(userInfo), where: whereClause, useNames: true });
+            var selectFields = getSiteInventoryTableFields(userInfo);
+            delete selectFields[SRF_COLUMN];
+            var items = twcInventory.select({ fields: selectFields, where: whereClause, useNames: true });
+
+            var srfs = getSiteEquipmentSrf(dataSource.id);
+            core.array.each(items, item => {
+                item.srf_id = srfs[item.id]?.srf_id || '';
+                item[SRF_COLUMN] = srfs[item.id]?.srf_name || null;
+            });
 
             if (!grouped) {
                 var byClass = { [EQ_CLASS_ENUM.TME]: [], [EQ_CLASS_ENUM.ATME]: [], [EQ_CLASS_ENUM.GIE]: [], [EQ_CLASS_ENUM.FEEDER]: [] };
