@@ -663,9 +663,11 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var safActions = coreSQL.run(`
                 select  sa.id saf_action_id, ea.id as ea_action_id, ea.name as eq_action, ea.custrecord_twc_eq_action_eq as equip_id, ea.custrecord_twc_eq_action_type as ea_type,
                         sa.custrecord_twc_saf_a_status as saf_status, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as saf_status_name,
-                        ea.custrecord_twc_eq_action_sts as ea_status, BUILTIN.DF(ea.custrecord_twc_eq_action_sts) as ea_status_name
+                        ea.custrecord_twc_eq_action_sts as ea_status, BUILTIN.DF(ea.custrecord_twc_eq_action_sts) as ea_status_name,
+                        TO_CHAR(s.${twcSaf.Fields.WORKS_END_DATE}, 'yyyy-MM-dd') as works_end_date
                 from    customrecord_twc_saf_action sa
                 join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea and ea.custrecord_twc_eq_action_saf = sa.custrecord_twc_saf_a_saf
+                join    ${twcSaf.Type} s on s.id = sa.custrecord_twc_saf_a_saf
                 where   sa.custrecord_twc_saf_a_saf = ${saf}
                 and     sa.custrecord_twc_saf_a_status in (${twcUtils.SafActionStatus.Pending}, ${twcUtils.SafActionStatus.AwaitingPhotos})
             `);
@@ -679,10 +681,12 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 recu.submit(twcSafAction.Type, sa.saf_action_id, [twcSafAction.Fields.SAF_ACTION_STATUS, twcSafAction.Fields.SAF_ACTION_COMPLETE], [twcUtils.SafActionStatus.Complete, true]);
                 recu.submit(twcEqAct.Type, sa.ea_action_id, twcEqAct.Fields.EA_STATUS, twcUtils.EaActionStatus.Complete);
 
+                // @@NOTE: installed / removed date = SAF Works End Date (set when the SAF is approved), today if not set
+                var worksEndDate = sa.works_end_date ? twcUtils.fromJsToNs(sa.works_end_date) : new Date();
                 if (sa.ea_type == twcUtils.EqActionType.Licence || sa.ea_type == twcUtils.EqActionType.SwapLicence) {
-                    recu.submit(twcEquipment.Type, sa.equip_id, twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcUtils.EqInstallStatus.Installed)
+                    recu.submit(twcEquipment.Type, sa.equip_id, [twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcEquipment.Fields.INSTALLED_DATE], [twcUtils.EqInstallStatus.Installed, worksEndDate])
                 } else if (sa.ea_type == twcUtils.EqActionType.Unlicence || sa.ea_type == twcUtils.EqActionType.SwapUnlicence) {
-                    recu.submit(twcEquipment.Type, sa.equip_id, twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcUtils.EqInstallStatus.Removed)
+                    recu.submit(twcEquipment.Type, sa.equip_id, [twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcEquipment.Fields.REMOVED_DATE], [twcUtils.EqInstallStatus.Removed, worksEndDate])
                 }
             })
             return !actionSkipped;

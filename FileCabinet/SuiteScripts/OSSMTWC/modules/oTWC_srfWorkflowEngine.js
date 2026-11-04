@@ -161,7 +161,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 }
 
-                recu.submit(twcEquipment.Type, action.eq_id, twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, s);
+                if (s == twcUtils.EqLicenseStatus.Licenced) {
+                    // @@NOTE: the equipment becomes licenced => stamp the licenced date (same submit as the status)
+                    //         unlicence actions never get here as 'Licenced' (mapped to 'Unlicenced' above)
+                    recu.submit(twcEquipment.Type, action.eq_id, [twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, twcEquipment.Fields.LICENCED_DATE], [s, new Date()]);
+                } else {
+                    recu.submit(twcEquipment.Type, action.eq_id, twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, s);
+                }
             });
         }
 
