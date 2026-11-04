@@ -285,10 +285,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             if (items) {
                 var stepNotRequired = false; var someStepIsInProgress = false; var lastReviewStepId = null;
-                core.array.each(items, item => {
+                core.array.each(items, (item, idx) => {
                     var fields = []; var values = [];
-                    fields.push(twcSrfWorkflowItem.Fields.PROFILE);
-                    values.push(userInfo.profile)
+                    // @@NOTE: only the first item is the step being actioned by the user; the following items are the subsequent steps
+                    //         (set to in progress / not required) and must NOT be stamped with the profile of the user completing this step
+                    if (idx == 0) {
+                        fields.push(twcSrfWorkflowItem.Fields.PROFILE);
+                        values.push(userInfo.profile)
+                    }
                     for (var k in item) {
                         if (!k.startsWith('cust')) { continue; }
                         fields.push(k);
