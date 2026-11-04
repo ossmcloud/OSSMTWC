@@ -3,8 +3,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_utils.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js', '../../data/oTWC_config.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_equipmentLib.js', '../../data/oTWC_equipAction.js', '../../data/oTWC_safAction.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js', '../../modules/oTWC_srfWorkflowEngine.js'],
-    (core, coreSQL, recu, twcUtils, twcSite, twcSrf, twcSrfItem, twcSrfUI, twcFile, nsFileUtils, twcConfig, twcUI, twcEqLib, twcEqAct, twcSafAction, twcEquipmentUI, twcEquipment, twcSrfWorkflowEngine) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_utils.js', '../../data/oTWC_site.js', '../../data/oTWC_srf.js', '../../data/oTWC_srfItem.js', '../../data/oTWC_srfUI.js', '../../data/oTWC_file.js', '../../O/oTWC_nsFileUtils.js', '../../data/oTWC_config.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_equipmentLib.js', '../../data/oTWC_equipAction.js', '../../data/oTWC_safAction.js', '../../data/oTWC_equipmentUI.js', '../../data/oTWC_equipment.js', '../../modules/oTWC_srfWorkflowEngine.js', '../../data/oTWC_srfReview.js'],
+    (core, coreSQL, recu, twcUtils, twcSite, twcSrf, twcSrfItem, twcSrfUI, twcFile, nsFileUtils, twcConfig, twcUI, twcEqLib, twcEqAct, twcSafAction, twcEquipmentUI, twcEquipment, twcSrfWorkflowEngine, twcSrfReview) => {
 
         function renderSiteLocatorPanel(userInfo, featureId) {
             var html = `
@@ -577,6 +577,32 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
 
+        // @@NOTE: all SRF Review records of an SRF (latest on top) for the 'Reviews' dialog (ui/js/oTWC_spaceRequest.js: TWCSrfReviewsForm), TL employees only
+        //         the column order of the dialog table follows the select order
+        function getSrfReviews(userInfo, payload) {
+            if (!userInfo.isEmployee) { throw new Error('You do not have permissions to view the SRF reviews'); }
+            if (!payload?.srf) { throw new Error('invalid parameters passed'); }
+            var f = twcSrfReview.Fields;
+            return coreSQL.run(`
+                select  r.id, r.${f.REVIEW_ITERATION} as iteration,
+                        TO_CHAR(NVL(r.${f.SUBMISSION_DATE}, r.${f.CREATED}), 'yyyy-MM-dd') as submitted,
+                        BUILTIN.DF(r.${f.SUBMITTED_BY}) as submitted_by,
+                        r.${f.CUSTOMER_SUBMISSION_COMMENTS} as customer_comments,
+                        BUILTIN.DF(r.${f.TL_REVIEW_RESULT}) as tl_result,
+                        TO_CHAR(r.${f.TL_REVIEW_COMPLETE}, 'yyyy-MM-dd') as tl_review_date,
+                        r.${f.TL_REVIEW_COMMENTS} as tl_comments,
+                        r.${f.SPACE_CHECK_PASSED} as space_pass, r.${f.SPACE_CHECK_COMMENTS} as space_com,
+                        r.${f.FACILITIES_CHECK_PASSED} as fac_pass, r.${f.FACILITIES_CHECK_COMMENTS} as fac_com,
+                        r.${f.ESTATES_CHECK_PASSED} as est_pass, r.${f.ESTATES_CHECK_COMMENTS} as est_com,
+                        r.${f.CUSTOMER_ACCOUNTS_CHECK_PASSED} as acc_pass, r.${f.CUSTOMER_ACCOUNTS_CHECK_COMMENTS} as acc_com,
+                        r.${f.NEW_LICENCE_FEE} as new_licence_fee,
+                        r.${f.FEE_CHANGE_BREAKDOWN} as fee_breakdown
+                from    ${twcSrfReview.Type} r
+                where   r.${f.SRF} = ${parseInt(payload.srf)}
+                order by r.${f.REVIEW_ITERATION} desc, r.${f.CREATED} desc
+            `);
+        }
+
         function submitSiteSrf(userInfo, payload) {
             payload.profile = userInfo.profile;
             twcSrfWorkflowEngine.initWorkFlow(payload);
@@ -722,6 +748,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getEquipmentChildren: getEquipmentChildren,
             getEquipmentActions: getEquipmentActions,
             submitSiteSrf: submitSiteSrf,
+            getSrfReviews: getSrfReviews,
 
             getAssignToEmployees: getAssignToEmployees,
 

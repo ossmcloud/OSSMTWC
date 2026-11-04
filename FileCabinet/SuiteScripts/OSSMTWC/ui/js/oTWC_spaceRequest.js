@@ -756,6 +756,103 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
+        // @@NOTE: 'Reviews' button (TL employees only): all the SRF Review records of the SRF, latest on top (server: ui/modules/oTWC_siteRequestUtils.js: getSrfReviews)
+        //         the table columns follow the keys of the rows built in render() (in order), text columns are wrapped
+        class TWCSrfReviewsForm {
+            #page = null;
+            #srf = null;
+            constructor(page, srf) {
+                this.#page = page;
+                this.#srf = srf;
+            }
+
+            // @@NOTE: comments are free text entered by users, so escape them before rendering as html
+            static textHtml(value) {
+                if (value === null || value === undefined || value === '') { return ''; }
+                return value.toString().replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('\n', '<br />');
+            }
+
+            static checksHtml(r) {
+                var checks = [
+                    { name: 'Space', pass: r.space_pass, com: r.space_com },
+                    { name: 'Facilities', pass: r.fac_pass, com: r.fac_com },
+                    { name: 'Estates', pass: r.est_pass, com: r.est_com },
+                    { name: 'Accounts', pass: r.acc_pass, com: r.acc_com },
+                ];
+                var html = '';
+                core.array.each(checks, c => {
+                    if (c.pass != 'T' && !c.com) { return; }
+                    html += `<div style="margin-bottom: 3px;">${c.pass == 'T' ? '&#9989;' : '&#10060;'} <b>${c.name}</b>${c.com ? ': ' + TWCSrfReviewsForm.textHtml(c.com) : ''}</div>`;
+                });
+                return html;
+            }
+
+            render() {
+                var form = jQuery(`<div>${twcIcons.wait({ size: 64, message: 'loading...' })}</div>`);
+                dialog.message({ title: 'SRF Reviews', message: form, width: '90%', height: '80vh' });
+
+                this.#page.post({ action: 'get-reviews' }, { srf: this.#srf.id })
+                    .then(res => {
+                        var rows = (res.data || []).map(r => {
+                            return {
+                                id: r.id,
+                                iteration: r.iteration,
+                                submitted: r.submitted,
+                                submitted_by: r.submitted_by,
+                                customer_comments: TWCSrfReviewsForm.textHtml(r.customer_comments),
+                                tl_result: r.tl_result,
+                                tl_review_date: r.tl_review_date,
+                                tl_comments: TWCSrfReviewsForm.textHtml(r.tl_comments),
+                                checks: TWCSrfReviewsForm.checksHtml(r),
+                                new_licence_fee: r.new_licence_fee,
+                                fee_breakdown: TWCSrfReviewsForm.textHtml(r.fee_breakdown),
+                            }
+                        });
+
+                        if (rows.length == 0) {
+                            form.html('<div style="padding: 7px;">no reviews found for this SRF</div>');
+                            return;
+                        }
+
+                        const COLUMNS = {
+                            iteration: { title: '#', styles: { width: '40px', 'text-align': 'center' } },
+                            submitted: { title: 'Submitted', type: 'date' },
+                            submitted_by: { title: 'Submitted By' },
+                            customer_comments: { title: 'Customer Comments', wrap: true, styles: { 'min-width': '250px' } },
+                            tl_result: { title: 'TL Result' },
+                            tl_review_date: { title: 'TL Review Date', type: 'date' },
+                            tl_comments: { title: 'TL Comments', wrap: true, styles: { 'min-width': '250px' } },
+                            checks: { title: 'Checks', wrap: true, styles: { 'min-width': '250px' } },
+                            new_licence_fee: { title: 'New Licence Fee', type: 'float' },
+                            fee_breakdown: { title: 'Fee Breakdown', wrap: true, styles: { 'min-width': '200px' } },
+                        };
+                        const onColumnInit = (table, col) => {
+                            var c = COLUMNS[col.id];
+                            if (!c) { return false; }
+                            for (var k in c) { col[k] = c[k]; }
+                            col.nullText = '';
+                            col.noFilter = true;
+                            col.noSort = true;
+                        }
+
+                        form.html('');
+                        var tblContainer = jQuery(`<div style="height: calc(80vh - 120px); overflow: auto;"></div>`);
+                        form.append(tblContainer);
+                        var table = new uiTable.TableControl(tblContainer, onColumnInit, { id: 'twc_srf_reviews', fitContainer: false, fitScreen: false, showFooter: false });
+                        table.init(rows);
+                        table.table.ui.css('overflow', 'unset');
+                    }).catch(err => {
+                        form.html('');
+                        dialog.error(err);
+                    });
+            }
+
+            static open(page, srf) {
+                var form = new TWCSrfReviewsForm(page, srf);
+                form.render();
+            }
+        }
+
         class TWCEquipmentActionsForm {
             #page = null;
             #srf = null;
@@ -971,6 +1068,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             this.uploadFile({ showParent: true, recordType: twcSrf.Type, recordId: this.data.siteRequestInfo.id, srf: this.data.siteRequestInfo }, (file, res) => {
                                 location.reload();
                             })
+                        })
+
+                        this.ui.getControl('view-reviews-button')?.on('click', e => {
+                            TWCSrfReviewsForm.open(this, this.data.siteRequestInfo);
                         })
 
                         this.ui.getControl('view-equipment-actions')?.on('click', e => {

@@ -219,7 +219,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // increase feed back count (and keep the latest submission comment on the SRF)
                 recu.submit(twcSrf.Type, options.srf, [twcSrf.Fields.SRF_STATUS, twcSrf.Fields.FEEDBACK_LOOP_ITERATIONS, twcSrf.Fields.SUBMISSION_NOTES], [twcUtils.SrfStatus.Resubmitted, (srf.feedbackLoopIterations || 1) + 1, submitComment]);
 
-                saveSubmissionComment(options.srf, submitComment);
+                saveSubmissionComment(options.srf, submitComment, options.profile);
 
                 return;
             } else {
@@ -262,12 +262,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             recu.submit(twcSrf.Type, options.srf, [twcSrf.Fields.SRF_STATUS, twcSrf.Fields.FEEDBACK_LOOP_ITERATIONS, twcSrf.Fields.SUBMISSION_NOTES], [twcUtils.SrfStatus.Submitted, 1, submitComment]);
 
-            saveSubmissionComment(options.srf, submitComment);
+            saveSubmissionComment(options.srf, submitComment, options.profile);
         }
 
-        // @@NOTE: stores the submission / re-submission comment on the SRF Review record of the current iteration (SRF feedback loop count, so this must run after it is set)
+        // @@NOTE: stores the submission / re-submission comment (and who submitted) on the SRF Review record of the current iteration (SRF feedback loop count, so this must run after it is set)
         //         the review record is created here if not there yet, the review stage (updateWorkflow) will then pick up this same record (twcUtils.getSrfReviewRecord)
-        function saveSubmissionComment(srfId, comment) {
+        function saveSubmissionComment(srfId, comment, profile) {
             var reviewRecordInfo = twcUtils.getSrfReviewRecord({ srf: srfId });
             if (!reviewRecordInfo) { throw new Error(`Could not find the workflow for srf: ${srfId}`); }
             var reviewRecord = twcSrfReview.get(reviewRecordInfo.id);
@@ -277,6 +277,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 reviewRecord.reviewIteration = reviewRecordInfo.feedback_loop_count;
             }
             reviewRecord.customerSubmissionComments = comment;
+            // @@NOTE: profile of the user submitting / re-submitting (set by ui/modules/oTWC_siteRequestUtils.js: submitSiteSrf)
+            reviewRecord.submittedBy = profile || null;
             reviewRecord.save();
         }
 

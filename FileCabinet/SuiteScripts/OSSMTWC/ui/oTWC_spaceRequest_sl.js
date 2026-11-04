@@ -99,11 +99,13 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                         readOnly = true;
                     }
 
-                    var viewWorkFlowButton = ''; var openWorkFlowButton = '';
+                    var viewWorkFlowButton = ''; var openWorkFlowButton = ''; var reviewsButton = '';
                     if (pageData.userInfo.isEmployee) {
                         if (context.request.parameters.recId && pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] != twcSrf.Status.Draft) {
                             viewWorkFlowButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'View Workflow', id: 'view-workflow-button' });
                             openWorkFlowButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Open Workflow', id: 'open-workflow-button' });
+                            // @@NOTE: TL employees only, opens a dialog with all the SRF Review records (ui/js/oTWC_spaceRequest.js: TWCSrfReviewsForm)
+                            reviewsButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Reviews', id: 'view-reviews-button' });
                         }
                     }
 
@@ -169,6 +171,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                             ${printSDSButton}
                             ${openWorkFlowButton}
                             ${viewWorkFlowButton}
+                            ${reviewsButton}
                             ${acceptApprovalButton}
                             ${submitSrfButton}
                             ${cancelSrfButton}
@@ -203,6 +206,10 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
             } else if (context.request.parameters.action == 'submit') {
                 var payload = JSON.parse(context.request.body);
                 return { id: twcSiteRequestUtils.submitSiteSrf(userInfo, payload) };
+
+            } else if (context.request.parameters.action == 'get-reviews') {
+                var payload = JSON.parse(context.request.body);
+                return { data: twcSiteRequestUtils.getSrfReviews(userInfo, payload) };
 
             } else if (context.request.parameters.action == 'accept-srf-approval') {
                 var payload = JSON.parse(context.request.body);
