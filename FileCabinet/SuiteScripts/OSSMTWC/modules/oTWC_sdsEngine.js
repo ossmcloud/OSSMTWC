@@ -48,12 +48,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getSrfInfo(recId) {
             var srfInfo = {}
+            // @@NOTE: operator name = company 'T/A' (trading as) name, falls back to the NetSuite customer name
             srfInfo.srf = coreSql.first(`
                     SELECT      srf.id, srf.custrecord_twc_srf_op_site_id, srf.custrecord_twc_srf_site, srf.name, TO_CHAR(srf.custrecord_twc_srf_approval_date, 'DD-MM-YYYY') as approval_date,
                                 case srf.custrecord_twc_srf_pwr_supp_req_from_tl when 'T' then 'Yes' else 'No' end as power_supply_required,
                                 srf.custrecord_twc_srf_power_notes,
                                 srf.custrecord_twc_srf_cust as company_id, company.name as customer_name,
-                                company.custrecordtwc_entity, cae.addrtext AS customer_address, c.altname as operator_name, custrecord_twc_co_number as company_number, custrecord_twc_co_regd_office as registered_office,
+                                company.custrecordtwc_entity, cae.addrtext AS customer_address, NVL(company.custrecord_twc_co_ta_name, c.altname) as operator_name, custrecord_twc_co_number as company_number, custrecord_twc_co_regd_office as registered_office,
                                 TO_CHAR(srf.custrecord_twc_srf_lic_pack_signed, 'DD-MM-YYYY @ HH24:Mi:ss') as client_signed, BUILTIN.DF(srf.custrecord_twc_srf_lic_pack_sign_by) as client_singed_by,
                                 TO_CHAR(srf.custrecord_twc_srf_lic_pack_exec, 'DD-MM-YYYY @ HH24:Mi:ss') as tl_signed, BUILTIN.DF(srf.custrecord_twc_srf_lic_pack_exec_by) as tl_signed_by,
                                 
@@ -117,26 +118,31 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             });
 
             const siteID = srfInfo.srf.custrecord_twc_srf_site;
+            // @@NOTE: coordinates from the site Location section (not the Access section)
             srfInfo.siteDetails = coreSql.first(`
                     select id, custrecord_twc_site_id as site_id, custrecord_twc_site_name as site_name, custrecord_twc_site_address as address, custrecord_twc_site_address_zip as add_zipCode, 
-                        BUILTIN.DF(custrecord_twc_site_address_county) as add_county, custrecord_twc_site_easting_access as easting, custrecord_twc_site_northing_access as northing, 
-                        custrecord_twc_site_longitude_access as longitude, custrecord_twc_site_latitude_access as latitude,
+                        BUILTIN.DF(custrecord_twc_site_address_county) as add_county, custrecord_twc_site_easting as easting, custrecord_twc_site_northing as northing, 
+                        custrecord_twc_site_longitude as longitude, custrecord_twc_site_latitude as latitude,
 
                     from customrecord_twc_site 
                     where id = ${siteID}`)
+
+            // @@NOTE: SDS 'Site Access Reference Documents': names of the site access documents, the same files attached to the SDS pack (oTWC_sdsRender.js: getDrawings)
+            srfInfo.srf.site_access_doc = getSiteAccessFiles(siteID).map(f => { return f.name; }).filter(n => { return !!n; }).join(', ');
 
 
 
             var srfItems = coreSql.run(`
                 select  sds.id as sds_id, sdsi.id as sds_eq_id,
-                        eq.id, eq.custrecord_twc_equip_parent_tme_id as parent_tme, BUILTIN.DF(eqAct.custrecord_twc_eq_action_srf) as srf_id, sdsi.custrecord_twc_sds_item_equipment_class as equip_class,
+                        eq.id, eq.name as eq_name, eq.custrecord_twc_equip_parent_tme_id as parent_tme, BUILTIN.DF(eqAct.custrecord_twc_eq_action_srf) as srf_id, sdsi.custrecord_twc_sds_item_equipment_class as equip_class,
                         NVL(lsts.custrecord_twc_equip_licence_status_sds, lsts.name) as status, BUILTIN.DF(sdsi.custrecord_twc_sds_item_equipment_type) as type,
                         sdsi.custrecord_twc_sds_item_description as description, sdsi.custrecord_twc_sds_item_length as length,
                         sdsi.custrecord_twc_sds_item_width as width, sdsi.custrecord_twc_sds_item_depth as depth,
                         sdsi.custrecord_twc_sds_item_height_on_tower as equip_height, sdsi.custrecord_twc_sds_item_weight as weight,
                         sdsi.custrecord_twc_sds_item_azimuth as azimuth, sdsi.custrecord_twc_sds_item_b_end as b_end, 
                         BUILTIN.DF(eq.custrecord_twc_equip_str) as location,
-                        BUILTIN.DF(sdsi.custrecord_twc_sds_item_inventory_flag) as inventory_flag
+                        BUILTIN.DF(sdsi.custrecord_twc_sds_item_inventory_flag) as inventory_flag,
+                        sdsi.custrecord_twc_sds_item_make as make, sdsi.custrecord_twc_sds_item_model as model, BUILTIN.DF(eq.custrecord_twc_equip_opt_type) as feeder_type
                 from    customrecord_twc_sds_item sdsi
                 join    customrecord_twc_sds sds on sds.id = sdsi.custrecord_twc_sds_item_parent 
                 join    customrecord_twc_equip eq on eq.id = sdsi.custrecord_twc_sds_item_eq
@@ -323,8 +329,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+        // @@NOTE: SDS Equipments dialog (oTWC_sdsEngineUI.js: manageSDEquipment), only the fields editable on the dialog can be updated
+        const SDS_EQ_EDITABLE_FIELDS = [twcSdsEquipment.Fields.INCLUDE_IN_SDS, twcSdsEquipment.Fields.INSTALL_STATUS, twcSdsEquipment.Fields.LICENSE_STATUS, twcSdsEquipment.Fields.DESCRIPTION];
         function updateSdsEquipments(payload) {
-            recu.submit(twcSdsEquipment.Type, payload.id, payload.field, payload.value);
+            if (SDS_EQ_EDITABLE_FIELDS.indexOf(payload.field) < 0) { throw new Error(`Field cannot be updated: ${payload.field}`); }
+            var value = payload.value;
+            // @@NOTE: description is a free-form text field (max 300 chars)
+            if (payload.field == twcSdsEquipment.Fields.DESCRIPTION) { value = (value || '').toString().trim().substring(0, 300); }
+            recu.submit(twcSdsEquipment.Type, payload.id, payload.field, value);
         }
 
         // @@NOTE: returns the sds equipment ordered as parent / child: each parent (TME / GIE) is followed by its related equipment (ATME / Feeders)

@@ -60,7 +60,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 </div>
                             </div>
                             <div>
-                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Additional SRF Conditions', id: twcSds.Fields.ADDITIONAL_SRF_CONIDITONS, mandatory: true, width: '100%', rows: 4 })}
+                                ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Additional SRF Conditions', id: twcSds.Fields.ADDITIONAL_SRF_CONIDITONS, mandatory: false, width: '100%', rows: 4 })}
                             </div>
                             <div>
                                 ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, label: 'Power Supply Comments', id: twcSds.Fields.POWER_SUPPLY_COMMENTS, mandatory: true, width: '100%', rows: 4 })}
@@ -276,6 +276,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+        // @@NOTE: escape a value written into an html attribute (e.g. a description with a quote: 19" Rack)
+        const escAttr = (v) => {
+            if (v === null || v === undefined) { return ''; }
+            return v.toString().replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+        }
+
         async function manageSDEquipment(page, srf, sds, callback) {
             //
             var resp = await page.post({ action: 'get-sds-equipment' }, { id: sds.id });
@@ -294,6 +300,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         <div class="twc-sds-eq-sort" data-sort="class">Class<span class="twc-sds-eq-sort-dir"></span></div>
                         <div class="twc-sds-eq-sort" data-sort="type">Type<span class="twc-sds-eq-sort-dir"></span></div>
                         <div class="twc-sds-eq-sort" data-sort="makeModel">Make / Model<span class="twc-sds-eq-sort-dir"></span></div>
+                        <div class="twc-sds-eq-sort" data-sort="description" style="min-width: 200px;">Description<span class="twc-sds-eq-sort-dir"></span></div>
                         <div class="twc-sds-eq-sort" data-sort="bEnd">B-End<span class="twc-sds-eq-sort-dir"></span></div>
                         <div class="twc-sds-eq-sort" data-sort="install">Install Status<span class="twc-sds-eq-sort-dir"></span></div>
                         <div class="twc-sds-eq-sort" data-sort="licence">Licence Status<span class="twc-sds-eq-sort-dir"></span></div>
@@ -328,6 +335,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         <div>${eq[twcSdsEquipment.Fields.EQUIPMENT_CLASS + '_name']}</div>
                         <div>${eq[twcSdsEquipment.Fields.EQUIPMENT_TYPE + '_name']}</div>
                         <div>${[eq[twcSdsEquipment.Fields.MAKE], eq[twcSdsEquipment.Fields.MODEL]].filter(v => { return v; }).join(' / ')}</div>
+                        <!-- @@NOTE: editable description (printed on the SDS), saved on change like the other inputs of the row -->
+                        <div><input type="text" class="twc" id="${twcSdsEquipment.Fields.DESCRIPTION}" style="width: 100%;" value="${escAttr(eq[twcSdsEquipment.Fields.DESCRIPTION])}" /></div>
                         <div>${eq[twcSdsEquipment.Fields.B_END] || ''}</div>
                         <div>${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, id: twcSdsEquipment.Fields.INSTALL_STATUS, value: eq[twcSdsEquipment.Fields.INSTALL_STATUS], dataSource: twcUtils.EqInstallStatus.lookUp(), noEmpty: true, width: '100%' })}</div>
                         <div>${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, id: twcSdsEquipment.Fields.LICENSE_STATUS, value: eq[twcSdsEquipment.Fields.LICENSE_STATUS], dataSource: twcUtils.EqLicenseStatus.lookUp(), noEmpty: true, width: '100%' })}</div>
@@ -439,6 +448,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 class: (eq, row) => { return eq[twcSdsEquipment.Fields.EQUIPMENT_CLASS + '_name']; },
                 type: (eq, row) => { return eq[twcSdsEquipment.Fields.EQUIPMENT_TYPE + '_name']; },
                 makeModel: (eq, row) => { return [eq[twcSdsEquipment.Fields.MAKE], eq[twcSdsEquipment.Fields.MODEL]].filter(v => { return v; }).join(' / '); },
+                description: (eq, row) => { return row.find(`input[id="${twcSdsEquipment.Fields.DESCRIPTION}"]`).val(); },
                 bEnd: (eq, row) => { return eq[twcSdsEquipment.Fields.B_END]; },
                 install: (eq, row) => { return selectedText(row, twcSdsEquipment.Fields.INSTALL_STATUS); },
                 licence: (eq, row) => { return selectedText(row, twcSdsEquipment.Fields.LICENSE_STATUS); },

@@ -5,6 +5,14 @@
 define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', '../../data/oTWC_icons.js', './oTWC_ui_ctrlBase.js'],
     (core, b64, icons, ctrlBase) => {
 
+        // @@NOTE: values written into html attributes / textarea content must be escaped, otherwise a value like 19" Rack is cut at the quote (value="19" Rack")
+        //         and saved truncated when the form is submitted. The browser decodes the entities so the control value is unchanged
+        const escHtml = (v) => {
+            if (v === null || v === undefined) { return ''; }
+            return v.toString().replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+        }
+
+
         class InputControl {
             #options = null;
             #ui = null;
@@ -187,7 +195,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
                 var htmlInput = '';
                 if (this.#options.type == ctrlBase.CTRL_TYPE.TEXTAREA) {
-                    htmlInput = `<textarea id="${this.#options.id}" type="${this.#options.type}" class="twc" style="width: ${inputWidth}; margin-bottom: -5px;" autocomplete="off" placeholder="${this.#options.hint || ''}" ${accept} ${disabled} ${readOnly} ${checked} ${rows}>${this.#options.value || ''}</textarea>`;
+                    htmlInput = `<textarea id="${this.#options.id}" type="${this.#options.type}" class="twc" style="width: ${inputWidth}; margin-bottom: -5px;" autocomplete="off" placeholder="${this.#options.hint || ''}" ${accept} ${disabled} ${readOnly} ${checked} ${rows}>${escHtml(this.#options.value || '')}</textarea>`;
                 } else if (this.#options.type == ctrlBase.CTRL_TYPE.SELECT) {
                     htmlInput = `<select id="${this.#options.id}" class="twc" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${this.#options.value || ''}" ${accept} ${disabled} ${readOnly} ${checked}/>`;
                     if (!this.#options.noEmpty) {
@@ -202,12 +210,12 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                     var minMax = '';
                     if (this.#options.min !== undefined) { minMax = ` min="${this.#options.min}"`; }
                     if (this.#options.max !== undefined) { minMax = ` max="${this.#options.max}"`; }
-                    htmlInput = `<input id="${this.#options.id}" type="${this.#options.type}" class="twc" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${v}" ${accept} ${minMax} ${disabled} ${readOnly} ${checked}/>`;
+                    htmlInput = `<input id="${this.#options.id}" type="${this.#options.type}" class="twc" style="width: ${inputWidth}" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${escHtml(v)}" ${accept} ${minMax} ${disabled} ${readOnly} ${checked}/>`;
                 }
 
 
                 var html = `
-                    <div class="twc_ctrl" data-id="${this.#options.id}" data-type="${this.#options.type}" data-type="${this.#options.type}" data-value="${this.#options.value?.value || this.#options.value || ''}" style="width: ${defaultWidth};">
+                    <div class="twc_ctrl" data-id="${this.#options.id}" data-type="${this.#options.type}" data-type="${this.#options.type}" data-value="${escHtml(this.#options.value?.value || this.#options.value || '')}" style="width: ${defaultWidth};">
                         ${label}
                         <div class="twc_ctrl_table" style="border: 1px solid var(--grid-color); border-radius: 7px;">
                             <div>
