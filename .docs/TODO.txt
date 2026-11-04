@@ -54,6 +54,7 @@ ________________________________________________________________________________
 
 IMPORTANT:
 ----------
+    // @@IMPORTANT NOTE: License Maps are only available for Vodafone but it that changes we'll need to add a 'customer' field to the TWC File table and use it here
 	Field re-labelled cause an issue when the object is re-built
 	DropDown - noAutoSelect - does not really work as intended
 	RecordBase.select : noAlias and useNames are same thing, remove useNames
