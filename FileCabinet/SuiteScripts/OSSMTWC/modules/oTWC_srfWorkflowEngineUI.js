@@ -3,10 +3,39 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_site.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfWorkflowEngine.js', '../data/oTWC_icons.js', './oTWC_sdsEngineUI.js', '../data/oTWC_file.js'],
-    function (core, cored, coreSql, recu, https, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSite, dialog, twcUi, twcSrfWorkflowEngine, twcIcons, twcSdsEngineUI, twcFile) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'SuiteBundles/Bundle 548734/O/core.https.j.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_site.js', '../O/oTWC_dialogEx.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfWorkflowEngine.js', '../data/oTWC_icons.js', './oTWC_sdsEngineUI.js', '../data/oTWC_file.js', '../data/oTWC_srfReview.js'],
+    function (core, cored, coreSql, recu, https, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSite, dialog, twcUi, twcSrfWorkflowEngine, twcIcons, twcSdsEngineUI, twcFile, twcSrfReview) {
 
         const TODAY = (new Date()).format();
+        // @@NOTE: planned dates turn amber when due within this many days (red when due today or overdue)
+        const PLANNED_WARN_DAYS = 2;
+
+        // @@NOTE: highlight of the step planned date, compared to a reference date:
+        //         - step completed: the actual (completion) date, so the date keeps the colour it had when the step was completed
+        //         - step not completed (and workflow still open): today
+        //         red   = planned date is on or before the reference date
+        //         amber = planned date is within PLANNED_WARN_DAYS days after the reference date
+        //         dates are 'YYYY-MM-DD' strings (see getWorkflow in oTWC_srfWorkflowEngine.js) so they compare as strings
+        function getPlannedDateClass(item, workflow) {
+            if (!item.planned) { return ''; }
+            if (item.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED || item.status == twcSrfWorkflowEngine.WorkflowStatus.NOT_REQUIRED) { return ''; }
+
+            var refDate = TODAY;
+            if (item.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED) {
+                if (!item.actual) { return ''; }
+                refDate = item.actual;
+            } else if (workflow.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || workflow.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED) {
+                return '';
+            }
+
+            var d = new Date(`${refDate}T00:00:00`);
+            d.setDate(d.getDate() + PLANNED_WARN_DAYS);
+            var warnDate = d.format();
+
+            if (item.planned <= refDate) { return 'ktl-highlight-red'; }
+            if (item.planned <= warnDate) { return 'ktl-highlight-amber'; }
+            return '';
+        }
 
         function getStatusStyles(status, isItem) {
             var styles = { color: 'white', bkgd: 'silver' };
@@ -106,6 +135,105 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }).catch(err => {
                         fileListContainer.html(`<div style="color: red; padding: 7px;">${err.error || err.message}</div>`)
                     })
+            }
+
+            // @@NOTE: sets value, readOnly and data source of a stage form field (form_data) before rendering it
+            //         sourceItem is the workflow item the values are read from (the step being edited or, for the checks summary, the check step)
+            //         noDefaults: do not apply the field default when there is no value (summary of a check: show what was entered)
+            prepareFormField(field, sourceItem, readOnly, noDefaults) {
+                if (field.type != 'button') {
+                    // @@NOTE: the form is generally associated to one record but one or more field could relate to a different record (srf or workflow)
+                    //         these fields are identified by the fact that the id will be [table_name]-[field_name]
+                    var fieldId = field.id;
+                    if (fieldId.indexOf('-') > 0) { fieldId = fieldId.split('-')[1]; }
+
+                    var v = sourceItem[fieldId] || this.#workflow[fieldId];
+                    if (v && v.value !== undefined) { v = v.value; }
+
+                    if (field.type?.toLowerCase() == 'date' && v) {
+                        // @@NOTE: there can be some inconsistency on the way dates are returned, could be DD/MM/YYYY but control expects YYYY-MM-DD
+                        if (v.indexOf('/') > 0) { v = twcUtils.fromNsToJs(v) }
+                    }
+
+                    if (!v && field.default && !noDefaults) {
+                        if (field.type?.toLowerCase() == 'date') {
+                            // @@REVIEW: do we need more default date values???
+                            if (field.default == 'TODAY') { v = (new Date()).format(); }
+                        } else {
+                            v = field.default;
+                        }
+                    }
+
+                    field.value = v;
+                }
+                if (field.readOnly === undefined) { field.readOnly = readOnly; }
+
+                if (field.dataSourceConfig) {
+                    if (field.dataSourceConfig.startsWith('utils')) {
+                        field.dataSource = twcUtils[field.dataSourceConfig.split(':')[1]]();
+                    } else {
+                        field.dataSource = this.#workflowForm.data[field.dataSourceConfig] || [];
+                    }
+                }
+                return field;
+            }
+
+            // @@NOTE: read-only summary of the checks (review steps) feeding the TL Response step: result, who / when and the fields of each check form
+            //         the check fields are rendered from each check stage form_data (no per-stage hard-coding), with unique ids so they do not clash with this form
+            renderChecksSummary(checkSteps) {
+                var container = jQuery(`
+                    <div id="workflow-checks-summary" style="margin-top: 7px; padding: 3px; border: 1px solid var(--grid-color);">
+                        <h3 style="margin-bottom: 7px; border-bottom: 1px solid var(--grid-color);">Checks Summary</h3>
+                    </div>
+                `);
+                if (!checkSteps || checkSteps.length == 0) {
+                    container.append(`<div style="padding: 3px; font-style: italic;">no checks found</div>`);
+                    return container;
+                }
+
+                core.array.each(checkSteps, step => {
+                    var completed = step.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED;
+                    var result = { text: 'Pending', styles: 'background-color: silver; color: black;' };
+                    if (completed) {
+                        result = (step.review_passed == 'T')
+                            ? { text: 'Passed', styles: 'background-color: green; color: white;' }
+                            : { text: 'Failed', styles: 'background-color: red; color: white;' };
+                    }
+
+                    var by = [];
+                    if (step.profile_name) { by.push(`by ${step.profile_name}`); }
+                    if (step.actual) { by.push(`on ${twcUtils.fromJsToNs(step.actual)}`); }
+                    if (!completed && step.assigned_to_name) { by.push(`assigned to ${step.assigned_to_name}`); }
+
+                    var checkContainer = jQuery(`
+                        <div style="margin-bottom: 7px; padding: 3px; border-bottom: 1px dotted var(--grid-color);">
+                            <div style="display: flex; align-items: center; margin-bottom: 3px;">
+                                <span class="twc-record-status" style="width: auto; ${result.styles}">${result.text}</span>
+                                <strong style="margin-left: 7px;">${step.stage_alt_name || step.stage_name}</strong>
+                                <span style="margin-left: 7px; color: var(--label-color); font-style: italic;">${by.join(' ')}</span>
+                            </div>
+                        </div>
+                    `);
+
+                    if (step.form_data) {
+                        var stepForm = null;
+                        try { stepForm = JSON.parse(step.form_data); } catch (e) { stepForm = null; }
+                        for (var k in (stepForm?.fields || {})) {
+                            var f = stepForm.fields[k];
+                            if (f.type == 'button' || f.type == 'drawings') { continue; }
+                            // @@NOTE: the pass/fail field is shown as the result above
+                            if (step.review_pass_field && f.id == step.review_pass_field) { continue; }
+
+                            this.prepareFormField(f, step, true, true);
+                            f.readOnly = true;
+                            f.mandatory = false;
+                            f.id = `check_summary_${step.id}_${f.id}`;
+                            checkContainer.append(twcUi.render(f));
+                        }
+                    }
+                    container.append(checkContainer);
+                })
+                return container;
             }
 
             render(callback) {
@@ -242,44 +370,32 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (formData.fields[k].type == 'drawings') {
                             this.renderDrawingFileList(formDataContainer);
                             continue;
-                        } else if (formData.fields[k].type != 'button') {
-                            // @@NOTE: the form is generally associated to one record but one or more field could relate to a different record (srf or workflow)
-                            //         these fields are identified by the fact that the id will be [table_name]-[field_name]
-                            var fieldId = formData.fields[k].id;
-                            if (fieldId.indexOf('-') > 0) { fieldId = fieldId.split('-')[1]; }
-
-                            var v = this.#item[fieldId] || this.#workflow[fieldId];
-                            if (v && v.value !== undefined) { v = v.value; }
-
-                            if (formData.fields[k].type?.toLowerCase() == 'date' && v) {
-                                // @@NOTE: there can be some inconsistency on the way dates are returned, could be DD/MM/YYYY but control expects YYYY-MM-DD
-                                if (v.indexOf('/') > 0) { v = twcUtils.fromNsToJs(v) }
-                            }
-
-                            if (!v && formData.fields[k].default) {
-                                if (formData.fields[k].type?.toLowerCase() == 'date') {
-                                    // @@REVIEW: do we need more default date values???
-                                    if (formData.fields[k].default == 'TODAY') { v = (new Date()).format(); }
-                                } else {
-                                    v = formData.fields[k].default;
-                                }
-                            }
-
-                            formData.fields[k].value = v;
                         }
-                        if (formData.fields[k].readOnly === undefined) { formData.fields[k].readOnly = this.#readOnly; }
-
-                        if (formData.fields[k].dataSourceConfig) {
-                            if (formData.fields[k].dataSourceConfig.startsWith('utils')) {
-                                formData.fields[k].dataSource = twcUtils[formData.fields[k].dataSourceConfig.split(':')[1]]();
-                            } else {
-                                formData.fields[k].dataSource = this.#workflowForm.data[formData.fields[k].dataSourceConfig] || [];
-                            }
-                        }
-
+                        this.prepareFormField(formData.fields[k], this.#item, this.#readOnly);
                         formDataContainer.append(twcUi.render(formData.fields[k]))
                     }
                     this.#ui.append(formDataContainer);
+                }
+
+                // @@NOTE: TL Response (the step where the SRF is approved or feedback is issued): show a summary of each check (review step) so it can be reviewed
+                //         and a comment back to the customer (TL Review Comments on the SRF Review record, see updateWorkflow in oTWC_srfWorkflowEngine.js)
+                //         the comment field is only added if the stage form does not already have it (form_data is configured on the stage record)
+                var customerCommentsControl = null;
+                if (isTLResponse) {
+                    this.#ui.append(this.renderChecksSummary(prevSteps));
+
+                    var formHasComments = formData?.fields && Object.values(formData.fields).some(f => { return (f.id || '').split('-').pop() == twcSrfReview.Fields.TL_REVIEW_COMMENTS; });
+                    if (!formHasComments) {
+                        // @@NOTE: the review fields are on each review step (getWorkFlow joins the SRF Review record), take the value from the checks of this iteration
+                        var reviewStep = prevSteps.find(s => { return s.review_id; });
+                        customerCommentsControl = 'tl_review_comments_to_customer';
+                        this.#ui.append(`
+                            <div style="margin-top: 7px; padding: 3px; border: 1px solid var(--grid-color);">
+                                <h3 style="margin-bottom: 7px; border-bottom: 1px solid var(--grid-color);">Comments to Customer</h3>
+                                ${twcUi.render({ type: twcUi.CTRL_TYPE.TEXTAREA, id: customerCommentsControl, label: 'Comments (visible to the customer on the SRF)', value: reviewStep?.[twcSrfReview.Fields.TL_REVIEW_COMMENTS] || '', width: '100%', rows: 5, readOnly: this.#readOnly })}
+                            </div>
+                        `);
+                    }
                 }
 
                 this.#form = twcUi.init({}, this.#ui);
@@ -298,7 +414,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
 
                 var method = this.#readOnly ? 'open' : 'confirm';
-                this.#dlg = dialog[method]({ title: 'manage item', content: this.#ui, size: { width: '700px', height: '550px' } }, dlg => {
+                // @@NOTE: the TL Response pop-up also shows the checks summary, give it more room
+                var dlgSize = isTLResponse ? { width: '900px', height: '85vh' } : { width: '700px', height: '550px' };
+                this.#dlg = dialog[method]({ title: 'manage item', content: this.#ui, size: dlgSize }, dlg => {
                     try {
                         var values = this.#form.getValues(true);
 
@@ -385,7 +503,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                         dialog.saving(dlg, 'saving data...<br />do not close the pop-up or refresh the page.');
 
-                        this.#workflowForm.post('update-workflow', { setStatus: this.#readOnly ? null : setStatus, items: items })
+                        var updatePayload = { setStatus: this.#readOnly ? null : setStatus, items: items };
+                        // @@NOTE: TL Response comments back to the customer (see renderChecksSummary / updateWorkflow in oTWC_srfWorkflowEngine.js)
+                        if (customerCommentsControl && !this.#readOnly) {
+                            updatePayload.tlReviewComments = (values[customerCommentsControl] || '').toString().trim();
+                        }
+                        this.#workflowForm.post('update-workflow', updatePayload)
                             .then(res => {
                                 callback(res);
                                 dlg.close();
@@ -550,18 +673,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     value = input.val();
 
-                    await this.post('update-workflow', payload);
+                    var res = await this.post('update-workflow', payload);
 
-                    if (input.attr('id') == 'works-permitted-date') {
+                    // @@NOTE: planned date highlight is refreshed by the caller (see getPlannedDateClass)
+                    //         res.reload: the planned dates of the following steps were moved (oTWC_srfWorkflowEngine.js: propagatePlannedDates) => reload the table
+                    if (input.attr('id') == 'works-permitted-date' || res?.reload) {
                         this.render();
-                    } else {
-                        if (input.attr('type') == 'date') {
-                            if (value && value < TODAY) {
-                                input.parent().addClass('ktl-highlight-red');
-                            } else {
-                                input.parent().removeClass('ktl-highlight-red');
-                            }
-                        }
                     }
 
                 } catch (error) {
@@ -577,11 +694,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             renderWorkflow() {
                 this.#readOnly = this.#workflow.status == twcSrfWorkflowEngine.WorkflowStatus.COMPLETED || this.#workflow.status == twcSrfWorkflowEngine.WorkflowStatus.CANCELLED;
 
-                var customerPlannedDate = this.#workflow.customer_planned_date ? twcUtils.fromJsToNs(this.#workflow.customer_planned_date) : 'NA';
                 var worksPermittedDate = this.#workflow.works_permitted_date ? twcUtils.fromJsToNs(this.#workflow.works_permitted_date) : 'NA';
-                if (!this.#readOnly) {
-                    customerPlannedDate = `<input id="customer-planned-date" type="date" style="text-align: center; border: none; background-color: transparent; color: inherit;" value="${this.#workflow.customer_planned_date}" />`;
-                }
 
                 if (this.#workflow.srf_status == twcUtils.SrfStatus.SRFApproved || this.#workflow.srf_status == twcUtils.SrfStatus.LicenceRequested || this.#workflow.srf_status == twcUtils.SrfStatus.LicenceIssued || this.#workflow.srf_status == twcUtils.SrfStatus.LicenceExecuted) {
                     worksPermittedDate = `<input id="works-permitted-date" type="date" style="text-align: center; border: none; background-color: transparent; color: inherit;" value="${this.#workflow.works_permitted_date}" />`;
@@ -610,27 +723,26 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             </div>
                             <div class="twc-div-table-r" style="width: 40%; text-align: right;">
                                 <div>
-                                    <div><label style="margin: 0px;">Customer Planned Date</label></div>
-                                    <div class="${!this.#readOnly && this.#workflow.customer_planned_date && this.#workflow.customer_planned_date < TODAY ? 'ktl-highlight-red' : ''}" style="text-align: center; width: 120px">${customerPlannedDate}</div>
-                                </div>
-                                <div>
                                     <div><label style="margin: 0px;">Works Permitted Date</label></div>
-                                    <div class="${!this.#readOnly && this.#workflow.works_permitted_date && this.#workflow.works_permitted_date < TODAY ? 'ktl-highlight-red' : ''}" style="text-align: center; width: 120px">${worksPermittedDate}</div>
+                                    <div style="text-align: center; width: 120px">${worksPermittedDate}</div>
                                 </div>
                             </div>
                         </div>
                         <div id="srf-workflow-table">
                         </div>
-                        <div id="srf-workflow-notes">
-                            ${twcUi.render({ type: twcUi.CTRL_TYPE.TEXTAREA, id: 'srf-workflow-notes', label: 'Notes', value: this.#workflow.notes || '', width: '100%', rows: 7, readOnly: this.#readOnly })}
-                        </div>
                     </div>
                 `)
-
-                this.#ui.find('#customer-planned-date').change(async e => {
-                    var payload = { srf: { id: this.#workflow.srf, [twcSrf.Fields.CUSTOMER_PLANNED_INSTALL_DATE]: jQuery(e.currentTarget).val() } }
-                    this.#workflow.customer_planned_date = await this.updateValue(e, payload);
-                })
+                // @@NOTE: Notes control removed from the workflow (client request), commented out as it may be put back
+                //         to restore: add this after the 'srf-workflow-table' div in the template above and uncomment the change handler below
+                //
+                //  <div id="srf-workflow-notes">
+                //      ${twcUi.render({ type: twcUi.CTRL_TYPE.TEXTAREA, id: 'srf-workflow-notes', label: 'Notes', value: this.#workflow.notes || '', width: '100%', rows: 7, readOnly: this.#readOnly })}
+                //  </div>
+                //
+                // this.#ui.find('#srf-workflow-notes').change(async e => {
+                //     var payload = { wkf: { id: this.#workflow.id, [twcSrfWorkflow.Fields.NOTES]: jQuery(e.currentTarget).val() } }
+                //     this.#workflow.notes = await this.updateValue(e, payload);
+                // })
 
                 this.#ui.find('#works-permitted-date').change(async e => {
                     var workDate = jQuery(e.currentTarget).val()
@@ -643,14 +755,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#workflow.works_permitted_date = await this.updateValue(e, payload);
                 })
 
-                this.#ui.find('#srf-workflow-notes').change(async e => {
-                    var payload = { wkf: { id: this.#workflow.id, [twcSrfWorkflow.Fields.NOTES]: jQuery(e.currentTarget).val() } }
-                    this.#workflow.notes = await this.updateValue(e, payload);
-                })
 
-
+                // @@NOTE: one font for the whole table (the planned date inputs use the same font as the other cells)
                 this.#uiTable = jQuery(`
-                    <table class="twc-table-b">
+                    <table class="twc-table-b twc-srf-wkf-table">
                         <thead>
                             <tr>
                                 <th style="width: 25px;"></th>
@@ -721,7 +829,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             <td style="text-align: center;">${item.step_no}</td>
                             <td>${stageName}</td>
                             <td style="text-align: center;">${item.assigned_to_name || ''}</td>
-                            <td class="${(item.planned && item.planned < TODAY) ? 'ktl-highlight-red' : ''}" style="text-align: center;">
+                            <td class="${getPlannedDateClass(item, this.#workflow)}" style="text-align: center;">
                                 ${plannedDateInput}
                             </td>
                             <td style="text-align: center;">${item.actual ? twcUtils.fromJsToNs(item.actual) : '-'}</td>
@@ -735,6 +843,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     tableRow.find('input').change(async e => {
                         var payload = { item: { id: item.id, [twcSrfWorkflowItem.Fields.PLANNED]: jQuery(e.currentTarget).val() } }
                         item.planned = await this.updateValue(e, payload);
+                        jQuery(e.currentTarget).closest('td').removeClass('ktl-highlight-red ktl-highlight-amber').addClass(getPlannedDateClass(item, this.#workflow));
                     })
                     tableRow.find('.edit-item').click(async e => {
                         WorkflowFormItem.open(this, item, (resp) => {
@@ -785,6 +894,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             async uploadFile(form) {
                 await this.page.uploadFile({
                     showParent: false,
+                    // @@NOTE: Revision and Status are not used for TL Drawings (oTWC_fileUI.js: getUIFields)
+                    hideRevisionStatus: true,
                     recordType: twcSrf.Type,
                     recordId: this.page.data.siteRequestInfo.id,
                     filters: {

@@ -2724,6 +2724,18 @@ div.omt-ui-flex-panel>ossm {
     color: white !important;
 }
 
+.ktl-highlight-amber {
+    background-color: #ffbf00 !important;
+    color: black !important;
+}
+
+/* @@NOTE: SRF workflow table (oTWC_srfWorkflowEngineUI.js): one font / size for all cells, same as the planned date inputs */
+table.twc-srf-wkf-table,
+table.twc-srf-wkf-table input {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+}
+
 
 div.twc-dashboards {
     display: flex;

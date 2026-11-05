@@ -311,6 +311,138 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `)?.id;
         }
 
+        // @@NOTE: PLANNED DATES - propagation of a planned date change to the following steps
+        //         - a step planned date moved later / earlier by N working days => the following steps are moved by the same N working days
+        //         - the checks (consecutive review steps) are one group: the group ends on the LATEST planned date of its enabled checks
+        //           so the steps after the checks move only when that latest check date moves (and by the same amount)
+        //         - disabled checks / steps (NOT REQUIRED) are skipped: no planned date and they do not count
+        //         - a check enabled again with no planned date gets: end of the previous step + stage 'planned date delta'
+        //         - completed / cancelled steps are never moved, the actual date is never used
+        //         - dates already set (e.g. typed by the user) are kept, they are only moved by the shift
+        //         working days (no weekends), same as the dates set when the workflow is created (addWorkingDays)
+        const PLAN_DATE = {
+            toDate: (s) => { if (!s) { return null; } var p = s.split('-'); return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)); },
+            toJs: (d) => { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; },
+            isWorkDay: (d) => { return d.getDay() != 0 && d.getDay() != 6; },
+            // signed number of working days from a to b ('YYYY-MM-DD')
+            diff: (a, b) => {
+                if (!a || !b || a == b) { return 0; }
+                var sign = (b > a) ? 1 : -1;
+                var d = PLAN_DATE.toDate(a); var end = PLAN_DATE.toJs(PLAN_DATE.toDate(b)); var n = 0;
+                while (PLAN_DATE.toJs(d) != end) {
+                    d.setDate(d.getDate() + sign);
+                    if (PLAN_DATE.isWorkDay(d)) { n += sign; }
+                }
+                return n;
+            },
+            // moves a date ('YYYY-MM-DD') by n working days (n can be negative)
+            shift: (s, n) => {
+                if (!s || !n) { return s; }
+                var sign = (n > 0) ? 1 : -1;
+                var d = PLAN_DATE.toDate(s); var moved = 0;
+                while (moved < Math.abs(n)) {
+                    d.setDate(d.getDate() + sign);
+                    if (PLAN_DATE.isWorkDay(d)) { moved++; }
+                }
+                return PLAN_DATE.toJs(d);
+            }
+        }
+
+        // @@NOTE: workflow steps in the same order as getWorkFlow (the workflow table), with what is needed for the planned dates
+        function getPlanSteps(workflowId) {
+            return coreSql.run(`
+                select  wi.id, wi.custrecord_twc_srf_wkfi_status as status,
+                        TO_CHAR(wi.custrecord_twc_srf_wkfi_planned, 'YYYY-MM-DD') as planned,
+                        ws.custrecord_twc_srf_wks_plan_delta_days as delta_days, ws.custrecord_twc_srf_wks_is_review as is_review
+                from    customrecord_twc_srf_wkfi wi
+                join    customrecord_twc_srf_wks ws on ws.id = wi.custrecord_twc_srf_wkfi_stage
+                where   wi.custrecord_twc_srf_wkfi_parent = ${workflowId}
+                order by custrecord_twc_srf_wks_seq_outer, wi.created, ws.custrecord_twc_srf_wks_seq_no, wi.created
+            `);
+        }
+
+        // @@NOTE: propagates the planned date changes made by an update (before = getPlanSteps taken before the update was saved)
+        //         returns true if any planned date was changed
+        function propagatePlannedDates(workflowId, before) {
+            if (!workflowId || !before || before.length == 0) { return false; }
+
+            var after = getPlanSteps(workflowId);
+            var beforeById = {};
+            core.array.each(before, s => { beforeById[s.id] = s; });
+
+            // @@NOTE: segments: one step, or a group of consecutive review steps (the checks)
+            var segments = [];
+            core.array.each(after, s => {
+                s.status = parseInt(s.status);
+                var last = segments[segments.length - 1];
+                if (s.is_review == 'T' && last?.isGroup) {
+                    last.steps.push(s);
+                } else {
+                    segments.push({ isGroup: s.is_review == 'T', steps: [s] });
+                }
+            });
+
+            const isActive = (status) => { return status != WORKFLOW_STATUS.NOT_REQUIRED && status != WORKFLOW_STATUS.CANCELLED; };
+            const isLocked = (status) => { return status == WORKFLOW_STATUS.COMPLETED || status == WORKFLOW_STATUS.CANCELLED; };
+            // end of a segment: latest planned date of its active steps, the end of the previous segment if none
+            const segmentEnd = (steps, prevEnd, useBefore) => {
+                var end = null;
+                core.array.each(steps, s => {
+                    var status = useBefore ? parseInt(beforeById[s.id]?.status) : s.status;
+                    var planned = useBefore ? beforeById[s.id]?.planned : s.planned;
+                    if (!isActive(status) || !planned) { return; }
+                    if (!end || planned > end) { end = planned; }
+                });
+                return end || prevEnd;
+            };
+
+            var changed = false;
+            const setPlanned = (s, planned) => {
+                if ((s.planned || null) == (planned || null)) { return; }
+                recu.submit(twcSrfWorkflowItem.Type, s.id, twcSrfWorkflowItem.Fields.PLANNED, planned ? twcUtils.fromJsToNs(planned) : null);
+                s.planned = planned;
+                changed = true;
+            }
+
+            var shift = 0; var prevEndBefore = null; var prevEndAfter = null;
+            core.array.each(segments, seg => {
+                // @@NOTE: recalc = the segment end must be re-evaluated (it has open steps or steps changed by this update)
+                //         a segment with only completed / not required steps not touched by this update does not change the shift (it passes through)
+                var recalc = false;
+                core.array.each(seg.steps, s => {
+                    var b = beforeById[s.id];
+                    // @@NOTE: plannedChanged: the planned date was set by this update (e.g. typed by the user) => it is kept as it is, never shifted
+                    var plannedChanged = !b || (b.planned || null) != (s.planned || null);
+                    var statusChanged = !b || parseInt(b.status) != s.status;
+                    if (plannedChanged || statusChanged) { recalc = true; }
+
+                    if (s.status == WORKFLOW_STATUS.NOT_REQUIRED) {
+                        setPlanned(s, null);
+                        return;
+                    }
+                    if (isLocked(s.status)) { return; }
+                    recalc = true;
+
+                    if (!s.planned) {
+                        // @@NOTE: step enabled again by this update (e.g. a check) with no planned date: end of the previous segment + stage delta
+                        if (statusChanged && prevEndAfter) {
+                            setPlanned(s, PLAN_DATE.shift(prevEndAfter, parseInt(s.delta_days) || 0));
+                        }
+                    } else if (!plannedChanged && shift) {
+                        setPlanned(s, PLAN_DATE.shift(s.planned, shift));
+                    }
+                });
+
+                var endBefore = segmentEnd(seg.steps, prevEndBefore, true);
+                var endAfter = segmentEnd(seg.steps, prevEndAfter, false);
+                if (recalc) { shift = PLAN_DATE.diff(endBefore, endAfter); }
+                prevEndBefore = endBefore;
+                prevEndAfter = endAfter;
+            });
+
+            return changed;
+        }
+
         function updateWorkflow(userInfo, options) {
             var response = { status: 'success' };
 
@@ -320,6 +452,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } else if (options.items) {
                 items = options.items;
             }
+
+            // @@NOTE: planned dates before this update, used to move the following steps when a planned date / check changes (propagatePlannedDates)
+            var planStepsBefore = (items && options.wkf) ? getPlanSteps(options.wkf) : null;
 
             if (items) {
                 var stepNotRequired = false; var someStepIsInProgress = false; var lastReviewStepId = null;
@@ -418,6 +553,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 })
 
+                // @@NOTE: TL Response (approve / feedback) comments back to the customer (oTWC_srfWorkflowEngineUI.js: WorkflowFormItem.render)
+                //         saved on the current SRF Review record (TL Review Comments): shown to the customer on the SRF page (oTWC_srfUI.js: getFeedbackReviewRecords)
+                //         and used as default 'Additional SRF Conditions' when the SDS is created (oTWC_sdsEngine.js: getSds)
+                //         saved BEFORE the SRF status changes (below) so it is there when the customer is notified
+                if (options.tlReviewComments !== undefined && options.tlReviewComments !== null) {
+                    var reviewRecordInfo = twcUtils.getSrfReviewRecord(options);
+                    if (reviewRecordInfo.id) {
+                        recu.submit(twcSrfReview.Type, reviewRecordInfo.id, twcSrfReview.Fields.TL_REVIEW_COMMENTS, options.tlReviewComments);
+                    } else {
+                        var reviewRecord = twcSrfReview.get();
+                        reviewRecord.name = `R${reviewRecordInfo.srf_name}_${reviewRecordInfo.feedback_loop_count}`;
+                        reviewRecord.sRF = reviewRecordInfo.srf;
+                        reviewRecord.reviewIteration = reviewRecordInfo.feedback_loop_count;
+                        reviewRecord.tLReviewComments = options.tlReviewComments;
+                        reviewRecord.save();
+                    }
+                }
+
                 if (!someStepIsInProgress && lastReviewStepId) {
                     // @@NOTE: this can hapen if the 'Initial Review' or 'Re-Submit Review' (basically the TL Review and any feedback loop) was processed withiout selecting any review stage
                     var nextStep = getNextStepId(options.wkf, lastReviewStepId);
@@ -426,6 +579,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         response.reload = true;
                     }
                 }
+
+                // @@NOTE: a planned date moved / a check enabled or disabled by this update: move the planned dates of the following steps (see PLAN_DATE notes above)
+                if (planStepsBefore && propagatePlannedDates(options.wkf, planStepsBefore)) { response.reload = true; }
 
                 if (options.setStatus) {
                     recu.submit(twcSrf.Type, options.srf, twcSrf.Fields.SRF_STATUS, options.setStatus);

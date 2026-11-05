@@ -57,10 +57,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             fieldGroup.fields.push({ id: 'upload-file', label: 'File', width: '100%', type: 'file', accept: options?.accept })
             fieldGroup.fields.push({ id: twcFile.Fields.NAME, label: 'Name', width: '100%', mandatory: true })
+            // @@NOTE: options.hideRevisionStatus hides Revision and Status (e.g.: TL Drawing upload on the SRF workflow, oTWC_srfWorkflowEngineUI.js: uploadFile)
+            //         the fields are hidden (not removed) so the default status is still saved and the client 'Type' change handler still finds the status control
+            var hideRevisionStatus = !showTypeRelatedFields || options?.hideRevisionStatus == true;
             // if (showTypeRelatedFields) {
-            fieldGroup.fields.push({ id: twcFile.Fields.R_TYPE, label: 'Type', width: 'calc(100% - 233px)', mandatory: true, allowAll: false, dataSource: fileTypes, value: fileType, hide: !showTypeRelatedFields })
-            fieldGroup.fields.push({ id: twcFile.Fields.REVISION, label: 'Revision', readOnly: nonTwcReadOnly, width: '100px', hide: !showTypeRelatedFields })
-            fieldGroup.fields.push({ id: twcFile.Fields.STATUS, label: 'Status', width: '120px', readOnly: nonTwcReadOnly, mandatory: !nonTwcReadOnly, lineBreak: true, dataSource: fileStatuses, value: fileStatus, hide: !showTypeRelatedFields })
+            fieldGroup.fields.push({ id: twcFile.Fields.R_TYPE, label: 'Type', width: hideRevisionStatus ? '100%' : 'calc(100% - 233px)', mandatory: true, allowAll: false, dataSource: fileTypes, value: fileType, hide: !showTypeRelatedFields })
+            fieldGroup.fields.push({ id: twcFile.Fields.REVISION, label: 'Revision', readOnly: nonTwcReadOnly, width: '100px', hide: hideRevisionStatus })
+            fieldGroup.fields.push({ id: twcFile.Fields.STATUS, label: 'Status', width: '120px', readOnly: nonTwcReadOnly, mandatory: !nonTwcReadOnly, lineBreak: true, dataSource: fileStatuses, value: fileStatus, hide: hideRevisionStatus })
             // }
             fieldGroup.fields.push({ id: twcFile.Fields.DESCRIPTION, label: 'Description', width: '100%', rows: 5 })
 
