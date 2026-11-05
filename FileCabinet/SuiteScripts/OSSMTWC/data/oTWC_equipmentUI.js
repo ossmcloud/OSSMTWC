@@ -21,6 +21,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         // @@NOTE: site equipment tables, SRF column (not an equipment field, see getSiteEquipmentSrf)
         const SRF_COLUMN = 'srf_name';
+        // @@NOTE: site equipment tables, computed columns (not equipment fields, values set in getSiteEquipment)
+        //         computed server side (and not with formatValue) so the values survive the table being re-rendered on the client (sort / filter)
+        //         TYPE_COLUMN      : feeders => feeder type (FEEDER_TYPE), everything else => equipment (item) type (EQUIPMENT_TYPE)
+        //         MAKE_MODEL_COLUMN: make / model in one column
+        const TYPE_COLUMN = 'eq_type_name';
+        const MAKE_MODEL_COLUMN = 'make_model';
+        const COMPUTED_COLUMNS = [SRF_COLUMN, TYPE_COLUMN, MAKE_MODEL_COLUMN];
 
         function getInventoryTableFields() {
             var inventoryFields = [
@@ -58,19 +65,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 [twcInventory.Fields.EQUIPMENT_INSTALL_STATUS]: 'Install Status',
                 [twcInventory.Fields.EQUIPMENT_LICENCE_STATUS]: 'License Status',
                 [twcInventory.Fields.CUSTOMER]: 'Customer',
-                [twcInventory.Fields.VOLTAGE_TYPE]: {
-                    title: 'Type',
-                    // @@NOTE: feeders show the feeder type (FEEDER_TYPE) under the 'Type' column
-                    //         GIE have no voltage type (only asked for TME / ATME on the SRF) so they show the equipment type (EQUIPMENT_TYPE)
-                    formatValue: (v, fv, data, col) => {
-                        if (data[twcInventory.Fields.EQUIPMENT_CLASS] == EQ_CLASS_ENUM.FEEDER) { return data[twcInventory.Fields.FEEDER_TYPE + '_name'] || '-'; }
-                        if (data[twcInventory.Fields.EQUIPMENT_CLASS] == EQ_CLASS_ENUM.GIE) { return data[twcInventory.Fields.EQUIPMENT_TYPE + '_name'] || '-'; }
-                        return fv;
-                    }
-                },
+                // @@NOTE: the columns flagged 'hide: true' here are only shown on some tables (see TABLE_SHOWN_FIELDS)
+                [twcInventory.Fields.INFRASTRUCTURE]: { title: 'Infrastructure', hide: true },
+                // @@NOTE: computed column (see TYPE_COLUMN), the title is set per table (see TABLE_TYPE_TITLE)
+                [TYPE_COLUMN]: { title: 'Type' },
+                [MAKE_MODEL_COLUMN]: { title: 'Make / Model', hide: true },
                 [twcInventory.Fields.DESCRIPTION]: { title: 'Desc', wrap: true, styles: { 'min-width': '200px' } },
                 // @@NOTE: custrecord_twc_equip_location is the 'Modified Antenna Location' (list: Cabin / Gantry / Rooftop, TME / ATME), GIE Location is free text (GIE)
-                [twcInventory.Fields.MODIFIED_ANTENNA_LOCATION]: 'Antenna Location',
+                [twcInventory.Fields.MODIFIED_ANTENNA_LOCATION]: 'Modified Antenna<br />Location',
                 [twcInventory.Fields.GIE_LOCATION]: 'GIE Location',
                 [twcInventory.Fields.LENGTH_MM]: {
                     title: 'L/W/D',
@@ -79,6 +81,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         return twcUtils.formatLWD(data[twcInventory.Fields.LENGTH_MM], data[twcInventory.Fields.WIDTH_MM], data[twcInventory.Fields.HEIGHTDEPTH_MM]);
                     }
                 },
+                [twcInventory.Fields.HEIGHT_ON_TOWER_M]: { title: 'Height on<br />Tower (m)', hide: true, styles: { 'text-align': 'center' } },
                 [twcInventory.Fields.AZIMUTH]: { title: 'Az', styles: { width: '65px' } },
                 [twcInventory.Fields.B_END]: 'B-End',
                 [twcInventory.Fields.CUSTOMER_REF]: 'Cust. Ref',
@@ -93,8 +96,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 [twcInventory.Fields.WIDTH_MM]: { hide: true },
                 [twcInventory.Fields.HEIGHTDEPTH_MM]: { hide: true },
                 [twcInventory.Fields.PARENT_TME_ID]: { hide: true },
+                // @@NOTE: loaded for the computed columns (TYPE_COLUMN / MAKE_MODEL_COLUMN), never shown
                 [twcInventory.Fields.FEEDER_TYPE]: { hide: true },
                 [twcInventory.Fields.EQUIPMENT_TYPE]: { hide: true },
+                [twcInventory.Fields.MAKE]: { hide: true },
+                [twcInventory.Fields.MODEL]: { hide: true },
             }
 
             for (var k in tableFields) {
@@ -138,13 +144,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
             var selectFields = getSiteInventoryTableFields(userInfo);
-            delete selectFields[SRF_COLUMN];
+            core.array.each(COMPUTED_COLUMNS, c => { delete selectFields[c]; });
             var items = twcInventory.select({ fields: selectFields, where: whereClause, useNames: true });
 
             var srfs = getSiteEquipmentSrf(dataSource.id);
             core.array.each(items, item => {
                 item.srf_id = srfs[item.id]?.srf_id || '';
                 item[SRF_COLUMN] = srfs[item.id]?.srf_name || null;
+                // @@NOTE: computed columns (see TYPE_COLUMN / MAKE_MODEL_COLUMN)
+                item[TYPE_COLUMN] = (item[twcInventory.Fields.EQUIPMENT_CLASS] == EQ_CLASS_ENUM.FEEDER)
+                    ? (item[twcInventory.Fields.FEEDER_TYPE + '_name'] || null)
+                    : (item[twcInventory.Fields.EQUIPMENT_TYPE + '_name'] || null);
+                var makeModel = [item[twcInventory.Fields.MAKE], item[twcInventory.Fields.MODEL]].filter(x => { return x; });
+                item[MAKE_MODEL_COLUMN] = (makeModel.length > 0) ? makeModel.join(' / ') : null;
             });
 
             if (!grouped) {
@@ -197,8 +209,33 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             [EQ_CLASS_ENUM.FEEDER]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.LENGTH_MM, twcInventory.Fields.AZIMUTH, twcInventory.Fields.B_END, twcInventory.Fields.CUSTOMER_REF, twcInventory.Fields.MODIFIED_ANTENNA_LOCATION, twcInventory.Fields.GIE_LOCATION],
         }
 
+        // @@NOTE: per table, the columns hidden by default in getSiteInventoryTableFields that are shown, and the 'Type' column title
+        //         ungrouped view: one table per class (key = EQ_CLASS_ENUM), grouped view: GROUPED_TME (TME with ATME / Feeders child rows, and the unlinked ATME / Feeders) and GROUPED_GIE
+        const GROUPED_TME = 'grouped_tme';
+        const GROUPED_GIE = 'grouped_gie';
+        const TABLE_SHOWN_FIELDS = {
+            [EQ_CLASS_ENUM.TME]: [twcInventory.Fields.INFRASTRUCTURE, MAKE_MODEL_COLUMN, twcInventory.Fields.HEIGHT_ON_TOWER_M],
+            [EQ_CLASS_ENUM.ATME]: [twcInventory.Fields.INFRASTRUCTURE, twcInventory.Fields.HEIGHT_ON_TOWER_M],
+            [EQ_CLASS_ENUM.FEEDER]: [twcInventory.Fields.INFRASTRUCTURE],
+            [EQ_CLASS_ENUM.GIE]: [twcInventory.Fields.INFRASTRUCTURE, twcInventory.Fields.LENGTH_MM],
+            [GROUPED_TME]: [twcInventory.Fields.INFRASTRUCTURE, MAKE_MODEL_COLUMN, twcInventory.Fields.HEIGHT_ON_TOWER_M],
+            [GROUPED_GIE]: [],
+        }
+        // @@NOTE: grouped view hidden columns (the ungrouped ones are in CLASS_HIDDEN_FIELDS): GIE Location is a GIE field, the antenna location a TME / ATME field
+        const GROUPED_HIDDEN_FIELDS = {
+            [GROUPED_TME]: [twcInventory.Fields.GIE_LOCATION],
+            [GROUPED_GIE]: [twcInventory.Fields.MODIFIED_ANTENNA_LOCATION],
+        }
+        const TABLE_TYPE_TITLE = {
+            [EQ_CLASS_ENUM.TME]: 'Equipment<br />Type',
+            [EQ_CLASS_ENUM.ATME]: 'Equipment<br />Type',
+            [EQ_CLASS_ENUM.FEEDER]: 'Feeder Type',
+            [GROUPED_TME]: 'Equipment<br />Type',
+        }
+
         // @@NOTE: eqClass is only passed for the single class tables (not grouped view)
-        function getInvInfoPanels_Type(dataSource, userInfo, title, items, withChildren, eqClass) {
+        //         groupedTable: grouped view table (GROUPED_TME / GROUPED_GIE)
+        function getInvInfoPanels_Type(dataSource, userInfo, title, items, withChildren, eqClass, groupedTable) {
             var fieldGroup = { id: 'site-inventory', title: title, collapsed: false, controls: [] };
 
             var tmeInventories = { id: 'site-inventory-info', fields: [] };
@@ -210,11 +247,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
             Object.assign(tableFields, getSiteInventoryTableFields(userInfo));
 
-            if (eqClass) {
-                core.array.each(CLASS_HIDDEN_FIELDS[eqClass] || [], f => { tableFields[f].hide = true; });
-                // @@NOTE: the feeder table 'Type' column shows the feeder type (see formatValue in getSiteInventoryTableFields)
-                if (eqClass == EQ_CLASS_ENUM.FEEDER) { tableFields[twcInventory.Fields.VOLTAGE_TYPE].title = 'Feeder Type'; }
+            // @@NOTE: table specific columns (shown first, then hidden: hidden wins) and 'Type' column title
+            var tableKey = eqClass || groupedTable;
+            core.array.each(TABLE_SHOWN_FIELDS[tableKey] || [], f => { tableFields[f].hide = false; });
+            core.array.each((eqClass ? CLASS_HIDDEN_FIELDS[eqClass] : GROUPED_HIDDEN_FIELDS[groupedTable]) || [], f => { tableFields[f].hide = true; });
+            if (TABLE_TYPE_TITLE[tableKey]) { tableFields[TYPE_COLUMN].title = TABLE_TYPE_TITLE[tableKey]; }
 
+            if (eqClass) {
                 // @@NOTE: ATME / Feeders tables show the parent TME right after the 'Eq. ID' column, clicking it highlights the TME row in the TME table (ui/js/oTWC_inventory.js: highlightEquipment)
                 //         we use the column 'link' option (and not formatValue) as it is serialized and so it survives the table being re-rendered on the client (sort / filter)
                 if (eqClass == EQ_CLASS_ENUM.ATME || eqClass == EQ_CLASS_ENUM.FEEDER) {
@@ -274,11 +313,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 })
                 return fieldGroups;
             }
-            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_TITLES[EQ_CLASS_ENUM.TME], equipment[EQ_CLASS_ENUM.TME], true))
+            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_TITLES[EQ_CLASS_ENUM.TME], equipment[EQ_CLASS_ENUM.TME], true, null, GROUPED_TME))
             // @@NOTE: GIE never have child rows so no expand / collapse column
-            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_TITLES[EQ_CLASS_ENUM.GIE], equipment[EQ_CLASS_ENUM.GIE], false))
+            //         GIE Location is shown (it is part of getSiteInventoryTableFields), antenna location is a TME / ATME field
+            fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, EQ_CLASS_TITLES[EQ_CLASS_ENUM.GIE], equipment[EQ_CLASS_ENUM.GIE], false, null, GROUPED_GIE))
             if (equipment.unlinked.length > 0) {
-                fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, 'Unlinked ATME / Feeders', equipment.unlinked, false))
+                fieldGroups.push(getInvInfoPanels_Type(dataSource, userInfo, 'Unlinked ATME / Feeders', equipment.unlinked, false, null, GROUPED_TME))
             }
             return fieldGroups;
         }

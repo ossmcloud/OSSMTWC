@@ -52,6 +52,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     col.nullText = uf.nullText;
                     col.addCount = uf.addCount;
                     if (uf.styles) { col.styles = uf.styles; }
+                    // @@NOTE: wrapped column (e.g.: Description, ui/modules/oTWC_inventoryUtils.js: getInventoryData)
+                    if (uf.wrap) { col.wrap = true; }
                 }
 
                 if (col.id == 'site_id_text') {

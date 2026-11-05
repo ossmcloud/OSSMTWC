@@ -82,7 +82,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS, title: 'Install Status', styles: { width: '150px' }, sortIdx: 50 },
                 { field: twcInventory.Fields.EQUIPMENT_LICENCE_STATUS, title: 'Licence Status', styles: { width: '150px' }, sortIdx: 50 },
                 { field: twcInventory.Fields.EQUIPMENT_CLASS, title: 'Class', styles: { width: '100px' } },
-                { field: twcInventory.Fields.EQUIPMENT_TYPE, title: 'Type', styles: { width: '100px' } },
+                // @@NOTE: feeders show the feeder type (FEEDER_TYPE) under the 'Type' column (same as the site equipment tables, data/oTWC_equipmentUI.js: getSiteInventoryTableFields)
+                {
+                    field: 'eq_type', title: 'Type', nullText: '', styles: { width: '100px' }, sql: `
+                        case when s.${twcInventory.Fields.EQUIPMENT_CLASS} = ${twcInventoryUI.EqClass.FEEDER}
+                            then BUILTIN.DF(s.${twcInventory.Fields.FEEDER_TYPE})
+                            else BUILTIN.DF(s.${twcInventory.Fields.EQUIPMENT_TYPE})
+                        end
+                    `
+                },
+                { field: twcInventory.Fields.DESCRIPTION, title: 'Description', wrap: true, nullText: '', styles: { 'min-width': '200px' } },
                 {
                     field: 'make_model', title: 'Make / Model', nullText: '', sql: `
                         case when (${twcInventory.Fields.MAKE} is null AND ${twcInventory.Fields.MODEL} is null)
@@ -110,7 +119,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         END
                     `
                 },
-                { field: twcInventory.Fields.HEIGHT_ON_TOWER_M, title: 'Height on<br />Tower' },
+                { field: twcInventory.Fields.HEIGHT_ON_TOWER_M, title: 'Height on<br />Tower', nullText: '' },
                 { field: 'srf', sql: 'BUILTIN.DF(ea.custrecord_twc_eq_action_srf)', nullText: '', title: 'SRF' }
             ];
 
