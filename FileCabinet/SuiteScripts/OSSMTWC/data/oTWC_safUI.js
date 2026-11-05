@@ -117,6 +117,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return safCrews;
         }
 
+        // @@NOTE: SAF equipment actions tables, SRF column link (TL employees only, null for everyone else): opens the SRF page (view mode) in a new tab
+        //         custrecord_twc_srf_itm_srf (SRF id) is returned by twcUtils.getSafActions / getSrfActions
+        function getSafEqActionSrfLink(userInfo) {
+            if (!userInfo?.isEmployee) { return null; }
+            return { url: core.url.script('otwc_spacerequest_sl') + '&recId=${' + twcSrfItem.Fields.SRF + '}', valueField: twcSrfItem.Fields.SRF, target: '_blank' };
+        }
+
         function getSafEqAction(dataSource) {
             var safActions = [];
             if (dataSource.id && !dataSource.reUse) {
@@ -316,23 +323,26 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
             //
             var step3CInfo = { id: 'site-access-step-3c', title: 'Equipment Actions', hide: !eqActionsVisible, fields: [] };
+            // @@NOTE: equipment actions tables: the ID column and the SRF link are for TL employees only (see getSafEqActionSrfLink)
+            var srfLink = getSafEqActionSrfLink(userInfo);
             fieldGroup.controls.push(step3CInfo);
             var eqActionTableControl = {
                 id: `saf-eq-action-table`,
                 type: twcUI.CTRL_TYPE.TABLE,
                 label: 'Equipment Actions',
                 columns: [
-                    { id: 'ea_id', title: 'ID', styles: { width: '50px' }, noFilter: true, noSort: true },
-                    { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF', styles: { width: '125px' } },
+                    { id: 'ea_id', title: 'ID', styles: { width: '50px' }, noFilter: true, noSort: true, hide: !userInfo.isEmployee },
+                    { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF', styles: { width: '125px' }, link: srfLink, nullText: '' },
                     { id: twcEqAct.Fields.EA_EQUIPMENT + '_name', title: 'Equipment', prefix: twcEq.infoIconPrefix(twcEqAct.Fields.EA_EQUIPMENT) },
                     { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
-                    { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Item' },
+                    { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Type' },
                     { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description' },
                     { id: twcSrfItem.Fields.HEIGHT_ON_TOWER, title: 'Height on Tower', nullText: '' },
                     { id: twcSrfItem.Fields.AZIMUTH, title: 'Azimuth', nullText: '' },
                     { id: twcSrfItem.Fields.FEEDER_TYPE + '_name', title: 'Feeder Type', nullText: '' },
                     { id: twcSrfItem.Fields.B_END, title: 'B-End', nullText: '' },
-                    { id: twcEqAct.Fields.EA_TYPE + '_name', title: 'Type' },
+                    // @@NOTE: 'Action' = SRF item request type (Install / Remove / Swap, via custrecord_twc_eq_action_srf_item, see twcUtils.getSafActions), 'Type' is the equipment (item) type column
+                    { id: twcSrfItem.Fields.REQUEST_TYPE + '_name', title: 'Action' },
                     { id: twcSafAction.Fields.SAF_ACTION_STATUS + '_name', title: 'Status' },
                     { id: 'saf-detach', title: '', styles: { 'width': '50px', 'text-align': 'center', 'padding': '0px' }, noSort: true, noFilter: true },
                 ],
@@ -578,8 +588,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 columns: [
                     { id: 'expand', title: '', noSort: true, noFilter: true, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } },
                     { id: 'select', title: checkAllInput, noSort: true, noFilter: true, styles: { width: '50px', 'text-align': 'center', 'padding': '0px' } },
-                    { id: 'ea_id', title: 'ID', styles: { width: '50px' }, noFilter: true, noSort: true },
-                    { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF' },
+                    // @@NOTE: the ID column and the SRF link are for TL employees only (see getSafEqActionSrfLink)
+                    { id: 'ea_id', title: 'ID', styles: { width: '50px' }, noFilter: true, noSort: true, hide: !userInfo?.isEmployee },
+                    { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF', link: getSafEqActionSrfLink(userInfo), nullText: '' },
                     { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
                     { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Eq. Type' },
                     { id: 'srf_eq_action_type', title: 'Type' },
@@ -697,18 +708,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
 
             fields['expand'] = { title: '', noSort: true, noFilter: true, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
-            fields['ea_id'] = { title: 'ID', styles: { width: '50px' }, link: eaActionLink, noFilter: true, noSort: true };
-            fields[twcSrfItem.Fields.SRF + '_name'] = { title: 'SRF', styles: { width: '125px' } };
+            // @@NOTE: the ID column and the SRF link are for TL employees only (see getSafEqActionSrfLink)
+            fields['ea_id'] = { title: 'ID', styles: { width: '50px' }, link: eaActionLink, noFilter: true, noSort: true, hide: !userInfo.isEmployee };
+            fields[twcSrfItem.Fields.SRF + '_name'] = { title: 'SRF', styles: { width: '125px' }, link: getSafEqActionSrfLink(userInfo), nullText: '' };
             // @@NOTE: (i) icon => equipment details dialog
             fields[twcEqAct.Fields.EA_EQUIPMENT + '_name'] = { title: 'Equipment', link: equipLink, prefix: twcEq.infoIconPrefix(twcEqAct.Fields.EA_EQUIPMENT) };
             fields[twcSrfItem.Fields.STEP_TYPE + '_name'] = { title: 'Class' };
-            fields[twcSrfItem.Fields.ITEM_TYPE + '_name'] = { title: 'Item' };
+            fields[twcSrfItem.Fields.ITEM_TYPE + '_name'] = { title: 'Type' };
             fields[twcSrfItem.Fields.DESCRIPTION] = { title: 'Description' };
             fields[twcSrfItem.Fields.HEIGHT_ON_TOWER] = { title: 'Height on Tower', nullText: '' };
             fields[twcSrfItem.Fields.AZIMUTH] = { title: 'Azimuth', nullText: '' };
             fields[twcSrfItem.Fields.FEEDER_TYPE + '_name'] = { title: 'Feeder Type', nullText: '' };
             fields[twcSrfItem.Fields.B_END] = { title: 'B-End', nullText: '' };
-            fields[twcEqAct.Fields.EA_TYPE + '_name'] = { title: 'Type' };
+            // @@NOTE: 'Action' = SRF item request type (Install / Remove / Swap, via custrecord_twc_eq_action_srf_item, see twcUtils.getSafActions), 'Type' is the equipment (item) type column
+            fields[twcSrfItem.Fields.REQUEST_TYPE + '_name'] = { title: 'Action' };
             fields[twcSafAction.Fields.SAF_ACTION_STATUS + '_name'] = { title: 'Status', styles: { width: '120px', 'text-align': 'center' } };
 
             // @@REVIEW: we need to fix filters sorting (on table ui) with child rows before we can show

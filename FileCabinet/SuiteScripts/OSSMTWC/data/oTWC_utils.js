@@ -1356,7 +1356,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             coreSQL.each(`
                 select  sa.id, 
                         sa.custrecord_twc_saf_a_status, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as custrecord_twc_saf_a_status_name,
-                        a.id as ea_id, BUILTIN.DF(custrecord_twc_srf_itm_srf) as custrecord_twc_srf_itm_srf_name, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
+                        a.id as ea_id, custrecord_twc_srf_itm_srf, BUILTIN.DF(custrecord_twc_srf_itm_srf) as custrecord_twc_srf_itm_srf_name, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
                         a.custrecord_twc_eq_action_eq, BUILTIN.DF(a.custrecord_twc_eq_action_eq) as custrecord_twc_eq_action_eq_name,
                         a.custrecord_twc_eq_action_type, BUILTIN.DF(custrecord_twc_eq_action_type) as custrecord_twc_eq_action_type_name,
                         

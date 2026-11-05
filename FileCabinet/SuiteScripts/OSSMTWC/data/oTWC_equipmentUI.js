@@ -72,7 +72,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 [MAKE_MODEL_COLUMN]: { title: 'Make / Model', hide: true },
                 [twcInventory.Fields.DESCRIPTION]: { title: 'Desc', wrap: true, styles: { 'min-width': '200px' } },
                 // @@NOTE: custrecord_twc_equip_location is the 'Modified Antenna Location' (list: Cabin / Gantry / Rooftop, TME / ATME), GIE Location is free text (GIE)
-                [twcInventory.Fields.MODIFIED_ANTENNA_LOCATION]: 'Modified Antenna<br />Location',
+                [twcInventory.Fields.MODIFIED_ANTENNA_LOCATION]: 'Modified<br />Antenna<br />Location',
                 [twcInventory.Fields.GIE_LOCATION]: 'GIE Location',
                 [twcInventory.Fields.LENGTH_MM]: {
                     title: 'L/W/D',

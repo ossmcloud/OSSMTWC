@@ -183,6 +183,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 fields[twcSrfItem.Fields.MODEL] = 'Model';
                 //fields[twcSrfItem.Fields.DESCRIPTION] = 'Description';
                 if (stepType == twcSrfItem.StepType.TME || stepType == twcSrfItem.StepType.ATME) { fields[twcSrfItem.Fields.HEIGHT_ON_TOWER] = 'Height on Tower'; }
+                // @@NOTE: location columns: 'Modified Antenna Location' (list) on the TME table (also shown for the ATME child rows), 'GIE Location' (free text) on the GIE table
+                if (stepType == twcSrfItem.StepType.TME) { fields[twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION] = { title: 'Modified<br />Antenna<br />Location', styles: { width: '120px' } }; }
+                if (stepType == twcSrfItem.StepType.GIE) { fields[twcSrfItem.Fields.GIE_LOCATION] = { title: 'GIE Location', wrap: true }; }
                 // @@NOTE: Length / Width / Depth shown as a single 'L/W/D' column (formatValue below), width / depth are still selected but hidden
                 fields[twcSrfItem.Fields.LENGTH_MM] = { title: 'L/W/D', styles: { 'text-align': 'center' } };
                 fields[twcSrfItem.Fields.WIDTH_MM] = { hide: true };
