@@ -759,6 +759,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                     var payload = { srf: { id: this.#workflow.srf, [twcSrf.Fields.WORKS_PERMITTED_DATE]: workDate } }
                     this.#workflow.works_permitted_date = await this.updateValue(e, payload);
+                    // @@NOTE: refresh the Works Permitted flag on the SRF title bar (ui/oTWC_spaceRequest_sl.js)
+                    jQuery('#srf-works-permitted').html(twcSrf.getSrfWorksPermittedHtml(this.#workflow.works_permitted_date));
                 })
 
 

@@ -75,6 +75,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sql = `
                 select  ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO}, 
                         comp.id as cust_submit_by_company, comp.name as cust_submit_by_company_name,
+                        TO_CHAR(s.${twcSrf.Fields.WORKS_PERMITTED_DATE}, 'yyyy-MM-dd') as works_permitted
 
                 from    ${twcSrf.Type} s
                 join    ${twcSite.Type} site on site.id = s.${twcSrf.Fields.SITE}

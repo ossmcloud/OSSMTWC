@@ -434,6 +434,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 </span>
             `
         }
+        // @@NOTE: 'Works Permitted' flag (client request): set when TL enters the Works Permitted Date on the SRF Workflow
+        //         tells customers / contractors they can submit the Construction SAF (on Radix this was an SRF status, on Nexus the status tracks the licence)
+        //         worksPermittedDate: yyyy-MM-dd (or empty = no flag)
+        function getSrfWorksPermittedHtml(worksPermittedDate, spanClass) {
+            if (!worksPermittedDate) { return ''; }
+            var dateText = worksPermittedDate;
+            var dateParts = worksPermittedDate.split('-');
+            if (dateParts.length == 3) { dateText = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`; }
+            return `<span class="${spanClass ? spanClass : 'twc-record-status'}" style="color: white; background-color: darkgreen; white-space: nowrap;" title="Works Permitted on ${dateText}">Works Permitted</span>`;
+        }
 
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
@@ -1690,6 +1700,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSrfStatusName: getSrfStatusName,
             getSrfStatusStyle: getSrfStatusStyle,
             getSrfStatusHtml: getSrfStatusHtml,
+            getSrfWorksPermittedHtml: getSrfWorksPermittedHtml,
             getSrfRevenueImpact: getSrfRevenueImpact,
 
             getSafStatusName: getSafStatusName,

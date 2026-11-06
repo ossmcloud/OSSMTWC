@@ -21,6 +21,9 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteRequestInfo.siteId || context.request.parameters.siteId, pageData.userInfo);
 
                 //
+                // @@NOTE: Works Permitted flag next to the status, outside #srf-record-status as that is replaced when the status changes (oTWC_srfWorkflowEngineUI.js)
+                //         #srf-works-permitted is refreshed when TL changes the date on the SRF Workflow
+                var worksPermittedHtml = `<span id="srf-works-permitted" style="display: inline-flex; vertical-align: middle;">${twcSrf.getSrfWorksPermittedHtml(pageData.siteRequestInfo[twcSrf.Fields.WORKS_PERMITTED_DATE])}</span>`;
                 pageData.recordStatus = `<div class="twc-div-span-table" id="srf-record-status">${twcSrf.getSrfStatusHtml(pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS])}</div>`;
                 if (context.request.parameters.recId) {
                     var srfCode = pageData.siteRequestInfo.name;
@@ -33,6 +36,8 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                                 </span>
                                 <span style="width: 5px;"></span>
                                 ${pageData.recordStatus}
+                                <span style="width: 5px;"></span>
+                                ${worksPermittedHtml}
                             </div>
                         </div>
                     `;

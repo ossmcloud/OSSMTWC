@@ -106,6 +106,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
 
                 if (col.id == 'site_id_text') {
+                    col.title = 'Site';
                     col.link = {
                         url: core.url.script('otwc_siteinfo_sl') + '&recId=${site_id}',
                         valueField: 'site_id'
@@ -117,6 +118,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     col.formatValue = (v) => {
                         return twcSrf.getSrfStatusHtml(v, 'twc-record-status-row');
                     }
+                }
+                // @@NOTE: Works Permitted flag (works permitted date set on the SRF Workflow), see oTWC_siteLocatorUtils.js: getSiteSrf
+                if (col.id == 'works_permitted') {
+                    col.title = 'Works Permitted';
+                    col.nullText = '';
+                    col.styles = { 'text-align': 'center', width: '130px' }
+                    col.formatValue = (v) => {
+                        return twcSrf.getSrfWorksPermittedHtml(v, 'twc-record-status-row');
+                    }
+                    // @@NOTE: show it right after the SRF Status column (columns are sorted by sortIdx, assigned in steps of 10 in data order and the status column comes first)
+                    var statusCol = tbl.columns.find(c => { return c.id == `${twcSrf.Fields.SRF_STATUS}_text`; });
+                    if (statusCol && statusCol.sortIdx != null) { col.sortIdx = statusCol.sortIdx + 5; }
                 }
                 if (col.id == twcSrf.Fields.OPERATOR_SITE_ID) { col.nullText = ''; }
 
