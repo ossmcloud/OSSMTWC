@@ -207,7 +207,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
                 },
-                where: { [twcProfile.Fields.COMPANY]: dataSource.id },
+                // @@NOTE: external (non-employee) users do not see profiles that are No Longer Active (PROFILE_ACCREDITATION_STATUS.Inactive)
+                //         NVL so that profiles with no accreditation status are still shown
+                where: (userInfo.isEmployee)
+                    ? { [twcProfile.Fields.COMPANY]: dataSource.id }
+                    : `and ${twcProfile.Fields.COMPANY} = ${parseInt(dataSource.id) || 0} and NVL(${twcProfile.Fields.ACCREDITATION_STATUS}, 0) != ${twcUtils.ProfileAccreditationStatus.Inactive}`,
                 FieldsInfo: twcProfile.FieldsInfo,
                 showToolbar: true,
                 readOnly: editMode || (userInfo.permission.lvl < 3),
