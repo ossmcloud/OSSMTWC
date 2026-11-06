@@ -696,7 +696,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 var worksPermittedDate = this.#workflow.works_permitted_date ? twcUtils.fromJsToNs(this.#workflow.works_permitted_date) : 'NA';
 
-                if (this.#workflow.srf_status == twcUtils.SrfStatus.SRFApproved || this.#workflow.srf_status == twcUtils.SrfStatus.LicenceRequested || this.#workflow.srf_status == twcUtils.SrfStatus.LicenceIssued || this.#workflow.srf_status == twcUtils.SrfStatus.LicenceExecuted) {
+                // @@NOTE: (client request) TL can set / change the Works Permitted Date at any step from Licence Requested to SRF Workflow Complete
+                //         NOT when the SRF is only approved (the submitter must request the licence first), still editable once the SRF is Completed
+                var worksPermittedStatuses = [
+                    twcUtils.SrfStatus.LicenceRequested, twcUtils.SrfStatus.LicenceIssued, twcUtils.SrfStatus.LicenceSigned,
+                    twcUtils.SrfStatus.LicenceExecuted, twcUtils.SrfStatus.Completed
+                ];
+                if (worksPermittedStatuses.includes(parseInt(this.#workflow.srf_status))) {
                     worksPermittedDate = `<input id="works-permitted-date" type="date" style="text-align: center; border: none; background-color: transparent; color: inherit;" value="${this.#workflow.works_permitted_date}" />`;
                 }
 
