@@ -332,16 +332,21 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var basicInfo = { id: 'site-request-struct', title: 'Customer Information', fields: [] };
             fieldGroup.controls.push(basicInfo);
 
-            basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: !core.utils.isEmpty(dataSource.id), dataSource: customers, value: selectedCustomer, allowAll: false })
+            basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', width: '200px', disabled: !core.utils.isEmpty(dataSource.id), dataSource: customers, value: selectedCustomer, allowAll: false })
             basicInfo.fields.push({ id: twcSrf.Fields.OPERATOR_SITE_ID, label: 'Operator Site ID', mandatory: true })
             // @@NOTE: the structure is picked once at SRF level and copied (read-only) on the TME / ATME / FEEDER items (GIE items still pick their own accommodation)
             //         only infrastructures of type Structure are listed
             var siteStructures = twcUtils.getInfraStructures({ siteId: dataSource[twcSrf.Fields.SITE] }, userInfo.isEmployee).filter(s => { return s.type == twcUtils.InfraType.Structure });
-            basicInfo.fields.push({ id: twcSrf.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, dataSource: siteStructures })
+            basicInfo.fields.push({ id: twcSrf.Fields.STRUCTURE, label: 'Structure', width: '300px', allowAll: false, dataSource: siteStructures })
             if (userInfo.isEmployee) {
-                basicInfo.fields.push({ id: twcSrf.Fields.SRF_TYPE, label: 'SRF Type', dataSource: twcUtils.getSrfTypes(), allowAll: false })
-                basicInfo.fields.push({ id: twcSrf.Fields.REVENUE_IMPACTING, label: 'Revenue Impacting', dataSource: twcUtils.getSrfRevenueImpact(), allowAll: false })
-                basicInfo.fields.push({ id: twcSrf.Fields.SRF_STATUS, lineBreak: true })
+                // @@NOTE: list (customrecord_twc_lic_mech) is loaded automatically by configUIFields.formatPanelFields
+                //         new SRFs default to Online (also defaulted server side on create: ui/modules/oTWC_siteRequestUtils.js saveSiteSrf)
+                var licenceMechanism = { id: twcSrf.Fields.LICENCE_MECHANISM, label: 'Licencing Mechanism', width: '150px', allowAll: false };
+                if (!dataSource.id) { licenceMechanism.value = twcUtils.SrfLicenceMechanism.Online; }
+                basicInfo.fields.push(licenceMechanism)
+                basicInfo.fields.push({ id: twcSrf.Fields.SRF_TYPE, label: 'SRF Type', width: '150px', dataSource: twcUtils.getSrfTypes(), allowAll: false })
+                basicInfo.fields.push({ id: twcSrf.Fields.REVENUE_IMPACTING, label: 'Revenue Impacting', width: '150px', dataSource: twcUtils.getSrfRevenueImpact(), allowAll: false })
+                basicInfo.fields.push({ id: twcSrf.Fields.SRF_STATUS, width: '200px', lineBreak: true })
 
                 basicInfo.fields.push({ id: twcSrf.Fields.TL_NOTES, width: '100%', rows: 3 })
             }

@@ -367,6 +367,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             REMOVE: 2,
             SWAP: 3
         }
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids (customrecord_twc_lic_mech)
+        const SRF_LICENCE_MECHANISM = {
+            Online: 1,
+            Traditional: 2
+        }
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SRF_STATUS = {
             Draft: 11,
@@ -1664,6 +1669,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SrfStepType: SRF_ITEM_STEP_TYPE,
             SrfRequestType: SRF_ITEM_REQUEST_TYPE,
             SrfStatus: SRF_STATUS,
+            SrfLicenceMechanism: SRF_LICENCE_MECHANISM,
             SrfReviewStatus: SRF_REVIEW_STATUS,
             SrfDeafultFileType: SRF_DEFAULT_FILE_TYPE,
 

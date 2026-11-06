@@ -199,6 +199,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         newSrf.sRFStatus = twcSrf.Status.Draft;
                         newSrf.sRFRequestedDate = (new Date()).addHours(12);    // @@NOTE: to account for the GMT difference of US servers
                         newSrf.sRFSubmittedBy = userInfo.profile || null;
+                        // @@NOTE: default licence mechanism (the field is employee only, so customers / contractors never send it); overridden below if in the payload
+                        newSrf.licenceMechanism = twcUtils.SrfLicenceMechanism.Online;
                         core.array.each(submitInfo[twcSrf.Type].fields, (field, idx) => {
                             if (!newSrf.hasField(field)) { return; }
                             newSrf.set(field, submitInfo[twcSrf.Type].values[idx]);
