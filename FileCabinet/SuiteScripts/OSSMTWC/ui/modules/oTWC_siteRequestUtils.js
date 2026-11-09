@@ -713,7 +713,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (pageData.recId) {
 
                     var sql = twcSrf.select({ noAlias: true, getSql: true, where: { id: pageData.recId } });
-                    sql.query = sql.query.replace('from customrecord_twc_srf', `BUILTIN.DF(custrecord_twc_srf_lic_pack_sign_by) as pack_sign_by_name,TO_CHAR(custrecord_twc_srf_lic_pack_signed, 'DD-MM-YYYY @ HH24:Mi:ss') pack_sign_by_date from customrecord_twc_srf`)
                     srf = coreSQL.first(sql);
                     // srf = coreSQL.first(`
                     //     select *,
@@ -724,6 +723,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // `);
                     if (!srf) { throw new Error(`No SRF found using id ${pageData.recId}`) }
                     srf.siteId = srf[twcSrf.Fields.SITE];
+
+                    // @@NOTE: licence pack signed by / date (display values) used by the SDS sign dialog (oTWC_sdsEngineUI.js: signSDS)
+                    //         fetched separately: string-replacing into the generated select sql was not reliable (the columns were never added)
+                    var packSign = coreSQL.first(`
+                        select  BUILTIN.DF(${twcSrf.Fields.LICENCE_PACK_SIGNED_BY}) as pack_sign_by_name,
+                                TO_CHAR(${twcSrf.Fields.LICENCE_PACK_SIGNED}, 'DD-MM-YYYY @ HH24:Mi:ss') as pack_sign_by_date
+                        from    ${twcSrf.Type}
+                        where   id = ${pageData.recId}
+                    `);
+                    srf.pack_sign_by_name = packSign?.pack_sign_by_name || 'UNKNOWN';
+                    srf.pack_sign_by_date = packSign?.pack_sign_by_date || 'UNKNOWN';
 
                     if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, srf[twcSrf.Fields.CUSTOMER])) {
                         throw new Error('You do not have access to see this SRF record');
