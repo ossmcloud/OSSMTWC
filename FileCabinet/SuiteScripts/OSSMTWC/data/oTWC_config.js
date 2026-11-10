@@ -229,6 +229,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 throw new Error('Could not determine login type');
             }
 
+            // @@NOTE: feature restrictions (e.g. customer only) depend on the user's company, see oTWC_permissions.js: applyRestrictions
+            if (userInfo.permission) { permissions.applyRestrictions(userInfo.permission, userInfo); }
+
             if (!userInfo.isEmployee) {
                 // @@NOTE: the oly way to detect that the logged in user is not the main customer but a contact with access is if the email on runtime is different than what we loaded for the customer
                 //         in such case we get the contact details as well in case we need it for soe reason

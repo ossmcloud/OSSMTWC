@@ -6,16 +6,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
     (core, coreSQL, twcUtils, twcSds, twcSite, twcUI, twcConfig, twcSiteLocatorUtils) => {
 
         // @@NOTE: SDS Files locator: list of the SDS that have a generated PDF (any status)
-        //         TL employees see everything, anybody else only the SDS of the company of their profile
+        //         @@IMPORTANT: ONLY the SDS of the company of the logged in profile are returned (nobody, employees included, sees other companies' SDS)
+        //                      the feature itself is restricted to customers (configs { "restrict": "customer" } on 'OSSMTWC - Role Feature List', oTWC_permissions.js: applyRestrictions)
         //         row field names follow the site locator panel conventions (oTWC_siteLocatorPanel.js):
         //              site_id   => links the row to the map site
         //              cust...   => filterable fields (filter control id = row field name)
         function getSdsFiles(options, userInfo) {
-            var whereClause = `where sds.${twcSds.Fields.PDF} is not null `;
-            if (!userInfo.isEmployee) {
-                // @@NOTE: if the profile has no company nothing is shown
-                whereClause += `and sds.${twcSds.Fields.CUSTOMER} = ${parseInt(userInfo.companyProfile?.id) || 0} `;
-            }
+            // @@NOTE: if the profile has no company nothing is shown
+            var whereClause = `where sds.${twcSds.Fields.PDF} is not null and sds.${twcSds.Fields.CUSTOMER} = ${parseInt(userInfo.companyProfile?.id) || 0} `;
 
             var sdsFiles = coreSQL.run(`
                 select  sds.id, sds.id as record_id, sds.name,
@@ -93,11 +91,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             html = html.replace('{FILTER_SITE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames(userInfo) }));
             var sdsStatuses = coreSQL.run(`select id as value, name as text from customrecord_twc_sds_status where isinactive = 'F' order by id`);
             html = html.replace('{FILTER_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Status', width: 'calc(50% - 5px)', multiSelect: true, id: twcSds.Fields.STATUS, noEmpty: true, dataSource: sdsStatuses }));
-            // @@NOTE: only TL employees see more than one customer
-            html = html.replace('{FILTER_CUSTOMER}', userInfo.isEmployee
-                ? twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Customer', width: '50%', multiSelect: true, id: twcSds.Fields.CUSTOMER, noEmpty: true, dataSource: twcUtils.getCustomers(userInfo) })
-                : '');
-            html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: userInfo.isEmployee ? 'calc(50% - 5px)' : '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
+            // @@NOTE: only the logged in profile's company SDS are listed (see getSdsFiles), no customer filter
+            html = html.replace('{FILTER_CUSTOMER}', '');
+            html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
             html = html.replace('{FILTER_LAT}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Latitude', id: 'twc-coord-latitude', width: '250px' }));
             html = html.replace('{FILTER_LNG}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Longitude', id: 'twc-coord-longitude', width: '250px' }));
             html = html.replace('{FILTER_RADIUS}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Radius (km)s', id: 'twc-coord-radius' }));

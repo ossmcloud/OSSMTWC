@@ -67,11 +67,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', './oTWC_pageBase.js', '../../O/o
                     }
                 }
 
-                if (col.id == `${twcSds.Fields.CUSTOMER}_text`) {
-                    // @@NOTE: non employees only see their own company's SDS
-                    if (!window.twc.page.data.userInfo?.isEmployee) { return false; }
-                    col.title = 'Customer';
-                }
+                // @@NOTE: only the logged in profile's company SDS are listed (oTWC_sdsFilesUtils.js: getSdsFiles), the customer column is redundant
+                if (col.id == `${twcSds.Fields.CUSTOMER}_text`) { return false; }
 
                 if (col.id == `${twcSds.Fields.STATUS}_text`) {
                     col.title = 'Status';
