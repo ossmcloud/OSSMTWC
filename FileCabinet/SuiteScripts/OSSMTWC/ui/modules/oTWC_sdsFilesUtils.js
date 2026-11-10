@@ -26,12 +26,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         sds.${twcSds.Fields.STATUS} as ${twcSds.Fields.STATUS}, BUILTIN.DF(sds.${twcSds.Fields.STATUS}) as ${twcSds.Fields.STATUS}_text,
                         site.${twcSite.Fields.ADDRESS_COUNTY} as ${twcSite.Fields.ADDRESS_COUNTY}, BUILTIN.DF(site.${twcSite.Fields.ADDRESS_COUNTY}) as ${twcSite.Fields.ADDRESS_COUNTY}_text,
                         TO_CHAR(sds.${twcSds.Fields.COMMENCMENT_DATE}, 'yyyy-MM-dd') as commencement_date,
-                        TO_CHAR(sds.created, 'yyyy-MM-dd') as created_date
+                        TO_CHAR(sds.created, 'yyyy-MM-dd') as created_date,
+                        TO_CHAR(sds.created, 'DD-MM-YYYY') as created_date_dl,
+                        site.${twcSite.Fields.SITE_NAME} as site_name_dl
                 from    ${twcSds.Type} sds
                 join    ${twcSite.Type} site on site.id = sds.${twcSds.Fields.SITE}
                 ${whereClause}
                 order by sds.created desc
             `);
+
+            // @@NOTE: name of the downloaded PDF ('Download' link), see oTWC_sds.js: getPdfFileName
+            core.array.each(sdsFiles, sds => {
+                sds.download_name = twcSds.getPdfFileName(sds.site_name_dl, sds[`${twcSds.Fields.CUSTOMER}_text`], sds.name, sds.created_date_dl);
+                delete sds.created_date_dl;
+                delete sds.site_name_dl;
+            });
 
             return {
                 sdsFiles: sdsFiles,

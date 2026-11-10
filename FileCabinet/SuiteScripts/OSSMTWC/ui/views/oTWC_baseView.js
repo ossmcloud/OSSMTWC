@@ -469,6 +469,40 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
                 })
             }
 
+            // @@NOTE: downloads a file (same payload as previewFile: NS file id or { twcFile: id }) saving it as 'fileName' (default: the NS file name)
+            async downloadFile(file, fileName, e) {
+                return await TWCPageBase.downloadFileStatic(file, fileName, e);
+            }
+            static async downloadFileStatic(file, fileName, e) {
+                var icon = '';
+                if (e) {
+                    icon = jQuery(e.currentTarget).html();
+                    jQuery(e.currentTarget).html(`<span class="twc-wait-cursor">${twcIcons.get('waitWheel', 16)}</span>`);
+                }
+                try {
+                    var res = await https.promise.post({ url: core.url.script('otwc_microsvc_sl', { action: 'view-file' }), body: { file: file } });
+                    if (res.error) {
+                        console.log(res);
+                        dialog.error(res);
+                        return;
+                    }
+
+                    var dataType = res.type.toLowerCase();
+                    if (dataType.indexOf('/') < 0) { dataType = `application/${dataType}`; }
+                    var blobUrl = URL.createObjectURL(base64ToBlob(res.fileContent, dataType));
+
+                    var link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = fileName || res.name;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => { URL.revokeObjectURL(blobUrl); }, 1000);
+                } finally {
+                    if (e) { jQuery(e.currentTarget).html(icon); }
+                }
+            }
+
             async uploadFile(options, callback) {
                 return await TWCPageBase.uploadFileStatic(options, callback);
             }

@@ -3,8 +3,8 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_sds.js', '../../data/oTWC_site.js', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js'],
-    (core, twcPageBase, dialog, twcSds, twcSite, uiTable, twcSiteLocatorPanel) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', './oTWC_pageBase.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_sds.js', '../../data/oTWC_site.js', '../../O/controls/oTWC_ui_table.js', './oTWC_siteLocatorPanel.js', '../../data/oTWC_icons.js'],
+    (core, twcPageBase, dialog, twcSds, twcSite, uiTable, twcSiteLocatorPanel, twcIcons) => {
 
         class TWCSdsFilesTable {
             #page = null;
@@ -12,15 +12,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', './oTWC_pageBase.js', '../../O/o
             constructor(page) {
                 this.#page = page;
 
-                // @@NOTE: very first column: 'View' opens the SDS PDF in a dialog (see TWCSdsFilesPage.initPage)
+                // @@NOTE: very first column: 'View' opens the SDS PDF in a dialog, 'Download' saves it as d.download_name (see TWCSdsFilesPage.initPage)
+                //         the download name is built server side (oTWC_sdsFilesUtils.js: getSdsFiles)
                 var unboundCols = [];
                 unboundCols.push({
                     id: 'view_sds', title: '', unbound: true,
-                    styles: { 'text-align': 'center', width: '60px' },
+                    styles: { 'text-align': 'center', width: '70px' },
                     noSort: true,
                     sortIdx: 0,
                     initValue: (d) => {
-                        return `<a href="#" class="twc-sds-view" data-twc-file="${d.twc_file}">View</a>`;
+                        // @@IMPORTANT: these must be <a> and the click target must be the <a> itself: the table row click handler (oTWC_ui_table.js: '.o-row' click)
+                        //              stops propagation unless e.target is an A or INPUT, so the delegated handlers below would never fire
+                        //              => the svg ignores pointer events (clicks on the icon land on the <a>) and the icon html is trimmed (no underlined white space)
+                        const icon = (name) => { return twcIcons.get(name, 20).trim().replace('<svg ', '<svg style="pointer-events: none; display: block;" '); };
+                        const iconStyle = 'display: inline-block; cursor: pointer; padding: 0 3px; text-decoration: none;';
+                        var fileName = (d.download_name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+                        return `<a href="#" class="twc-sds-view" style="${iconStyle}" title="View" data-sds-id="${d.id}" data-twc-file-name="${fileName}">${icon('eye')}</a>`
+                            + `<a href="#" class="twc-sds-download" style="${iconStyle}" title="Download" data-twc-file="${d.twc_file}" data-twc-file-name="${fileName}">${icon('download')}</a>`;
                     }
                 })
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
@@ -35,7 +43,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', './oTWC_pageBase.js', '../../O/o
 
             colInit(tbl, col) {
                 // @@NOTE: ids / raw list values are only used for links and filters
-                var hiddenCols = ['id', 'record_id', 'site_id', 'srf_id', 'twc_file', twcSds.Fields.CUSTOMER, twcSds.Fields.STATUS, twcSite.Fields.ADDRESS_COUNTY];
+                var hiddenCols = ['id', 'record_id', 'site_id', 'srf_id', 'twc_file', 'download_name', twcSds.Fields.CUSTOMER, twcSds.Fields.STATUS, twcSite.Fields.ADDRESS_COUNTY];
                 if (hiddenCols.indexOf(col.id) >= 0) { return false; }
 
                 if (col.id == 'name') {
@@ -103,13 +111,32 @@ define(['SuiteBundles/Bundle 548734/O/core.js', './oTWC_pageBase.js', '../../O/o
                 this.#sitePanel = twcSiteLocatorPanel.get({ page: this, table: this.#sdsTable, data: this.data.sdsInfo.sites, tableData: this.data.sdsInfo.sdsFiles });
 
                 // @@NOTE: delegated so it keeps working when the table is re-rendered (filters)
-                jQuery('#twc_sites_table').on('click', 'a.twc-sds-view', async e => {
+                jQuery('#twc_sites_table').on('click', '.twc-sds-view', async e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    try {
+                        // @@NOTE: the PDF is streamed by oTWC_print_srf_sds_sl (not a blob url as previewFile does) so the response carries the file name
+                        //         (Content-Disposition) and the PDF viewer's download button saves it as {site}_{customer}_{sds}_{created}.pdf
+                        var sdsId = jQuery(e.currentTarget).data('sds-id');
+                        if (!sdsId) { throw new Error('No PDF found for this SDS'); }
+                        var pdfUrl = core.url.script('otwc_print_srf_sds_sl', { sdsId: sdsId, fromFile: 'T' });
+                        dialog.message({
+                            title: jQuery(e.currentTarget).data('twc-file-name') || 'SDS',
+                            message: `<object style="width: 100%;height: 100%;" type="application/pdf" data="${pdfUrl}"><p>The object cannot be displayed.</p></object>`,
+                            size: { width: '1000px', height: '95vh' }
+                        });
+                    } catch (error) {
+                        dialog.error(error);
+                    }
+                });
+
+                jQuery('#twc_sites_table').on('click', '.twc-sds-download', async e => {
                     e.preventDefault();
                     e.stopPropagation();
                     try {
                         var twcFile = jQuery(e.currentTarget).data('twc-file');
                         if (!twcFile) { throw new Error('No PDF found for this SDS'); }
-                        await this.previewFile({ twcFile: twcFile }, e);
+                        await this.downloadFile({ twcFile: twcFile }, jQuery(e.currentTarget).data('twc-file-name'), e);
                     } catch (error) {
                         dialog.error(error);
                     }
