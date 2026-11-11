@@ -1015,13 +1015,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (!cancelSrfDraftCleanUp(srfId, unitsLow)) { return { keepGoing: true }; }
 
             } else {
-                // @@NOTE: only pending EAs, already cancelled / completed ones are not touched (this makes the function re-runnable)
+                // @@NOTE: only open EAs (Pending, and removals of equipment not on site: Never Installed / Already Removed, see oTWC_siteRequestUtils.js: saveEqAction)
+                //         already cancelled / completed ones are not touched (this makes the function re-runnable)
                 var eqActions = coreSql.run(`
                     select  ea.id, ea.${twcEqAct.Fields.EA_EQUIPMENT} as eq_id, ea.${twcEqAct.Fields.EA_TYPE} as ea_type,
                             (select count(*) from customrecord_twc_saf_action sa where sa.custrecord_twc_saf_a_ea = ea.id and sa.custrecord_twc_saf_a_status != ${twcUtils.SafActionStatus.Detached}) as saf_actions
                     from    ${twcEqAct.Type} ea
                     where   ea.${twcEqAct.Fields.EA_SRF} = ${srfId}
-                    and     ea.${twcEqAct.Fields.EA_STATUS} = ${twcUtils.EqActionStatus.Pending}
+                    and     ea.${twcEqAct.Fields.EA_STATUS} in (${twcUtils.EqActionStatus.Pending}, ${twcUtils.EqActionStatus.NeverInstalled}, ${twcUtils.EqActionStatus.AlreadyRemoved})
                 `);
                 for (var x = 0; x < eqActions.length; x++) {
                     if (unitsLow()) { return { keepGoing: true }; }

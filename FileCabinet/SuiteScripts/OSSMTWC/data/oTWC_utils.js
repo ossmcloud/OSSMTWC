@@ -1329,6 +1329,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 if (action['custrecord_twc_eq_action_saf']) {
                     action.select = `<span data-id="${action.ea_id}" data-srf-id="${action.srf_item}" data-srf-parent-id="${action.parent_srf_item || ''}" data-saf="${action['custrecord_twc_eq_action_saf']}" class="o-table-action twc-clickable" data-action="detach">detach from<br />${action['custrecord_twc_eq_action_saf_name']}</span>`;
+                } else if (action['custrecord_twc_saf_a_status'] != EQ_ACTION_STATUS.Pending) {
+                    // @@NOTE: only Pending EAs can be picked by a SAF (e.g. 'Never Installed' / 'Already Removed': removing equipment that is not on site, 'Cancelled', 'Complete')
+                    action.select = '';
                 } else {
                     action.select = `<input data-id="${action.ea_id}" data-srf-id="${action.srf_item}" data-srf-parent-id="${action.parent_srf_item || ''}" type="checkbox" />`;
                 }

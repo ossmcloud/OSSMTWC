@@ -91,6 +91,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 installStatusFilter = `and    eq.custrecordtwc_eq_install_status = ${twcUtils.EqInstallStatus.Installed}`;
             }
 
+            // @@IMPORTANT: equipment that can be picked for Remove / Swap (client rules):
+            //                  - licence status must be Licenced (swap: install status Installed as well, see above)
+            //                  - no equipment action (any SRF) still open on it: Pending, Already Removed or Never Installed
+            //              the same equipment picked twice on the SRF being edited is excluded client side (ui/js/oTWC_spaceRequest.js: pickEquipment)
+            //              and everything is checked again on save (validateSrfEquipmentPicks)
+            //              the parent TME picker (ATME install) uses this function with reqType Install: no filter
+            var removeFilter = '';
+            if (options.reqType == twcSrfItem.RequestType.REMOVE || options.reqType == twcSrfItem.RequestType.SWAP) {
+                removeFilter = `
+                    and    eq.${twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS} = ${twcUtils.EqLicenseStatus.Licenced}
+                    and    not exists (${getOpenEqActionSql('eq.id')})
+                `;
+            }
+
             // @@NOTE: TME / ATME / FEEDER are filtered by the structure selected on the SRF (the client does not pass it for GIE)
             var structureFilter = '';
             if (options.structure) {
@@ -111,11 +125,62 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     and    infra.custrecord_twc_infra_site = ${options.site}
                     ${installStatusFilter}
                     ${structureFilter}
+                    ${removeFilter}
                     order by eq.name
                 `
-            
-            
+
+
             return coreSQL.run(sql);
+        }
+
+        // @@NOTE: equipment actions still 'open' on an equipment (it cannot be picked again for remove / swap)
+        //         eqIdSql: sql expression of the equipment id (e.g. 'eq.id' or a number)
+        const OPEN_EA_STATUSES = () => { return [twcUtils.EqActionStatus.Pending, twcUtils.EqActionStatus.AlreadyRemoved, twcUtils.EqActionStatus.NeverInstalled]; };
+        function getOpenEqActionSql(eqIdSql) {
+            return `
+                select  1
+                from    ${twcEqAct.Type} oea
+                where   oea.${twcEqAct.Fields.EA_EQUIPMENT} = ${eqIdSql}
+                and     oea.${twcEqAct.Fields.EA_STATUS} in (${OPEN_EA_STATUSES().join(',')})
+            `;
+        }
+
+        // @@NOTE: server side check of the equipment picked for Remove / Swap on NEW SRF items (same rules as getEquipment), runs before anything is saved
+        //         only the equipment picked directly is checked, the child equipment (ATME of a removed / swapped TME) follows its parent
+        function validateSrfEquipmentPicks(payload) {
+            var picks = [];
+            core.array.each(Object.values(twcSrfItem.StepType), stepType => {
+                core.array.each(payload[`items_${stepType}`] || [], item => {
+                    if (item.id) { return; }
+                    var reqType = item[twcSrfItem.Fields.REQUEST_TYPE];
+                    if (reqType != twcSrfItem.RequestType.REMOVE && reqType != twcSrfItem.RequestType.SWAP) { return; }
+                    var eqId = parseInt((reqType == twcSrfItem.RequestType.SWAP) ? item.swappedItem?.[twcSrfItem.Fields.EQUIPMENT_ID] : item[twcSrfItem.Fields.EQUIPMENT_ID]);
+                    if (eqId) { picks.push({ eqId: eqId, reqType: reqType }); }
+                });
+            });
+            if (picks.length == 0) { return; }
+
+            var eqIds = picks.map(p => { return p.eqId; });
+            var dup = eqIds.find((id, idx) => { return eqIds.indexOf(id) != idx; });
+
+            var eqInfo = coreSQL.run(`
+                select  eq.id, eq.name,
+                        eq.${twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS} as licence_status,
+                        eq.${twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS} as install_status,
+                        case when exists (${getOpenEqActionSql('eq.id')}) then 'T' else 'F' end as has_open_ea
+                from    ${twcEquipment.Type} eq
+                where   eq.id in (${eqIds.join(',')})
+            `);
+            var errors = [];
+            if (dup) { errors.push(`equipment <b>${eqInfo.find(e => { return e.id == dup; })?.name || dup}</b> is selected more than once`); }
+            core.array.each(picks, p => {
+                var eq = eqInfo.find(e => { return e.id == p.eqId; });
+                if (!eq) { errors.push(`equipment ${p.eqId} not found`); return; }
+                if (eq.licence_status != twcUtils.EqLicenseStatus.Licenced) { errors.push(`equipment <b>${eq.name}</b> is not Licenced`); }
+                if (p.reqType == twcSrfItem.RequestType.SWAP && eq.install_status != twcUtils.EqInstallStatus.Installed) { errors.push(`equipment <b>${eq.name}</b> is not Installed and cannot be swapped`); }
+                if (eq.has_open_ea == 'T') { errors.push(`equipment <b>${eq.name}</b> already has an open equipment action`); }
+            });
+            if (errors.length > 0) { throw new Error(`The equipment selected for removal / swap is not valid:<br />${errors.join('<br />')}`); }
         }
         function getEquipmentChildren(options) {
             var fields = twcEquipmentUI.getInventoryTableFields();
@@ -170,6 +235,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@NOTE: an SRF cannot be cancelled by saving it with status 'SRF Cancelled', cancellation has its own action (permission check + clean-up)
                 //         post 'cancel-srf' => oTWC_srfWorkflowEngine.js: cancelSrf
                 if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.SRFCancelled) { throw new Error('Use the "Cancel SRF" button to cancel an SRF'); }
+                // @@NOTE: 1st call only (nothing saved yet): equipment picked for remove / swap must still be valid
+                if (!payload.keepSaving) { validateSrfEquipmentPicks(payload); }
                 var submitInfo = {};
                 submitInfo[twcSrf.Type] = { id: payload.id, fields: [], values: [] };
                 for (var k in payload) {
@@ -217,7 +284,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     return payload;
                 }
                 if (payload.keepSaving.stage == 2) {
-                    deleteSitesSrfItem(payload.items_deleted);
+                    deleteSitesSrfItem(payload.items_deleted, payload);
                     deleteSitesSrfFile(payload);
                     payload.keepSaving.stage = 3;
                     payload.keepSaving.stageName = 'saving items (TME)...';
@@ -299,7 +366,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     saveSiteSrfItems(payload, item.relatedItems, item);
                 }
                 if (item.relatedItemsDelete) {
-                    deleteSitesSrfItem(item.relatedItemsDelete);
+                    deleteSitesSrfItem(item.relatedItemsDelete, payload);
                 }
             })
             core.logDebug('SAVE-SRF-ITEMS-END', `Stage: ${payload.keepSaving?.stage || 'NONE'} - Units End: ${core.env.units()}`);
@@ -352,12 +419,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             saveSiteSrf_validateUnits();
         }
         function saveEqAction(item, payload, equipmentId, requestType) {
+            // @@NOTE: removing equipment that is not on site: the EA is not Pending so it can never be picked by a SAF
+            //              install status Not Installed => EA 'Never Installed', Removed => EA 'Already Removed'
+            //         (a swap requires the equipment to be Installed, see getEquipment)
+            var eaStatus = twcUtils.EqActionStatus.Pending;
+            if (requestType == twcUtils.EqActionType.Unlicence && equipmentId) {
+                var installStatus = coreSQL.first(`select ${twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS} as s from ${twcEquipment.Type} where id = ${parseInt(equipmentId)}`)?.s;
+                if (installStatus == twcUtils.EqInstallStatus.NotInstalled) {
+                    eaStatus = twcUtils.EqActionStatus.NeverInstalled;
+                } else if (installStatus == twcUtils.EqInstallStatus.Removed) {
+                    eaStatus = twcUtils.EqActionStatus.AlreadyRemoved;
+                }
+            }
+
             var eqAction = twcEqAct.get();
             eqAction.set(twcEqAct.Fields.EA_SRF, payload.id)
             eqAction.set(twcEqAct.Fields.EA_SRF_ITEM, item.id)
             eqAction.set(twcEqAct.Fields.EA_EQUIPMENT, equipmentId)
             eqAction.set(twcEqAct.Fields.EA_TYPE, requestType);
-            eqAction.set(twcEqAct.Fields.EA_STATUS, twcUtils.EqActionStatus.Pending);
+            eqAction.set(twcEqAct.Fields.EA_STATUS, eaStatus);
             eqAction.save();
         }
 
@@ -418,20 +498,52 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
 
-        function deleteSitesSrfItem(items) {
+        function deleteSitesSrfItem(items, payload) {
             if (!items) { return; }
+
+            // @@NOTE: the SRF status decides what happens to a removed equipment's EA (see below), looked up once per save and kept on the payload
+            if (payload && payload.id && payload.ss_srfStatus === undefined) {
+                payload.ss_srfStatus = recu.lookUp(twcSrf.Type, payload.id, twcSrf.Fields.SRF_STATUS)?.value || null;
+            }
+            var srfIsDraft = !payload?.ss_srfStatus || payload.ss_srfStatus == twcSrf.Status.Draft;
+
             core.array.each(items, item => {
                 try {
-                    if (item.relatedItems) { deleteSitesSrfItem(item.relatedItems); }
+                    if (item.relatedItems) { deleteSitesSrfItem(item.relatedItems, payload); }
 
                     if (item.ss_deleted) { return; }
 
                     // @@NOTE: Deleting Eq. Action record first to avoid dependency issue on SRF Item record.
                     var srfItemId = item.id;
                     if (!srfItemId) { return; }
-                    var eqActions = coreSQL.run(`SELECT id, ${twcEqAct.Fields.EA_EQUIPMENT} as eq_id, ${twcEqAct.Fields.EA_TYPE} as type FROM ${twcEqAct.Type} WHERE ${twcEqAct.Fields.EA_SRF_ITEM} = ${srfItemId} `);
+                    var eqActions = coreSQL.run(`
+                        SELECT  ea.id, ea.${twcEqAct.Fields.EA_EQUIPMENT} as eq_id, ea.${twcEqAct.Fields.EA_TYPE} as type,
+                                eq.${twcEquipment.Fields.ASSOCIATED_EQUIP_ACTIONS} as eq_assoc_ea
+                        FROM    ${twcEqAct.Type} ea
+                        LEFT JOIN ${twcEquipment.Type} eq on eq.id = ea.${twcEqAct.Fields.EA_EQUIPMENT}
+                        WHERE   ea.${twcEqAct.Fields.EA_SRF_ITEM} = ${srfItemId}
+                    `);
                     core.array.each(eqActions, action => {
                         try {
+                            if (action.type == twcUtils.EqActionType.Unlicence || action.type == twcUtils.EqActionType.SwapUnlicence) {
+                                // @@IMPORTANT: removal (or old side of a swap) taken off the SRF (client rules):
+                                //                  the existing equipment goes back to Licenced
+                                //                  Draft SRF       => the EA is deleted (nothing happened yet, same as the Draft cancel in oTWC_srfWorkflowEngine.js: cancelSrf)
+                                //                  submitted SRF   => the EA is Cancelled and unlinked from the SRF item (kept as history)
+                                //              the equipment ASSOCIATED_EQUIP_ACTIONS is only cleared if it points to THIS EA (it usually points to the install EA)
+                                if (action.eq_id) {
+                                    var eqFields = [twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS]; var eqValues = [twcUtils.EqLicenseStatus.Licenced];
+                                    if (action.eq_assoc_ea == action.id) { eqFields.push(twcEquipment.Fields.ASSOCIATED_EQUIP_ACTIONS); eqValues.push(null); }
+                                    recu.submit(twcEquipment.Type, action.eq_id, eqFields, eqValues);
+                                }
+                                if (srfIsDraft) {
+                                    recu.del(twcEqAct.Type, action.id);
+                                } else {
+                                    recu.submit(twcEqAct.Type, action.id, [twcEqAct.Fields.EA_STATUS, twcEqAct.Fields.EA_SRF_ITEM], [twcUtils.EqActionStatus.Cancelled, null]);
+                                }
+                                return;
+                            }
+
                             if (action.eq_id) {
                                 // @@NOTE: if we have an existing equipment to delete the action we need to clear ASSOCIATED_EQUIP_ACTIONS on the eq. record
                                 recu.submit(twcEquipment.Type, action.eq_id, twcEquipment.Fields.ASSOCIATED_EQUIP_ACTIONS, null);

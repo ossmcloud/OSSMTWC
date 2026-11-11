@@ -151,6 +151,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         class TWCSpaceRequestItemForm {
             #page = null;
             #srfItem = null;
+            #descReadOnlyInit = null;
             #form = null;
             #mode = null;
             #isEdit = false;
@@ -433,6 +434,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#form.getControl('srf-equipment').mandatory = !(!reqType || reqType == twcSrfItem.RequestType.INSTALL);
                     this.#form.getControl('srf-pick-equipment').hide = (!reqType || reqType == twcSrfItem.RequestType.INSTALL);
                     this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).hide = (!reqType || reqType == twcSrfItem.RequestType.REMOVE);
+                    // @@NOTE: a removal has nothing to describe: the description is the picked equipment's (read only)
+                    //         any other request type restores the control's original state (e.g. the form opened read only)
+                    var descCtrl = this.#form.getControl(twcSrfItem.Fields.DESCRIPTION);
+                    if (descCtrl) {
+                        if (this.#descReadOnlyInit === null) { this.#descReadOnlyInit = !!descCtrl.readOnly; }
+                        descCtrl.readOnly = (reqType == twcSrfItem.RequestType.REMOVE) ? true : this.#descReadOnlyInit;
+                    }
                     this.#addAndCopyButton?.css('display', reqType == twcSrfItem.RequestType.INSTALL ? 'inline-block' : 'none');
 
                     if (this.#srfItem[twcSrfItem.Fields.STEP_TYPE] == twcEqUI.EqClass.ATME) {
@@ -684,6 +692,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
+            // @@NOTE: ids of the equipment already referenced by the SRF items (all item tables, related / child items included)
+            //         the item being edited is skipped so its own equipment can be picked again
+            getSrfUsedEquipment() {
+                var used = [];
+                const add = (id) => { id = parseInt(id); if (id && used.indexOf(id) < 0) { used.push(id); } };
+                const scan = (rows) => {
+                    core.array.each(rows || [], row => {
+                        if (row === this.#srfItem || (row.id && row.id == this.#srfItem.id)) { return; }
+                        add(row[twcSrfItem.Fields.EQUIPMENT_ID]);
+                        add(row.swappedItem?.[twcSrfItem.Fields.EQUIPMENT_ID]);
+                        scan(row.relatedItems);
+                    });
+                }
+                for (var k in twcEquipment.StepType) {
+                    scan(this.#page.ui.getControl(`${twcSrfItem.Type}_${twcEquipment.StepType[k]}`)?.data);
+                }
+                return used;
+            }
+
             pickEquipment(eqClass, callback) {
                 try {
                     if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER]) {
@@ -694,14 +721,21 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER]) { throw new Error('You need to specify a customer'); }
 
+                    var reqType = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
                     var res = this.#page.postSync({ action: 'get-equipment' }, {
                         site: this.data.siteInfo.site.id,
                         customer: this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER],
                         eqClass: eqClass,
-                        reqType: this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value,
+                        reqType: reqType,
                         // @@NOTE: TME / ATME / FEEDER can only be picked from the structure selected on the SRF
                         structure: (eqClass == twcEqUI.EqClass.GIE) ? null : this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE]
                     })
+
+                    // @@NOTE: remove / swap: equipment already on this SRF (saved or not) cannot be picked again (the server filters licence status / open EAs, see getEquipment)
+                    if (reqType == twcSrfItem.RequestType.REMOVE || reqType == twcSrfItem.RequestType.SWAP) {
+                        var usedEq = this.getSrfUsedEquipment();
+                        res.data = res.data.filter(eq => { return usedEq.indexOf(parseInt(eq.id)) < 0; });
+                    }
 
 
                     var fields = twcEqUI.getInventoryTableFields()
