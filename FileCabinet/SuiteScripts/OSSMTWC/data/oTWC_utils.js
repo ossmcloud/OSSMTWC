@@ -450,7 +450,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         const SDS_STATUS = {
             Draft: 1,
             Current: 2,
-            Superseded: 3
+            Superseded: 3,
+            // @@HARDCODED @@GO-LIVE :: 'Cancelled' value on customrecord_twc_sds_status (SRF cancelled at a licence stage, oTWC_srfWorkflowEngine.js: cancelSrf)
+            Cancelled: 4
         }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids

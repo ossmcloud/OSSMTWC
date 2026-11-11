@@ -1144,12 +1144,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         });
 
                         //this.ui.getControl('cancel-srf-button')?.on('click', e => {
+                        // @@NOTE: SRF cancellation goes through its own action (permission check + clean-up, oTWC_srfWorkflowEngine.js: cancelSrf), NOT through save
+                        //         a new SRF never saved has nothing to clean up: just leave the page
                         this.page.find('[id="cancel-srf-button"]').on('click', e => {
-                            dialog.confirmAsync('Are you sure you wish to cancel this SRF?').then(() => {
-                                this.data.siteRequestInfo[twcSrf.Fields.SRF_STATUS] = twcUtils.SrfStatus.SRFCancelled;
-                                this.data.siteRequestInfo.dirty = true;
-                                this.dirty = true;
-                                this.onSave(e);
+                            dialog.confirmAsync('Are you sure you wish to cancel this SRF?').then(async () => {
+                                if (!this.data.siteRequestInfo.id) {
+                                    this.dirty = false;
+                                    location.href = core.url.script('otwc_spacerequest_sl');
+                                    return;
+                                }
+                                this.wait();
+                                try {
+                                    // @@NOTE: the server returns keepGoing when it is running low on units, every call carries on from where the previous one stopped
+                                    var res = null; var calls = 0;
+                                    do {
+                                        if (++calls > 50) { throw new Error('SRF cancellation did not complete, please try again'); }
+                                        res = await this.post({ action: 'cancel-srf' }, { srf: this.data.siteRequestInfo.id });
+                                    } while (res?.keepGoing);
+                                    this.dirty = false;
+                                    location.reload();
+                                } catch (err) {
+                                    this.waitClose();
+                                    dialog.error(err);
+                                }
                             });
                         });
 

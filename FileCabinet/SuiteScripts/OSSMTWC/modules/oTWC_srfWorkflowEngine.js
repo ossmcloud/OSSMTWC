@@ -961,6 +961,145 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
         }
 
+        // @@IMPORTANT: SRF cancellation (client rules, Issue: SRF Cancellation)
+        //              who can cancel at which status, used to show the 'Cancel SRF' button (oTWC_spaceRequest_sl.js) AND enforced by cancelSrf
+        //                  Draft                                           : user and TL
+        //                  Submitted, Under Review, Resubmitted            : TL only
+        //                  Feedback Issued                                 : user and TL
+        //                  SRF Approved                                    : TL only
+        //                  Licence Requested, Licence Issued, Licence Signed : TL power users only (employee flag custentity_twc_prj_power_user)
+        //                  any other status (Licence Executed, Completed, Cancelled): nobody
+        //              the customer access check (twcConfig.isUserAllowedCustomers) is done by the caller (the SRF page already enforces it on load)
+        const SRF_CANCEL_STAGE = { DRAFT: 'draft', REVIEW: 'review', APPROVED: 'approved', LICENCE: 'licence' };
+        function getSrfCancelStage(srfStatus) {
+            var s = parseInt(srfStatus);
+            if (s == twcUtils.SrfStatus.Draft) { return SRF_CANCEL_STAGE.DRAFT; }
+            if ([twcUtils.SrfStatus.Submitted, twcUtils.SrfStatus.UnderReview, twcUtils.SrfStatus.FeedbackIssued, twcUtils.SrfStatus.Resubmitted].indexOf(s) >= 0) { return SRF_CANCEL_STAGE.REVIEW; }
+            if (s == twcUtils.SrfStatus.SRFApproved) { return SRF_CANCEL_STAGE.APPROVED; }
+            if ([twcUtils.SrfStatus.LicenceRequested, twcUtils.SrfStatus.LicenceIssued, twcUtils.SrfStatus.LicenceSigned].indexOf(s) >= 0) { return SRF_CANCEL_STAGE.LICENCE; }
+            return null;
+        }
+        function canCancelSrf(userInfo, srfStatus) {
+            var s = parseInt(srfStatus);
+            var stage = getSrfCancelStage(s);
+            if (!stage) { return false; }
+            if (stage == SRF_CANCEL_STAGE.DRAFT || s == twcUtils.SrfStatus.FeedbackIssued) { return true; }
+            if (!userInfo.isEmployee) { return false; }
+            if (stage == SRF_CANCEL_STAGE.LICENCE) { return !!userInfo.powerUser; }
+            return true;
+        }
+
+        // @@NOTE: cancels an SRF and tidies up (see canCancelSrf for who can do it)
+        //          Draft    : SRF items and equipment actions (EA) are deleted
+        //          any other: pending EAs are cancelled and their equipment licence status reset BY EA TYPE (whatever the current status):
+        //                          install (Licence / Swap Licence)   => equipment Cancelled
+        //                          remove  (Unlicence / Swap Unlicence) => equipment Licenced
+        //                     (a swap is 2 EAs, so both sides are handled)
+        //                     SRF Approved and later: SRF Approved date cleared
+        //                     Licence Requested / Issued / Signed: Works Permitted date cleared, SDS status Cancelled,
+        //                          EAs with a SAF action are left alone (EA and equipment): the SAF will complete them
+        //          the SRF status is set to Cancelled LAST: if units run low we return { keepGoing: true } and the client calls again (all steps are re-runnable)
+        const CANCEL_MIN_UNITS = 100;
+        function cancelSrf(userInfo, options) {
+            if (!options?.srf) { throw new Error('invalid parameters passed'); }
+            var srfId = parseInt(options.srf);
+
+            var srf = coreSql.first(`select id, ${twcSrf.Fields.SRF_STATUS} as status, ${twcSrf.Fields.CUSTOMER} as customer from ${twcSrf.Type} where id = ${srfId}`);
+            if (!srf) { throw new Error(`No SRF found using id ${srfId}`); }
+            if (!canCancelSrf(userInfo, srf.status)) { throw new Error('You are not allowed to cancel this SRF at its current status'); }
+
+            var stage = getSrfCancelStage(srf.status);
+            const unitsLow = () => { return core.env.units() < CANCEL_MIN_UNITS; };
+
+            if (stage == SRF_CANCEL_STAGE.DRAFT) {
+                if (!cancelSrfDraftCleanUp(srfId, unitsLow)) { return { keepGoing: true }; }
+
+            } else {
+                // @@NOTE: only pending EAs, already cancelled / completed ones are not touched (this makes the function re-runnable)
+                var eqActions = coreSql.run(`
+                    select  ea.id, ea.${twcEqAct.Fields.EA_EQUIPMENT} as eq_id, ea.${twcEqAct.Fields.EA_TYPE} as ea_type,
+                            (select count(*) from customrecord_twc_saf_action sa where sa.custrecord_twc_saf_a_ea = ea.id and sa.custrecord_twc_saf_a_status != ${twcUtils.SafActionStatus.Detached}) as saf_actions
+                    from    ${twcEqAct.Type} ea
+                    where   ea.${twcEqAct.Fields.EA_SRF} = ${srfId}
+                    and     ea.${twcEqAct.Fields.EA_STATUS} = ${twcUtils.EqActionStatus.Pending}
+                `);
+                for (var x = 0; x < eqActions.length; x++) {
+                    if (unitsLow()) { return { keepGoing: true }; }
+                    var ea = eqActions[x];
+                    // @@NOTE: works permitted and a SAF raised: let the SAF / SAF action go through, it will tidy up the EA
+                    if (stage == SRF_CANCEL_STAGE.LICENCE && parseInt(ea.saf_actions) > 0) { continue; }
+
+                    if (ea.eq_id) {
+                        var eqStatus = null;
+                        if (ea.ea_type == twcUtils.EqActionType.Licence || ea.ea_type == twcUtils.EqActionType.SwapLicence) {
+                            eqStatus = twcUtils.EqLicenseStatus.Cancelled;
+                        } else if (ea.ea_type == twcUtils.EqActionType.Unlicence || ea.ea_type == twcUtils.EqActionType.SwapUnlicence) {
+                            eqStatus = twcUtils.EqLicenseStatus.Licenced;
+                        }
+                        if (eqStatus) { recu.submit(twcEquipment.Type, ea.eq_id, twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, eqStatus); }
+                    }
+                    recu.submit(twcEqAct.Type, ea.id, twcEqAct.Fields.EA_STATUS, twcUtils.EqActionStatus.Cancelled);
+                }
+
+                if (unitsLow()) { return { keepGoing: true }; }
+                if (stage == SRF_CANCEL_STAGE.LICENCE && twcUtils.SdsStatus.Cancelled) {
+                    coreSql.each(`select id from ${twcSds.Type} where ${twcSds.Fields.SRF} = ${srfId} and NVL(${twcSds.Fields.STATUS}, 0) != ${twcUtils.SdsStatus.Cancelled}`, sds => {
+                        recu.submit(twcSds.Type, sds.id, twcSds.Fields.STATUS, twcUtils.SdsStatus.Cancelled);
+                    });
+                }
+
+                if (unitsLow()) { return { keepGoing: true }; }
+                cancelWorkflow({ srf: srfId });
+            }
+
+            if (unitsLow()) { return { keepGoing: true }; }
+            var fields = [twcSrf.Fields.SRF_STATUS]; var values = [twcUtils.SrfStatus.SRFCancelled];
+            if (stage == SRF_CANCEL_STAGE.APPROVED || stage == SRF_CANCEL_STAGE.LICENCE) { fields.push(twcSrf.Fields.SRF_APPROVAL_DATE); values.push(null); }
+            if (stage == SRF_CANCEL_STAGE.LICENCE) { fields.push(twcSrf.Fields.WORKS_PERMITTED_DATE); values.push(null); }
+            recu.submit(twcSrf.Type, srfId, fields, values);
+
+            return { cancelled: true };
+        }
+
+        // @@NOTE: Draft SRF cancellation: delete EAs and SRF items, references between records are cleared first or NetSuite refuses the delete
+        //         returns false if it ran out of units (re-runnable: it only works on the records still there)
+        //         a draft SRF never ran initEquipment: install EAs have no equipment, remove EAs point to existing (licenced) equipment that must NOT change
+        function cancelSrfDraftCleanUp(srfId, unitsLow) {
+            var eqActions = coreSql.run(`
+                select  ea.id, ea.${twcEqAct.Fields.EA_EQUIPMENT} as eq_id, ea.${twcEqAct.Fields.RELATED_EA} as related_ea,
+                        eq.${twcEquipment.Fields.ASSOCIATED_EQUIP_ACTIONS} as eq_assoc_ea
+                from    ${twcEqAct.Type} ea
+                left join ${twcEquipment.Type} eq on eq.id = ea.${twcEqAct.Fields.EA_EQUIPMENT}
+                where   ea.${twcEqAct.Fields.EA_SRF} = ${srfId}
+            `);
+            // @@NOTE: 1st pass clear the references to the EAs (EA => EA, equipment => EA, only if the equipment points to this EA)
+            for (var x = 0; x < eqActions.length; x++) {
+                if (unitsLow()) { return false; }
+                var ea = eqActions[x];
+                if (ea.related_ea) { recu.submit(twcEqAct.Type, ea.id, twcEqAct.Fields.RELATED_EA, null); }
+                if (ea.eq_id && ea.eq_assoc_ea == ea.id) { recu.submit(twcEquipment.Type, ea.eq_id, twcEquipment.Fields.ASSOCIATED_EQUIP_ACTIONS, null); }
+            }
+            if (unitsLow()) { return false; }
+            recu.submit(twcSrf.Type, srfId, twcSrf.Fields.RELATED_EQUIPMENT_ACTIONS, null);
+            for (var x = 0; x < eqActions.length; x++) {
+                if (unitsLow()) { return false; }
+                recu.del(twcEqAct.Type, eqActions[x].id);
+            }
+
+            // @@NOTE: child items (ATME linked to a TME of this SRF) first, then the rest
+            var srfItems = coreSql.run(`
+                select  id, ${twcSrfItem.Fields.TMI_ID_SRF} as parent_item
+                from    ${twcSrfItem.Type}
+                where   ${twcSrfItem.Fields.SRF} = ${srfId}
+                order by case when ${twcSrfItem.Fields.TMI_ID_SRF} is null then 1 else 0 end, id
+            `);
+            for (var x = 0; x < srfItems.length; x++) {
+                if (unitsLow()) { return false; }
+                recu.del(twcSrfItem.Type, srfItems[x].id);
+            }
+            return true;
+        }
+
         function deleteWorkflow(options) {
             if (!options) { throw new Error('no parameters passed'); }
 
@@ -1039,6 +1178,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             updateWorkflow: updateWorkflow,
             deleteWorkflow: deleteWorkflow,
             cancelWorkflow: cancelWorkflow,
+            canCancelSrf: canCancelSrf,
+            cancelSrf: cancelSrf,
             isWaitingForSignature: isWaitingForSignature,
             postSignature: postSignature,
             acceptSrf: acceptSrf,

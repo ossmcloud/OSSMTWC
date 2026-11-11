@@ -167,7 +167,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
         function saveSiteSrf(userInfo, payload) {
             try {
-                var srfCancelled = false;
+                // @@NOTE: an SRF cannot be cancelled by saving it with status 'SRF Cancelled', cancellation has its own action (permission check + clean-up)
+                //         post 'cancel-srf' => oTWC_srfWorkflowEngine.js: cancelSrf
+                if (payload[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.SRFCancelled) { throw new Error('Use the "Cancel SRF" button to cancel an SRF'); }
                 var submitInfo = {};
                 submitInfo[twcSrf.Type] = { id: payload.id, fields: [], values: [] };
                 for (var k in payload) {
@@ -181,12 +183,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                         submitInfo[twcSrf.Type].fields.push(k);
                         submitInfo[twcSrf.Type].values.push(fValue)
-
-                        if (k == twcSrf.Fields.SRF_STATUS) {
-                            if (payload[k] == twcSrf.Status.SRFCancelled) {
-                                srfCancelled = true;
-                            }
-                        }
                     }
                 }
 
@@ -262,9 +258,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     core.logDebug('TEMP-STAGE-7', core.env.units())
                     saveSiteSrf_validateUnits(930);
 
-                    if (srfCancelled) {
-                        twcSrfWorkflowEngine.cancelWorkflow({ srf: payload.id });
-                    } else if (payload.submitOnSave) {
+                    if (payload.submitOnSave) {
                         submitSiteSrf(userInfo, { srf: payload.id, submitComment: payload.submitComment });
                     } else {
                         var s = recu.lookUp(twcSrf.Type, payload.id, twcSrf.Fields.SRF_STATUS).value;

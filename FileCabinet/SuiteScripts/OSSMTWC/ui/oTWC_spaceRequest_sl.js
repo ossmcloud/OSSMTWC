@@ -134,9 +134,12 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     }
 
                     var submitSrfButton = ''; var cancelSrfButton = '';
-                    if (canSubmit) {
+                    // @@NOTE: who can cancel at which status: oTWC_srfWorkflowEngine.js: canCancelSrf (also enforced on post 'cancel-srf')
+                    if (context.request.parameters.recId && twcSrfWorkflowEngine.canCancelSrf(pageData.userInfo, pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS])) {
                         cancelSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SRF', id: 'cancel-srf-button' });
-                        if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued) {
+                    }
+                    if (canSubmit) {
+                        if(pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued) {
                             submitSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Edit & Re-Submit', id: 'edit-submit-button' });    
                         } else {
                             submitSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Submit', id: 'submit-button' });    
@@ -146,7 +149,6 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     var acceptApprovalButton = '';
                     if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.SRFApproved) {
                         acceptApprovalButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Accept and Request License', id: 'accept-srf-approval' });
-                        cancelSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SRF', id: 'cancel-srf-button' });
 
                         if (pageData.userInfo.isEmployee && !pageData.userInfo.powerUser) {
                             acceptApprovalButton = '';
@@ -219,6 +221,13 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
             } else if (context.request.parameters.action == 'accept-srf-approval') {
                 var payload = JSON.parse(context.request.body);
                 return twcSrfWorkflowEngine.acceptSrf(userInfo, payload);
+
+            } else if (context.request.parameters.action == 'cancel-srf') {
+                // @@NOTE: SRF cancellation + clean-up, may return { keepGoing: true } (low units): the client posts again (ui/js/oTWC_spaceRequest.js: cancelSrf)
+                var payload = JSON.parse(context.request.body);
+                var srfCustomer = coreSql.first(`select ${twcSrf.Fields.CUSTOMER} as customer from ${twcSrf.Type} where id = ${parseInt(payload.srf) || 0}`)?.customer;
+                if (!twcConfig.isUserAllowedCustomers(userInfo, srfCustomer)) { throw new Error('You do not have access to this SRF record'); }
+                return twcSrfWorkflowEngine.cancelSrf(userInfo, payload);
 
             } else if (context.request.parameters.action == 'get-equipment') {
                 return { data: twcSiteRequestUtils.getEquipment(JSON.parse(context.request.body)) }
