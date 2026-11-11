@@ -724,11 +724,49 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 var worksEndDate = sa.works_end_date ? twcUtils.fromJsToNs(sa.works_end_date) : new Date();
                 if (sa.ea_type == twcUtils.EqActionType.Licence || sa.ea_type == twcUtils.EqActionType.SwapLicence) {
                     recu.submit(twcEquipment.Type, sa.equip_id, [twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcEquipment.Fields.INSTALLED_DATE], [twcUtils.EqInstallStatus.Installed, worksEndDate])
+                    if (sa.ea_type == twcUtils.EqActionType.SwapLicence) { moveAtmeToSwappedTme(sa.ea_action_id, sa.equip_id); }
                 } else if (sa.ea_type == twcUtils.EqActionType.Unlicence || sa.ea_type == twcUtils.EqActionType.SwapUnlicence) {
                     recu.submit(twcEquipment.Type, sa.equip_id, [twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcEquipment.Fields.REMOVED_DATE], [twcUtils.EqInstallStatus.Removed, worksEndDate])
                 }
             })
             return !actionSkipped;
+        }
+
+        // @@IMPORTANT: TME swap: the ATMEs that are NOT swapped with it must move to the new TME (otherwise they stay on the removed panel)
+        //              runs when the new TME is installed (its Swap Licence EA completed by the SAF, see validateAndCompleteActions)
+        //                  old TME = equipment of the Swap Unlicence EA of the same SRF item
+        //                  moved   = ATMEs whose parent is the old TME, unless already removed or with an open removal / swap of their own (they go with the old TME)
+        //              swapped ATMEs need nothing: their new equipment is created with the new TME as parent (oTWC_srfWorkflowEngine.js: initEquipment)
+        function moveAtmeToSwappedTme(eaId, newTmeId) {
+            if (!eaId || !newTmeId) { return; }
+            var swap = coreSQL.first(`
+                select  old_ea.${twcEqAct.Fields.EA_EQUIPMENT} as old_tme, new_eq.${twcEquipment.Fields.EQUIPMENT_CLASS} as eq_class
+                from    ${twcEqAct.Type} new_ea
+                join    ${twcEquipment.Type} new_eq on new_eq.id = new_ea.${twcEqAct.Fields.EA_EQUIPMENT}
+                join    ${twcEqAct.Type} old_ea on old_ea.${twcEqAct.Fields.EA_SRF_ITEM} = new_ea.${twcEqAct.Fields.EA_SRF_ITEM}
+                                               and old_ea.${twcEqAct.Fields.EA_TYPE} = ${twcUtils.EqActionType.SwapUnlicence}
+                where   new_ea.id = ${parseInt(eaId)}
+            `);
+            if (!swap?.old_tme || swap.eq_class != twcUtils.SrfStepType.TME || swap.old_tme == newTmeId) { return; }
+
+            var atmes = coreSQL.run(`
+                select  eq.id
+                from    ${twcEquipment.Type} eq
+                where   eq.${twcEquipment.Fields.PARENT_TME_ID} = ${parseInt(swap.old_tme)}
+                and     eq.${twcEquipment.Fields.EQUIPMENT_CLASS} = ${twcUtils.SrfStepType.ATME}
+                and     NVL(eq.${twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS}, 0) != ${twcUtils.EqInstallStatus.Removed}
+                and     not exists (
+                            select  1
+                            from    ${twcEqAct.Type} rea
+                            where   rea.${twcEqAct.Fields.EA_EQUIPMENT} = eq.id
+                            and     rea.${twcEqAct.Fields.EA_TYPE} in (${twcUtils.EqActionType.Unlicence}, ${twcUtils.EqActionType.SwapUnlicence})
+                            and     rea.${twcEqAct.Fields.EA_STATUS} in (${twcUtils.EqActionStatus.Pending}, ${twcUtils.EqActionStatus.AlreadyRemoved}, ${twcUtils.EqActionStatus.NeverInstalled})
+                        )
+            `);
+            core.array.each(atmes, atme => {
+                recu.submit(twcEquipment.Type, atme.id, twcEquipment.Fields.PARENT_TME_ID, newTmeId);
+            });
+            core.logDebug('SWAP-MOVE-ATME', `old TME ${swap.old_tme} => new TME ${newTmeId}: ${atmes.length} ATME(s) moved`);
         }
 
         function saveSafImage(options) {
