@@ -586,7 +586,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 type: twcUI.CTRL_TYPE.TABLE,
                 label: 'Equipment Actions',
                 columns: [
-                    { id: 'expand', title: '', noSort: true, noFilter: true, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } },
+                    { id: 'expand', title: '', noExport: true, noSort: true, noFilter: true, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } },
                     { id: 'select', title: checkAllInput, noSort: true, noFilter: true, styles: { width: '50px', 'text-align': 'center', 'padding': '0px' } },
                     // @@NOTE: the ID column and the SRF link are for TL employees only (see getSafEqActionSrfLink)
                     { id: 'ea_id', title: 'ID', styles: { width: '50px' }, noFilter: true, noSort: true, hide: !userInfo?.isEmployee },
@@ -707,7 +707,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 fields['select'] = { title: '', nullText: '', noSort: true, noFilter: true, styles: { width: '50px', 'text-align': 'center', 'padding': '0px' } };
             }
 
-            fields['expand'] = { title: '', noSort: true, noFilter: true, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
+            fields['expand'] = { title: '', noExport: true, noSort: true, noFilter: true, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
             // @@NOTE: the ID column and the SRF link are for TL employees only (see getSafEqActionSrfLink)
             fields['ea_id'] = { title: 'ID', styles: { width: '50px' }, link: eaActionLink, noFilter: true, noSort: true, hide: !userInfo.isEmployee };
             fields[twcSrfItem.Fields.SRF + '_name'] = { title: 'SRF', styles: { width: '125px' }, link: getSafEqActionSrfLink(userInfo), nullText: '' };

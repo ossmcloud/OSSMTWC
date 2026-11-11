@@ -313,6 +313,8 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
             get table() { return this.#table; }
             get options() { return this.options; }
             get unbound() { return this.options.unbound; }
+            // @@NOTE: noExport: the column is never exported to csv / copied (see TableControl.export)
+            get noExport() { return this.options.noExport === true; }
 
             get sortIdx() {
                 return this.#sortIdx;
@@ -670,19 +672,26 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                 return html;
             }
 
-            toCsv(forCopy) {
+            // @@NOTE: raw value of a cell for the csv export: unbound columns use initValue, null / undefined are always exported as an empty string (nullText is ignored)
+            csvValue(c) {
+                var v = (c.unbound) ? (c.options.initValue ? c.options.initValue(this.data) : '') : this.data[c.id];
+                if (v === null || v === undefined) { return ''; }
+                return v.toString();
+            }
+
+            // @@NOTE: skipCols: ids of the columns not to export (see TableControl.export: unbound columns with html content)
+            toCsv(forCopy, skipCols) {
                 var csv = '';
                 var sep = forCopy ? '\t' : ',';
 
                 if (!this.footer) {
+                    var first = true;
                     core.array.each(this.table.columns, c => {
-                        if (c.unbound) { return; }
-                        if (csv) { csv += sep; }
-                        if (this.header) {
-                            csv += `"${c.title}"`;
-                        } else {
-                            csv += `"${this.data[c.id]}"`;
-                        }
+                        if (skipCols && skipCols.indexOf(c.id) >= 0) { return; }
+                        if (!first) { csv += sep; }
+                        first = false;
+                        var v = (this.header) ? (c.title || '') : this.csvValue(c);
+                        csv += `"${v.toString().replace(/"/g, '""')}"`;
                     })
                 }
                 return csv;
@@ -1380,9 +1389,20 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
 
 
             export(forCopy, fileName) {
+                // @@NOTE: columns with noExport: true are never exported
+                //         unbound columns are exported unless any of their cells contains html (links, icons, buttons...), in which case the whole column is skipped
+                const hasHtml = (v) => { return /<\s*[a-z!\/][^>]*>/i.test(v); };
+                var dataRows = this.rows.filter(r => { return !r.header && !r.footer; });
+                var skipCols = [];
+                core.array.each(this.columns, c => {
+                    if (c.noExport) { skipCols.push(c.id); return; }
+                    if (!c.unbound) { return; }
+                    if (dataRows.find(r => { return hasHtml(r.csvValue(c)); })) { skipCols.push(c.id); }
+                });
+
                 var csv = '';
                 core.array.each(this.rows, r => {
-                    csv += r.toCsv(forCopy);
+                    csv += r.toCsv(forCopy, skipCols);
                     csv += '\n';
                 });
                 if (forCopy) {

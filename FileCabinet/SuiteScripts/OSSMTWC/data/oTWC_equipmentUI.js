@@ -243,7 +243,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var tableFields = {};
             if (withChildren) {
-                tableFields['expand'] = { title: `<span class="twc-srf-item-expand-all" data-collapsed="true">+</span>`, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
+                tableFields['expand'] = { noExport: true, title: `<span class="twc-srf-item-expand-all" data-collapsed="true">+</span>`, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
             }
             Object.assign(tableFields, getSiteInventoryTableFields(userInfo));
 

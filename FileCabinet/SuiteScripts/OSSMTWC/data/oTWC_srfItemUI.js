@@ -163,7 +163,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             // @@NOTE: TME / ATME / FEEDER tables show parent / child rows (view and edit mode), see oTWC_srfUI.js: flattenSrfItems
             if (stepType != twcSrf.StepType.GIE) {
                 noSort = true;
-                fields['expand'] = { title: '', nullText: '', noFilter: true, noSort: true, styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
+                fields['expand'] = { title: '', noExport: true, nullText: '', noFilter: true, noSort: true, styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
             }
 
             fields[twcSrfItem.Fields.REQUEST_TYPE] = { title: 'Request Type', styles: { width: '150px' } };
