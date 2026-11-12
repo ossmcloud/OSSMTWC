@@ -79,6 +79,7 @@ define(['N/email', 'N/render', 'N/log', '/.bundle/548734/O/core.sql.js', '/Suite
             let rows
             try {
                 rows = coreSQL.run(sql)
+                log.debug("kind.."+kind, sql)
                 log.debug("rows..", rows)
 
             } catch (e) {
@@ -114,6 +115,8 @@ define(['N/email', 'N/render', 'N/log', '/.bundle/548734/O/core.sql.js', '/Suite
                     today.setHours(0, 0, 0, 0)
 
                     let days = Math.round((expiry - today) / 86400000)
+                    log.debug("expiry.."+expiry,'today..'+today+"days.."+days)
+                   
 
                     if (days === 0 || days === 30) {
                         tableRows += '<tr><td>' + labels[field] + '</td><td>' + row[field] +
