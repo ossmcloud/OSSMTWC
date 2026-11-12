@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_config.js', './oTWC_file.js', './oTWC_fileType.js', './oTWC_site.js', './oTWC_icons.js'],
-    (core, cored, coreSQL, twcConfig, twcFile, twcFileType, twcSite, twcIcons) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_config.js', './oTWC_file.js', './oTWC_fileType.js', './oTWC_site.js', './oTWC_icons.js', './oTWC_profileCompany.js'],
+    (core, cored, coreSQL, twcConfig, twcFile, twcFileType, twcSite, twcIcons, twcProfileCompany) => {
         const HEIGH_LIMIT_FOR_1_CLIMBER = 60;
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
@@ -1116,7 +1116,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getProfiles(options) {
             var filters = '';
             if (options.company) {
-                filters = `where custrecord_twc_prof_company = ${options.company}`
+                // @@NOTE: include profiles linked to the company (customrecord_twc_profilec) as well as the ones with the company as home company
+                filters = `where ${twcProfileCompany.getProfileCompanyWhere(options.company)}`
             } else if (options.id) {
                 if (Array.isArray(options.id)) {
                     if (options.id.length == 0) { return []; }

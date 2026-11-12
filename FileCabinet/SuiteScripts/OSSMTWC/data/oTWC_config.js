@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './oTWC_permissions.js'],
-    (runtime, core, coreSQL, recu, permissions) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './oTWC_permissions.js', './oTWC_profileCompany.js'],
+    (runtime, core, coreSQL, recu, permissions, twcProfileCompany) => {
 
         const CUSTOM_FIELDS = {
             EMP: {
@@ -163,6 +163,29 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
 
+        // @@NOTE: finds the profile of the logged in user for the given company
+        //         entityId: the logged in entity (core.env.user()), on a Customer Center contact login this is the company the contact chose at login
+        //         email: the logged in user email (runtime.getCurrentUser().email), on a contact login this is the contact email
+        //         the profile username is either the entity itself or the contact (found by email)
+        //         linked = 'T' if the profile home company is companyId or the profile is linked to companyId (customrecord_twc_profilec)
+        //         profiles linked to the company come first, so if linked = 'F' then the user has no profile for this company
+        function getLoginProfile(entityId, email, companyId) {
+            return coreSQL.first({
+                query: `
+                    select  p.id, p.name, p.custrecord_twc_prof_phone as phone, p.custrecord_twc_prof_co_desig_cont as designated_contact,
+                            p.custrecord_twc_prof_username as username, e.email, e.entitytitle as user_name, NVL(e.mobilephone, e.phone) as user_phone,
+                            case when p.custrecord_twc_prof_company = ? or pc.id is not null then 'T' else 'F' end as linked
+                    from    customrecord_twc_prof p
+                    join    entity e on e.id = p.custrecord_twc_prof_username
+                    left join ${twcProfileCompany.Type} pc on pc.${twcProfileCompany.Fields.PROFILE} = p.id and pc.${twcProfileCompany.Fields.COMPANY} = ? and pc.isinactive = 'F'
+                    where   p.isinactive = 'F'
+                    and     (p.custrecord_twc_prof_username = ? or LOWER(e.email) = LOWER(?))
+                    order by (case when p.custrecord_twc_prof_company = ? or pc.id is not null then 0 else 1 end), (case when p.custrecord_twc_prof_username = ? then 0 else 1 end), p.id
+                `,
+                params: [companyId || 0, companyId || 0, entityId, email || '-', companyId || 0, entityId]
+            });
+        }
+
         function getUserInfo(context) {
 
             var userInfo = coreSQL.first({
@@ -232,32 +255,34 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             // @@NOTE: feature restrictions (e.g. customer only) depend on the user's company, see oTWC_permissions.js: applyRestrictions
             if (userInfo.permission) { permissions.applyRestrictions(userInfo.permission, userInfo); }
 
-            if (!userInfo.isEmployee) {
-                // @@NOTE: the oly way to detect that the logged in user is not the main customer but a contact with access is if the email on runtime is different than what we loaded for the customer
-                //         in such case we get the contact details as well in case we need it for soe reason
-                var contactEmail = runtime.getCurrentUser().email;
-                if (userInfo.email != contactEmail) {
+            var profileInfo = null;
+            if (userInfo.isEmployee) {
+                profileInfo = coreSQL.first(`select id, custrecord_twc_prof_phone as phone, name, custrecord_twc_prof_co_desig_cont as designated_contact from customrecord_twc_prof where custrecord_twc_prof_username = ${userInfo.recordId}`);
+            } else {
+                // @@NOTE: a contact can be associated to multiple customers, on login (Customer Center) the contact chooses the company
+                //         and core.env.user() (userInfo.id) is the chosen company entity, so userInfo.companyProfile is already the chosen company
+                //         the profile is the one whose username is the logged in entity or the contact (matched by the runtime email)
+                //         and it must be linked to the chosen company (home company or customrecord_twc_profilec)
+                profileInfo = getLoginProfile(userInfo.id, runtime.getCurrentUser().email, userInfo.companyProfile.id);
+                if (profileInfo && profileInfo.linked != 'T') {
+                    throw new Error(`Your profile is not associated to company "${userInfo.companyProfile.name}", please contact TL administrator to set you up.`);
+                }
 
-                    userInfo.contact = coreSQL.first({
-                        query: `
-                            select  id, email, entitytitle as name, NVL(mobilephone, phone) as phone
-                            from    entity e
-                            join    customercompanycontact ce on ce.contactscompany = ?
-                            where email = ?
-                        `,
-                        params: [
-                            userInfo.id,
-                            contactEmail
-                        ]
-                    })
-
+                if (profileInfo && profileInfo.username != userInfo.id) {
+                    // @@NOTE: the logged in user is not the main customer but a contact with access, we keep the contact details as well
+                    userInfo.contact = { id: profileInfo.username, email: profileInfo.email, name: profileInfo.user_name, phone: profileInfo.user_phone };
                     userInfo.recordType = 'contact';
                     userInfo.recordId = userInfo.contact.id;
+                }
 
+                if (profileInfo) {
+                    delete profileInfo.username;
+                    delete profileInfo.email;
+                    delete profileInfo.user_name;
+                    delete profileInfo.user_phone;
+                    delete profileInfo.linked;
                 }
             }
-
-            var profileInfo = coreSQL.first(`select id, custrecord_twc_prof_phone as phone, name, custrecord_twc_prof_co_desig_cont as designated_contact from customrecord_twc_prof where custrecord_twc_prof_username = ${userInfo.recordId}`);
 
             userInfo.profile = profileInfo?.id || null;
             userInfo.profileInfo = profileInfo;
@@ -370,6 +395,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             SAF_AWAIT_PHOTOS_MAIL_TEMPLATE: SAF_AWAIT_PHOTOS_MAIL_TEMPLATE,
             
             userInfo: getUserInfo,
+            getLoginProfile: getLoginProfile,
             getUserPref: getUserPref,
             setUserPref: setUserPref,
             getScriptId: getScriptId,

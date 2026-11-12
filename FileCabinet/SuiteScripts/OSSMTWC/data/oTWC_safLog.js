@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './persistent/oTWC_safLogPersistent.js', './oTWC_utils.js'],
-    (runtime, core, coreSQL, twcSafLog, twcUtils) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './persistent/oTWC_safLogPersistent.js', './oTWC_utils.js', './oTWC_config.js'],
+    (runtime, core, coreSQL, twcSafLog, twcUtils, twcConfig) => {
 
         const LOG_TYPE = {
             INFO: 'Info',
@@ -30,25 +30,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             try {
                 if (!profile) {
                     if (!_profile) {
-                        _profile = coreSQL.first(`select id from customrecord_twc_prof where custrecord_twc_prof_username = ${core.env.user()}`)?.id || null;
-                        if (!_profile) {
-                            // @@NOTE: the logged in user could be a contact of a customer in which case we can only find the profile using the email
-                            var contactId = coreSQL.first({
-                                query: `
-                                    select  id, email, entitytitle as name
-                                    from    entity e
-                                    join    customercompanycontact ce on ce.contactscompany = ?
-                                    where email = ?
-                                `,
-                                params: [
-                                    core.env.user(),
-                                    runtime.getCurrentUser().email
-                                ]
-                            })?.id
-                            if (contactId) {
-                                _profile = coreSQL.first(`select id from customrecord_twc_prof where custrecord_twc_prof_username = ${contactId}`)?.id || null;
-                            }
-                        }
+                        // @@NOTE: the logged in user could be a contact of a customer (possibly associated to multiple companies)
+                        //         getLoginProfile finds the profile by entity or contact email, preferring the profile linked to the logged in company
+                        var companyId = coreSQL.first(`select id from customrecord_twc_company where custrecordtwc_entity = ${core.env.user()}`)?.id || 0;
+                        _profile = twcConfig.getLoginProfile(core.env.user(), runtime.getCurrentUser().email, companyId)?.id || null;
                     }
                     profile = _profile;
                 }

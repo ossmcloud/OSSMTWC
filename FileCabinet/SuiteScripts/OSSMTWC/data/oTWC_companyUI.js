@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_company.js', './oTWC_profile.js', './oTWC_profileUI.js', './oTWC_file.js', './oTWC_fileUI.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js'],
-    (runtime, core, coreSQL, twcUtils, twcCompany, twcProfile, twcProfileUI, twcFile, twcFileUI, configUIFields, twcUI) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_company.js', './oTWC_profile.js', './oTWC_profileUI.js', './oTWC_file.js', './oTWC_fileUI.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_profileCompany.js', './oTWC_icons.js'],
+    (runtime, core, coreSQL, twcUtils, twcCompany, twcProfile, twcProfileUI, twcFile, twcFileUI, configUIFields, twcUI, twcProfileCompany, twcIcons) => {
 
         const TEST_COLLAPSED = false;
 
@@ -181,6 +181,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 id: `${twcProfile.Type}`, label: 'Company Profile List',
                 fields: {
                     [twcProfile.Fields.NAME]: 'Name',
+                    // @@NOTE: the profile (home) company is needed to flag profiles linked to this company via customrecord_twc_profilec (see onColumnInit)
+                    [twcProfile.Fields.COMPANY]: { hide: true },
                     [twcProfile.Fields.E_MAIL]: { hide: true },
                     [twcProfile.Fields.PHONE]: { hide: true },
                     [twcProfile.Fields.POSITION]: 'Position',
@@ -209,9 +211,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 },
                 // @@NOTE: external (non-employee) users do not see profiles that are No Longer Active (PROFILE_ACCREDITATION_STATUS.Inactive)
                 //         NVL so that profiles with no accreditation status are still shown
+                //         profiles linked to this company (customrecord_twc_profilec) are listed as well as the ones with this company as home company
                 where: (userInfo.isEmployee)
-                    ? { [twcProfile.Fields.COMPANY]: dataSource.id }
-                    : `and ${twcProfile.Fields.COMPANY} = ${parseInt(dataSource.id) || 0} and NVL(${twcProfile.Fields.ACCREDITATION_STATUS}, 0) != ${twcUtils.ProfileAccreditationStatus.Inactive}`,
+                    ? `and ${twcProfileCompany.getProfileCompanyWhere(dataSource.id)}`
+                    : `and ${twcProfileCompany.getProfileCompanyWhere(dataSource.id)} and NVL(${twcProfile.Fields.ACCREDITATION_STATUS}, 0) != ${twcUtils.ProfileAccreditationStatus.Inactive}`,
                 FieldsInfo: twcProfile.FieldsInfo,
                 showToolbar: true,
                 readOnly: editMode || (userInfo.permission.lvl < 3),
@@ -227,6 +230,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         col.styles = { width: '130px' };
                         col.formatValue = (v, fv, d) => {
                             return twcProfile.getCertStatusHtml(v, d[col.id.replace('_sts_name', '_exp')])
+                        }
+                    } else if (col.id == twcProfile.Fields.NAME) {
+                        // @@NOTE: profiles can be linked to multiple companies (customrecord_twc_profilec), flag the ones where this is not their primary (home) company
+                        var infoIcon = twcIcons.info.replace('width="24px" height="24px"', 'width="14px" height="14px"');
+                        col.formatValue = (v, fv, d) => {
+                            if (d[twcProfile.Fields.COMPANY] == dataSource.id) { return v; }
+                            return `${v} <span title="this is not the profile primary company" style="display: inline-block; vertical-align: middle; cursor: help;">${infoIcon}</span>`;
                         }
                     } else if (col.id == (twcProfile.Fields.ACCREDITATION_STATUS + '_name')) {
                         col.formatValue = (v, fv, d) => {

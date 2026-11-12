@@ -377,6 +377,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 // @@NOTE: the PICW is cleared on a re-used SAF
                 picwInfo = coreSQL.first('select id, custrecord_twc_prof_company as contractor, custrecord_twc_prof_phone as phone from customrecord_twc_prof where id = ' + dataSource[twcSaf.Fields.PICW]);
+                // @@NOTE: a profile can be linked to multiple companies (customrecord_twc_profilec), so the PICW staff list must be the SAF primary contractor's staff, not the PICW home company's
+                if (picwInfo && dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR]) { picwInfo.contractor = dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR]; }
 
             } else if (!isExistingSaf && primaryContractors.length == 1) {
                 // @@NOTE: this is to manage SAF entered by clients, they will be the only primary contractor
