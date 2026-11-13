@@ -29,6 +29,7 @@ Do steps 4 to 6 in **one window**, ideally outside AP / AR working hours. Old an
 | 1.4 | The transaction forms used in production show the same fields as sandbox: Tax Details subtab with **Tax Details Override**, Tax Details Reference, and the Customer:Project / Name columns. | Open one of each record type in production. | ☐ |
 | 1.5 | The **Tax Details** tab element id is `taxestxt` on the production Vendor Bill / Vendor Credit forms. | Open a bill → F12 → inspect the Tax Details tab → id = `taxestxt`. If it's different, update `TAX_TAB_ID` in the script **before** uploading. | ☐ |
 | 1.6 | AP and AR roles can run SuiteQL on `customrecord_ste_taxrate` and on transactions. | Same permissions as the sandbox roles used for UAT F5. | ☐ |
+| 1.7 | The rate record's validity date fields are `custrecord_ste_taxrate_validfrom` / `custrecord_ste_taxrate_validuntil` (as in sandbox). | Run in a SuiteQL tool: `SELECT custrecord_ste_taxrate_taxcode, custrecord_ste_taxrate_rate, custrecord_ste_taxrate_validfrom, custrecord_ste_taxrate_validuntil FROM customrecord_ste_taxrate WHERE ROWNUM <= 5`. If it errors, find the real ids on the record type and update `RATE_FROM_FIELD` / `RATE_UNTIL_FIELD` in the script **before** uploading. (A wrong id doesn't break the script, but it falls back to the newest rate row and ignores the date.) | ☐ |
 
 ---
 

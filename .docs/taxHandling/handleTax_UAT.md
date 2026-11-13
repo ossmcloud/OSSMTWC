@@ -13,8 +13,9 @@ One client script now replaces five older scripts. It does four jobs, switched o
 | Feature | What it does | Record types |
 |---|---|---|
 | **Project copy** | Choosing a project in the line column **Project** (`custcol_ossm_twcm_project`) copies it into the native **Customer:Project** column (item / expense lines) or **Name** column (journal lines). Clearing the project clears it. | All record types the script is deployed on |
-| **Tax handling** | With **Tax Details Override** ticked:<br>• picking a tax code on a Tax Details line fills **Tax Rate** and **Tax Amount**;<br>• changing **Tax Basis** or **Tax Rate** recalculates **Tax Amount**;<br>• **Tax Basis** is always set to the net amount of the transaction line it belongs to;<br>• Tax Details lines whose transaction line was deleted are removed. | Vendor Bill, Vendor Credit |
-| **Tax check** | With **Tax Details Override** ticked, **Save is blocked** when:<br>• the total net of the lines doesn't match the total Tax Basis, **or**<br>• Tax Basis × Tax Rate doesn't match the Tax Amount on any Tax Details line (1 cent tolerance). | Vendor Bill, Vendor Credit, Purchase Order, Vendor Return, Invoice, Credit Memo, Sales Order, Sales Return |
+| **Tax recalculation** | With **Tax Details Override** ticked, while entering / editing a Tax Details line:<br>• picking a tax code fills **Tax Rate** (the rate valid on the transaction date) and **Tax Amount**;<br>• changing **Tax Basis** or **Tax Rate** recalculates **Tax Amount**;<br>• a **Tax Basis** typed by hand is kept, even if wrong (the save check reports it). | All except Journal |
+| **Tax Basis correction** | With **Tax Details Override** ticked:<br>• **Tax Basis** is set to the net amount of the transaction line it belongs to (unless typed by hand);<br>• Tax Details lines whose transaction line was deleted are removed. | Vendor Bill, Vendor Credit |
+| **Tax check** | With **Tax Details Override** ticked, **Save is blocked** when:<br>• the total net of the lines doesn't match the total Tax Basis, **or**<br>• the **Tax Rate** on a Tax Details line isn't the rate of its **Tax Code**, **or**<br>• Tax Basis × Tax Rate doesn't match the Tax Amount on any Tax Details line (1 cent tolerance). | Vendor Bill, Vendor Credit, Purchase Order, Vendor Return, Invoice, Credit Memo, Sales Order, Sales Return |
 | **PO cap** | On item lines that came from a PO:<br>• you type the invoiced **Amount** and **Quantity** is worked out at the PO rate;<br>• **Rate** is always the PO rate;<br>• a line can never bill more than is left on the PO line: if it would, Quantity and Amount are corrected to what remains and a message is shown. | Vendor Bill, Vendor Credit |
 
 **When the Tax Basis is corrected** (Vendor Bill and Vendor Credit, override ticked):
@@ -70,14 +71,16 @@ Result column: **P** = pass, **F** = fail, **N/A** = not applicable.
 | A8 | Sales Order | Same as A7 on a sales order. | Customer:Project = D3. | | |
 | A9 | Vendor Credit, Credit Memo, Vendor Return, Sales Return | Repeat A1 on each. | Customer:Project = D3 on each. | | |
 
-### B. Tax handling while editing: Vendor Bill (repeat B1-B6 on Vendor Credit as B1c-B6c)
+### B. Tax recalculation while editing: Vendor Bill (repeat B1-B6 on Vendor Credit as B1c-B6c, and B1-B4b on one Invoice and one Purchase Order)
 
 | ID | Steps | Expected | Result | Notes |
 |---|---|---|---|---|
 | B1 | New bill for D1 → item line Item A, Amount 100.00 → commit → **Tax Details** subtab → tick **Tax Details Override** → on the tax line for that item, set Tax Code = D4 (23%). | **Tax Rate** = 23%, **Tax Basis** = 100.00 (the item line's net), **Tax Amount** = 23.00. | | |
 | B2 | Continue B1 → change the Tax Code to D5 (13.5%). | Tax Rate = 13.5%, Tax Basis = 100.00, Tax Amount = 13.50. | | |
-| B3 | Continue → change **Tax Rate** by hand to 10%. | Tax Amount = 10.00. Tax Basis stays 100.00. | | |
-| B4 | Continue → type **Tax Basis** = 80.00. | Tax Basis goes back to 100.00 (the line net) and Tax Amount is recalculated at the current rate. | | |
+| B3 | Continue → change **Tax Rate** by hand to 10%. | Tax Amount = 10.00. Tax Basis stays 100.00. (Saving now would be blocked: 10% is not the rate of the tax code, see D16.) Put the rate back to 13.5% before going on. | | |
+| B4 | Continue → type **Tax Basis** = 80.00. | Tax Basis **stays 80.00** (a typed basis is never overwritten, even if wrong). Tax Amount = 10.80 (80 × 13.5%). | | |
+| B4a | Continue → change the Tax Code to D4 (23%), then click another subtab and back to **Tax Details**. | Tax Rate = 23%, Tax Basis still 80.00, Tax Amount = 18.40. | | |
+| B4b | Continue → Save. | Blocked by the tax check: lines net 100.00 vs Tax Basis 80.00. Type Tax Basis = 100.00 → Tax Amount = 23.00 → Save works. | | |
 | B5 | Untick **Tax Details Override** → change a tax line's Tax Code. | The script changes nothing: no rate or amount filled in by the script. | | |
 | B6 | Tick override → pick a tax code that has **no rate** set up (if one exists). | Rate and amount are left as they were, not set to 0. No error shown. | | |
 
@@ -115,6 +118,8 @@ For each record type, override must be ticked unless stated. **Blocked** means a
 | D13 | Journal Entry | Normal journal → Save. | Saves. No tax check. | | |
 | D14 | Vendor Bill | Add a **Subtotal** item and/or an **Item Group** → correct tax details → Save. | Saves. Subtotal and group lines aren't counted twice. | | |
 | D15 | Vendor Bill | Add a **Discount** item (negative line) with its tax line correct → Save. | Saves. | | |
+| D16 | Vendor Bill | Tax line with Tax Code D4 (23%) → change **Tax Rate** by hand to 20% (Tax Amount recalculates to 20.00) → Save. | Blocked. The message shows the line and tax code: "Tax Rate 20% does not match the rate of the Tax Code (23%)". | | |
+| D17 | Invoice | Tax line with Tax Code D5 (13.5%) → set Tax Rate to 23% and Tax Amount to match → Save. Repeat on one other tax-check record type (e.g. Purchase Order). | Blocked with the same rate message, showing 13.5%. | | |
 
 ### E. PO cap: Vendor Bill (bill from PO-1 unless stated)
 
@@ -140,6 +145,7 @@ For each record type, override must be ticked unless stated. **Blocked** means a
 | F3 | Review the browser console across all tests. | No `oTWC_taxHandling_cs (...)` errors logged. | | |
 | F4 | Open each record type in **View** mode. | No errors. Nothing changes. | | |
 | F5 | Repeat a sample of tests (A1, B1, C2, D2, E2) with a **non-admin AP user**. | Same results. If a rate isn't filled in for this user, the role may lack permission to read the SuiteTax rate record. | | |
+| F6 | Find a tax code that has had a **rate change** (two rate rows with different Valid From / Valid Until), or ask the admin to set one up in sandbox. New bill dated **before** the change → pick that tax code; then a bill dated **after** the change. | Each bill gets the rate valid on its own date. Saving each one passes. Changing the bill date across the rate change and saving without re-picking the tax code → blocked by the rate check (D16). | | |
 
 ---
 

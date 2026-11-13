@@ -12,18 +12,24 @@
  * Features (enabled per record type via FEATURES, record type = currentRecord.type):
  *  1. project : when custcol_ossm_twcm_project changes on a line, copy it into the native
  *               Customer:Project (item / expense) or Name (journal 'line') column.
- *  2. tax     : with "Tax Details Override" ticked:
- *                 - Tax Code changed  -> Tax Rate + Tax Amount filled from the SuiteTax rate record;
+ *  2. taxRecalc: with "Tax Details Override" ticked, when the user enters / edits a tax details line:
+ *                 - Tax Code changed  -> Tax Rate + Tax Amount filled from the SuiteTax rate record
+ *                   (the rate row valid on the transaction date);
  *                 - Tax Basis / Rate changed -> Tax Amount recalculated (no lookup);
  *                   (before any Tax Amount calculation the net amount of the bill line it refers to
- *                    - linked by taxdetailsreference - is pushed into Tax Basis)
+ *                    - linked by taxdetailsreference - is pushed into Tax Basis, UNLESS the user typed
+ *                    the Tax Basis of that line by hand: a typed basis is kept as is, even if wrong, and
+ *                    the Tax Amount is calculated from it - the save check reports it if it's wrong)
+ *     tax     : with "Tax Details Override" ticked (bill / credit only):
  *                 - after a bill line is edited NetSuite recalculates the tax details with a wrong
  *                   Tax Basis: every tax details line is fixed (Tax Basis = bill line net, Tax Amount
- *                   recalculated) when the Tax Details tab is opened and again before the save check;
+ *                   recalculated) when the Tax Details tab is opened and again before the save check
+ *                   (lines whose Tax Basis was typed by hand are skipped);
  *                   (the Tax Basis fix runs before the taxCheck save validation)
  *  3. taxCheck: with "Tax Details Override" ticked, on save, block when the lines net does not match the
- *               Tax Basis total, or when Tax Basis x Tax Rate does not match the Tax Amount on any tax
- *               details line.
+ *               Tax Basis total, when the Tax Rate of a tax details line does not match the rate of its
+ *               Tax Code (SuiteTax rate record), or when Tax Basis x Tax Rate does not match the Tax
+ *               Amount on any tax details line.
  *  4. poCap   : on bill item lines sourced from a PO, the user types the invoiced Amount and the
  *               Quantity is solved at the PO rate (Rate is always locked to the PO rate). A line can
  *               never bill more than is left on the PO line: if it would, Quantity and Amount are
@@ -43,11 +49,12 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
     // @@NOTE: record types not listed here get DEFAULT_FEATURES (project copy only), so deploying
     //         the script on another record type is enough to get the project copy there.
     //         project  : line project -> native customer / name
-    //         tax      : tax details autofill + Tax Basis fix (open / tax tab / save)
+    //         taxRecalc: tax details line editing: tax code -> rate + tax amount, basis / rate -> tax amount
+    //         tax      : Tax Basis fix of all tax details lines (new doc open / tax tab click / save)
     //         taxCheck : save validation of tax details vs lines (blocks the save)
     //         poCap    : PO over-billing cap on item lines
-    const BILL_FEATURES = { project: true, tax: true, taxCheck: true, poCap: true };
-    const ORDER_FEATURES = { project: true, taxCheck: true };
+    const BILL_FEATURES = { project: true, taxRecalc: true, tax: true, taxCheck: true, poCap: true };
+    const ORDER_FEATURES = { project: true, taxRecalc: true, taxCheck: true };
     const FEATURES = {
         vendorbill: BILL_FEATURES,
         vendorcredit: BILL_FEATURES,                    // same as vendor bill
@@ -74,12 +81,20 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
     const LINE_SUBLISTS = ['item', 'expense'];
     const SKIP_ITEM_TYPES = ['Subtotal', 'Subtot', 'EndGroup', 'Group', 'Description'];
     const TOLERANCE_CENTS = 1;
+    // tax rate vs tax code rate tolerance, in percentage points (13.5 vs 13.5001 is a match)
+    const RATE_TOLERANCE = 0.001;
     // element id of the tax details subtab link on the bill form (clicking it runs tax.fixAllBasis)
     const TAX_TAB_ID = 'taxestxt';
 
     // PO cap: match to the items' quantity precision
     const QTY_DECIMALS = 5;
     const QTY_TOLERANCE = 0.0001;
+    // SuiteTax rate record (customrecord_ste_taxrate) validity dates: the rate used is the one valid on the
+    // transaction date. A blank Valid From / Valid Until is open-ended.
+    // @@REVIEW @@GO-LIVE :: field ids of the SuiteTax Engine rate record - confirm on the record in the account.
+    //         If SuiteQL rejects them, the lookup falls back to the newest active rate row (logged).
+    const RATE_FROM_FIELD = 'custrecord_ste_taxrate_validfrom';
+    const RATE_UNTIL_FIELD = 'custrecord_ste_taxrate_validuntil';
 
     // ------------------------------------------------------------------------------------------
     // STATE (per page load)
@@ -87,7 +102,9 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
 
     const state = {
         features: {},
-        rateCache: {},          // tax code id -> decimal rate (0.23) or null
+        rateCache: {},          // 'tax code id|yyyy-mm-dd' -> decimal rate (0.23) or null
+        rateUndated: false,     // true once SuiteQL rejected the validity date fields (fallback: newest row)
+        manualBasis: {},        // 'ref|taxtype' -> true: Tax Basis typed by the user, never overwritten
         po: {},                 // 'orderdoc:orderline' -> { rate, remaining }  (remaining excludes THIS bill)
         poLoaded: {},           // orderdoc -> true once queried
         savedOnBill: {},        // 'orderdoc:orderline' -> qty this bill had when saved (edit mode only)
@@ -112,6 +129,7 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
         return Math.round((n + Number.EPSILON) * f) / f;
     };
     const round2 = (n) => roundTo(n, 2);
+    const round4 = (n) => roundTo(n, 4);
     const cents = (n) => Math.round((n + Number.EPSILON) * 100);
     const fmt = (n) => round2(n).toFixed(2);
     const isTrue = (v) => v === true || v === 'T';
@@ -156,29 +174,65 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
         // decimal rate (e.g. 0.135 for 13.5%) or null
         // @@NOTE: assumes SuiteQL returns the percent field custrecord_ste_taxrate_rate as a decimal
         //         fraction (0.135), as the previous scripts did - verify once in the sandbox.
-        // @@TODO: a tax code with several active rate rows (rate change) takes the newest row (highest id);
-        //         filter on the rate record's effective dates vs trandate once the field ids are confirmed.
-        getRate: (taxCode) => {
-            if (Object.prototype.hasOwnProperty.call(state.rateCache, taxCode)) { return state.rateCache[taxCode]; }
+        // @@NOTE: the rate is the one VALID ON THE TRANSACTION DATE (tranDate 'yyyy-mm-dd', see tax.tranDate):
+        //         Valid From <= date <= Valid Until, blank = open-ended. If more than one row is valid, the
+        //         latest Valid From wins, then the newest row. No valid row -> null (autofill does nothing,
+        //         the save check skips the line).
+        getRate: (taxCode, tranDate) => {
+            const key = `${taxCode}|${tranDate}`;
+            if (Object.prototype.hasOwnProperty.call(state.rateCache, key)) { return state.rateCache[key]; }
             let rate = null;
             try {
-                const rows = query.runSuiteQL({
-                    query: `SELECT ra.custrecord_ste_taxrate_rate AS rate
-                            FROM customrecord_ste_taxrate ra
-                            JOIN salestaxitem tx ON tx.id = ra.custrecord_ste_taxrate_taxcode
-                            WHERE tx.id = ?
-                              AND NVL(ra.isinactive, 'F') = 'F'
-                            ORDER BY ra.id DESC`,
-                    params: [taxCode]
-                }).asMappedResults();
+                let rows = null;
+                if (!state.rateUndated) {
+                    try {
+                        rows = query.runSuiteQL({
+                            query: `SELECT ra.custrecord_ste_taxrate_rate AS rate
+                                    FROM customrecord_ste_taxrate ra
+                                    JOIN salestaxitem tx ON tx.id = ra.custrecord_ste_taxrate_taxcode
+                                    WHERE tx.id = ?
+                                      AND NVL(ra.isinactive, 'F') = 'F'
+                                      AND (ra.${RATE_FROM_FIELD} IS NULL OR ra.${RATE_FROM_FIELD} <= TO_DATE(?, 'YYYY-MM-DD'))
+                                      AND (ra.${RATE_UNTIL_FIELD} IS NULL OR ra.${RATE_UNTIL_FIELD} >= TO_DATE(?, 'YYYY-MM-DD'))
+                                    ORDER BY ra.${RATE_FROM_FIELD} DESC NULLS LAST, ra.id DESC`,
+                            params: [taxCode, tranDate, tranDate]
+                        }).asMappedResults();
+                    } catch (e) {
+                        // @@NOTE: most likely the validity date field ids are wrong for this account (see
+                        //         RATE_FROM_FIELD) - fall back to the undated lookup for the rest of the page
+                        logError('tax rate lookup by date (falling back to newest rate row)', e);
+                        state.rateUndated = true;
+                    }
+                }
+                if (state.rateUndated) {
+                    rows = query.runSuiteQL({
+                        query: `SELECT ra.custrecord_ste_taxrate_rate AS rate
+                                FROM customrecord_ste_taxrate ra
+                                JOIN salestaxitem tx ON tx.id = ra.custrecord_ste_taxrate_taxcode
+                                WHERE tx.id = ?
+                                  AND NVL(ra.isinactive, 'F') = 'F'
+                                ORDER BY ra.id DESC`,
+                        params: [taxCode]
+                    }).asMappedResults();
+                }
                 if (rows.length && !isBlank(rows[0].rate)) { rate = Number(rows[0].rate); }
                 if (rate !== null && isNaN(rate)) { rate = null; }
             } catch (e) {
                 logError('tax rate lookup', e);
                 return null;    // don't cache failures
             }
-            state.rateCache[taxCode] = rate;
+            state.rateCache[key] = rate;
             return rate;
+        },
+
+        // transaction date as 'yyyy-mm-dd' (today when blank / unreadable) - the date the tax rate must be valid on
+        tranDate: (rec) => {
+            let d = null;
+            try { d = rec.getValue({ fieldId: 'trandate' }); } catch (e) { d = null; }
+            if (d && !(d instanceof Date)) { d = new Date(d); }
+            if (!d || isNaN(d.getTime())) { d = new Date(); }
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
         },
 
         // net amount of the bill lines (item + expense) keyed by tax details reference
@@ -235,9 +289,12 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
         // nets: optional lineNetByRef() result (avoids re-reading the bill lines in a loop).
         // @@NOTE: the tax details line's own 'netamount' is NOT used - it can be stale / wrong. If the bill
         //         line is not found, the Tax Basis already on the line is used.
+        // @@NOTE: a Tax Basis the user typed by hand is never overwritten (kept even if wrong - the save
+        //         check reports it). See tax.manualKey / state.manualBasis.
         pushNetToBasis: (rec, nets) => {
-            const map = nets || tax.lineNetByRef(rec);
             const ref = rec.getCurrentSublistValue({ sublistId: 'taxdetails', fieldId: 'taxdetailsreference' });
+            const key = tax.manualKey(ref, rec.getCurrentSublistValue({ sublistId: 'taxdetails', fieldId: 'taxtype' }));
+            const map = (key && state.manualBasis[key]) ? {} : (nets || tax.lineNetByRef(rec));
             if (ref && Object.prototype.hasOwnProperty.call(map, ref)) {
                 rec.setCurrentSublistValue({ sublistId: 'taxdetails', fieldId: 'taxbasis', value: round2(map[ref]), ignoreFieldChange: true });
             }
@@ -261,6 +318,7 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
                 for (let line = 0; line < count; line++) {
                     const ref = rec.getSublistValue({ sublistId, fieldId: 'taxdetailsreference', line });
                     if (!ref || !Object.prototype.hasOwnProperty.call(nets, ref)) { continue; }
+                    if (state.manualBasis[tax.manualKey(ref, rec.getSublistValue({ sublistId, fieldId: 'taxtype', line }))]) { continue; }
                     const basis = toNum(rec.getSublistValue({ sublistId, fieldId: 'taxbasis', line }));
                     if (cents(basis) === cents(nets[ref])) { continue; }
                     rec.selectLine({ sublistId, line });
@@ -274,13 +332,27 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
             }
         },
 
+        // key of a tax details line for state.manualBasis: bill line reference + tax type ('' when no reference)
+        manualKey: (ref, taxType) => (ref ? `${ref}|${taxType || ''}` : ''),
+
+        // the user typed a Tax Basis on the current tax details line: remember it so it's never overwritten
+        // @@REVIEW: assumes fieldChanged on taxdetails.taxbasis fires only for user edits (our own writes use
+        //           ignoreFieldChange). If NetSuite's tax recalculation also fires it, the basis fix would stop
+        //           correcting those lines - check in the sandbox (edit a bill line, then open the tax tab).
+        markManualBasis: (rec) => {
+            const key = tax.manualKey(
+                rec.getCurrentSublistValue({ sublistId: 'taxdetails', fieldId: 'taxdetailsreference' }),
+                rec.getCurrentSublistValue({ sublistId: 'taxdetails', fieldId: 'taxtype' }));
+            if (key) { state.manualBasis[key] = true; }
+        },
+
         // Tax Code changed -> Tax Rate + Tax Amount
         applyRateFromCode: (rec) => {
             if (!isOverride(rec)) { return; }
             try {
                 const taxCode = rec.getCurrentSublistValue({ sublistId: 'taxdetails', fieldId: 'taxcode' });
                 if (!taxCode) { return; }
-                const rate = tax.getRate(taxCode);
+                const rate = tax.getRate(taxCode, tax.tranDate(rec));
                 if (rate === null) { return; }   // never overwrite with 0 when the rate is unknown
                 const basis = tax.pushNetToBasis(rec);
                 rec.setCurrentSublistValue({ sublistId: 'taxdetails', fieldId: 'taxrate', value: rate * 100, ignoreFieldChange: true });
@@ -351,7 +423,22 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
                 });
             }
 
-            // 2. tax basis x rate vs tax amount, per tax details line
+            // 2. tax rate vs the rate of the tax code, per tax details line
+            // @@NOTE: a tax code whose rate can't be found (lookup failed / no active rate row) is not
+            //         checked - the save is not blocked on a lookup problem. A manually typed rate that
+            //         differs from the tax code rate IS blocked. The rate is the one valid on the transaction date.
+            const tranDate = tax.tranDate(rec);
+            details.forEach((td) => {
+                if (!td.taxCodeId) { return; }
+                const codeRate = tax.getRate(td.taxCodeId, tranDate);
+                if (codeRate === null) { return; }
+                if (Math.abs(td.rate - codeRate * 100) > RATE_TOLERANCE) {
+                    const name = [td.ref, td.taxCode].filter(Boolean).join(' / ');
+                    errors.push(`Tax Details line ${td.line + 1}${name ? ` (${name})` : ''}: Tax Rate ${td.rate}% does not match the rate of the Tax Code (${round4(codeRate * 100)}%).`);
+                }
+            });
+
+            // 3. tax basis x rate vs tax amount, per tax details line
             details.forEach((td) => {
                 const expected = cents(td.basis * td.rate / 100);
                 if (Math.abs(expected - cents(td.amount)) > TOLERANCE_CENTS) {
@@ -391,6 +478,7 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
                     line,
                     ref: rec.getSublistValue({ sublistId, fieldId: 'taxdetailsreference', line }) || '',
                     taxType: rec.getSublistValue({ sublistId, fieldId: 'taxtype', line }) || '',
+                    taxCodeId: rec.getSublistValue({ sublistId, fieldId: 'taxcode', line }) || '',
                     taxCode: rec.getSublistText({ sublistId, fieldId: 'taxcode', line }) || '',
                     basis: toNum(rec.getSublistValue({ sublistId, fieldId: 'taxbasis', line })),
                     // percent field: 23 for 23% (may come back as "23%" / "23.0%")
@@ -628,6 +716,8 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
         const rec = context.currentRecord;
         state.features = FEATURES[rec.type] || DEFAULT_FEATURES;
         state.rateCache = {};
+        state.rateUndated = false;
+        state.manualBasis = {};
         state.po = {};
         state.poLoaded = {};
         state.savedOnBill = {};
@@ -655,7 +745,7 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
     //         rate after any native sourcing triggered by the tax code (it only fires if the field sources
     //         something). The write is idempotent and the rate is cached, so running twice is harmless.
     const postSourcing = (context) => {
-        if (state.features.tax && context.sublistId === 'taxdetails' && context.fieldId === 'taxcode') {
+        if (state.features.taxRecalc && context.sublistId === 'taxdetails' && context.fieldId === 'taxcode') {
             tax.applyRateFromCode(context.currentRecord);
         }
         // @@NOTE: on a new doc NetSuite sources taxregoverride once it has generated the tax details: that's
@@ -676,10 +766,12 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
             return;
         }
 
-        if (state.features.tax && sublistId === 'taxdetails') {
+        if (state.features.taxRecalc && sublistId === 'taxdetails') {
             if (fieldId === 'taxcode') {
                 tax.applyRateFromCode(rec);
             } else if (fieldId === 'taxbasis' || fieldId === 'taxrate') {
+                // @@NOTE: a basis typed by hand is kept as typed (even if wrong); the tax is recalculated from it
+                if (fieldId === 'taxbasis' && isOverride(rec)) { tax.markManualBasis(rec); }
                 tax.recalcAmount(rec);
             }
             return;
