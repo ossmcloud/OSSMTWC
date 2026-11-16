@@ -613,6 +613,19 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             return safCustomer == companyId || safPrimaryContractor == companyId;
         }
 
+        // @@NOTE: customers / contractors (non employees) uploading completion photos move their own SAF to 'Photos Received'
+        //         (from Awaiting Photos / Partially Complete, 'Upload Completion Photos' button, ui/js/oTWC_siteAccess.js: uploadPhotos)
+        //         same ownership / permission rules as canExternalCancelSaf, no comment allowed
+        function canExternalSetPhotosReceived(userInfo, options, saf) {
+            if (!userInfo || userInfo.isEmployee) { return false; }
+            if (options.status != twcSaf.Status.PhotosReceived || options.comment) { return false; }
+            if ((userInfo.permission?.lvl || 0) < twcConfig.PERMISSION_LEVEL.EDIT) { return false; }
+            if (saf.status != twcSaf.Status.AwaitingPhotos && saf.status != twcSaf.Status.PartiallyComplete) { return false; }
+            var companyId = userInfo.companyProfile?.id;
+            if (!companyId) { return false; }
+            return saf.customer == companyId || saf.primaryContractor == companyId;
+        }
+
         function editSafStatus(options, userInfo) {
             var saf = twcSaf.get(options.saf);
             try {
@@ -620,9 +633,14 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 var commentCHanged = options.comment ? saf.reviewComment != options.comment : false;
                 if (!statusChanged && !commentCHanged) { return; }
 
-                // @@NOTE: non employees can only cancel their own SAF (Pending / Approved), no other status change and no comment only change (see canExternalCancelSaf)
+                // @@NOTE: non employees can only cancel their own SAF (Pending / Approved) or set it to Photos Received after uploading completion photos,
+                //         no other status change and no comment only change (see canExternalCancelSaf / canExternalSetPhotosReceived)
                 if (!userInfo?.isEmployee) {
-                    if (!statusChanged || options.status != twcSaf.Status.Cancelled || !canExternalCancelSaf(userInfo, saf.status, saf.customer, saf.primaryContractor)) {
+                    var externalAllowed = statusChanged && (
+                        (options.status == twcSaf.Status.Cancelled && canExternalCancelSaf(userInfo, saf.status, saf.customer, saf.primaryContractor)) ||
+                        canExternalSetPhotosReceived(userInfo, options, saf)
+                    );
+                    if (!externalAllowed) {
                         throw new Error('You do not have permissions to change the status of this SAF');
                     }
                 }

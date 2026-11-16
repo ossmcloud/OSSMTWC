@@ -1280,12 +1280,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             var errors = photos.filter(p => { return p.error !== undefined; })
                             if (errors.length > 0) {
                                 var errorHtml = '';
-                                core.array.each(errors, e => { errorHtml += `<b>${e.name}</b>: ${e.error.error}<hr />`; });
+                                core.array.each(errors, e => { errorHtml += `<b>${e.name}</b>: ${this.uploadErrorMessage(e.error)}<hr />`; });
                                 dialog.error(errorHtml, () => { location.reload(); });
                                 return;
                             }
 
-                            this.postSync({ action: 'edit-saf-status' }, { saf: this.data.siteAccessInfo.id, status: twcSaf.Status.PhotosReceived });
+                            // @@NOTE: the photos are uploaded at this point, a status change failure must not be reported as an upload failure
+                            try {
+                                this.postSync({ action: 'edit-saf-status' }, { saf: this.data.siteAccessInfo.id, status: twcSaf.Status.PhotosReceived });
+                            } catch (error) {
+                                dialog.error(`The photos were uploaded but the SAF status could not be changed to 'Photos Received': ${this.uploadErrorMessage(error)}`, () => { location.reload(); });
+                                return;
+                            }
 
                             dlg.close();
                             location.reload();
@@ -1312,6 +1318,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     return;
                 }
 
+                // @@NOTE: success / failure handlers passed to the same then() (not then().catch()): an exception thrown further down the chain
+                //         (next upload or the final callback) must not be caught here and flag an uploaded photo as failed
                 this.post({ action: 'upload-saf-photo' }, { saf: this.data.siteAccessInfo.id, photo: photos[idx] }).then(resp => {
                     if (resp.error) {
                         photoListItem.html(twcIcons.get('exclamation', 16, 'red'));
@@ -1319,15 +1327,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     } else {
                         photoListItem.html(twcIcons.get('shieldCheck', 16, 'lime'));
                     }
-
-                    this.uploadPhoto(photoList, photos, idx + 1, callback);
-
-
-                }).catch(err => {
+                }, err => {
                     photoListItem.html(twcIcons.get('exclamation', 16, 'red'));
                     photos[idx].error = err;
+                }).then(() => {
                     this.uploadPhoto(photoList, photos, idx + 1, callback);
                 });
+            }
+
+            // @@NOTE: errors may come as the server response ({ error: ... }), an Error or a plain string
+            uploadErrorMessage(err) {
+                var e = (err && err.error !== undefined) ? err.error : err;
+                if (e === undefined || e === null || e === '') { return 'unknown error'; }
+                if (typeof e === 'string') { return e; }
+                return e.message || JSON.stringify(e);
             }
 
             assignReviewer() {
