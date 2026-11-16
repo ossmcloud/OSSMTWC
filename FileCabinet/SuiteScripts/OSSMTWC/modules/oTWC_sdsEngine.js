@@ -17,6 +17,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return twcUtils.getFiles({ filters: filters });
         }
         function getSiteLicenseMapFiles(siteId, companyId) {
+
+            if (!recu.lookUp(twcCompany.Type, companyId, twcCompany.Fields.SDS_INCLUDE_LICENSE_MAP)) { return []; }
+
             return twcUtils.getFiles({
                 filters: {
                     [twcFile.Fields.RECORD_TYPE]: twcSite.Type,

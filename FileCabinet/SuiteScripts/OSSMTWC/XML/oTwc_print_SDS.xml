@@ -438,12 +438,12 @@
             <!-- White Section -->
             <tr>
                 <td style="padding: 6px; border: 1px solid #666; border-top: none;">
+                    <p style="padding-bottom: 3px;">
+                        Additional SRF Specific Conditions:
+                    </p>
                     <!-- @@NOTE: 'Additional SRF Conditions' is optional on the Generate SDS pop-up: the block is not printed when empty (or just '-') -->
                     <#assign addCond = (requestJSON.sds.custrecord_twc_sds_add_cond!"")?replace("null", "")?trim>
                     <#if addCond?has_content && addCond != "-">
-                        <p style="padding-bottom: 3px;">
-                            Additional SRF Specific Conditions:
-                        </p>
                         <p>
                             ${addCond}
                         </p>
