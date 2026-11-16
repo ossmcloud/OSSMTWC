@@ -275,9 +275,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 [twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceIssued]: twcUtils.EqLicenseStatus.ProptoUnlicence,
             };
 
+            // @@NOTE: equipment associated with a cancelled SRF is not included in the SDS: the equipment associated EA is an install (Licence / Swap Licence)
+            //         raised by an SRF that has been cancelled (i.e. equipment that only exists because of that SRF)
+            //         removals on a cancelled SRF are NOT excluded: that equipment is still on site / licenced (cancelSrf resets it to Licenced)
+            var cancelledSrfSql = `
+                case when srfa.${twcSrf.Fields.SRF_STATUS} = ${twcUtils.SrfStatus.SRFCancelled}
+                      and eqa.custrecord_twc_eq_action_type in (${twcUtils.EqActionType.Licence}, ${twcUtils.EqActionType.SwapLicence})
+                     then 'T' else 'F' end`;
+
             coreSql.each(`
                 select  eq.id as eq_id, sdsi.id as sds_eq_id, srfi.id as srf_eq_id, srfi.custrecord_twc_srf_itm_invent_flag as srf_inventory_flag,
                         sdsi.${twcSdsEquipment.Fields.LICENSE_STATUS} as sds_licence_status,
+                        sdsi.${twcSdsEquipment.Fields.INCLUDE_IN_SDS} as sds_include,
+                        ${cancelledSrfSql} as srf_cancelled,
                         ${sqlFields}
                 
                 from    customrecord_twc_sds sds 
@@ -291,9 +301,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 left join customrecord_twc_srf_itm srfi on srfi.custrecord_twc_srf_itm_srf = sds.custrecord_twc_sds_srf
                                                        and srfi.custrecord_twc_srf_itm_equip_id = eq.id
 
+                left join customrecord_twc_eq_action eqa on eqa.id = eq.custrecord_twc_equip_assoc_eq_action
+                left join ${twcSrf.Type} srfa on srfa.id = eqa.custrecord_twc_eq_action_srf
+
                 where   sds.id = ${sdsId}
                 order by eq.created, BUILTIN.DF(eq.custrecord_twc_equip_class)
             `, eq => {
+
+                if (eq.srf_cancelled == 'T') {
+                    // @@NOTE: already on the SDS (added before the SRF was cancelled): exclude it rather than deleting it
+                    if (eq.sds_eq_id && eq.sds_include == 'T') {
+                        recu.submit(twcSdsEquipment.Type, eq.sds_eq_id, twcSdsEquipment.Fields.INCLUDE_IN_SDS, false);
+                    }
+                    return;
+                }
 
                 var sdsLicenceStatus = sdsLicenceStatusDefaults[eq.custrecord_twc_eq_licence_status];
 
