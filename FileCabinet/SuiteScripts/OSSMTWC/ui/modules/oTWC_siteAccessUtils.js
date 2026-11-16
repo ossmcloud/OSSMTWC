@@ -594,12 +594,31 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
         }
 
-        function editSafStatus(options) {
+        // @@NOTE: customers / contractors (non employees) can cancel their own SAF only when it is Pending or Approved
+        //         own SAF = the user's company is the SAF customer or primary contractor, the user also needs at least EDIT permission (VIEW is read-only)
+        //         used by the page (ui/oTWC_siteAccess_sl.js: 'Cancel SAF' button) and enforced again on the server (editSafStatus)
+        function canExternalCancelSaf(userInfo, safStatus, safCustomer, safPrimaryContractor) {
+            if (!userInfo || userInfo.isEmployee) { return false; }
+            if ((userInfo.permission?.lvl || 0) < twcConfig.PERMISSION_LEVEL.EDIT) { return false; }
+            if (safStatus != twcSaf.Status.Pending && safStatus != twcSaf.Status.Approved) { return false; }
+            var companyId = userInfo.companyProfile?.id;
+            if (!companyId) { return false; }
+            return safCustomer == companyId || safPrimaryContractor == companyId;
+        }
+
+        function editSafStatus(options, userInfo) {
             var saf = twcSaf.get(options.saf);
             try {
                 var statusChanged = options.status ? saf.status != options.status : false;
                 var commentCHanged = options.comment ? saf.reviewComment != options.comment : false;
                 if (!statusChanged && !commentCHanged) { return; }
+
+                // @@NOTE: non employees can only cancel their own SAF (Pending / Approved), no other status change and no comment only change (see canExternalCancelSaf)
+                if (!userInfo?.isEmployee) {
+                    if (!statusChanged || options.status != twcSaf.Status.Cancelled || !canExternalCancelSaf(userInfo, saf.status, saf.customer, saf.primaryContractor)) {
+                        throw new Error('You do not have permissions to change the status of this SAF');
+                    }
+                }
 
                 // @@NOTE: 'Rejected' is no longer used (it had the same effect as 'Cancelled'), a cancelled (or old rejected) SAF cannot be re-opened
                 if (statusChanged && options.status == twcSaf.Status.Rejected) { throw new Error(`The 'Rejected' status is no longer used, please use 'Cancelled'`); }
@@ -992,6 +1011,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             saveNewSaf: saveNewSaf,
             editSafStatus: editSafStatus,
+            canExternalCancelSaf: canExternalCancelSaf,
             saveSafImage: saveSafImage,
             setSafReviewer: setSafReviewer,
             setSafReviewed: setSafReviewed,

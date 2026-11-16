@@ -86,7 +86,14 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 //
                 var canChangeStatus = (pageData.userInfo.isEmployee) ? (safStatus != twcSaf.Status.Complete && !safClosed) : false;
                 if (core.me()) { canChangeStatus = true; }
-                if (canChangeStatus) {
+                // @@NOTE: customers / contractors can only cancel their own SAF when Pending or Approved (twcSiteAccessUtils.canExternalCancelSaf, also enforced on the server)
+                var externalCanCancel = !!context.request.parameters.recId && twcSiteAccessUtils.canExternalCancelSaf(pageData.userInfo, safStatus,
+                    pageData.siteAccessInfo[twcSaf.Fields.CUSTOMER], pageData.siteAccessInfo[twcSaf.Fields.PRIMARY_CONTRACTOR]);
+                if (externalCanCancel) {
+                    // @@NOTE: externalCancel => the client shows only the comment (reason) box, no status drop down (ui/js/oTWC_siteAccess.js: cancelSafExternal)
+                    pageData.externalCancel = true;
+                    pageData.allowedStatues = [twcUtils.getSafStatusName(twcUtils.SafStatus.Cancelled, true)];
+                } else if (canChangeStatus) {
                     pageData.allowedStatues = [];
                     if (!safIsInThePast) { pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Pending, true)); }
                     if (pageData.userInfo.isEmployee) {
@@ -148,7 +155,12 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                             }
 
                         }
-                        if (canChangeStatus) { actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Change Status / Comment', id: 'change-status-button' }); }
+                        if (externalCanCancel) {
+                            // @@NOTE: same dialog as the employees 'Change Status / Comment', with 'Cancelled' as the only status (comment / reason mandatory)
+                            actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SAF', id: 'change-status-button' });
+                        } else if (canChangeStatus) {
+                            actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Change Status / Comment', id: 'change-status-button' });
+                        }
                         actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Re Use', id: 're-use-button' });
                     }
 
@@ -213,7 +225,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
             } else if (context.request.parameters.action == 'edit-saf-status') {
                 var payload = JSON.parse(context.request.body);
-                return twcSiteAccessUtils.editSafStatus(payload);
+                return twcSiteAccessUtils.editSafStatus(payload, twcConfig.userInfo(context));
 
             } else if (context.request.parameters.action == 'upload-saf-photo') {
                 twcSiteAccessUtils.saveSafImage(JSON.parse(context.request.body));

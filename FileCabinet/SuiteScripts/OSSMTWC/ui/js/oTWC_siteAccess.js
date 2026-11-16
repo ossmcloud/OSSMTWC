@@ -1136,7 +1136,46 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // }
             }
 
+            // @@NOTE: customers / contractors cancelling their own SAF ('Cancel SAF' button, ui/oTWC_siteAccess_sl.js: externalCanCancel)
+            //         no status drop down: the status is always Cancelled (the only allowed status), the comment (reason) is mandatory (checked again on the server)
+            cancelSafExternal() {
+                var form = twcUI.init({
+                    controls: [
+                        { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Please enter the reason for cancelling this SAF', value: '', width: '100%', rows: 7, mandatory: true },
+                    ]
+                });
+                dialog.open({
+                    title: 'Cancel SAF',
+                    content: form.ui,
+                    size: { width: '500px', height: '300px' },
+                    ok: () => {
+                        try {
+                            var comment = (form.getValues().comment || '').trim();
+                            if (!comment) { throw new Error('Please, specify the reason for cancelling the SAF'); }
+                            this.wait();
+                            this.post({ action: 'edit-saf-status' }, { saf: this.data.siteAccessInfo.id, status: this.data.allowedStatues[0].value, comment: comment }).then(resp => {
+                                if (resp.error) {
+                                    this.waitClose();
+                                    dialog.error(resp.error);
+                                    return;
+                                }
+                                location.reload();
+                            }).catch(err => {
+                                dialog.error(err);
+                                this.waitClose();
+                            });
+                            return true;
+                        } catch (error) {
+                            this.waitClose();
+                            dialog.error(error);
+                            return false;
+                        }
+                    }
+                })
+            }
+
             changeStatus() {
+                if (this.data.externalCancel) { this.cancelSafExternal(); return; }
                 var formConfig = {
                     controls: [
                         { type: twcUI.CTRL_TYPE.SELECT, id: 'status', dataSource: this.data.allowedStatues, value: this.data.siteAccessInfo[twcSaf.Fields.STATUS], lineBreak: true },
