@@ -55,6 +55,64 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
             testFunction() {
 
                 try {
+                    /*
+                    // @@NOTE: ONE-OFF FIX - SRF Review Space / Facilities check passed
+                    //         the Facilities workflow stage (id 4) was configured with pass field / form field custrecord_twc_srf_rev_space_check_pass instead of custrecord_twc_srf_rev_fac_check_pass
+                    //         so the Facilities check overwrote the Space check result and the Facilities check result was never saved on the review record
+                    //         the right results are on the workflow items (custrecord_twc_srf_wkfi_review_passed): resets both fields on the review record from the latest completed Space / Facilities item
+                    // @@HARDCODED: workflow stage ids 3 (Space) and 4 (Facilities)
+                    const STAGE_SPACE = 3; const STAGE_FACILITIES = 4;
+                    var reviews = {};
+                    coreSQL.each(`
+                        select  r.id as review_id, BUILTIN.DF(r.custrecord_twc_srf_rev_srf) as srf, r.custrecord_twc_srf_rev_iter as iter,
+                                r.custrecord_twc_srf_rev_space_check_pass as cur_space, r.custrecord_twc_srf_rev_fac_check_pass as cur_fac,
+                                wi.id as item_id, wi.custrecord_twc_srf_wkfi_stage as stage, wi.custrecord_twc_srf_wkfi_review_passed as passed
+                        from    customrecord_twc_srf_rev r
+                        join    customrecord_twc_srf_wkfi wi on wi.custrecord_twc_srf_wkfi_review = r.id
+                        where   wi.custrecord_twc_srf_wkfi_stage in (${STAGE_SPACE}, ${STAGE_FACILITIES})
+                        and     wi.custrecord_twc_srf_wkfi_status = ${twcSrfWorkflowEngine.WorkflowStatus.COMPLETED}
+                        order by r.id, wi.id desc
+                    `, row => {
+                        var rev = reviews[row.review_id];
+                        if (!rev) {
+                            rev = reviews[row.review_id] = { id: row.review_id, srf: row.srf, iter: row.iter, curSpace: row.cur_space == 'T', curFac: row.cur_fac == 'T', space: null, fac: null };
+                        }
+                        // @@NOTE: rows are ordered by item id desc, so the first one per stage is the latest (a stage can be completed more than once in the same iteration)
+                        if (row.stage == STAGE_SPACE && rev.space === null) { rev.space = row.passed == 'T'; }
+                        if (row.stage == STAGE_FACILITIES && rev.fac === null) { rev.fac = row.passed == 'T'; }
+                    });
+
+                    var toFix = [];
+                    for (var k in reviews) {
+                        var rev = reviews[k];
+                        rev.fields = []; rev.values = [];
+                        // @@NOTE: only set a field when its check has been completed, otherwise leave it as it is
+                        if (rev.space !== null && rev.space !== rev.curSpace) { rev.fields.push('custrecord_twc_srf_rev_space_check_pass'); rev.values.push(rev.space); }
+                        if (rev.fac !== null && rev.fac !== rev.curFac) { rev.fields.push('custrecord_twc_srf_rev_fac_check_pass'); rev.values.push(rev.fac); }
+                        if (rev.fields.length > 0) { toFix.push(rev); }
+                    }
+                    console.table(toFix.map(r => { return { review: r.id, srf: r.srf, iter: r.iter, cur_space: r.curSpace, new_space: r.space, cur_fac: r.curFac, new_fac: r.fac }; }));
+                    if (toFix.length == 0) { alert('Nothing to fix'); return; }
+                    if (!confirm(`Fix Space / Facilities check passed on ${toFix.length} SRF Review record(s)? (see console for the list)`)) { return; }
+
+                    var fixed = 0; var failed = 0;
+                    core.array.each(toFix, r => {
+                        try {
+                            recu.submit('customrecord_twc_srf_rev', r.id, r.fields, r.values);
+                            fixed++;
+                            console.log(`FIXED: review ${r.id} (${r.srf} - iter ${r.iter}) -> space: ${r.space} - facilities: ${r.fac}`);
+                        } catch (error) {
+                            failed++;
+                            console.log(`FAILED: review ${r.id} (${r.srf} - iter ${r.iter})`, error);
+                        }
+                    });
+                    console.log(`DONE - fixed: ${fixed} - failed: ${failed}`);
+                    alert(`Done - fixed: ${fixed} - failed: ${failed} (see console)`);
+                    return;
+                    */
+                    
+                    
+
                     //twcSrfWorkflowEngine.initEquipment({ srf: 156 });
 
                     // @@NOTE: ONE-OFF FIX - ATME / Feeders added to an existing TME via SRF were created without parent TME
