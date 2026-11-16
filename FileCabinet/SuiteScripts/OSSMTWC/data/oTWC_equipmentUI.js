@@ -146,6 +146,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var selectFields = getSiteInventoryTableFields(userInfo);
             core.array.each(COMPUTED_COLUMNS, c => { delete selectFields[c]; });
             var items = twcInventory.select({ fields: selectFields, where: whereClause, useNames: true });
+            // @@NOTE: cancelled equipment (install or licence status Cancelled, e.g.: install on a cancelled SRF) is not shown on the site equipment list
+            //         filtered here rather than in the where clause so equipment with no status is not dropped (null != x)
+            items = items.filter(item => {
+                return item[twcInventory.Fields.EQUIPMENT_INSTALL_STATUS] != twcUtils.EqInstallStatus.Cancelled
+                    && item[twcInventory.Fields.EQUIPMENT_LICENCE_STATUS] != twcUtils.EqLicenseStatus.Cancelled;
+            });
 
             var srfs = getSiteEquipmentSrf(dataSource.id);
             core.array.each(items, item => {

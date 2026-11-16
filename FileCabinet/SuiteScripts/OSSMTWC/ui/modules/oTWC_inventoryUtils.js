@@ -127,7 +127,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sqlFields = 's.id, s.id as record_id, s.custrecord_twc_equip_site as site_id, BUILTIN.DF(s.custrecord_twc_equip_site) as site_id_text';
             sqlFields += formatUserFields(inventoryFields, userFields);
 
-            var whereClause = 'where 1 = 1 ';
+            // @@NOTE: cancelled equipment (install or licence status Cancelled, e.g.: install on a cancelled SRF) is not shown on the equipment list
+            var whereClause = `where NVL(s.${twcInventory.Fields.EQUIPMENT_INSTALL_STATUS}, 0) != ${twcUtils.EqInstallStatus.Cancelled}
+                               and NVL(s.${twcInventory.Fields.EQUIPMENT_LICENCE_STATUS}, 0) != ${twcUtils.EqLicenseStatus.Cancelled} `;
             var orderBy = `order by s.${twcInventory.Fields.EQUIPMENT_ID}`;
 
             var allowedCustomers = twcConfig.getUserAllowedCustomers(userInfo, true);
