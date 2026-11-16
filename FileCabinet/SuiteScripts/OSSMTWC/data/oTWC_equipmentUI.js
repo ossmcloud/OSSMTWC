@@ -335,6 +335,21 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         // @@NOTE: all the equipment properties for the equipment details dialog ((i) icon, ui/views/oTWC_baseView.js: showEquipmentInfo, via oTWC_microSvc_sl.js action 'get-equipment-info')
         //         labels are the NetSuite field labels, fields in the generated order. External users: only equipment of their allowed customers,
         //         and fields flagged as TL only in the field access setup (customrecord_twc_fieldaccess) are left out
+        // @@NOTE: equipment details dialog field sequence (client request), keys of twcInventory.Fields / FieldsInfo
+        //         'Equipment ID' is the record name, Length / Width / Height are LENGTH_MM / WIDTH_MM / HEIGHTDEPTH_MM
+        const EQ_INFO_FIELD_ORDER = [
+            'NAME', 'PARENT_TME_ID', 'CUSTOMER', 'SITE', 'INFRASTRUCTURE',
+            'EQUIPMENT_CLASS', 'EQUIPMENT_TYPE', 'EQUIPMENT_INSTALL_STATUS', 'EQUIPMENT_LICENCE_STATUS',
+            'HEIGHT_ON_TOWER_M', 'MODIFIED_ANTENNA_LOCATION', 'GIE_LOCATION', 'AZIMUTH', 'B_END', 'CUSTOMER_REF', 'INVENTORY_FLAG', 'FEEDER_TYPE',
+            'USE_LIBRARY', 'EQUIPMENT_LIBRARY_ENTRY', 'MAKE', 'MODEL', 'DESCRIPTION',
+            'LENGTH_MM', 'WIDTH_MM', 'HEIGHTDEPTH_MM', 'WEIGHT_KG', 'VOLTAGE_TYPE',
+            'LICENCED_DATE', 'INSTALLED_DATE', 'REMOVED_DATE'
+        ];
+        // @@NOTE: always at the bottom of the dialog, in this order (after the fields not in EQ_INFO_FIELD_ORDER)
+        const EQ_INFO_FIELD_LAST = ['CREATED', 'OWNER', 'MODIFIED', 'MODIFIED_BY'];
+        // @@NOTE: not shown on the dialog: EQUIPMENT_ID (custrecord_twc_equip_id) duplicates the record name 'Equipment ID'
+        const EQ_INFO_FIELD_HIDDEN = ['EQUIPMENT_ID'];
+
         function getEquipmentInfo(options, userInfo) {
             var eqId = parseInt(options?.id);
             if (!eqId) { throw new Error('invalid parameters passed'); }
@@ -347,11 +362,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var labels = {};
             core.array.each(twcConfig.getFields(twcInventory.Type), f => { labels[f.field_id] = f.field_label; });
-            const STD_LABELS = { name: 'Equipment ID', created: 'Date Created', lastmodified: 'Last Modified', owner: 'Created By' };
+            const STD_LABELS = { name: 'Equipment ID', created: 'Created', owner: 'Created By', lastmodified: 'Last Modified', lastmodifiedby: 'Last Modified By' };
+
+            // @@NOTE: fields in EQ_INFO_FIELD_ORDER first (client requested sequence), then all the others in the generated order, then EQ_INFO_FIELD_LAST
+            var fieldKeys = EQ_INFO_FIELD_ORDER.filter(k => { return twcInventory.FieldsInfo[k]; });
+            for (var k in twcInventory.FieldsInfo) {
+                if (fieldKeys.indexOf(k) >= 0 || EQ_INFO_FIELD_LAST.indexOf(k) >= 0 || EQ_INFO_FIELD_HIDDEN.indexOf(k) >= 0) { continue; }
+                fieldKeys.push(k);
+            }
+            fieldKeys.push(...EQ_INFO_FIELD_LAST.filter(k => { return twcInventory.FieldsInfo[k]; }));
 
             var fields = [];
-            for (var k in twcInventory.FieldsInfo) {
-                var f = twcInventory.FieldsInfo[k];
+            for (var x = 0; x < fieldKeys.length; x++) {
+                var f = twcInventory.FieldsInfo[fieldKeys[x]];
                 if (!userInfo.isEmployee) {
                     var access = configUIFields.getFieldAccess({ Type: twcInventory.Type }, f.name);
                     if (access?.access == configUIFields.FieldAccessType.TL) { continue; }
@@ -362,7 +385,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 } else if (f.type == 'checkbox') {
                     value = (value == 'T' || value === true) ? 'Yes' : 'No';
                 }
-                fields.push({ id: f.name, label: labels[f.name] || STD_LABELS[f.name] || f.alias || f.name, value: (value === null || value === undefined) ? '' : value });
+                fields.push({ id: f.name, label: STD_LABELS[f.name] || labels[f.name] || f.alias || f.name, value: (value === null || value === undefined) ? '' : value });
             }
 
             return { id: eqId, name: eq[twcInventory.Fields.NAME], fields: fields };
