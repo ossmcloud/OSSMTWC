@@ -749,6 +749,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (cf.hide) { return false; }
                         for (var k in cf) { col[k] = cf[k]; }
                         col.nullText = '';
+                        // @@NOTE: feeders: the 'Type' column shows the feeder type (same as the site equipment tables), the equipment type name is left on the row (copied on the SRF item when picked)
+                        if (eqClass == twcEqUI.EqClass.FEEDER && col.id == `${twcEquipment.Fields.EQUIPMENT_TYPE}_name`) {
+                            col.formatValue = (v, fv, data) => { return data[`${twcEquipment.Fields.FEEDER_TYPE}_name`] || ''; };
+                        }
                         if (col.id == 'name') {
                             col.addCount = true;
                             // @@NOTE: (i) icon => equipment details dialog (the icon click does not pick the row)

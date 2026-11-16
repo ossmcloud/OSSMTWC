@@ -111,13 +111,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 structureFilter = `and    eq.${twcEquipment.Fields.INFRASTRUCTURE} = ${parseInt(options.structure)}`;
             }
 
+            // @@NOTE: feeder type name: feeders show the feeder type under the picker 'Type' column (ui/js/oTWC_spaceRequest.js: pickEquipment)
+            //         the equipment type name is still returned as it is (copied on the SRF item when picked)
             var sql = `
-                    select  eq.id, ${fieldsSql}, 
+                    select  eq.id, ${fieldsSql},
                             ${twcEquipment.Fields.DESCRIPTION},  
                             ${twcEquipment.Fields.PARENT_TME_ID}, BUILTIN.DF(${twcEquipment.Fields.PARENT_TME_ID}) as ${twcEquipment.Fields.PARENT_TME_ID}_name,
                             eq.${twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION}, BUILTIN.DF(eq.${twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION}) as ${twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION}_name,
                             eq.${twcEquipment.Fields.GIE_LOCATION},
-                            
+                            BUILTIN.DF(eq.${twcEquipment.Fields.FEEDER_TYPE}) as ${twcEquipment.Fields.FEEDER_TYPE}_name,
+
                     from    ${twcEquipment.Type} eq
                     join   customrecord_twc_infra infra on infra.id = eq.custrecord_twc_equip_str
                     where  eq.custrecord_twc_equip_customer = ${options.customer}
