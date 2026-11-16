@@ -640,6 +640,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     const onColumnInit = (tbl, col) => {
                         var cf = fields.find(cf => { return cf.field == col.id });
                         if (!cf) { return false; }
+                        if (cf.hide) { return false; }
                         for (var k in cf) { col[k] = cf[k]; }
                         col.nullText = '';
                     }
