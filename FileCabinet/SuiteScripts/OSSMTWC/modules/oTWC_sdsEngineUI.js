@@ -335,8 +335,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         <div>${eq[twcSdsEquipment.Fields.EQUIPMENT_CLASS + '_name']}</div>
                         <div>${eq[twcSdsEquipment.Fields.EQUIPMENT_TYPE + '_name']}</div>
                         <div>${[eq[twcSdsEquipment.Fields.MAKE], eq[twcSdsEquipment.Fields.MODEL]].filter(v => { return v; }).join(' / ')}</div>
-                        <!-- @@NOTE: editable description (printed on the SDS), saved on change like the other inputs of the row -->
-                        <div><input type="text" class="twc" id="${twcSdsEquipment.Fields.DESCRIPTION}" style="width: 100%;" value="${escAttr(eq[twcSdsEquipment.Fields.DESCRIPTION])}" /></div>
+                        <div>${eq[twcSdsEquipment.Fields.DESCRIPTION] || ''}</div>
                         <div>${eq[twcSdsEquipment.Fields.B_END] || ''}</div>
                         <div>${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, id: twcSdsEquipment.Fields.INSTALL_STATUS, value: eq[twcSdsEquipment.Fields.INSTALL_STATUS], dataSource: twcUtils.EqInstallStatus.lookUp(), noEmpty: true, width: '100%' })}</div>
                         <div>${twcUI.render({ type: twcUI.CTRL_TYPE.SELECT, id: twcSdsEquipment.Fields.LICENSE_STATUS, value: eq[twcSdsEquipment.Fields.LICENSE_STATUS], dataSource: twcUtils.EqLicenseStatus.lookUp(), noEmpty: true, width: '100%' })}</div>
