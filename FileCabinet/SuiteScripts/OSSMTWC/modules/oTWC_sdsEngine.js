@@ -267,12 +267,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sdsLicenceStatusDefaults = {
                 [twcUtils.EqLicenseStatus.ReqtoLicence]: twcUtils.EqLicenseStatus.Licenced,
                 [twcUtils.EqLicenseStatus.ProptoLicence]: twcUtils.EqLicenseStatus.Licenced,
-                [twcUtils.EqLicenseStatus.ProptoLicence_LicenceRequested]: twcUtils.EqLicenseStatus.Licenced,
-                [twcUtils.EqLicenseStatus.ProptoLicence_LicenceIssued]: twcUtils.EqLicenseStatus.Licenced,
                 [twcUtils.EqLicenseStatus.ReqtoUnlicence]: twcUtils.EqLicenseStatus.ProptoUnlicence,
                 [twcUtils.EqLicenseStatus.ProptoUnlicence]: twcUtils.EqLicenseStatus.ProptoUnlicence,
-                [twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceRequested]: twcUtils.EqLicenseStatus.ProptoUnlicence,
-                [twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceIssued]: twcUtils.EqLicenseStatus.ProptoUnlicence,
+                // @@NOTE: Issue 299 - the 'Prop to Licence / Unlicence - Licence Requested / Issued' statuses are retired (equipment stays Prop to Licence / Unlicence until executed)
             };
 
             // @@NOTE: equipment associated with a cancelled SRF is not included in the SDS: the equipment associated EA is an install (Licence / Swap Licence)

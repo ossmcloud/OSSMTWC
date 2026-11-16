@@ -69,13 +69,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Draft: 1,
             ReqtoLicence: 2,
             ProptoLicence: 3,
-            ProptoLicence_LicenceRequested: 4,
-            ProptoLicence_LicenceIssued: 5,
+            // @@NOTE: RETIRED (Issue 299): the 'Prop to Licence / Unlicence - Licence Requested / Issued / Signed' values are no longer set (the equipment stays Prop to Licence / Unlicence
+            //         until the licence is executed, see oTWC_srfWorkflowEngine.js: updateEquipment), commented out so they are not offered in drop downs (lookUp)
+            // ProptoLicence_LicenceRequested: 4,          // RETIRED (Issue 299)
+            // ProptoLicence_LicenceIssued: 5,             // RETIRED (Issue 299)
             Licenced: 6,
             ReqtoUnlicence: 7,
             ProptoUnlicence: 8,
-            ProptoUnlicence_LicenceRequested: 9,
-            ProptoUnlicence_LicenceIssued: 10,
+            // ProptoUnlicence_LicenceRequested: 9,        // RETIRED (Issue 299)
+            // ProptoUnlicence_LicenceIssued: 10,          // RETIRED (Issue 299)
             Unlicenced: 11,
             Cancelled: 12,
             LicenceRetained: 13,
@@ -445,6 +447,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return `<span class="${spanClass ? spanClass : 'twc-record-status'}" style="color: white; background-color: darkgreen; white-space: nowrap;" title="Works Permitted on ${dateText}">Works Permitted</span>`;
         }
 
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids (customrecord_twc_package, equipment field custrecord_twc_equip_package)
+        const EQ_PACKAGE = {
+            Yes: 1,
+            No: 2
+        }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SDS_STATUS = {
@@ -1696,6 +1704,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SrfDeafultFileType: SRF_DEFAULT_FILE_TYPE,
 
             SdsStatus: SDS_STATUS,
+            EqPackage: EQ_PACKAGE,
 
             getFileStatusName: getFileStatusName,
             getFileStatusHtml: getFileStatusHtml,

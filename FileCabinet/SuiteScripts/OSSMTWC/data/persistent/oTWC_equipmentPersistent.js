@@ -8,19 +8,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFields = {
             NAME: 'name',
             EQUIPMENT_ID: 'custrecord_twc_equip_id',
-            RADIX_EQUIPMENT_TABLE_ROW: 'custrecord_twc_equip_radix_tbl_row',
+            PARENT_TME_ID: 'custrecord_twc_equip_parent_tme_id',
+            CUSTOMER: 'custrecord_twc_equip_customer',
             SITE: 'custrecord_twc_equip_site',
+            INFRASTRUCTURE: 'custrecord_twc_equip_str',
             EQUIPMENT_CLASS: 'custrecord_twc_equip_class',
             EQUIPMENT_TYPE: 'custrecord_twc_equip_type',
-            INFRASTRUCTURE: 'custrecord_twc_equip_str',
-            MODIFIED_ANTENNA_LOCATION: 'custrecord_twc_equip_location',
             EQUIPMENT_INSTALL_STATUS: 'custrecordtwc_eq_install_status',
             EQUIPMENT_LICENCE_STATUS: 'custrecord_twc_eq_licence_status',
-            CUSTOMER: 'custrecord_twc_equip_customer',
-            PARENT_TME_ID: 'custrecord_twc_equip_parent_tme_id',
+            HEIGHT_ON_TOWER_M: 'custrecord_twc_equip_ht_on_twr_m',
+            MODIFIED_ANTENNA_LOCATION: 'custrecord_twc_equip_location',
+            GIE_LOCATION: 'custrecord_twc_equip_gie_loc',
+            AZIMUTH: 'custrecord_twc_equip_azimuth',
+            B_END: 'custrecord_twc_equip_b_end',
+            CUSTOMER_REF: 'custrecord_twc_equip_cust_ref',
+            INVENTORY_FLAG: 'custrecord_twc_equip_inv_flag',
+            FEEDER_TYPE: 'custrecord_twc_equip_opt_type',
             USE_LIBRARY: 'custrecord_twc_equip_use_lib',
             EQUIPMENT_LIBRARY_ENTRY: 'custrecord_twc_equip_lib_entry',
-            ACTIVEPASSIVE: 'custrecord_twc_equip_act_passive',
             MAKE: 'custrecord_twc_equip_make',
             MODEL: 'custrecord_twc_equip_model',
             DESCRIPTION: 'custrecord_twc_equip_description',
@@ -28,29 +33,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WIDTH_MM: 'custrecord_twc_equip_width_mm',
             HEIGHTDEPTH_MM: 'custrecord_twc_equip_ht_depth_mm',
             WEIGHT_KG: 'custrecord_twc_equip_weight_kg',
+            VOLTAGE_TYPE: 'custrecord_twc_equip_voltage_type',
+            LICENCE_COMMENCEMENT_DATE: 'custrecord_twc_equip_licenced_date',
+            INSTALLED_DATE: 'custrecord_twc_equip_installed_date',
+            REMOVED_DATE: 'custrecord_twc_equip_rmv_date',
+            TL_NOTE: 'custrecord_twc_equip_tl_note',
+            PACKAGE: 'custrecord_twc_equip_package',
             WIND_LOADING_NM2_FRONT: 'custrecord_twc_equip_wind_ldg_nm2',
             WIND_LOADING_NM2_SIDE: 'custrecordtwc_equip_wind_ldg_nm2_side',
             WIND_LOADING_NM2_REAR: 'custrecord_twc_equip_wind_ldg_nm2_rear',
             WIND_LOADING_NM2_MAX: 'custrecord_twc_equip_wind_ldg_nm2_max',
             WIND_REGIME: 'custrecord_twc_equip_wind_regime',
-            VOLTAGE_TYPE: 'custrecord_twc_equip_voltage_type',
-            CUSTOMER_NOTE: 'custrecord_twc_cus_note',
-            TL_NOTE: 'custrecord_twc_equip_tl_note',
+            ACTIVEPASSIVE: 'custrecord_twc_equip_act_passive',
             ASSOCIATED_EQUIP_ACTIONS: 'custrecord_twc_equip_assoc_eq_action',
             TO_BE_BILLED: 'custrecord_twc_equip_to_be_billed',
             BILL_FROM: 'custrecord_twc_equip_bill_from',
             BILL_TO: 'custrecord_twc_equip_bill_to',
-            LICENCED_DATE: 'custrecord_twc_equip_licenced_date',
-            INSTALLED_DATE: 'custrecord_twc_equip_installed_date',
-            REMOVED_DATE: 'custrecord_twc_equip_rmv_date',
-            GIE_LOCATION: 'custrecord_twc_equip_gie_loc',
-            HEIGHT_ON_TOWER_M: 'custrecord_twc_equip_ht_on_twr_m',
-            AZIMUTH: 'custrecord_twc_equip_azimuth',
-            B_END: 'custrecord_twc_equip_b_end',
-            CUSTOMER_REF: 'custrecord_twc_equip_cust_ref',
-            INVENTORY_FLAG: 'custrecord_twc_equip_inv_flag',
-            PACKAGE: 'custrecord_twc_equip_package',
-            FEEDER_TYPE: 'custrecord_twc_equip_opt_type',
+            RADIX_EQUIPMENT_TABLE_ROW: 'custrecord_twc_equip_radix_tbl_row',
+            CUSTOMER_NOTE: 'custrecord_twc_cus_note',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -59,19 +59,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         var _recordFieldInfo = {
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             EQUIPMENT_ID: { name: 'custrecord_twc_equip_id', type: 'text', alias: 'equipmentID', display: 'normal', mandatory: false },
-            RADIX_EQUIPMENT_TABLE_ROW: { name: 'custrecord_twc_equip_radix_tbl_row', type: 'integer', alias: 'rADIXEquipmentTableRow', display: 'normal', mandatory: false },
+            PARENT_TME_ID: { name: 'custrecord_twc_equip_parent_tme_id', type: 'select', alias: 'parentTMEID', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip' },
+            CUSTOMER: { name: 'custrecord_twc_equip_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             SITE: { name: 'custrecord_twc_equip_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
+            INFRASTRUCTURE: { name: 'custrecord_twc_equip_str', type: 'select', alias: 'infrastructure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
             EQUIPMENT_CLASS: { name: 'custrecord_twc_equip_class', type: 'select', alias: 'equipmentClass', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_class' },
             EQUIPMENT_TYPE: { name: 'custrecord_twc_equip_type', type: 'select', alias: 'equipmentType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_type' },
-            INFRASTRUCTURE: { name: 'custrecord_twc_equip_str', type: 'select', alias: 'infrastructure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
-            MODIFIED_ANTENNA_LOCATION: { name: 'custrecord_twc_equip_location', type: 'select', alias: 'modifiedAntennaLocation', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
             EQUIPMENT_INSTALL_STATUS: { name: 'custrecordtwc_eq_install_status', type: 'select', alias: 'equipmentInstallStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_install_status' },
             EQUIPMENT_LICENCE_STATUS: { name: 'custrecord_twc_eq_licence_status', type: 'select', alias: 'equipmentLicenceStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_licence_status' },
-            CUSTOMER: { name: 'custrecord_twc_equip_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
-            PARENT_TME_ID: { name: 'custrecord_twc_equip_parent_tme_id', type: 'select', alias: 'parentTMEID', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip' },
+            HEIGHT_ON_TOWER_M: { name: 'custrecord_twc_equip_ht_on_twr_m', type: 'float', alias: 'heightonTowerm', display: 'normal', mandatory: false },
+            MODIFIED_ANTENNA_LOCATION: { name: 'custrecord_twc_equip_location', type: 'select', alias: 'modifiedAntennaLocation', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
+            GIE_LOCATION: { name: 'custrecord_twc_equip_gie_loc', type: 'text', alias: 'gIELocation', display: 'normal', mandatory: false },
+            AZIMUTH: { name: 'custrecord_twc_equip_azimuth', type: 'integer', alias: 'azimuth', display: 'normal', mandatory: false },
+            B_END: { name: 'custrecord_twc_equip_b_end', type: 'text', alias: 'b_End', display: 'normal', mandatory: false },
+            CUSTOMER_REF: { name: 'custrecord_twc_equip_cust_ref', type: 'text', alias: 'customerRef', display: 'normal', mandatory: false },
+            INVENTORY_FLAG: { name: 'custrecord_twc_equip_inv_flag', type: 'select', alias: 'inventoryFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_inv_flag' },
+            FEEDER_TYPE: { name: 'custrecord_twc_equip_opt_type', type: 'select', alias: 'feederType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_typ_opt' },
             USE_LIBRARY: { name: 'custrecord_twc_equip_use_lib', type: 'select', alias: 'useLibrary', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_use_lib' },
             EQUIPMENT_LIBRARY_ENTRY: { name: 'custrecord_twc_equip_lib_entry', type: 'select', alias: 'equipmentLibraryEntry', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_lib' },
-            ACTIVEPASSIVE: { name: 'custrecord_twc_equip_act_passive', type: 'select', alias: 'activePassive', display: 'normal', mandatory: false, recordType: 'customrecord_twc_active_passive' },
             MAKE: { name: 'custrecord_twc_equip_make', type: 'text', alias: 'make', display: 'normal', mandatory: false },
             MODEL: { name: 'custrecord_twc_equip_model', type: 'text', alias: 'model', display: 'normal', mandatory: false },
             DESCRIPTION: { name: 'custrecord_twc_equip_description', type: 'text', alias: 'description', display: 'normal', mandatory: false },
@@ -79,29 +84,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WIDTH_MM: { name: 'custrecord_twc_equip_width_mm', type: 'integer', alias: 'widthmm', display: 'normal', mandatory: false },
             HEIGHTDEPTH_MM: { name: 'custrecord_twc_equip_ht_depth_mm', type: 'integer', alias: 'heightDepthmm', display: 'normal', mandatory: false },
             WEIGHT_KG: { name: 'custrecord_twc_equip_weight_kg', type: 'float', alias: 'weightkg', display: 'normal', mandatory: false },
+            VOLTAGE_TYPE: { name: 'custrecord_twc_equip_voltage_type', type: 'select', alias: 'voltageType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_voltage_type' },
+            LICENCE_COMMENCEMENT_DATE: { name: 'custrecord_twc_equip_licenced_date', type: 'date', alias: 'licenceCommencementDate', display: 'normal', mandatory: false },
+            INSTALLED_DATE: { name: 'custrecord_twc_equip_installed_date', type: 'date', alias: 'installedDate', display: 'normal', mandatory: false },
+            REMOVED_DATE: { name: 'custrecord_twc_equip_rmv_date', type: 'date', alias: 'removedDate', display: 'normal', mandatory: false },
+            TL_NOTE: { name: 'custrecord_twc_equip_tl_note', type: 'text', alias: 'tLNote', display: 'normal', mandatory: false },
+            PACKAGE: { name: 'custrecord_twc_equip_package', type: 'select', alias: 'package', display: 'normal', mandatory: false, recordType: 'customrecord_twc_package' },
             WIND_LOADING_NM2_FRONT: { name: 'custrecord_twc_equip_wind_ldg_nm2', type: 'integer', alias: 'windLoadingNm2Front', display: 'normal', mandatory: false },
             WIND_LOADING_NM2_SIDE: { name: 'custrecordtwc_equip_wind_ldg_nm2_side', type: 'integer', alias: 'windLoadingNm2Side', display: 'normal', mandatory: false },
             WIND_LOADING_NM2_REAR: { name: 'custrecord_twc_equip_wind_ldg_nm2_rear', type: 'integer', alias: 'windLoadingNm2Rear', display: 'normal', mandatory: false },
             WIND_LOADING_NM2_MAX: { name: 'custrecord_twc_equip_wind_ldg_nm2_max', type: 'integer', alias: 'windLoadingNm2Max', display: 'normal', mandatory: false },
             WIND_REGIME: { name: 'custrecord_twc_equip_wind_regime', type: 'select', alias: 'windRegime', display: 'normal', mandatory: false, recordType: 'customlist_twc_equip_wind_regime' },
-            VOLTAGE_TYPE: { name: 'custrecord_twc_equip_voltage_type', type: 'select', alias: 'voltageType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_voltage_type' },
-            CUSTOMER_NOTE: { name: 'custrecord_twc_cus_note', type: 'text', alias: 'customerNote', display: 'normal', mandatory: false },
-            TL_NOTE: { name: 'custrecord_twc_equip_tl_note', type: 'text', alias: 'tLNote', display: 'normal', mandatory: false },
+            ACTIVEPASSIVE: { name: 'custrecord_twc_equip_act_passive', type: 'select', alias: 'activePassive', display: 'normal', mandatory: false, recordType: 'customrecord_twc_active_passive' },
             ASSOCIATED_EQUIP_ACTIONS: { name: 'custrecord_twc_equip_assoc_eq_action', type: 'select', alias: 'associatedEQUIP_ACTIONs', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action' },
             TO_BE_BILLED: { name: 'custrecord_twc_equip_to_be_billed', type: 'checkbox', alias: 'toBeBilled', display: 'normal', mandatory: false },
             BILL_FROM: { name: 'custrecord_twc_equip_bill_from', type: 'date', alias: 'billFrom', display: 'normal', mandatory: false },
             BILL_TO: { name: 'custrecord_twc_equip_bill_to', type: 'date', alias: 'billTo', display: 'normal', mandatory: false },
-            LICENCED_DATE: { name: 'custrecord_twc_equip_licenced_date', type: 'date', alias: 'licencedDate', display: 'normal', mandatory: false },
-            INSTALLED_DATE: { name: 'custrecord_twc_equip_installed_date', type: 'date', alias: 'installedDate', display: 'normal', mandatory: false },
-            REMOVED_DATE: { name: 'custrecord_twc_equip_rmv_date', type: 'date', alias: 'removedDate', display: 'normal', mandatory: false },
-            GIE_LOCATION: { name: 'custrecord_twc_equip_gie_loc', type: 'text', alias: 'gIELocation', display: 'normal', mandatory: false },
-            HEIGHT_ON_TOWER_M: { name: 'custrecord_twc_equip_ht_on_twr_m', type: 'float', alias: 'heightonTowerm', display: 'normal', mandatory: false },
-            AZIMUTH: { name: 'custrecord_twc_equip_azimuth', type: 'integer', alias: 'azimuth', display: 'normal', mandatory: false },
-            B_END: { name: 'custrecord_twc_equip_b_end', type: 'text', alias: 'b_End', display: 'normal', mandatory: false },
-            CUSTOMER_REF: { name: 'custrecord_twc_equip_cust_ref', type: 'text', alias: 'customerRef', display: 'normal', mandatory: false },
-            INVENTORY_FLAG: { name: 'custrecord_twc_equip_inv_flag', type: 'select', alias: 'inventoryFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_inv_flag' },
-            PACKAGE: { name: 'custrecord_twc_equip_package', type: 'select', alias: 'package', display: 'normal', mandatory: false, recordType: 'customrecord_twc_package' },
-            FEEDER_TYPE: { name: 'custrecord_twc_equip_opt_type', type: 'select', alias: 'feederType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_typ_opt' },
+            RADIX_EQUIPMENT_TABLE_ROW: { name: 'custrecord_twc_equip_radix_tbl_row', type: 'integer', alias: 'rADIXEquipmentTableRow', display: 'normal', mandatory: false },
+            CUSTOMER_NOTE: { name: 'custrecord_twc_cus_note', type: 'text', alias: 'customerNote', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -124,11 +124,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.EQUIPMENT_ID, value)
             }
             
-            get rADIXEquipmentTableRow() {
-                return this.get(_recordFields.RADIX_EQUIPMENT_TABLE_ROW);
-            } set rADIXEquipmentTableRow(value) {
-                this.set(_recordFields.RADIX_EQUIPMENT_TABLE_ROW, value)
+            get parentTMEID() {
+                return this.get(_recordFields.PARENT_TME_ID);
+            } set parentTMEID(value) {
+                this.set(_recordFields.PARENT_TME_ID, value)
             }
+            get parentTMEIDName() { return this.getText(_recordFields.PARENT_TME_ID); }
+            
+            get customer() {
+                return this.get(_recordFields.CUSTOMER);
+            } set customer(value) {
+                this.set(_recordFields.CUSTOMER, value)
+            }
+            get customerName() { return this.getText(_recordFields.CUSTOMER); }
             
             get site() {
                 return this.get(_recordFields.SITE);
@@ -136,6 +144,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.SITE, value)
             }
             get siteName() { return this.getText(_recordFields.SITE); }
+            
+            get infrastructure() {
+                return this.get(_recordFields.INFRASTRUCTURE);
+            } set infrastructure(value) {
+                this.set(_recordFields.INFRASTRUCTURE, value)
+            }
+            get infrastructureName() { return this.getText(_recordFields.INFRASTRUCTURE); }
             
             get equipmentClass() {
                 return this.get(_recordFields.EQUIPMENT_CLASS);
@@ -151,20 +166,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get equipmentTypeName() { return this.getText(_recordFields.EQUIPMENT_TYPE); }
             
-            get infrastructure() {
-                return this.get(_recordFields.INFRASTRUCTURE);
-            } set infrastructure(value) {
-                this.set(_recordFields.INFRASTRUCTURE, value)
-            }
-            get infrastructureName() { return this.getText(_recordFields.INFRASTRUCTURE); }
-            
-            get modifiedAntennaLocation() {
-                return this.get(_recordFields.MODIFIED_ANTENNA_LOCATION);
-            } set modifiedAntennaLocation(value) {
-                this.set(_recordFields.MODIFIED_ANTENNA_LOCATION, value)
-            }
-            get modifiedAntennaLocationName() { return this.getText(_recordFields.MODIFIED_ANTENNA_LOCATION); }
-            
             get equipmentInstallStatus() {
                 return this.get(_recordFields.EQUIPMENT_INSTALL_STATUS);
             } set equipmentInstallStatus(value) {
@@ -179,19 +180,56 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get equipmentLicenceStatusName() { return this.getText(_recordFields.EQUIPMENT_LICENCE_STATUS); }
             
-            get customer() {
-                return this.get(_recordFields.CUSTOMER);
-            } set customer(value) {
-                this.set(_recordFields.CUSTOMER, value)
+            get heightonTowerm() {
+                return this.get(_recordFields.HEIGHT_ON_TOWER_M);
+            } set heightonTowerm(value) {
+                this.set(_recordFields.HEIGHT_ON_TOWER_M, value)
             }
-            get customerName() { return this.getText(_recordFields.CUSTOMER); }
             
-            get parentTMEID() {
-                return this.get(_recordFields.PARENT_TME_ID);
-            } set parentTMEID(value) {
-                this.set(_recordFields.PARENT_TME_ID, value)
+            get modifiedAntennaLocation() {
+                return this.get(_recordFields.MODIFIED_ANTENNA_LOCATION);
+            } set modifiedAntennaLocation(value) {
+                this.set(_recordFields.MODIFIED_ANTENNA_LOCATION, value)
             }
-            get parentTMEIDName() { return this.getText(_recordFields.PARENT_TME_ID); }
+            get modifiedAntennaLocationName() { return this.getText(_recordFields.MODIFIED_ANTENNA_LOCATION); }
+            
+            get gIELocation() {
+                return this.get(_recordFields.GIE_LOCATION);
+            } set gIELocation(value) {
+                this.set(_recordFields.GIE_LOCATION, value)
+            }
+            
+            get azimuth() {
+                return this.get(_recordFields.AZIMUTH);
+            } set azimuth(value) {
+                this.set(_recordFields.AZIMUTH, value)
+            }
+            
+            get b_End() {
+                return this.get(_recordFields.B_END);
+            } set b_End(value) {
+                this.set(_recordFields.B_END, value)
+            }
+            
+            get customerRef() {
+                return this.get(_recordFields.CUSTOMER_REF);
+            } set customerRef(value) {
+                this.set(_recordFields.CUSTOMER_REF, value)
+            }
+            
+            get inventoryFlag() {
+                return this.get(_recordFields.INVENTORY_FLAG);
+            } set inventoryFlag(value) {
+                this.set(_recordFields.INVENTORY_FLAG, value)
+            }
+            get inventoryFlagName() { return this.getText(_recordFields.INVENTORY_FLAG); }
+            
+            get feederType() {
+                return this.get(_recordFields.FEEDER_TYPE);
+            } set feederType(value) {
+                this.set(_recordFields.FEEDER_TYPE, value)
+            }
+            get feederTypeName() { return this.getText(_recordFields.FEEDER_TYPE); }
             
             get useLibrary() {
                 return this.get(_recordFields.USE_LIBRARY);
@@ -206,13 +244,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.EQUIPMENT_LIBRARY_ENTRY, value)
             }
             get equipmentLibraryEntryName() { return this.getText(_recordFields.EQUIPMENT_LIBRARY_ENTRY); }
-            
-            get activePassive() {
-                return this.get(_recordFields.ACTIVEPASSIVE);
-            } set activePassive(value) {
-                this.set(_recordFields.ACTIVEPASSIVE, value)
-            }
-            get activePassiveName() { return this.getText(_recordFields.ACTIVEPASSIVE); }
             
             get make() {
                 return this.get(_recordFields.MAKE);
@@ -256,6 +287,44 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.WEIGHT_KG, value)
             }
             
+            get voltageType() {
+                return this.get(_recordFields.VOLTAGE_TYPE);
+            } set voltageType(value) {
+                this.set(_recordFields.VOLTAGE_TYPE, value)
+            }
+            get voltageTypeName() { return this.getText(_recordFields.VOLTAGE_TYPE); }
+            
+            get licenceCommencementDate() {
+                return this.get(_recordFields.LICENCE_COMMENCEMENT_DATE);
+            } set licenceCommencementDate(value) {
+                this.set(_recordFields.LICENCE_COMMENCEMENT_DATE, value)
+            }
+            
+            get installedDate() {
+                return this.get(_recordFields.INSTALLED_DATE);
+            } set installedDate(value) {
+                this.set(_recordFields.INSTALLED_DATE, value)
+            }
+            
+            get removedDate() {
+                return this.get(_recordFields.REMOVED_DATE);
+            } set removedDate(value) {
+                this.set(_recordFields.REMOVED_DATE, value)
+            }
+            
+            get tLNote() {
+                return this.get(_recordFields.TL_NOTE);
+            } set tLNote(value) {
+                this.set(_recordFields.TL_NOTE, value)
+            }
+            
+            get package() {
+                return this.get(_recordFields.PACKAGE);
+            } set package(value) {
+                this.set(_recordFields.PACKAGE, value)
+            }
+            get packageName() { return this.getText(_recordFields.PACKAGE); }
+            
             get windLoadingNm2Front() {
                 return this.get(_recordFields.WIND_LOADING_NM2_FRONT);
             } set windLoadingNm2Front(value) {
@@ -287,24 +356,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get windRegimeName() { return this.getText(_recordFields.WIND_REGIME); }
             
-            get voltageType() {
-                return this.get(_recordFields.VOLTAGE_TYPE);
-            } set voltageType(value) {
-                this.set(_recordFields.VOLTAGE_TYPE, value)
+            get activePassive() {
+                return this.get(_recordFields.ACTIVEPASSIVE);
+            } set activePassive(value) {
+                this.set(_recordFields.ACTIVEPASSIVE, value)
             }
-            get voltageTypeName() { return this.getText(_recordFields.VOLTAGE_TYPE); }
-            
-            get customerNote() {
-                return this.get(_recordFields.CUSTOMER_NOTE);
-            } set customerNote(value) {
-                this.set(_recordFields.CUSTOMER_NOTE, value)
-            }
-            
-            get tLNote() {
-                return this.get(_recordFields.TL_NOTE);
-            } set tLNote(value) {
-                this.set(_recordFields.TL_NOTE, value)
-            }
+            get activePassiveName() { return this.getText(_recordFields.ACTIVEPASSIVE); }
             
             get associatedEQUIP_ACTIONs() {
                 return this.get(_recordFields.ASSOCIATED_EQUIP_ACTIONS);
@@ -331,74 +388,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.BILL_TO, value)
             }
             
-            get licencedDate() {
-                return this.get(_recordFields.LICENCED_DATE);
-            } set licencedDate(value) {
-                this.set(_recordFields.LICENCED_DATE, value)
+            get rADIXEquipmentTableRow() {
+                return this.get(_recordFields.RADIX_EQUIPMENT_TABLE_ROW);
+            } set rADIXEquipmentTableRow(value) {
+                this.set(_recordFields.RADIX_EQUIPMENT_TABLE_ROW, value)
             }
             
-            get installedDate() {
-                return this.get(_recordFields.INSTALLED_DATE);
-            } set installedDate(value) {
-                this.set(_recordFields.INSTALLED_DATE, value)
+            get customerNote() {
+                return this.get(_recordFields.CUSTOMER_NOTE);
+            } set customerNote(value) {
+                this.set(_recordFields.CUSTOMER_NOTE, value)
             }
-            
-            get removedDate() {
-                return this.get(_recordFields.REMOVED_DATE);
-            } set removedDate(value) {
-                this.set(_recordFields.REMOVED_DATE, value)
-            }
-            
-            get gIELocation() {
-                return this.get(_recordFields.GIE_LOCATION);
-            } set gIELocation(value) {
-                this.set(_recordFields.GIE_LOCATION, value)
-            }
-            
-            get heightonTowerm() {
-                return this.get(_recordFields.HEIGHT_ON_TOWER_M);
-            } set heightonTowerm(value) {
-                this.set(_recordFields.HEIGHT_ON_TOWER_M, value)
-            }
-            
-            get azimuth() {
-                return this.get(_recordFields.AZIMUTH);
-            } set azimuth(value) {
-                this.set(_recordFields.AZIMUTH, value)
-            }
-            
-            get b_End() {
-                return this.get(_recordFields.B_END);
-            } set b_End(value) {
-                this.set(_recordFields.B_END, value)
-            }
-            
-            get customerRef() {
-                return this.get(_recordFields.CUSTOMER_REF);
-            } set customerRef(value) {
-                this.set(_recordFields.CUSTOMER_REF, value)
-            }
-            
-            get inventoryFlag() {
-                return this.get(_recordFields.INVENTORY_FLAG);
-            } set inventoryFlag(value) {
-                this.set(_recordFields.INVENTORY_FLAG, value)
-            }
-            get inventoryFlagName() { return this.getText(_recordFields.INVENTORY_FLAG); }
-            
-            get package() {
-                return this.get(_recordFields.PACKAGE);
-            } set package(value) {
-                this.set(_recordFields.PACKAGE, value)
-            }
-            get packageName() { return this.getText(_recordFields.PACKAGE); }
-            
-            get feederType() {
-                return this.get(_recordFields.FEEDER_TYPE);
-            } set feederType(value) {
-                this.set(_recordFields.FEEDER_TYPE, value)
-            }
-            get feederTypeName() { return this.getText(_recordFields.FEEDER_TYPE); }
             
             get created() {
                 return this.get(_recordFields.CREATED);

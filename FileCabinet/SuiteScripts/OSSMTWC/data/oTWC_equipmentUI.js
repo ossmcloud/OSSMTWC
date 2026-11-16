@@ -343,7 +343,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             'HEIGHT_ON_TOWER_M', 'MODIFIED_ANTENNA_LOCATION', 'GIE_LOCATION', 'AZIMUTH', 'B_END', 'CUSTOMER_REF', 'INVENTORY_FLAG', 'FEEDER_TYPE',
             'USE_LIBRARY', 'EQUIPMENT_LIBRARY_ENTRY', 'MAKE', 'MODEL', 'DESCRIPTION',
             'LENGTH_MM', 'WIDTH_MM', 'HEIGHTDEPTH_MM', 'WEIGHT_KG', 'VOLTAGE_TYPE',
-            'LICENCED_DATE', 'INSTALLED_DATE', 'REMOVED_DATE'
+            'LICENCE_COMMENCEMENT_DATE', 'INSTALLED_DATE', 'REMOVED_DATE'
         ];
         // @@NOTE: always at the bottom of the dialog, in this order (after the fields not in EQ_INFO_FIELD_ORDER)
         const EQ_INFO_FIELD_LAST = ['CREATED', 'OWNER', 'MODIFIED', 'MODIFIED_BY'];

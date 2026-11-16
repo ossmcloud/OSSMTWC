@@ -55,6 +55,49 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
             testFunction() {
 
                 try {
+                    // @@NOTE: ONE-OFF FIX - Issue 299: retired equipment licence statuses 'Prop to Licence - Licence Requested / Issued / Signed' and 'Prop to Unlicence - ...'
+                    //         equipment (and SDS equipment lines) in one of those statuses go back to 'Prop to Licence' / 'Prop to Unlicence' (the equipment stays there until the licence is executed)
+                    //         the retired values are found by name on customrecord_twc_equip_licence_status (some of them are not in twcUtils.EqLicenseStatus)
+                    //         run BEFORE inactivating the retired values in NetSuite
+                    var retired = coreSQL.run(`
+                        select  id, name,
+                                case when LOWER(name) like 'prop to licence -%' then ${twcUtils.EqLicenseStatus.ProptoLicence} else ${twcUtils.EqLicenseStatus.ProptoUnlicence} end as new_status
+                        from    customrecord_twc_equip_licence_status
+                        where   LOWER(name) like 'prop to licence -%' or LOWER(name) like 'prop to unlicence -%'
+                    `);
+                    console.table(retired);
+                    if (retired.length == 0) { alert('No retired licence status found'); return; }
+                    var newStatus = {}; core.array.each(retired, r => { newStatus[r.id] = r.new_status; });
+                    var retiredIds = retired.map(r => { return r.id; }).join(',');
+
+                    var toFix = coreSQL.run(`
+                        select  'customrecord_twc_equip' as rec_type, 'custrecord_twc_eq_licence_status' as field, id, name, custrecord_twc_eq_licence_status as status, BUILTIN.DF(custrecord_twc_eq_licence_status) as status_name
+                        from    customrecord_twc_equip
+                        where   custrecord_twc_eq_licence_status in (${retiredIds})
+                        union all
+                        select  'customrecord_twc_sds_item' as rec_type, 'custrecord_twc_sds_item_license_status' as field, id, name, custrecord_twc_sds_item_license_status as status, BUILTIN.DF(custrecord_twc_sds_item_license_status) as status_name
+                        from    customrecord_twc_sds_item
+                        where   custrecord_twc_sds_item_license_status in (${retiredIds})
+                    `);
+                    console.table(toFix.map(r => { return { type: r.rec_type, id: r.id, name: r.name, status: r.status_name, new_status: newStatus[r.status] == twcUtils.EqLicenseStatus.ProptoLicence ? 'Prop to Licence' : 'Prop to Unlicence' }; }));
+                    if (toFix.length == 0) { alert('Nothing to fix (see console for the retired statuses)'); return; }
+                    if (!confirm(`Move ${toFix.length} record(s) (equipment / SDS lines) out of the retired licence statuses? (see console for the list)`)) { return; }
+
+                    var fixed = 0; var failed = 0;
+                    core.array.each(toFix, r => {
+                        try {
+                            recu.submit(r.rec_type, r.id, r.field, newStatus[r.status]);
+                            fixed++;
+                            console.log(`FIXED: ${r.rec_type} ${r.id} (${r.name}) - ${r.status_name} -> ${newStatus[r.status]}`);
+                        } catch (error) {
+                            failed++;
+                            console.log(`FAILED: ${r.rec_type} ${r.id} (${r.name})`, error);
+                        }
+                    });
+                    console.log(`DONE - fixed: ${fixed} - failed: ${failed}`);
+                    alert(`Done - fixed: ${fixed} - failed: ${failed} (see console)`);
+                    return;
+
                     // @@NOTE: ONE-OFF FIX - completed SAF actions wrongly detached (SAF action picker offered 'detach from <SAF>' on completed EAs, fixed in data/oTWC_utils.js: getSrfActions)
                     //         wrongly detached = SAF action status Detached but 'complete' still ticked (a legit detach only happens while pending, so complete is never ticked)
                     //         for each one:

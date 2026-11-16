@@ -138,8 +138,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+        // @@NOTE: SDS Commencement Date of the SRF (the current SDS, or the latest one not cancelled), as a NetSuite date value (null if not set)
+        //         Issue 299: copied on the equipment 'Licence Commencement Date' (LICENCE_COMMENCEMENT_DATE) when the licence is executed
+        function getSdsCommencementDate(srfId) {
+            var sds = coreSql.first(`
+                select  TO_CHAR(${twcSds.Fields.COMMENCMENT_DATE}, 'YYYY-MM-DD') as comm_date
+                from    ${twcSds.Type}
+                where   ${twcSds.Fields.SRF} = ${parseInt(srfId)}
+                and     NVL(${twcSds.Fields.STATUS}, 0) != ${twcUtils.SdsStatus.Cancelled}
+                order by case when ${twcSds.Fields.STATUS} = ${twcUtils.SdsStatus.Current} then 0 else 1 end, id desc
+            `);
+            return (sds?.comm_date) ? twcUtils.fromJsToNs(sds.comm_date) : null;
+        }
+
+        // @@IMPORTANT: Issue 299 - equipment licence status by SRF status (called with the 'licence' status, unlicence actions are mapped below):
+        //                  Submitted / Re-submitted          => Req to Licence      / Req to Unlicence
+        //                  SRF Approved                      => Prop to Licence     / Prop to Unlicence
+        //                  Licence Requested / Issued / Signed => no change (the 'Prop to ... - Licence Requested / Issued / Signed' values are retired)
+        //                  Licence Executed                  => Licenced            / Unlicenced
+        //                                                       Licenced: 'Licence Commencement Date' (LICENCE_COMMENCEMENT_DATE) = SDS Commencement Date
+        //                                                       Unlicence (removal, NOT swap) of equipment with Package = Yes => Licence Retained
         function updateEquipment(options, licenseStatus) {
             var actions = getEqActions(options);
+            var sdsCommDate = undefined;
             core.array.each(actions, action => {
 
                 // @@TODO: this should not happen but it did so I need to keep going but we should remove this line
@@ -156,23 +177,26 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     } else if (licenseStatus == twcUtils.EqLicenseStatus.ReqtoLicence) {
                         s = twcUtils.EqLicenseStatus.ReqtoUnlicence;
 
-                    } else if (licenseStatus == twcUtils.EqLicenseStatus.ProptoLicence_LicenceRequested) {
-                        s = twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceRequested;
-
-                    } else if (licenseStatus == twcUtils.EqLicenseStatus.ProptoLicence_LicenceIssued) {
-                        s = twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceIssued;
-
                     } else if (licenseStatus == twcUtils.EqLicenseStatus.Licenced) {
                         s = twcUtils.EqLicenseStatus.Unlicenced;
-
+                        // @@NOTE: removal (not swap) of equipment that is part of a package => the licence is retained
+                        if (action.ea_type == twcUtils.EqActionType.Unlicence) {
+                            var pkg = coreSql.first(`select ${twcEquipment.Fields.PACKAGE} as pkg from ${twcEquipment.Type} where id = ${parseInt(action.eq_id)}`)?.pkg;
+                            if (pkg == twcUtils.EqPackage.Yes) { s = twcUtils.EqLicenseStatus.LicenceRetained; }
+                        }
                     }
 
                 }
 
                 if (s == twcUtils.EqLicenseStatus.Licenced) {
-                    // @@NOTE: the equipment becomes licenced => stamp the licenced date (same submit as the status)
-                    //         unlicence actions never get here as 'Licenced' (mapped to 'Unlicenced' above)
-                    recu.submit(twcEquipment.Type, action.eq_id, [twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, twcEquipment.Fields.LICENCED_DATE], [s, new Date()]);
+                    // @@NOTE: the equipment becomes licenced => 'Licence Commencement Date' = SDS Commencement Date (same submit as the status)
+                    //         unlicence actions never get here as 'Licenced' (mapped above). No SDS commencement date => the date is left as it is
+                    if (sdsCommDate === undefined) { sdsCommDate = getSdsCommencementDate(options.srf); }
+                    if (sdsCommDate) {
+                        recu.submit(twcEquipment.Type, action.eq_id, [twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, twcEquipment.Fields.LICENCE_COMMENCEMENT_DATE], [s, sdsCommDate]);
+                    } else {
+                        recu.submit(twcEquipment.Type, action.eq_id, twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, s);
+                    }
                 } else {
                     recu.submit(twcEquipment.Type, action.eq_id, twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, s);
                 }
@@ -591,12 +615,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     } else if (options.setStatus == twcUtils.SrfStatus.Resubmitted) {
                         updateEquipment(options, twcUtils.EqLicenseStatus.ReqtoLicence)
 
-                    } else if (options.setStatus == twcUtils.SrfStatus.LicenceRequested) {
-                        updateEquipment(options, twcUtils.EqLicenseStatus.ProptoLicence_LicenceRequested)
-
-                    } else if (options.setStatus == twcUtils.SrfStatus.LicenceIssued) {
-                        updateEquipment(options, twcUtils.EqLicenseStatus.ProptoLicence_LicenceIssued)
-
+                    // @@NOTE: Issue 299 - Licence Requested / Issued / Signed: the equipment licence status is NOT changed (it stays Prop to Licence / Prop to Unlicence)
                     } else if (options.setStatus == twcUtils.SrfStatus.LicenceExecuted) {
                         updateEquipment(options, twcUtils.EqLicenseStatus.Licenced)
                         
