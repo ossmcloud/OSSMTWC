@@ -1281,6 +1281,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 where   srf.custrecord_twc_srf_site = ${options.siteId}
                 and     srf.custrecord_twc_srf_cust = ${options.customer}
                 and     srf.custrecord_twc_srf_permit_date is not null
+                and     exists (select 1 from customrecord_twc_eq_action ea where ea.custrecord_twc_eq_action_srf = srf.id and ea.custrecord_twc_eq_action_sts = ${EQ_ACTION_STATUS.Pending})
                 order by srf.custrecord_twc_srf_app_date desc
             `, srf => {
                 siteSrfs.push({
@@ -1295,6 +1296,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSrfActions(options) {
             //var safFilter = (options.saf) ? `and custrecord_twc_eq_action_saf = ${options.saf}` : 'and custrecord_twc_eq_action_saf is null';
             var safFilter = (options.saf) ? `and custrecord_twc_eq_action_saf = ${options.saf}` : '';
+            // @@NOTE: eq_parent_tme / eq_make / eq_model: equipment parent TME / make / model (client request, to identify the kit), also returned by getSafActions (same columns)
             var srfActions = [];
             coreSQL.each(`
                 select  a.id as ea_id, a.custrecord_twc_eq_action_sts as custrecord_twc_saf_a_status, BUILTIN.DF(a.custrecord_twc_eq_action_sts) as custrecord_twc_saf_a_status_name,
@@ -1317,7 +1319,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         case when a.custrecord_twc_eq_action_type = ${EQ_ACTION_TYPE.Unlicence} then BUILTIN.DF(e.custrecord_twc_equip_opt_type) else BUILTIN.DF(srfi.custrecord_twc_srf_itm_type_opt) end as custrecord_twc_srf_itm_type_opt_name,
 
                         srfi.custrecord_twc_srf_itm_tme_srf as parent_srf_item,
-                        srfi.id as srf_item
+                        srfi.id as srf_item,
+                        BUILTIN.DF(e.custrecord_twc_equip_parent_tme_id) as eq_parent_tme, e.custrecord_twc_equip_make as eq_make, e.custrecord_twc_equip_model as eq_model
                 from    customrecord_twc_eq_action a
                 join 	customrecord_twc_srf_itm srfi on srfi.id = a.custrecord_twc_eq_action_srf_item
                 join    customrecord_twc_equip e on e.id = a.custrecord_twc_eq_action_eq
@@ -1328,11 +1331,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `, action => {
                 if (options.thisSaf && options.thisSaf == action['custrecord_twc_eq_action_saf']) { return; }
 
-                if (action['custrecord_twc_eq_action_saf']) {
+                // @@IMPORTANT: the EA status is checked FIRST: only Pending EAs can be picked by a SAF or detached from another SAF
+                //              (e.g. 'Complete': already done by its SAF, 'Never Installed' / 'Already Removed': removing equipment that is not on site, 'Cancelled')
+                //              a completed EA used to show 'detach from <SAF>': detaching it re-opened completed work on the other SAF and attached a completed action to this one
+                if (action['custrecord_twc_saf_a_status'] != EQ_ACTION_STATUS.Pending) {
+                    action.select = (action['custrecord_twc_eq_action_saf']) ? `<span style="font-size: 0.8em; font-style: italic;">${action['custrecord_twc_saf_a_status_name']} on<br />${action['custrecord_twc_eq_action_saf_name']}</span>` : '';
+                } else if (action['custrecord_twc_eq_action_saf']) {
                     action.select = `<span data-id="${action.ea_id}" data-srf-id="${action.srf_item}" data-srf-parent-id="${action.parent_srf_item || ''}" data-saf="${action['custrecord_twc_eq_action_saf']}" class="o-table-action twc-clickable" data-action="detach">detach from<br />${action['custrecord_twc_eq_action_saf_name']}</span>`;
-                } else if (action['custrecord_twc_saf_a_status'] != EQ_ACTION_STATUS.Pending) {
-                    // @@NOTE: only Pending EAs can be picked by a SAF (e.g. 'Never Installed' / 'Already Removed': removing equipment that is not on site, 'Cancelled', 'Complete')
-                    action.select = '';
                 } else {
                     action.select = `<input data-id="${action.ea_id}" data-srf-id="${action.srf_item}" data-srf-parent-id="${action.parent_srf_item || ''}" type="checkbox" />`;
                 }
@@ -1389,7 +1394,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         case when a.custrecord_twc_eq_action_type = ${EQ_ACTION_TYPE.Unlicence} then e.custrecord_twc_equip_azimuth                  else srfi.custrecord_twc_srf_itm_azimuth                    end as custrecord_twc_srf_itm_azimuth,
                         case when a.custrecord_twc_eq_action_type = ${EQ_ACTION_TYPE.Unlicence} then e.custrecord_twc_equip_b_end                    else srfi.custrecord_twc_srf_itm_b_end                      end as custrecord_twc_srf_itm_b_end,
                         case when a.custrecord_twc_eq_action_type = ${EQ_ACTION_TYPE.Unlicence} then BUILTIN.DF(e.custrecord_twc_equip_opt_type)     else BUILTIN.DF(srfi.custrecord_twc_srf_itm_type_opt)       end as custrecord_twc_srf_itm_type_opt_name,
-                        srfi.custrecord_twc_srf_itm_tme_srf as parent_srf_item, srfi.id as srf_item
+                        srfi.custrecord_twc_srf_itm_tme_srf as parent_srf_item, srfi.id as srf_item,
+                        BUILTIN.DF(e.custrecord_twc_equip_parent_tme_id) as eq_parent_tme, e.custrecord_twc_equip_make as eq_make, e.custrecord_twc_equip_model as eq_model
                 from    customrecord_twc_saf_action sa
                 join    customrecord_twc_eq_action a on a.id = sa.custrecord_twc_saf_a_ea
                 join 	customrecord_twc_srf_itm srfi on srfi.id = a.custrecord_twc_eq_action_srf_item

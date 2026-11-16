@@ -561,6 +561,13 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             if (payload.actions) {
                 core.array.each(payload.actions, a => {
                     try {
+                        // @@NOTE: a new SAF action can only be created for a Pending EA (completed / cancelled EAs cannot be picked, see twcUtils.getSrfActions)
+                        if (payload.reUse || !a.id) {
+                            var eaStatus = coreSQL.first(`select custrecord_twc_eq_action_sts as s, name from customrecord_twc_eq_action where id = ${parseInt(a.ea_id)}`);
+                            if (eaStatus?.s != twcUtils.EqActionStatus.Pending) {
+                                throw new Error(`Eq. Action [${eaStatus?.name || a.ea_id}] is not pending, it cannot be added to the SAF`);
+                            }
+                        }
                         var action = twcSafAction.get(payload.reUse ? null : a.id);
                         action.sAF = safId;
                         action.sAF_ACTIONEA = a.ea_id;
@@ -918,14 +925,20 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
         function detachSafAction(payload) {
             //throw new Error(JSON.stringify(payload));
 
-            var safActionId = coreSQL.first(`
-                select  id
-                from    customrecord_twc_saf_action
-                where   custrecord_twc_saf_a_saf = ${payload.saf}
-                and     custrecord_twc_saf_a_ea = ${payload.id}
-            `)?.id;
+            var safAction = coreSQL.first(`
+                select  sa.id, sa.custrecord_twc_saf_a_status as status, ea.custrecord_twc_eq_action_sts as ea_status, ea.name as ea_name
+                from    customrecord_twc_saf_action sa
+                join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea
+                where   sa.custrecord_twc_saf_a_saf = ${parseInt(payload.saf)}
+                and     sa.custrecord_twc_saf_a_ea = ${parseInt(payload.id)}
+            `);
+            var safActionId = safAction?.id;
 
             if (!safActionId) { throw new Error(`No SAF Action found for saf [${payload.saf} and eq. act [${payload.id}]`) }
+            // @@NOTE: only pending actions can be detached (a completed action must never be re-opened, see twcUtils.getSrfActions)
+            if (safAction.status != twcUtils.SafActionStatus.Pending || safAction.ea_status != twcUtils.EqActionStatus.Pending) {
+                throw new Error(`Eq. Action [${safAction.ea_name}] is not pending, it cannot be detached from its SAF`);
+            }
 
             recu.submit(twcSafAction.Type, safActionId,
                 [twcSafAction.Fields.SAF_ACTION_STATUS, twcSafAction.Fields.DETACH_REASON, twcSafAction.Fields.DETACH_COMMENT],

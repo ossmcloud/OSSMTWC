@@ -334,6 +334,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     { id: 'ea_id', title: 'ID', styles: { width: '50px' }, noFilter: true, noSort: true, hide: !userInfo.isEmployee },
                     { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF', styles: { width: '125px' }, link: srfLink, nullText: '' },
                     { id: twcEqAct.Fields.EA_EQUIPMENT + '_name', title: 'Equipment', prefix: twcEq.infoIconPrefix(twcEqAct.Fields.EA_EQUIPMENT) },
+                    // @@NOTE: equipment parent TME / make / model (client request, see twcUtils.getSafActions / getSrfActions)
+                    { id: 'eq_parent_tme', title: 'Parent TME', nullText: '' },
+                    { id: 'eq_make', title: 'Make', nullText: '' },
+                    { id: 'eq_model', title: 'Model', nullText: '' },
                     { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
                     { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Type' },
                     { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description' },
@@ -593,6 +597,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     // @@NOTE: the ID column and the SRF link are for TL employees only (see getSafEqActionSrfLink)
                     { id: 'ea_id', title: 'ID', styles: { width: '50px' }, noFilter: true, noSort: true, hide: !userInfo?.isEmployee },
                     { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF', link: getSafEqActionSrfLink(userInfo), nullText: '' },
+                    // @@NOTE: equipment id / parent TME / make / model (client request, to identify the kit, see twcUtils.getSrfActions)
+                    { id: twcEqAct.Fields.EA_EQUIPMENT + '_name', title: 'Equip ID', nullText: '' },
+                    { id: 'eq_parent_tme', title: 'Parent TME', nullText: '' },
+                    { id: 'eq_make', title: 'Make', nullText: '' },
+                    { id: 'eq_model', title: 'Model', nullText: '' },
                     { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
                     { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Eq. Type' },
                     { id: 'srf_eq_action_type', title: 'Type' },
@@ -715,6 +724,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fields[twcSrfItem.Fields.SRF + '_name'] = { title: 'SRF', styles: { width: '125px' }, link: getSafEqActionSrfLink(userInfo), nullText: '' };
             // @@NOTE: (i) icon => equipment details dialog
             fields[twcEqAct.Fields.EA_EQUIPMENT + '_name'] = { title: 'Equipment', link: equipLink, prefix: twcEq.infoIconPrefix(twcEqAct.Fields.EA_EQUIPMENT) };
+            // @@NOTE: equipment parent TME / make / model (client request, see twcUtils.getSafActions)
+            fields['eq_parent_tme'] = { title: 'Parent TME', nullText: '' };
+            fields['eq_make'] = { title: 'Make', nullText: '' };
+            fields['eq_model'] = { title: 'Model', nullText: '' };
             fields[twcSrfItem.Fields.STEP_TYPE + '_name'] = { title: 'Class' };
             fields[twcSrfItem.Fields.ITEM_TYPE + '_name'] = { title: 'Type' };
             fields[twcSrfItem.Fields.DESCRIPTION] = { title: 'Description' };

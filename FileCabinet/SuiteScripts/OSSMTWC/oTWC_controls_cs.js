@@ -55,6 +55,64 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
             testFunction() {
 
                 try {
+                    // @@NOTE: ONE-OFF FIX - completed SAF actions wrongly detached (SAF action picker offered 'detach from <SAF>' on completed EAs, fixed in data/oTWC_utils.js: getSrfActions)
+                    //         wrongly detached = SAF action status Detached but 'complete' still ticked (a legit detach only happens while pending, so complete is never ticked)
+                    //         for each one:
+                    //              - the SAF action goes back to Complete (detach reason / comment cleared)
+                    //              - the SAF actions created on OTHER SAFs for the same EA after it, not completed themselves, are deleted (the wrong attach)
+                    //              - the EA points back to the original SAF
+                    var wrongDetached = coreSQL.run(`
+                        select  sa.id, sa.custrecord_twc_saf_a_saf as saf, BUILTIN.DF(sa.custrecord_twc_saf_a_saf) as saf_name,
+                                sa.custrecord_twc_saf_a_ea as ea, ea.name as ea_name, sa.created,
+                                ea.custrecord_twc_eq_action_saf as ea_saf, BUILTIN.DF(ea.custrecord_twc_eq_action_saf) as ea_saf_name,
+                                BUILTIN.DF(ea.custrecord_twc_eq_action_sts) as ea_status
+                        from    customrecord_twc_saf_action sa
+                        join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea
+                        where   sa.custrecord_twc_saf_a_status = ${twcUtils.SafActionStatus.Detached}
+                        and     sa.custrecord_twc_saf_a_complete = 'T'
+                        order by sa.id
+                    `);
+                    core.array.each(wrongDetached, w => {
+                        w.wrongAttached = coreSQL.run(`
+                            select  sa.id, sa.custrecord_twc_saf_a_saf as saf, BUILTIN.DF(sa.custrecord_twc_saf_a_saf) as saf_name, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as status
+                            from    customrecord_twc_saf_action sa
+                            where   sa.custrecord_twc_saf_a_ea = ${w.ea}
+                            and     sa.custrecord_twc_saf_a_saf != ${w.saf}
+                            and     sa.id > ${w.id}
+                            and     NVL(sa.custrecord_twc_saf_a_complete, 'F') = 'F'
+                        `);
+                    });
+                    console.table(wrongDetached.map(w => {
+                        return {
+                            saf_action: w.id, ea: w.ea_name, ea_status: w.ea_status, restore_on: w.saf_name, ea_saf_now: w.ea_saf_name,
+                            delete_saf_actions: w.wrongAttached.map(a => { return `${a.id} (${a.saf_name} - ${a.status})`; }).join(', ')
+                        };
+                    }));
+                    if (wrongDetached.length == 0) { alert('Nothing to fix'); return; }
+                    if (!confirm(`Restore ${wrongDetached.length} wrongly detached SAF action(s)? (see console for the list)`)) { return; }
+
+                    var fixed = 0; var failed = 0;
+                    core.array.each(wrongDetached, w => {
+                        try {
+                            core.array.each(w.wrongAttached, a => {
+                                recu.del('customrecord_twc_saf_action', a.id);
+                                console.log(`DELETED: SAF action ${a.id} on ${a.saf_name} (${w.ea_name})`);
+                            });
+                            recu.submit('customrecord_twc_saf_action', w.id,
+                                ['custrecord_twc_saf_a_status', 'custrecord_twc_saf_a_detach_reason', 'custrecord_twc_saf_a_detach_comment'],
+                                [twcUtils.SafActionStatus.Complete, null, null]);
+                            recu.submit('customrecord_twc_eq_action', w.ea, 'custrecord_twc_eq_action_saf', w.saf);
+                            fixed++;
+                            console.log(`FIXED: SAF action ${w.id} restored on ${w.saf_name} (${w.ea_name})`);
+                        } catch (error) {
+                            failed++;
+                            console.log(`FAILED: SAF action ${w.id} on ${w.saf_name} (${w.ea_name})`, error);
+                        }
+                    });
+                    console.log(`DONE - fixed: ${fixed} - failed: ${failed}`);
+                    alert(`Done - fixed: ${fixed} - failed: ${failed} (see console)`);
+                    return;
+
                     /*
                     // @@NOTE: ONE-OFF FIX - SRF Review Space / Facilities check passed
                     //         the Facilities workflow stage (id 4) was configured with pass field / form field custrecord_twc_srf_rev_space_check_pass instead of custrecord_twc_srf_rev_fac_check_pass
