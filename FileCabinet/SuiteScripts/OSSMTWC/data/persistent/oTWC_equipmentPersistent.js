@@ -51,6 +51,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             BILL_TO: 'custrecord_twc_equip_bill_to',
             RADIX_EQUIPMENT_TABLE_ROW: 'custrecord_twc_equip_radix_tbl_row',
             CUSTOMER_NOTE: 'custrecord_twc_cus_note',
+            RADIX_MIGRATED: 'custrecord_twc_equip_radix_migr',
+            RADIX_IMPORT_RUN: 'custrecord_twc_equip_radix_run',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -100,8 +102,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             TO_BE_BILLED: { name: 'custrecord_twc_equip_to_be_billed', type: 'checkbox', alias: 'toBeBilled', display: 'normal', mandatory: false },
             BILL_FROM: { name: 'custrecord_twc_equip_bill_from', type: 'date', alias: 'billFrom', display: 'normal', mandatory: false },
             BILL_TO: { name: 'custrecord_twc_equip_bill_to', type: 'date', alias: 'billTo', display: 'normal', mandatory: false },
-            RADIX_EQUIPMENT_TABLE_ROW: { name: 'custrecord_twc_equip_radix_tbl_row', type: 'integer', alias: 'rADIXEquipmentTableRow', display: 'normal', mandatory: false },
+            RADIX_EQUIPMENT_TABLE_ROW: { name: 'custrecord_twc_equip_radix_tbl_row', type: 'text', alias: 'rADIXEquipmentTableRow', display: 'normal', mandatory: false },
             CUSTOMER_NOTE: { name: 'custrecord_twc_cus_note', type: 'text', alias: 'customerNote', display: 'normal', mandatory: false },
+            RADIX_MIGRATED: { name: 'custrecord_twc_equip_radix_migr', type: 'checkbox', alias: 'radixMigrated', display: 'normal', mandatory: false },
+            RADIX_IMPORT_RUN: { name: 'custrecord_twc_equip_radix_run', type: 'text', alias: 'radixImportRun', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -398,6 +402,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.CUSTOMER_NOTE);
             } set customerNote(value) {
                 this.set(_recordFields.CUSTOMER_NOTE, value)
+            }
+            
+            get radixMigrated() {
+                return this.get(_recordFields.RADIX_MIGRATED);
+            } set radixMigrated(value) {
+                this.set(_recordFields.RADIX_MIGRATED, value)
+            }
+            
+            get radixImportRun() {
+                return this.get(_recordFields.RADIX_IMPORT_RUN);
+            } set radixImportRun(value) {
+                this.set(_recordFields.RADIX_IMPORT_RUN, value)
             }
             
             get created() {
