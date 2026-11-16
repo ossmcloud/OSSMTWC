@@ -72,7 +72,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             HEIGHT_ON_TOWER_M: { name: 'custrecord_twc_equip_ht_on_twr_m', type: 'float', alias: 'heightonTowerm', display: 'normal', mandatory: false },
             MODIFIED_ANTENNA_LOCATION: { name: 'custrecord_twc_equip_location', type: 'select', alias: 'modifiedAntennaLocation', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
             GIE_LOCATION: { name: 'custrecord_twc_equip_gie_loc', type: 'text', alias: 'gIELocation', display: 'normal', mandatory: false },
-            AZIMUTH: { name: 'custrecord_twc_equip_azimuth', type: 'integer', alias: 'azimuth', display: 'normal', mandatory: false },
+            AZIMUTH: { name: 'custrecord_twc_equip_azimuth', type: 'float', alias: 'azimuth', display: 'normal', mandatory: false },
             B_END: { name: 'custrecord_twc_equip_b_end', type: 'text', alias: 'b_End', display: 'normal', mandatory: false },
             CUSTOMER_REF: { name: 'custrecord_twc_equip_cust_ref', type: 'text', alias: 'customerRef', display: 'normal', mandatory: false },
             INVENTORY_FLAG: { name: 'custrecord_twc_equip_inv_flag', type: 'select', alias: 'inventoryFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_inv_flag' },

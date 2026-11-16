@@ -61,6 +61,7 @@ Child records with no Radix key of their own (SRF Review, Time Block, Crew) get 
 **You provide one UTF-8 CSV per sheet**: comma separated, double-quote text qualifier, a header row with the column names as in the samples, and dates as `dd/mm/yyyy`. A leading BOM is tolerated. Each import type declares the files it needs. On submit, the header row of each file is checked, and a missing required column rejects the run before anything is created. Unknown extra columns are ignored.
 
 ### 3.2 Suitelet `data_migration/oTWC_dm_import_sl.js`
+Built with `N/ui/serverWidget` rather than `O/suitlet`, because it needs native file upload fields.
 - **GET**: form with *Import Type* (select), the file slots for that type (main + additional; required/optional per type), a *Validate only (dry run)* checkbox, and a sub-list of the last runs (name, type, status, created/skipped/error counts, link to log), read from the run JSON files.
 - **POST** (dispatches on `action`; unknown actions throw):
   - `start`:
@@ -111,7 +112,7 @@ Before creating, the target record is looked up by **Radix Id** (map pre-loaded 
 Same pipeline without saving. Every row is validated (all lookups resolved, values converted) and logged as `VALID` or `ERROR`. Use it to clean the extracts before the real run.
 
 ### 3.8 Roll-back (sandbox tool)
-`delete` mode removes every record whose *Radix Import Run* = run name, children first. It runs in the same scheduled script, with the same restart logic.
+"Delete records" (available on completed import runs) starts a **new run** (`{Type}-delete_…`) in delete mode, with `targetRun` = the run to roll back. It removes every record whose *Radix Import Run* = target run, children first, and clears self/cross references (e.g. parent TME) before deleting. It runs in the same scheduled script, with the same restart logic. Dry runs are named `{Type}-dryrun_…`.
 
 ---
 
@@ -134,9 +135,15 @@ Same pipeline without saving. Every row is validated (all lookups resolved, valu
 
 All lookups are by name (§4). They are pre-loaded per execution as `name → [ids]` maps, so ambiguity can be detected.
 
+**Radix Name (v1.1):** some lookup tables have a *Radix Name* field. When it is not empty, the lookup matches on it instead of the record name. The tables are configured in `RADIX_NAME_FIELDS` (`oTWC_dm_config.js`):
+
+| Table | Radix Name field |
+|---|---|
+| `customrecord_twc_srf_itm_typ_opt` (Feeder / Opt Type) | `custrecord_twc_srf_itm_typ_opt_radixname` |
+
 | Source value | Example | Target record | Match on |
 |---|---|---|---|
-| Site | `TKY1017 : Derryquin` | `customrecord_twc_site` | text before ` : ` against the **site code** (`custrecord_twc_site_site_id`), as `oTWC_importRadixFile_sl.js` does. The site code is the unique "name" of a site; the part after ` : ` is not checked |
+| Site | `TKY1017 : Derryquin` | `customrecord_twc_site` | text before ` : ` against the **site code** (`custrecord_twc_site_id`), as `oTWC_importRadixFile_sl.js` does. The site code is the unique "name" of a site; the part after ` : ` is not checked |
 | Infrastructure | `TKY1017-T01` | `customrecord_twc_infra` | `name`; must also belong to the row's site, otherwise → ERROR |
 | Company (Customer / Contractor) | `eir`, `eir Mobile` | `customrecord_twc_company` | `name` |
 | Profile | Radix profile id, e.g. `4187` | `customrecord_twc_prof` | **Radix id** (`custrecord_twc_prof_radix_entry_num`), an agreed exception to "by name" (Q17). None or more than one → ERROR |
@@ -180,7 +187,7 @@ All lookups are by name (§4). They are pre-loaded per execution as `name → [i
 | Length (mm) / Width (mm) / Height/Depth (mm) | `LENGTH_MM` / `WIDTH_MM` / `HEIGHTDEPTH_MM` | integer | |
 | Weight (kg) | `WEIGHT_KG` | float | |
 | Height on Tower (m) | `HEIGHT_ON_TOWER_M` | float | |
-| Azimuth | `AZIMUTH` | integer | |
+| Azimuth | `AZIMUTH` | decimal (field changed from integer, 2026-11-17) | |
 | B-End | `B_END` | text | |
 | Customer Ref | `CUSTOMER_REF` | text | |
 | Inventory Flag | `INVENTORY_FLAG` | `customrecord_twc_srf_itm_inv_flag` by name | |
