@@ -1187,19 +1187,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         // @@NOTE: SRF cancellation goes through its own action (permission check + clean-up, oTWC_srfWorkflowEngine.js: cancelSrf), NOT through save
                         //         a new SRF never saved has nothing to clean up: just leave the page
                         this.page.find('[id="cancel-srf-button"]').on('click', e => {
-                            dialog.confirmAsync('Are you sure you wish to cancel this SRF?').then(async () => {
-                                if (!this.data.siteRequestInfo.id) {
+                            if (!this.data.siteRequestInfo.id) {
+                                dialog.confirmAsync('Are you sure you wish to cancel this SRF?').then(() => {
                                     this.dirty = false;
                                     location.href = core.url.script('otwc_spacerequest_sl');
-                                    return;
-                                }
+                                });
+                                return;
+                            }
+                            // @@NOTE: a comment (reason) is mandatory, saved on the SRF 'Submission Notes' with who cancelled it (oTWC_srfWorkflowEngine.js: cancelSrf)
+                            this.askCancelComment(async comment => {
                                 this.wait();
                                 try {
                                     // @@NOTE: the server returns keepGoing when it is running low on units, every call carries on from where the previous one stopped
                                     var res = null; var calls = 0;
                                     do {
                                         if (++calls > 50) { throw new Error('SRF cancellation did not complete, please try again'); }
-                                        res = await this.post({ action: 'cancel-srf' }, { srf: this.data.siteRequestInfo.id });
+                                        res = await this.post({ action: 'cancel-srf' }, { srf: this.data.siteRequestInfo.id, comment: comment });
                                     } while (res?.keepGoing);
                                     this.dirty = false;
                                     location.reload();
@@ -1669,6 +1672,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             // @@NOTE: submit / re-submit (after feedback issued) => the user must enter a comment, it is stored on the SRF Review record of the iteration
             //         and on the SRF 'Submission Notes' field (see modules/oTWC_srfWorkflowEngine.js: initWorkFlow)
+            // @@NOTE: cancel SRF => the user must enter a comment (reason), stored on the SRF 'Submission Notes' preceded by who cancelled it (modules/oTWC_srfWorkflowEngine.js: cancelSrf)
+            askCancelComment(callback) {
+                var form = twcUI.init({
+                    controls: [
+                        { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'cancel_comment', width: '100%', rows: 12, mandatory: true, label: 'Please enter the reason for cancelling this SRF' }
+                    ]
+                });
+                dialog.confirm({ title: 'Are you sure you wish to cancel this SRF?', message: form.ui, width: '700px', height: '450px' }, dlg => {
+                    try {
+                        var comment = (form.getValues().cancel_comment || '').trim();
+                        if (!comment) { throw new Error('Please, enter the reason for cancelling the SRF'); }
+                        callback(comment);
+                    } catch (error) {
+                        dialog.error(error);
+                        return false;
+                    }
+                });
+            }
+
             askSubmitComment(callback) {
                 var isResubmit = this.data.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcUtils.SrfStatus.FeedbackIssued;
                 var form = twcUI.init({

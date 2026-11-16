@@ -983,7 +983,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var s = parseInt(srfStatus);
             var stage = getSrfCancelStage(s);
             if (!stage) { return false; }
-            if (stage == SRF_CANCEL_STAGE.DRAFT || s == twcUtils.SrfStatus.FeedbackIssued) { return true; }
+            // @@NOTE: customers can cancel when Draft, Feedback Issued or SRF Approved
+            if (stage == SRF_CANCEL_STAGE.DRAFT || s == twcUtils.SrfStatus.FeedbackIssued || s == twcUtils.SrfStatus.SRFApproved) { return true; }
             if (!userInfo.isEmployee) { return false; }
             if (stage == SRF_CANCEL_STAGE.LICENCE) { return !!userInfo.powerUser; }
             return true;
@@ -995,14 +996,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         //                          install (Licence / Swap Licence)   => equipment Cancelled
         //                          remove  (Unlicence / Swap Unlicence) => equipment Licenced
         //                     (a swap is 2 EAs, so both sides are handled)
-        //                     SRF Approved and later: SRF Approved date cleared
+        //                     SRF Approval Date is kept (not cleared, see below)
         //                     Licence Requested / Issued / Signed: Works Permitted date cleared, SDS status Cancelled,
         //                          EAs with a SAF action are left alone (EA and equipment): the SAF will complete them
         //          the SRF status is set to Cancelled LAST: if units run low we return { keepGoing: true } and the client calls again (all steps are re-runnable)
         const CANCEL_MIN_UNITS = 100;
+
+        // @@NOTE: SRF 'Submission Notes' when cancelled: who (profile name, or user name if no profile, and company) + when + the reason entered by the user
+        function getCancelNotes(userInfo, comment) {
+            var who = userInfo.profileInfo?.name || userInfo.contact?.name || userInfo.name || 'unknown user';
+            if (userInfo.companyProfile?.name) { who += ` (${userInfo.companyProfile.name})`; }
+            return `Cancelled by ${who} on ${(new Date()).format()}:\n${comment}`;
+        }
         function cancelSrf(userInfo, options) {
             if (!options?.srf) { throw new Error('invalid parameters passed'); }
             var srfId = parseInt(options.srf);
+            // @@NOTE: a comment (the reason) is mandatory when cancelling an SRF (ui/js/oTWC_spaceRequest.js: askCancelComment)
+            //         it is saved on the SRF 'Submission Notes' preceded by who cancelled it (see getCancelNotes)
+            var cancelComment = (options.comment || '').trim();
+            if (!cancelComment) { throw new Error('Please, specify a comment (reason) to cancel the SRF'); }
 
             var srf = coreSql.first(`select id, ${twcSrf.Fields.SRF_STATUS} as status, ${twcSrf.Fields.CUSTOMER} as customer from ${twcSrf.Type} where id = ${srfId}`);
             if (!srf) { throw new Error(`No SRF found using id ${srfId}`); }
@@ -1054,8 +1066,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             if (unitsLow()) { return { keepGoing: true }; }
-            var fields = [twcSrf.Fields.SRF_STATUS]; var values = [twcUtils.SrfStatus.SRFCancelled];
-            if (stage == SRF_CANCEL_STAGE.APPROVED || stage == SRF_CANCEL_STAGE.LICENCE) { fields.push(twcSrf.Fields.SRF_APPROVAL_DATE); values.push(null); }
+            var fields = [twcSrf.Fields.SRF_STATUS, twcSrf.Fields.SUBMISSION_NOTES]; var values = [twcUtils.SrfStatus.SRFCancelled, getCancelNotes(userInfo, cancelComment)];
+            // @@NOTE: the SRF Approval Date is NOT cleared on cancel (Issue 306 asked for it, no longer required: the date is kept as a record of the approval)
             if (stage == SRF_CANCEL_STAGE.LICENCE) { fields.push(twcSrf.Fields.WORKS_PERMITTED_DATE); values.push(null); }
             recu.submit(twcSrf.Type, srfId, fields, values);
 
