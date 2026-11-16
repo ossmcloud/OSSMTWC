@@ -62,6 +62,10 @@
                 font-size: 7.5px;
                 padding: 2px;
             }
+            /* @@NOTE: equipment data rows (TME / GIE tables body) left aligned, BFO justifies the cell text otherwise (client request) - headers stay centred */
+            .eqBody td, .eqBody p {
+                text-align: left;
+            }
 
             /* @@NOTE: Tower Mounted Equipment rows: TME blue, ATME grey, Feeder no highlight */
             .rowTme {
@@ -244,7 +248,7 @@
             </tr>
             </thead>
 
-            <tbody>
+            <tbody class="eqBody">
             <#list requestJSON.srfItems as srfItems>
                 <#if srfItems.equip_class != "3">
                     <@eqRow item=srfItems rowClass="rowTme" />
@@ -279,7 +283,7 @@
                     <td width="7%">Flag</td>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="eqBody">
                 <#list requestJSON.srfItems as srfItems>
                     <#if srfItems.equip_class == "3">
                         <tr>
