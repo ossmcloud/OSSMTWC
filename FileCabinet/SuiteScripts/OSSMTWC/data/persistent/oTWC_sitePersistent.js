@@ -22,7 +22,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ADDRESS: 'custrecord_twc_site_address',
             ADDRESS_EIRCODE: 'custrecord_twc_site_address_zip',
             ADDRESS_COUNTY: 'custrecord_twc_site_address_county',
-            ADDRESS_REGION: 'custrecord_twc_site_address_region',
             SITE_EASTING: 'custrecord_twc_site_easting',
             SITE_NORTHING: 'custrecord_twc_site_northing',
             SITE_LONGITUDE: 'custrecord_twc_site_longitude',
@@ -47,14 +46,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             PERIMETER_TYPE: 'custrecord_twc_site_perimeter_type',
             FENCE_HEIGHT_M: 'custrecord_twc_site_fence_height_m',
             INDEPENDENT_POWER_SUPPLIES: 'custrecord_twc_site_indep_pwr_supp',
-            NEXT_GENERATOR_SERVICE: 'custrecord_twc_site_nxt_gen_svc',
             NEXT_EARTH__AND__LP_TEST: 'custrecord_twc_site_nxt_earth_lp_test',
-            NEXT_STRUCTURE_INSPECTION_DATE: 'custrecord_twc_site_nxt_str_insp_date',
-            NEXT_FALL_ARREST_CERTIFICATION_DATE: 'custrecord_twc_site_nxt_fall_cert_date',
-            NEXT_TOWER_PAINTING_DATE: 'custrecord_twc_site_nxt_twr_pnt_date',
-            NEXT_AIRCON_SERVICE_DATE: 'custrecord_twc_site_nxt_aircon_svc_date',
-            NEXT_FIRE_SERVICE_DATE: 'custrecord_twc_site_nxt_fire_svc_date',
-            NEXT_ALARM_SERVICE_DATE: 'custrecord_twc_site_nxt_alarm_svc_date',
             MARKETING_STATUS: 'custrecord_twc_site_mktg_sts',
             MNO_OCCUPANCY: 'custrecord_twc_site_mno_occ',
             NON_MNO_OCCUPANCY: 'custrecord_twc_site_non_mno_occ',
@@ -71,8 +63,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FACILITIES_SERVICES_LIST: 'custrecord_twc_list_fac_svc_list',
             SITE_LOCATION: 'custrecord_twc_site_location',
             SITE_SRF_STATUS: 'custrecord_twc_site_srf_status',
-            LAND: 'custrecord_twc_land',
             SITE_FIBRE_SERVICE_PROVIDERS: 'custrecord_twc_site_fiber_svc_providers',
+            ORIGIN_SITE_ID: 'custrecord_twc_site_origin_site_id',
+            FIRE_EXTINGUISHER: 'custrecord_twc_site_fire_exting',
+            FINANCIAL_STATUS: 'custrecord_ossm_twcm_site_fin_status',
+            GEOTYPE: 'custrecord_twc_site_geotype',
+            PROXIMITY_TO_BODY_OF_WATER_KM: 'custrecord_twc_site_prox_body_wtr_km',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -87,7 +83,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SITE_STATUS: { name: 'custrecord_twc_site_status', type: 'select', alias: 'siteStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_sts' },
             SITE_TYPE: { name: 'custrecord_twc_site_type', type: 'select', alias: 'siteType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_type' },
             SITE_OLD_ID: { name: 'custrecord_twc_site_old_id', type: 'text', alias: 'siteOldID', display: 'normal', mandatory: false },
-            HEIGHT_ASL_M: { name: 'custrecord_twc_site_height_asl', type: 'float', alias: 'heightASLm', display: 'normal', mandatory: false },
+            HEIGHT_ASL_M: { name: 'custrecord_twc_site_height_asl', type: 'integer', alias: 'heightASLm', display: 'normal', mandatory: false },
             SITE_LEVEL: { name: 'custrecord_twc_site_level', type: 'select', alias: 'siteLevel', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_level' },
             SITE_PORTFOLIO: { name: 'custrecord_twc_site_portfolio', type: 'select', alias: 'sitePortfolio', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_portfolio' },
             SITE_PUBLIC: { name: 'custrecord_twc_site_public', type: 'select', alias: 'sitePublic', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_public' },
@@ -95,7 +91,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ADDRESS: { name: 'custrecord_twc_site_address', type: 'text', alias: 'address', display: 'normal', mandatory: false },
             ADDRESS_EIRCODE: { name: 'custrecord_twc_site_address_zip', type: 'text', alias: 'addressEircode', display: 'normal', mandatory: false },
             ADDRESS_COUNTY: { name: 'custrecord_twc_site_address_county', type: 'select', alias: 'addressCounty', display: 'normal', mandatory: false, recordType: '-195' },
-            ADDRESS_REGION: { name: 'custrecord_twc_site_address_region', type: 'select', alias: 'addressRegion', display: 'normal', mandatory: false, recordType: 'customrecord_twc_region' },
             SITE_EASTING: { name: 'custrecord_twc_site_easting', type: 'float', alias: 'siteEasting', display: 'normal', mandatory: false },
             SITE_NORTHING: { name: 'custrecord_twc_site_northing', type: 'float', alias: 'siteNorthing', display: 'normal', mandatory: false },
             SITE_LONGITUDE: { name: 'custrecord_twc_site_longitude', type: 'float', alias: 'siteLongitude', display: 'normal', mandatory: false },
@@ -120,14 +115,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             PERIMETER_TYPE: { name: 'custrecord_twc_site_perimeter_type', type: 'select', alias: 'perimeterType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_perimeter_type' },
             FENCE_HEIGHT_M: { name: 'custrecord_twc_site_fence_height_m', type: 'float', alias: 'fenceHeightm', display: 'normal', mandatory: false },
             INDEPENDENT_POWER_SUPPLIES: { name: 'custrecord_twc_site_indep_pwr_supp', type: 'integer', alias: 'independentPowerSupplies', display: 'normal', mandatory: false },
-            NEXT_GENERATOR_SERVICE: { name: 'custrecord_twc_site_nxt_gen_svc', type: 'date', alias: 'nextGeneratorService', display: 'normal', mandatory: false },
             NEXT_EARTH__AND__LP_TEST: { name: 'custrecord_twc_site_nxt_earth_lp_test', type: 'date', alias: 'nextEarth_and_LPTest', display: 'normal', mandatory: false },
-            NEXT_STRUCTURE_INSPECTION_DATE: { name: 'custrecord_twc_site_nxt_str_insp_date', type: 'date', alias: 'nextStructureInspectionDate', display: 'normal', mandatory: false },
-            NEXT_FALL_ARREST_CERTIFICATION_DATE: { name: 'custrecord_twc_site_nxt_fall_cert_date', type: 'date', alias: 'nextFallArrestCertificationDate', display: 'normal', mandatory: false },
-            NEXT_TOWER_PAINTING_DATE: { name: 'custrecord_twc_site_nxt_twr_pnt_date', type: 'date', alias: 'nextTowerPaintingDate', display: 'normal', mandatory: false },
-            NEXT_AIRCON_SERVICE_DATE: { name: 'custrecord_twc_site_nxt_aircon_svc_date', type: 'date', alias: 'nextAirconServiceDate', display: 'normal', mandatory: false },
-            NEXT_FIRE_SERVICE_DATE: { name: 'custrecord_twc_site_nxt_fire_svc_date', type: 'date', alias: 'nextFireServiceDate', display: 'normal', mandatory: false },
-            NEXT_ALARM_SERVICE_DATE: { name: 'custrecord_twc_site_nxt_alarm_svc_date', type: 'date', alias: 'nextAlarmServiceDate', display: 'normal', mandatory: false },
             MARKETING_STATUS: { name: 'custrecord_twc_site_mktg_sts', type: 'checkbox', alias: 'marketingStatus', display: 'normal', mandatory: false },
             MNO_OCCUPANCY: { name: 'custrecord_twc_site_mno_occ', type: 'integer', alias: 'mNOOccupancy', display: 'normal', mandatory: false },
             NON_MNO_OCCUPANCY: { name: 'custrecord_twc_site_non_mno_occ', type: 'integer', alias: 'non_MNOOccupancy', display: 'normal', mandatory: false },
@@ -144,8 +132,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FACILITIES_SERVICES_LIST: { name: 'custrecord_twc_list_fac_svc_list', type: 'select', alias: 'facilitiesServicesList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_fac_svc' },
             SITE_LOCATION: { name: 'custrecord_twc_site_location', type: 'select', alias: 'siteLocation', display: 'normal', mandatory: false, recordType: '-103' },
             SITE_SRF_STATUS: { name: 'custrecord_twc_site_srf_status', type: 'select', alias: 'siteSRFStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_srf_status' },
-            LAND: { name: 'custrecord_twc_land', type: 'select', alias: 'land', display: 'normal', mandatory: false, recordType: 'customrecord_twc_land_type' },
             SITE_FIBRE_SERVICE_PROVIDERS: { name: 'custrecord_twc_site_fiber_svc_providers', type: 'multiselect', alias: 'siteFibreServiceProviders', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_svc_provide' },
+            ORIGIN_SITE_ID: { name: 'custrecord_twc_site_origin_site_id', type: 'text', alias: 'originSiteID', display: 'normal', mandatory: false },
+            FIRE_EXTINGUISHER: { name: 'custrecord_twc_site_fire_exting', type: 'select', alias: 'fireExtinguisher', display: 'normal', mandatory: false, recordType: 'customrecord_ossm_twc_fire_extinguisher' },
+            FINANCIAL_STATUS: { name: 'custrecord_ossm_twcm_site_fin_status', type: 'text', alias: 'financialStatus', display: 'normal', mandatory: false },
+            GEOTYPE: { name: 'custrecord_twc_site_geotype', type: 'select', alias: 'geotype', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_geotype' },
+            PROXIMITY_TO_BODY_OF_WATER_KM: { name: 'custrecord_twc_site_prox_body_wtr_km', type: 'float', alias: 'proximitytoBodyofWaterkm', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -258,13 +250,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.ADDRESS_COUNTY, value)
             }
             get addressCountyName() { return this.getText(_recordFields.ADDRESS_COUNTY); }
-            
-            get addressRegion() {
-                return this.get(_recordFields.ADDRESS_REGION);
-            } set addressRegion(value) {
-                this.set(_recordFields.ADDRESS_REGION, value)
-            }
-            get addressRegionName() { return this.getText(_recordFields.ADDRESS_REGION); }
             
             get siteEasting() {
                 return this.get(_recordFields.SITE_EASTING);
@@ -413,52 +398,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.INDEPENDENT_POWER_SUPPLIES, value)
             }
             
-            get nextGeneratorService() {
-                return this.get(_recordFields.NEXT_GENERATOR_SERVICE);
-            } set nextGeneratorService(value) {
-                this.set(_recordFields.NEXT_GENERATOR_SERVICE, value)
-            }
-            
             get nextEarth_and_LPTest() {
                 return this.get(_recordFields.NEXT_EARTH__AND__LP_TEST);
             } set nextEarth_and_LPTest(value) {
                 this.set(_recordFields.NEXT_EARTH__AND__LP_TEST, value)
-            }
-            
-            get nextStructureInspectionDate() {
-                return this.get(_recordFields.NEXT_STRUCTURE_INSPECTION_DATE);
-            } set nextStructureInspectionDate(value) {
-                this.set(_recordFields.NEXT_STRUCTURE_INSPECTION_DATE, value)
-            }
-            
-            get nextFallArrestCertificationDate() {
-                return this.get(_recordFields.NEXT_FALL_ARREST_CERTIFICATION_DATE);
-            } set nextFallArrestCertificationDate(value) {
-                this.set(_recordFields.NEXT_FALL_ARREST_CERTIFICATION_DATE, value)
-            }
-            
-            get nextTowerPaintingDate() {
-                return this.get(_recordFields.NEXT_TOWER_PAINTING_DATE);
-            } set nextTowerPaintingDate(value) {
-                this.set(_recordFields.NEXT_TOWER_PAINTING_DATE, value)
-            }
-            
-            get nextAirconServiceDate() {
-                return this.get(_recordFields.NEXT_AIRCON_SERVICE_DATE);
-            } set nextAirconServiceDate(value) {
-                this.set(_recordFields.NEXT_AIRCON_SERVICE_DATE, value)
-            }
-            
-            get nextFireServiceDate() {
-                return this.get(_recordFields.NEXT_FIRE_SERVICE_DATE);
-            } set nextFireServiceDate(value) {
-                this.set(_recordFields.NEXT_FIRE_SERVICE_DATE, value)
-            }
-            
-            get nextAlarmServiceDate() {
-                return this.get(_recordFields.NEXT_ALARM_SERVICE_DATE);
-            } set nextAlarmServiceDate(value) {
-                this.set(_recordFields.NEXT_ALARM_SERVICE_DATE, value)
             }
             
             get marketingStatus() {
@@ -567,19 +510,44 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get siteSRFStatusName() { return this.getText(_recordFields.SITE_SRF_STATUS); }
             
-            get land() {
-                return this.get(_recordFields.LAND);
-            } set land(value) {
-                this.set(_recordFields.LAND, value)
-            }
-            get landName() { return this.getText(_recordFields.LAND); }
-            
             get siteFibreServiceProviders() {
                 return this.get(_recordFields.SITE_FIBRE_SERVICE_PROVIDERS);
             } set siteFibreServiceProviders(value) {
                 this.set(_recordFields.SITE_FIBRE_SERVICE_PROVIDERS, value)
             }
             get siteFibreServiceProvidersName() { return this.getText(_recordFields.SITE_FIBRE_SERVICE_PROVIDERS); }
+            
+            get originSiteID() {
+                return this.get(_recordFields.ORIGIN_SITE_ID);
+            } set originSiteID(value) {
+                this.set(_recordFields.ORIGIN_SITE_ID, value)
+            }
+            
+            get fireExtinguisher() {
+                return this.get(_recordFields.FIRE_EXTINGUISHER);
+            } set fireExtinguisher(value) {
+                this.set(_recordFields.FIRE_EXTINGUISHER, value)
+            }
+            get fireExtinguisherName() { return this.getText(_recordFields.FIRE_EXTINGUISHER); }
+            
+            get financialStatus() {
+                return this.get(_recordFields.FINANCIAL_STATUS);
+            } set financialStatus(value) {
+                this.set(_recordFields.FINANCIAL_STATUS, value)
+            }
+            
+            get geotype() {
+                return this.get(_recordFields.GEOTYPE);
+            } set geotype(value) {
+                this.set(_recordFields.GEOTYPE, value)
+            }
+            get geotypeName() { return this.getText(_recordFields.GEOTYPE); }
+            
+            get proximitytoBodyofWaterkm() {
+                return this.get(_recordFields.PROXIMITY_TO_BODY_OF_WATER_KM);
+            } set proximitytoBodyofWaterkm(value) {
+                this.set(_recordFields.PROXIMITY_TO_BODY_OF_WATER_KM, value)
+            }
             
             get created() {
                 return this.get(_recordFields.CREATED);
@@ -613,8 +581,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_Site,
 
-            get: function (id) {
-                var rec = new OSSMTWC_Site(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_Site(id, staticLoad);
                 rec.load();
                 return rec;
             }, 
