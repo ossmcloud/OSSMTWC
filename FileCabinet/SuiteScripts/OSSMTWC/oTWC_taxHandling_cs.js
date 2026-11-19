@@ -34,6 +34,8 @@
  *               Quantity is solved at the PO rate (Rate is always locked to the PO rate). A line can
  *               never bill more than is left on the PO line: if it would, Quantity and Amount are
  *               corrected back to exactly what remains and the user is told to amend the PO first.
+ *     rateLock: on bill / credit item lines the Rate field is read only (disabled on page load and on
+ *               every line init).
  *  5. poBilled: on purchase order item lines that have a quantity billed, the line cannot be committed
  *               with a Quantity lower than the quantity billed, or an Amount lower than the value billed
  *               (quantity billed x the PO rate the line had when the page was opened - bills are locked
@@ -41,7 +43,7 @@
  *
  * Deploy on: Vendor Bill, Vendor Credit, Purchase Order, Vendor Return, Invoice, Credit Memo, Sales Order,
  * Sales Return, Journal (keep FEATURES in step with the deployments).
- * Entry points to tick on the script record: pageInit, postSourcing, fieldChanged, validateLine, saveRecord.
+ * Entry points to tick on the script record: pageInit, postSourcing, fieldChanged, lineInit, validateLine, saveRecord.
  * Dependencies: SuiteTax enabled (customrecord_ste_taxrate). No bundle dependencies.
  */
 define(['N/query', 'N/ui/dialog'], (query, dialog) => {
@@ -58,7 +60,8 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
     //         taxCheck : save validation of tax details vs lines (blocks the save)
     //         poCap    : PO over-billing cap on item lines
     //         poBilled : PO item lines already billed can't go below the billed quantity / value
-    const BILL_FEATURES = { project: true, taxRecalc: true, tax: true, taxCheck: true, poCap: true };
+    //         rateLock : item line Rate read only (the amount is typed, the rate comes from the PO)
+    const BILL_FEATURES = { project: true, taxRecalc: true, tax: true, taxCheck: true, poCap: true, rateLock: true };
     const ORDER_FEATURES = { project: true, taxRecalc: true, taxCheck: true };
     const FEATURES = {
         vendorbill: BILL_FEATURES,
@@ -682,6 +685,21 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
         }
     };
 
+    // item line Rate read only (bill / credit)
+    // @@NOTE: NetSuite disables a sublist field per line edit, so this runs on pageInit (current line) and
+    //         again on every lineInit. Never throws - a form without the field just stays editable.
+    const rateLock = {
+        apply: (rec) => {
+            try {
+                const line = rec.getCurrentSublistIndex({ sublistId: 'item' });
+                const field = rec.getSublistField({ sublistId: 'item', fieldId: 'rate', line: Math.max(0, line) });
+                if (field) { field.isDisabled = true; }
+            } catch (e) {
+                logError('rate lock', e);
+            }
+        }
+    };
+
     // ------------------------------------------------------------------------------------------
     // 4. PO BILLED FLOOR (purchase order item lines already billed)
     // ------------------------------------------------------------------------------------------
@@ -811,6 +829,16 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
                 logError('PO billed init', e);
             }
         }
+
+        if (state.features.rateLock) {
+            rateLock.apply(rec);
+        }
+    };
+
+    const lineInit = (context) => {
+        if (state.features.rateLock && context.sublistId === 'item') {
+            rateLock.apply(context.currentRecord);
+        }
     };
 
     // @@NOTE: the tax code is handled in both fieldChanged and postSourcing: postSourcing re-applies the
@@ -893,6 +921,7 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
         pageInit,
         postSourcing,
         fieldChanged,
+        lineInit,
         validateLine,
         saveRecord
     };
