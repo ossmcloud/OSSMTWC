@@ -36,6 +36,7 @@ One client script. Its features are chosen by record type through the `FEATURES`
 | `tax`: Tax Basis correction of all lines (new doc open, Tax Details tab click, save) | Vendor Bill, Vendor Credit |
 | `taxCheck`: save blocked if lines net ≠ total Tax Basis, or a line's Tax Rate ≠ its Tax Code's rate (0.001 points tolerance), or Basis × Rate ≠ Tax Amount (1 cent tolerance) | Vendor Bill, Vendor Credit, PO, Vendor Return, Invoice, Credit Memo, Sales Order, Sales Return |
 | `poCap`: PO over-billing cap | Vendor Bill, Vendor Credit |
+| `poBilled`: a PO item line with a quantity billed can't be committed below the billed quantity, or below the billed value (qty billed × the line's rate on page load). Blocks the line (`validateLine` returns false). Added 2026-11-19. | Purchase Order |
 
 Everything tax-related runs **only when Tax Details Override is ticked**. Without it, SuiteTax recalculates on submit and would discard the changes.
 

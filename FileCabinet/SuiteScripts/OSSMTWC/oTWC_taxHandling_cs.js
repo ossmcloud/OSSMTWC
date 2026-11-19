@@ -34,6 +34,10 @@
  *               Quantity is solved at the PO rate (Rate is always locked to the PO rate). A line can
  *               never bill more than is left on the PO line: if it would, Quantity and Amount are
  *               corrected back to exactly what remains and the user is told to amend the PO first.
+ *  5. poBilled: on purchase order item lines that have a quantity billed, the line cannot be committed
+ *               with a Quantity lower than the quantity billed, or an Amount lower than the value billed
+ *               (quantity billed x the PO rate the line had when the page was opened - bills are locked
+ *               to the PO rate by poCap).
  *
  * Deploy on: Vendor Bill, Vendor Credit, Purchase Order, Vendor Return, Invoice, Credit Memo, Sales Order,
  * Sales Return, Journal (keep FEATURES in step with the deployments).
@@ -53,12 +57,13 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
     //         tax      : Tax Basis fix of all tax details lines (new doc open / tax tab click / save)
     //         taxCheck : save validation of tax details vs lines (blocks the save)
     //         poCap    : PO over-billing cap on item lines
+    //         poBilled : PO item lines already billed can't go below the billed quantity / value
     const BILL_FEATURES = { project: true, taxRecalc: true, tax: true, taxCheck: true, poCap: true };
     const ORDER_FEATURES = { project: true, taxRecalc: true, taxCheck: true };
     const FEATURES = {
         vendorbill: BILL_FEATURES,
         vendorcredit: BILL_FEATURES,                    // same as vendor bill
-        purchaseorder: ORDER_FEATURES,
+        purchaseorder: Object.assign({}, ORDER_FEATURES, { poBilled: true }),
         vendorreturnauthorization: ORDER_FEATURES,      // vendor return: same as purchase order
         invoice: ORDER_FEATURES,
         creditmemo: ORDER_FEATURES,                     // same as invoice
@@ -109,6 +114,7 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
         poLoaded: {},           // orderdoc -> true once queried
         savedOnBill: {},        // 'orderdoc:orderline' -> qty this bill had when saved (edit mode only)
         notified: {},           // 'orderdoc:orderline' -> last capped amount notified
+        poRates: {},            // PO only: item line id -> rate the line had on page load (poBilled)
         fixingBasis: false,     // re-entrancy guard for tax.fixAllBasis
         rec: null,              // currentRecord, kept for the tax tab click handler
         tabHooked: false,
@@ -677,6 +683,63 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
     };
 
     // ------------------------------------------------------------------------------------------
+    // 4. PO BILLED FLOOR (purchase order item lines already billed)
+    // ------------------------------------------------------------------------------------------
+
+    const poBilled = {
+        // pageInit: remember the rate of every saved line, the rate the existing bills were made at
+        // @@NOTE: keyed by the item 'line' id (stable, unlike the line index). Rate blank -> amount / qty.
+        init: (rec) => {
+            const count = rec.getLineCount({ sublistId: 'item' }) || 0;
+            for (let line = 0; line < count; line++) {
+                const lineId = rec.getSublistValue({ sublistId: 'item', fieldId: 'line', line });
+                if (isBlank(lineId)) { continue; }
+                let rate = Math.abs(toNum(rec.getSublistValue({ sublistId: 'item', fieldId: 'rate', line })));
+                if (!rate) {
+                    const qty = Math.abs(toNum(rec.getSublistValue({ sublistId: 'item', fieldId: 'quantity', line })));
+                    if (qty) { rate = Math.abs(toNum(rec.getSublistValue({ sublistId: 'item', fieldId: 'amount', line }))) / qty; }
+                }
+                if (rate) { state.poRates[lineId] = rate; }
+            }
+        },
+
+        // validateLine on item: error message when the current line goes below what's billed, else null
+        // @@NOTE: only lines with a quantity billed are checked. quantitybilled is in transaction units,
+        //         same as quantity. Billed value = quantity billed x rate on page load (when that rate is
+        //         unknown only the quantity is checked).
+        check: (rec) => {
+            const billedQty = roundTo(Math.abs(toNum(rec.getCurrentSublistValue({ sublistId: 'item', fieldId: 'quantitybilled' }))), QTY_DECIMALS);
+            if (!billedQty) { return null; }
+            const qty = roundTo(Math.abs(toNum(rec.getCurrentSublistValue({ sublistId: 'item', fieldId: 'quantity' }))), QTY_DECIMALS);
+            if (qty < billedQty - QTY_TOLERANCE) {
+                return `Quantity ${qty} is lower than the quantity already billed (${billedQty}).`;
+            }
+            const rate = state.poRates[rec.getCurrentSublistValue({ sublistId: 'item', fieldId: 'line' })];
+            if (!rate) { return null; }
+            const billedAmount = round2(billedQty * rate);
+            const amount = Math.abs(toNum(rec.getCurrentSublistValue({ sublistId: 'item', fieldId: 'amount' })));
+            if (cents(amount) < cents(billedAmount) - TOLERANCE_CENTS) {
+                return `Amount ${fmt(amount)} is lower than the amount already billed (${fmt(billedAmount)} = ${billedQty} x ${rate}).`;
+            }
+            return null;
+        },
+
+        onCommit: (rec) => {
+            let error = null;
+            try {
+                error = poBilled.check(rec);
+            } catch (e) {
+                logError('PO billed check', e);   // a read problem never blocks the line
+                return true;
+            }
+            if (!error) { return true; }
+            alert(`This line has already been billed and cannot be reduced below the billed value.\n\n${error}\n\n` +
+                'Restore the quantity / rate so the line is at least what has been billed.');
+            return false;
+        }
+    };
+
+    // ------------------------------------------------------------------------------------------
     // ENTRY POINTS
     // ------------------------------------------------------------------------------------------
 
@@ -722,6 +785,7 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
         state.poLoaded = {};
         state.savedOnBill = {};
         state.notified = {};
+        state.poRates = {};
         state.rec = rec;
 
         // new docs only: the tax details generated with the form can carry a wrong Tax Basis, but they are
@@ -737,6 +801,14 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
                 poCap.init(rec, context.mode);
             } catch (e) {
                 logError('PO cap init', e);
+            }
+        }
+
+        if (state.features.poBilled) {
+            try {
+                poBilled.init(rec);
+            } catch (e) {
+                logError('PO billed init', e);
             }
         }
     };
@@ -785,6 +857,9 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
     const validateLine = (context) => {
         if (state.features.poCap && context.sublistId === 'item') {
             poCap.onCommit(context.currentRecord);
+        }
+        if (state.features.poBilled && context.sublistId === 'item') {
+            return poBilled.onCommit(context.currentRecord);
         }
         return true;
     };
