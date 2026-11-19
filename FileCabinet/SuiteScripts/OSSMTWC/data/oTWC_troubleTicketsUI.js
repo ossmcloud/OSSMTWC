@@ -157,8 +157,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var newDetailsInfo = { id: 'trbl-tkts-resolution-info', fields: [] };
             fieldGroup.controls.push(newDetailsInfo);
 
-            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.CORRECTIVE_ACTION, label: 'Corrective Action' })
-            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.SCHEDULED_COMPLETION_DATE, lineBreak: true, label: 'Scheduled Completion Date', width: '175px' })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.RESOLUTION_COMPLETION_DATE, label: 'Resolution Completion Date' })
+            newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.PLANNED_RESOLUTION_DATE, lineBreak: true, label: 'Planned Resolution Date', width: '175px' })
             newDetailsInfo.fields.push({ id: twcTrblTkts.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE, lineBreak: true, width: '100%', rows: 5, label: 'CA Taken incl Root Cause' })
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);

@@ -34,9 +34,28 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
 
             updateStatus(values, oldRec, newRec)
             updateIssue(values, oldRec, newRec)
+            updateTktFields(values, oldRec, newRec)
 
             if (!Object.keys(values).length) return
             recu.submit(twcTroubleTicket.Type, tktId, values)
+        }
+
+        function updateTktFields(values, oldRec, newRec) {
+            let onBehalf = newRec.getValue('custevent_twc_on_behalf')
+            if (onBehalf) {
+                values[twcTroubleTicket.Fields.ON_BEHALF] = onBehalf
+            }
+            let plannedRes = newRec.getValue('custevent_twc_planned_res_date')
+            if (plannedRes) {
+                let plannedResDate = format.parse({ value: plannedRes, type: format.Type.DATETIMETZ });
+
+                values[twcTroubleTicket.Fields.PLANNED_RESOLUTION_DATE] = plannedResDate
+            }
+            let resComplete = newRec.getValue('custevent_twc_res_compltn_date')
+            if (resComplete) {
+                let resCompleteDate = format.parse({ value: resComplete, type: format.Type.DATETIMETZ });
+                values[twcTroubleTicket.Fields.RESOLUTION_COMPLETION_DATE] = resCompleteDate
+            }
         }
 
         function updateStatus(values, oldRec, newRec) {
@@ -71,7 +90,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
             coreSql.each(sql, row => mappedValue = row[tktField])
             return mappedValue
         }
-      
+
 
 
         return {

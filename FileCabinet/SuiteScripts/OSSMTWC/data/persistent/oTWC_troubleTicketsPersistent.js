@@ -21,8 +21,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ASSIGNED_TO_COMPANY: 'custrecord_twc_trbl_tkt_assigned_to_comp',
             PRIORITY: 'custrecord_twc_trbl_tkt_priority',
             WORKS_REQUIRED: 'custrecord_twc_trbl_tkt_works_req',
-            CORRECTIVE_ACTION: 'custrecord_twc_trbl_tkt_corrective_act',
-            SCHEDULED_COMPLETION_DATE: 'custrecord_twc_trbl_tkt_sch_compltn_date',
+            RESOLUTION_COMPLETION_DATE: 'custrecord_twc_trbl_tkt_corrective_act',
+            PLANNED_RESOLUTION_DATE: 'custrecord_twc_trbl_tkt_sch_compltn_date',
             CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE: 'custrecord_twc_trbl_tkt_cor_act_tkn_root',
             CASE_REFERENCE: 'custrecord_twc_trbl_tkt_case',
             ON_BEHALF: 'custrecord_twc_trbl_tkt_on_behalf_cust',
@@ -47,11 +47,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             ASSIGNED_TO_COMPANY: { name: 'custrecord_twc_trbl_tkt_assigned_to_comp', type: 'select', alias: 'assignedToCompany', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             PRIORITY: { name: 'custrecord_twc_trbl_tkt_priority', type: 'select', alias: 'priority', display: 'normal', mandatory: false, recordType: 'customrecord_twc_trbl_tkt_priority' },
             WORKS_REQUIRED: { name: 'custrecord_twc_trbl_tkt_works_req', type: 'clobtext', alias: 'worksRequired', display: 'normal', mandatory: false },
-            CORRECTIVE_ACTION: { name: 'custrecord_twc_trbl_tkt_corrective_act', type: 'date', alias: 'correctiveAction', display: 'normal', mandatory: false },
-            SCHEDULED_COMPLETION_DATE: { name: 'custrecord_twc_trbl_tkt_sch_compltn_date', type: 'date', alias: 'scheduledCompletionDate', display: 'normal', mandatory: false },
+            RESOLUTION_COMPLETION_DATE: { name: 'custrecord_twc_trbl_tkt_corrective_act', type: 'date', alias: 'resolutionCompletionDate', display: 'normal', mandatory: false },
+            PLANNED_RESOLUTION_DATE: { name: 'custrecord_twc_trbl_tkt_sch_compltn_date', type: 'date', alias: 'plannedResolutionDate', display: 'normal', mandatory: false },
             CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE: { name: 'custrecord_twc_trbl_tkt_cor_act_tkn_root', type: 'clobtext', alias: 'correctiveActionTakeninclRootCause', display: 'normal', mandatory: false },
             CASE_REFERENCE: { name: 'custrecord_twc_trbl_tkt_case', type: 'select', alias: 'caseReference', display: 'normal', mandatory: false, recordType: '-23' },
-            ON_BEHALF: { name: 'custrecord_twc_trbl_tkt_on_behalf_cust', type: 'select', alias: 'onBehalf', display: 'normal', mandatory: false, recordType: '-2' },
+            ON_BEHALF: { name: 'custrecord_twc_trbl_tkt_on_behalf_cust', type: 'select', alias: 'onBehalf', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -161,16 +161,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.WORKS_REQUIRED, value)
             }
             
-            get correctiveAction() {
-                return this.get(_recordFields.CORRECTIVE_ACTION);
-            } set correctiveAction(value) {
-                this.set(_recordFields.CORRECTIVE_ACTION, value)
+            get resolutionCompletionDate() {
+                return this.get(_recordFields.RESOLUTION_COMPLETION_DATE);
+            } set resolutionCompletionDate(value) {
+                this.set(_recordFields.RESOLUTION_COMPLETION_DATE, value)
             }
             
-            get scheduledCompletionDate() {
-                return this.get(_recordFields.SCHEDULED_COMPLETION_DATE);
-            } set scheduledCompletionDate(value) {
-                this.set(_recordFields.SCHEDULED_COMPLETION_DATE, value)
+            get plannedResolutionDate() {
+                return this.get(_recordFields.PLANNED_RESOLUTION_DATE);
+            } set plannedResolutionDate(value) {
+                this.set(_recordFields.PLANNED_RESOLUTION_DATE, value)
             }
             
             get correctiveActionTakeninclRootCause() {
@@ -192,7 +192,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.ON_BEHALF, value)
             }
             get onBehalfName() { return this.getText(_recordFields.ON_BEHALF); }
-
+            
             get created() {
                 return this.get(_recordFields.CREATED);
             } set created(value) {
