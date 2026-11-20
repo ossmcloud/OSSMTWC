@@ -40,6 +40,8 @@
  *               with a Quantity lower than the quantity billed, or an Amount lower than the value billed
  *               (quantity billed x the PO rate the line had when the page was opened - bills are locked
  *               to the PO rate by poCap).
+ *  6. steType : on save, when the STE Transaction Type (custbody_ste_transaction_type) is empty the user is
+ *               warned once and the save is stopped; saving again goes ahead (all types but journals).
  *
  * Deploy on: Vendor Bill, Vendor Credit, Purchase Order, Vendor Return, Invoice, Credit Memo, Sales Order,
  * Sales Return, Journal (keep FEATURES in step with the deployments).
@@ -61,8 +63,9 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
     //         poCap    : PO over-billing cap on item lines
     //         poBilled : PO item lines already billed can't go below the billed quantity / value
     //         rateLock : item line Rate read only (the amount is typed, the rate comes from the PO)
-    const BILL_FEATURES = { project: true, taxRecalc: true, tax: true, taxCheck: true, poCap: true, rateLock: true };
-    const ORDER_FEATURES = { project: true, taxRecalc: true, taxCheck: true };
+    //         steType  : warn once on save when the STE Transaction Type is empty (not on journals)
+    const BILL_FEATURES = { project: true, taxRecalc: true, tax: true, taxCheck: true, poCap: true, rateLock: true, steType: true };
+    const ORDER_FEATURES = { project: true, taxRecalc: true, taxCheck: true, steType: true };
     const FEATURES = {
         vendorbill: BILL_FEATURES,
         vendorcredit: BILL_FEATURES,                    // same as vendor bill
@@ -74,11 +77,12 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
         returnauthorization: ORDER_FEATURES,            // sales return: same as sales order
         journalentry: { project: true }
     };
-    const DEFAULT_FEATURES = { project: true };
+    const DEFAULT_FEATURES = { project: true, steType: true };
 
     const FLD = {
         PROJECT: 'custcol_ossm_twcm_project',
-        OVERRIDE: 'taxdetailsoverride'
+        OVERRIDE: 'taxdetailsoverride',
+        STE_TRAN_TYPE: 'custbody_ste_transaction_type'
     };
 
     // sublist -> native field holding the customer / project on that sublist
@@ -123,6 +127,9 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
         tabHooked: false,
         pendingOpenFix: false   // new doc: run tax.fixAllBasis once, on NetSuite's first taxregoverride sourcing
     };
+
+    // steType: true once the user has been warned that the STE Transaction Type is empty - the next save goes ahead
+    let _userWarned = false;
 
     // ------------------------------------------------------------------------------------------
     // UTILITIES
@@ -892,29 +899,67 @@ define(['N/query', 'N/ui/dialog'], (query, dialog) => {
         return true;
     };
 
+    // ------------------------------------------------------------------------------------------
+    // 6. STE TRANSACTION TYPE WARNING (save, all transactions but journals)
+    // ------------------------------------------------------------------------------------------
+
+    // returns false (stop the save) the first time the field is found empty, true otherwise
+    // @@NOTE: a warning, not a block: once warned (_userWarned) the next save goes ahead even if the
+    //         field is still empty. A read problem never blocks the save.
+    const steType = {
+        check: (rec) => {
+            if (_userWarned) { return true; }
+            let value = null;
+            try {
+                value = rec.getValue({ fieldId: FLD.STE_TRAN_TYPE });
+            } catch (e) {
+                logError('STE transaction type check', e);
+                return true;
+            }
+            if (!isBlank(value)) { return true; }
+
+            _userWarned = true;
+            dialog.alert({
+                title: 'STE Transaction Type is empty',
+                message: 'The <b>STE Transaction Type</b> field is empty.<br><br>' +
+                    'Please check and fill it in if required, then save again.<br>' +
+                    'If it is correct to leave it empty, just click Save again to continue.'
+            });
+            return false;
+        }
+    };
+
     // @@NOTE: the Tax Basis auto-fix (FEATURES.tax) and the tax details validation (FEATURES.taxCheck) are
     //         separate features: e.g. orders / invoices are validated but not auto-fixed.
+    // @@NOTE: the STE Transaction Type warning (FEATURES.steType) runs last, only when the tax checks
+    //         passed, so the user never gets two blocking dialogs on the same save.
     const saveRecord = (context) => {
         if (state.features.tax) {
             // last pass: Tax Basis = bill line net on every tax details line before validating
             tax.fixAllBasis(context.currentRecord);
         }
-        if (!state.features.taxCheck) { return true; }
 
-        let errors;
-        try {
-            errors = taxCheck.run(context.currentRecord);
-        } catch (e) {
-            logError('tax validation', e);
-            errors = [`The tax details could not be validated (${e && e.message ? e.message : e}).`];
+        if (state.features.taxCheck) {
+            let errors;
+            try {
+                errors = taxCheck.run(context.currentRecord);
+            } catch (e) {
+                logError('tax validation', e);
+                errors = [`The tax details could not be validated (${e && e.message ? e.message : e}).`];
+            }
+            if (errors.length) {
+                dialog.alert({
+                    title: 'Tax Details validation failed',
+                    message: `The transaction cannot be saved:<br><br>${errors.map(e => `&bull; ${escHtml(e)}`).join('<br>')}`
+                });
+                return false;
+            }
         }
-        if (!errors.length) { return true; }
 
-        dialog.alert({
-            title: 'Tax Details validation failed',
-            message: `The transaction cannot be saved:<br><br>${errors.map(e => `&bull; ${escHtml(e)}`).join('<br>')}`
-        });
-        return false;
+        if (state.features.steType) {
+            return steType.check(context.currentRecord);
+        }
+        return true;
     };
 
     return {
