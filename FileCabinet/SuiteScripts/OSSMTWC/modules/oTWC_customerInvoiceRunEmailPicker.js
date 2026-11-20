@@ -19,15 +19,22 @@ define(['N/query'],
     function (query) {
         var SQL = `
             SELECT DISTINCT cte.custrecord_otwc_class_to_email_addresses AS emails
-            FROM transaction t
-            INNER JOIN customrecord_otwc_class_to_email cte
-                ON cte.custrecord_otwc_class_to_email_cust = t.entity
-                AND cte.isinactive = 'F'
-            LEFT JOIN transactionline tl
-                ON tl.transaction = t.id
-                AND tl.mainline = 'F'
-            JOIN item i on i.id = tl.item
-                AND i.class = cte.custrecord_otwc_class_to_email_class
+            FROM            transaction t
+            INNER JOIN      customrecord_otwc_class_to_email cte
+                ON          cte.custrecord_otwc_class_to_email_cust = t.entity
+                AND         cte.isinactive = 'F'
+
+            LEFT JOIN       transactionline tl
+                ON          tl.transaction = t.id
+                AND         tl.mainline = 'F'
+
+            JOIN            item i
+                ON          i.id = tl.item
+                
+            JOIN            classification cl
+                ON          cl.id = i.class
+                AND         NVL(cl.parent, cl.id) = cte.custrecord_otwc_class_to_email_class
+
             WHERE t.id = ?
                 AND (cte.custrecord_otwc_class_to_email_class IS NULL OR tl.id IS NOT NULL)`;
 
