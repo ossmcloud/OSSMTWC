@@ -1,0 +1,25 @@
+<suitelet scriptid="customscript_otwc_pwr_reading_fun_sl">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>OSSMTWC - Power Read - SL</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <notifyuser>F</notifyuser>
+  <scriptfile>[/SuiteScripts/OSSMTWC/oTWC_pwr_read_functionality_sl.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_otwc_pwr_reading_fun_sl">
+      <allemployees>F</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <audslctrole></audslctrole>
+      <eventtype></eventtype>
+      <isdeployed>T</isdeployed>
+      <isonline>F</isonline>
+      <loglevel>DEBUG</loglevel>
+      <runasrole>ADMINISTRATOR</runasrole>
+      <status>RELEASED</status>
+      <title>oTWC Pwr Read Functionality SL</title>
+    </scriptdeployment>
+  </scriptdeployments>
+</suitelet>

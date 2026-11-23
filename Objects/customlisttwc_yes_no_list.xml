@@ -1,0 +1,16 @@
+<customlist scriptid="customlisttwc_yes_no_list">
+  <description></description>
+  <isinactive>F</isinactive>
+  <isordered>T</isordered>
+  <name>Yes/No</name>
+  <customvalues>
+    <customvalue scriptid="val_51800_9061443_sb1_942">
+      <isinactive>F</isinactive>
+      <value>Yes</value>
+    </customvalue>
+    <customvalue scriptid="val_51801_9061443_sb1_966">
+      <isinactive>F</isinactive>
+      <value>No</value>
+    </customvalue>
+  </customvalues>
+</customlist>

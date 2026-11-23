@@ -1,0 +1,24 @@
+<customlist scriptid="customlist_twc_issue_type">
+  <description></description>
+  <isinactive>F</isinactive>
+  <isordered>T</isordered>
+  <name>TWC Issue - Type</name>
+  <customvalues>
+    <customvalue scriptid="val_223578020_5367938_171">
+      <isinactive>F</isinactive>
+      <value>Bug</value>
+    </customvalue>
+    <customvalue scriptid="val_223578021_5367938_513">
+      <isinactive>F</isinactive>
+      <value>Change</value>
+    </customvalue>
+    <customvalue scriptid="val_223578022_5367938_991">
+      <isinactive>F</isinactive>
+      <value>Enhancement</value>
+    </customvalue>
+    <customvalue scriptid="val_223578023_5367938_988">
+      <isinactive>F</isinactive>
+      <value>Suggestion</value>
+    </customvalue>
+  </customvalues>
+</customlist>

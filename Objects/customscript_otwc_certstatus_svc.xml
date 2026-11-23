@@ -1,0 +1,71 @@
+<scheduledscript scriptid="customscript_otwc_certstatus_svc">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>OSSMTWC - Cert Status - SVC</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <scriptfile>[/SuiteScripts/OSSMTWC/svc/oTWC_certStatus_svc.js]</scriptfile>
+  <scriptcustomfields>
+    <scriptcustomfield scriptid="custscript_otwc_certstatus_svc_p1">
+      <accesslevel>2</accesslevel>
+      <aidescription></aidescription>
+      <applyformatting>F</applyformatting>
+      <checkspelling>F</checkspelling>
+      <defaultchecked>F</defaultchecked>
+      <defaultselection></defaultselection>
+      <defaultvalue></defaultvalue>
+      <description></description>
+      <displayheight></displayheight>
+      <displaytype>NORMAL</displaytype>
+      <displaywidth></displaywidth>
+      <dynamicdefault></dynamicdefault>
+      <fieldtype>CLOBTEXT</fieldtype>
+      <help></help>
+      <isformula>F</isformula>
+      <ismandatory>F</ismandatory>
+      <label>P1</label>
+      <linktext></linktext>
+      <maxlength></maxlength>
+      <maxvalue></maxvalue>
+      <minvalue></minvalue>
+      <onparentdelete></onparentdelete>
+      <searchlevel>2</searchlevel>
+      <selectrecordtype></selectrecordtype>
+      <setting></setting>
+      <storevalue>T</storevalue>
+    </scriptcustomfield>
+  </scriptcustomfields>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_otwc_certstatus_svc_c">
+      <custscript_otwc_certstatus_svc_p1>{ &quot;type&quot;: &quot;company&quot; }</custscript_otwc_certstatus_svc_p1>
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>SCHEDULED</status>
+      <title>OSSMTWC - Company Status - SVC</title>
+      <recurrence>
+        <daily>
+          <everyxdays>1</everyxdays>
+          <repeat>PT12H</repeat>
+          <startdate>2026-03-25</startdate>
+          <starttime>01:30:00Z</starttime>
+        </daily>
+      </recurrence>
+    </scriptdeployment>
+    <scriptdeployment scriptid="customdeploy_otwc_certstatus_svc">
+      <custscript_otwc_certstatus_svc_p1></custscript_otwc_certstatus_svc_p1>
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>SCHEDULED</status>
+      <title>OSSMTWC - Cert Status - SVC</title>
+      <recurrence>
+        <daily>
+          <everyxdays>1</everyxdays>
+          <repeat>PT12H</repeat>
+          <startdate>2026-03-23</startdate>
+          <starttime>01:00:00Z</starttime>
+        </daily>
+      </recurrence>
+    </scriptdeployment>
+  </scriptdeployments>
+</scheduledscript>

@@ -1,0 +1,44 @@
+<customlist scriptid="customlist_twc_issue_status">
+  <description></description>
+  <isinactive>F</isinactive>
+  <isordered>T</isordered>
+  <name>TWC Issue - Status</name>
+  <customvalues>
+    <customvalue scriptid="val_223578061_5367938_879">
+      <isinactive>F</isinactive>
+      <value>Open</value>
+    </customvalue>
+    <customvalue scriptid="val_223578062_5367938_634">
+      <isinactive>F</isinactive>
+      <value>In Progress</value>
+    </customvalue>
+    <customvalue scriptid="val_223578063_5367938_445">
+      <isinactive>F</isinactive>
+      <value>Ready for UAT</value>
+    </customvalue>
+    <customvalue scriptid="val_223578064_5367938_775">
+      <isinactive>F</isinactive>
+      <value>Testing</value>
+    </customvalue>
+    <customvalue scriptid="val_224567488_5367938_792">
+      <isinactive>F</isinactive>
+      <value>Completed</value>
+    </customvalue>
+    <customvalue scriptid="val_224567503_5367938_986">
+      <isinactive>F</isinactive>
+      <value>Dismissed</value>
+    </customvalue>
+    <customvalue scriptid="val_53632_9061443_sb1_530">
+      <isinactive>F</isinactive>
+      <value>Re-open</value>
+    </customvalue>
+    <customvalue scriptid="val_54070_9061443_sb1_571">
+      <isinactive>F</isinactive>
+      <value>On Hold</value>
+    </customvalue>
+    <customvalue scriptid="val_96356_9061443_sb1_451">
+      <isinactive>F</isinactive>
+      <value>Paused</value>
+    </customvalue>
+  </customvalues>
+</customlist>

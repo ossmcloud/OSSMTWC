@@ -1,4 +1,4 @@
-<suitelet scriptid="customscript_oTWC_controls_sl">
+<suitelet scriptid="customscript_otwc_controls_sl">
   <description></description>
   <isinactive>F</isinactive>
   <name>OSSMTWC - Controls - SL</name>
@@ -8,7 +8,7 @@
   <notifyuser>F</notifyuser>
   <scriptfile>[/SuiteScripts/OSSMTWC/oTWC_controls_sl.js]</scriptfile>
   <scriptdeployments>
-    <scriptdeployment scriptid="customdeploy_oTWC_controls_sl">
+    <scriptdeployment scriptid="customdeploy_otwc_controls_sl">
       <allemployees>F</allemployees>
       <allpartners>F</allpartners>
       <allroles>T</allroles>
@@ -19,7 +19,7 @@
       <loglevel>DEBUG</loglevel>
       <runasrole>ADMINISTRATOR</runasrole>
       <status>RELEASED</status>
-      <title>OSSMTWC - Controls - SL</title>
+      <title>OSSMTWC - Controls</title>
     </scriptdeployment>
   </scriptdeployments>
 </suitelet>

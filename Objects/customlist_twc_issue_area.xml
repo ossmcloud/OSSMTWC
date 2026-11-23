@@ -1,0 +1,52 @@
+<customlist scriptid="customlist_twc_issue_area">
+  <description></description>
+  <isinactive>F</isinactive>
+  <isordered>T</isordered>
+  <name>TWC Issue - Area</name>
+  <customvalues>
+    <customvalue scriptid="val_223578003_5367938_921">
+      <isinactive>F</isinactive>
+      <value>Company Profile</value>
+    </customvalue>
+    <customvalue scriptid="val_223578004_5367938_872">
+      <isinactive>F</isinactive>
+      <value>Site Locator</value>
+    </customvalue>
+    <customvalue scriptid="val_223578005_5367938_521">
+      <isinactive>F</isinactive>
+      <value>SAF</value>
+    </customvalue>
+    <customvalue scriptid="val_223578006_5367938_418">
+      <isinactive>F</isinactive>
+      <value>SRF</value>
+    </customvalue>
+    <customvalue scriptid="val_51721_9061443_sb1_369">
+      <isinactive>F</isinactive>
+      <value>General</value>
+    </customvalue>
+    <customvalue scriptid="val_79272_9061443_sb1_322">
+      <isinactive>F</isinactive>
+      <value>SDS</value>
+    </customvalue>
+    <customvalue scriptid="val_79763_9061443_sb1_803">
+      <isinactive>F</isinactive>
+      <value>Trouble Tickets</value>
+    </customvalue>
+    <customvalue scriptid="val_96227_9061443_sb1_438">
+      <isinactive>F</isinactive>
+      <value>Live Data Import</value>
+    </customvalue>
+    <customvalue scriptid="val_98642_9061443_sb1_757">
+      <isinactive>F</isinactive>
+      <value>Field Service App</value>
+    </customvalue>
+    <customvalue scriptid="val_98661_9061443_sb1_745">
+      <isinactive>F</isinactive>
+      <value>Logins and Roles</value>
+    </customvalue>
+    <customvalue scriptid="val_100597_9061443_sb1_206">
+      <isinactive>F</isinactive>
+      <value>Accounting</value>
+    </customvalue>
+  </customvalues>
+</customlist>

@@ -1,0 +1,25 @@
+<scheduledscript scriptid="customscript_otwc_srf_status_svc">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>OSSMTWC - SRF Complete Status - SVC</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <scriptfile>[/SuiteScripts/OSSMTWC/svc/oTWC_srf_sts_update_svc.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_otwc_srf_status_svc">
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>SCHEDULED</status>
+      <title>OSSMTWC - SRF Complete Status - SVC</title>
+      <recurrence>
+        <daily>
+          <everyxdays>1</everyxdays>
+          <repeat>PT15M</repeat>
+          <startdate>2026-09-19</startdate>
+          <starttime>04:00:00Z</starttime>
+        </daily>
+      </recurrence>
+    </scriptdeployment>
+  </scriptdeployments>
+</scheduledscript>

@@ -1,0 +1,25 @@
+<suitelet scriptid="customscript_otwc_sdsfiles_sl">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>OSSMTWC - SDS Files - SL</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <notifyuser>F</notifyuser>
+  <scriptfile>[/SuiteScripts/OSSMTWC/ui/oTWC_sdsFiles_sl.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_otwc_sdsfiles_sl">
+      <allemployees>F</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <audslctrole>[scriptid=customrole1319]|[scriptid=customrole1321]</audslctrole>
+      <eventtype></eventtype>
+      <isdeployed>T</isdeployed>
+      <isonline>F</isonline>
+      <loglevel>DEBUG</loglevel>
+      <runasrole>ADMINISTRATOR</runasrole>
+      <status>RELEASED</status>
+      <title>TWC - SDS Files</title>
+    </scriptdeployment>
+  </scriptdeployments>
+</suitelet>
