@@ -74,7 +74,18 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
         function getAllSafTimeBlocks(options, userInfo) {
             var timeBlocks = {};
 
-            var allowedCustomers = twcConfig.getUserAllowedCustomers(userInfo);
+            // @@NOTE: the SAFs of the site the user can see (oTWC_config.js: getSafAccessFilter, customer / primary contractor / agent pass rules)
+            //         any other SAF is shown as 'slot used': no SAF number, no link (it used to follow the company ACL: agent pass users saw all the customer SAFs)
+            var visibleSafs = null;
+            if (!userInfo.isEmployee) {
+                visibleSafs = coreSQL.run(`
+                    select  s.id
+                    from    customrecord_twc_saf s
+                    where   s.custrecord_twc_saf_site = ${parseInt(options?.siteId) || 0}
+                    ${twcConfig.getSafAccessFilter(userInfo, 's')}
+                `).map(s => { return parseInt(s.id); });
+            }
+            var hiddenKeys = {}; var hiddenCount = 0;
 
             coreSQL.each(`
                 select  b.id, b.custrecord_twc_saf_tm_blk_block as block_id, BUILTIN.DF(b.custrecord_twc_saf_tm_blk_block) as block_name, TO_CHAR(b.custrecord_twc_saf_tm_blk_date, 'yyyy-MM-dd') as block_date,
@@ -91,22 +102,22 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 order by b.custrecord_twc_saf_tm_blk_date desc
             `, tb => {
                 var safId = tb.saf_id; var safCode = tb.saf_code;
-                if (!options.reUse) {
-                    if (safId == options.id) {
-                        safId = 't';
-                        safCode = 'SAF';
-                    }
+                var isThisSaf = !options.reUse && safId == options.id;
+                if (isThisSaf) {
+                    safId = 't';
+                    safCode = 'SAF';
+                }
+                var hidden = !isThisSaf && visibleSafs != null && visibleSafs.indexOf(parseInt(tb.saf_id)) < 0;
+                if (hidden) {
+                    // @@NOTE: a hidden SAF is keyed by a counter, not by its id (this goes to the client page)
+                    if (!hiddenKeys[tb.saf_id]) { hiddenKeys[tb.saf_id] = `h${++hiddenCount}`; }
+                    safId = hiddenKeys[tb.saf_id];
                 }
 
                 if (!timeBlocks[tb.block_date]) { timeBlocks[tb.block_date] = { blocksCount: 0 }; }
                 if (!timeBlocks[tb.block_date][safId]) {
 
-                    var safLink = { id: tb.saf_id, code: safCode };
-                    if (allowedCustomers != 'all') {
-                        if (!allowedCustomers.find(c => { return c.cust == tb.saf_customer })) {
-                            safLink = { id: null, code: 'slot used' };
-                        }
-                    }
+                    var safLink = hidden ? { id: null, code: 'slot used' } : { id: tb.saf_id, code: safCode };
 
 
                     timeBlocks[tb.block_date][safId] = {
@@ -116,7 +127,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     }
                 }
                 timeBlocks[tb.block_date][safId].blocks.push({
-                    id: tb.id,
+                    id: hidden ? null : tb.id,
                     date: tb.block_date,
                     block: { id: tb.block_id, name: tb.block_name },
                 })
@@ -268,6 +279,9 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
         function saveNewSaf(options, userInfo) {
 
             var payload = options.saf;
+
+            // @@NOTE: editing / re-using an existing SAF: same access rule as the SAF page (oTWC_config.js: getSafAccessFilter)
+            if (payload.id && !twcConfig.isUserAllowedSaf(userInfo, payload.id)) { throw new Error('You do not have access to this SAF record'); }
 
             var earliestDate = '2099-31-12'; var latestDate = '1900-01-01'; var blockCount = 0;
             for (var d in options.accessRequirements.timeBlocks) {
@@ -1092,7 +1106,9 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     if (!saf) { throw new Error(`No SAF found using id ${pageData.recId}`) }
                     saf.siteId = saf[twcSaf.Fields.SITE];
 
-                    if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, saf[twcSaf.Fields.CUSTOMER])) {
+                    // @@NOTE: customer / primary contractor / agent pass rules (oTWC_config.js: getSafAccessFilter), also applies to 'Re Use'
+                    //         (it used to follow the company ACL: agent pass users could open any SAF of the customer)
+                    if (!twcConfig.isUserAllowedSaf(pageData.userInfo, pageData.recId)) {
                         throw new Error('You do not have access to see this SAF record');
                     }
 

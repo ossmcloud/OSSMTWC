@@ -80,16 +80,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSaf.Fields.CREATED} desc`;
 
-            if (userInfo.companyProfile?.isBoth) {
-                whereClause += `and (
-                       ${twcSaf.Fields.PRIMARY_CONTRACTOR} = ${userInfo.companyProfile.id || 0}
-                    or ${twcSaf.Fields.CUSTOMER} = ${userInfo.companyProfile.id || 0}
-                )`;
-            } else if (userInfo.companyProfile?.isVendor) {
-                whereClause += `and ${twcSaf.Fields.PRIMARY_CONTRACTOR} = ${userInfo.companyProfile.id || 0}`;
-            } else if (userInfo.companyProfile?.isCustomer) {
-                whereClause += `and ${twcSaf.Fields.CUSTOMER} = ${userInfo.companyProfile.id || 0}`;
-            }
+            // @@NOTE: TWC Employees can see everything (empty filter), customer / primary contractor / agent pass rules: oTWC_config.js: getSafAccessFilter
+            //         (same as before for customers / primary contractors, agent pass users also see the SAFs raised by their colleagues for their agent pass customers)
+            whereClause += twcConfig.getSafAccessFilter(userInfo, 's');
 
             var safs = coreSQL.run(`
                 select  ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}

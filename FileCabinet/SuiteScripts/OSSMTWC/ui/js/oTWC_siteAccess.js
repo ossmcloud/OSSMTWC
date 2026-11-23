@@ -339,7 +339,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         }
                         timeBlock.blocksCount++;
 
-                        this.#calendar.specialDates[timeBlockDate] = { css: timeBlock.blocksCount > 3 ? 'o-calendar-red' : 'o-calendar-orange' }
+                        // @@NOTE: amber = some time blocks booked, red = all of them (data/oTWC_safUI.js: getCalendarDayCss)
+                        this.#calendar.specialDates[timeBlockDate] = { css: twcSafUI.getCalendarDayCss(timeBlock, (this.data.timeBlocks || []).length) || 'o-calendar-orange' }
 
                         if (!timeBlock['t']) {
                             timeBlock['t'] = {
@@ -546,8 +547,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                         if (idx >= 0) { this.#calendar.datesContent[b.date].splice(idx, 1) }
                                     }
 
-                                    this.#calendar.specialDates[b.date] = { css: this.#accessRequirements.timeBlocks[b.date].blocksCount > 3 ? 'o-calendar-red' : 'o-calendar-orange' }
-                                    if (this.#accessRequirements.timeBlocks[b.date].blocksCount == 0) {
+                                    // @@NOTE: amber = some time blocks booked, red = all of them, none => default colour (data/oTWC_safUI.js: getCalendarDayCss)
+                                    var dayCss = twcSafUI.getCalendarDayCss(this.#accessRequirements.timeBlocks[b.date], (this.data.timeBlocks || []).length);
+                                    if (dayCss) {
+                                        this.#calendar.specialDates[b.date] = { css: dayCss };
+                                    } else {
                                         delete this.#calendar.specialDates[b.date]
                                     }
 

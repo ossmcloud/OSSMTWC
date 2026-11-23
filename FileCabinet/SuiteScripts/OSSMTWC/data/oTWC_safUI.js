@@ -23,6 +23,24 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return `<a class="twc" href="${getSafUrl()}&recId=${saf.id}" target="_blank">${saf.code}</a>`
         }
 
+        // @@NOTE: SAF calendar day colour (server: getSAFInfoPanels_Builder_Step_0, client: ui/js/oTWC_siteAccess.js when a block is reserved / removed)
+        //         amber = some time blocks of the day are booked, red = all of them, null = none (the day keeps its default colour)
+        //         dayTimeBlocks: getAllSafTimeBlocks()[date] ({ blocksCount, <saf key>: { blocks: [ { block: { id } } ] } }), totalBlocks: number of time blocks in a day
+        //         distinct block ids are counted (it was 'more than 3 bookings')
+        function getCalendarDayCss(dayTimeBlocks, totalBlocks) {
+            if (!dayTimeBlocks) { return null; }
+            var booked = [];
+            for (var k in dayTimeBlocks) {
+                if (k == 'blocksCount' || !dayTimeBlocks[k]?.blocks) { continue; }
+                core.array.each(dayTimeBlocks[k].blocks, b => {
+                    var blockId = b?.block?.id;
+                    if (blockId != null && booked.indexOf(`${blockId}`) < 0) { booked.push(`${blockId}`); }
+                });
+            }
+            if (booked.length == 0) { return null; }
+            return (totalBlocks > 0 && booked.length >= totalBlocks) ? 'o-calendar-red' : 'o-calendar-orange';
+        }
+
         function renderTimeBlocks(options) {
             if (!options) { options = {}; }
             var blocks = options.defaultTimeBlocks || twcUtils.getSafTimeBlocks();
@@ -190,16 +208,18 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var specialDates = {}; var datesContent = {};
             if (options?.siteTimeBlocks) {
+                var totalBlocks = twcUtils.getSafTimeBlocks().length;
                 for (var k in options.siteTimeBlocks) {
                     datesContent[k] = [];
-                    specialDates[k] = { css: options.siteTimeBlocks[k].blocksCount > 3 ? 'o-calendar-red' : 'o-calendar-orange' }
+                    var dayCss = getCalendarDayCss(options.siteTimeBlocks[k], totalBlocks);
+                    if (dayCss) { specialDates[k] = { css: dayCss }; }
                     for (var ks in options.siteTimeBlocks[k]) {
                         if (ks == 'blocksCount') { continue; }
                         if (options.siteTimeBlocks[k][ks].saf.id) {
                             datesContent[k].push(`${getSafLink(options.siteTimeBlocks[k][ks].saf)}`);
                         } else {
                             // @@NOTE: a SAF wiht no ID means the saf exists but this user cannot see it, so we just mark the slots used
-                            datesContent[k].push(`${options.siteTimeBlocks[k][ks].blocks.length} slots used`);
+                            datesContent[k].push(`${options.siteTimeBlocks[k][ks].blocks.length} slots used<br />`);
                         }
                     }
                 }
@@ -909,6 +929,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             getSafTableFields: getSafTableFields,
             getSAFInfoPanels: getSAFInfoPanels,
             renderTimeBlocks: renderTimeBlocks,
+            getCalendarDayCss: getCalendarDayCss,
 
             getSafListPanel: getSAFInfoPanels_Existing
         }
