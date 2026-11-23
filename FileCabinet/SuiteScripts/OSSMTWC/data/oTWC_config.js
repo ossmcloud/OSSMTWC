@@ -22,7 +22,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         const SAF_AWAIT_PHOTOS_MAIL_TEMPLATE = 2;
         // @@GO-LIVE :: default 'Works Photos Req. Delay' (days after the last time block before a SAF goes to Awaiting Photos) when the SAF has none
         //              used by svc/oTWC_saf_sts_update_svc.js and ui/modules/oTWC_siteAccessUtils.js (approval: completion photos requested date)
-        const SAF_PHOTO_REQ_DELAY_DEFAULT = 7;
+        const SAF_PHOTO_REQ_DELAY_DEFAULT = 1;
 
         const FIELD_ENTITY_USER_PREF = 'custentity_twc_userpref';
 
