@@ -966,6 +966,56 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             recu.submit(twcEqAct.Type, payload.id, twcEqAct.Fields.EA_SAF, null);
         }
 
+        // @@NOTE: TL detach from the SAF view page (oTWC_siteAccess.js: TWCSiteAccessPage.detachSafActionTL), whatever the SAF status
+        //         no edit / re-submit: the SAF status does not change, only the action is detached (and the equipment action freed for another SAF)
+        //         only pending actions (detachSafAction): completed work is never re-opened
+        function detachSafActionTL(payload, userInfo) {
+            if (!userInfo.isEmployee || !(userInfo.permission?.lvl > twcConfig.PERMISSION_LEVEL.VIEW)) { throw new Error('You do not have permission to detach equipment actions'); }
+            if (!parseInt(payload.saf) || !parseInt(payload.id)) { throw new Error('invalid parameters passed'); }
+            if (!payload.reason) { throw new Error('Please, specify the detach reason'); }
+            var reason = twcUtils.getSafActionDetachReason().find(r => { return r.value == payload.reason; });
+            if (!reason) { throw new Error('Invalid detach reason'); }
+            if (reason.force_comm == 'T' && !(payload.comment || '').trim()) { throw new Error('Please, specify the detach comment'); }
+
+            // @@NOTE: the related actions (ATME / Feeders of a TME) are read before the parent is detached
+            var related = getRelatedSafActions(payload.saf, payload.id);
+
+            detachSafAction(payload);
+
+            var saf = twcSaf.get(payload.saf);
+            var logInfo = `${reason.text}${payload.comment ? `: ${payload.comment}` : ''}`;
+            var parentName = recu.lookUp(twcEqAct.Type, payload.id, 'name');
+            saf.logInfo(`Eq. Action [${parentName}] detached by TL`, logInfo);
+
+            // @@NOTE: detaching a TME detaches its related ATME / Feeders on the same SAF too (same reason / comment)
+            //         only the pending ones (detachSafAction rule), the others stay and are reported back
+            var skipped = [];
+            core.array.each(related, r => {
+                if (r.status != twcUtils.SafActionStatus.Pending || r.ea_status != twcUtils.EqActionStatus.Pending) {
+                    if (r.status != twcUtils.SafActionStatus.Detached) { skipped.push(r.ea_name); }
+                    return;
+                }
+                detachSafAction({ saf: payload.saf, id: r.ea_id, reason: payload.reason, comment: payload.comment });
+                saf.logInfo(`Eq. Action [${r.ea_name}] detached by TL (related to [${parentName}])`, logInfo);
+            });
+
+            return { status: 'success', skipped: skipped };
+        }
+
+        // @@NOTE: SAF actions related to the given eq. action on the same SAF: the ATME / Feeders whose SRF item is a child of the eq. action SRF item (custrecord_twc_srf_itm_tme_srf)
+        //         same parent / child link as the SAF equipment actions table (twcUtils.getSafActions: parent_srf_item)
+        function getRelatedSafActions(safId, eqActionId) {
+            return coreSQL.run(`
+                select  sa.id, sa.custrecord_twc_saf_a_status as status, ea.id as ea_id, ea.name as ea_name, ea.custrecord_twc_eq_action_sts as ea_status
+                from    customrecord_twc_saf_action sa
+                join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea
+                join    customrecord_twc_srf_itm srfi on srfi.id = ea.custrecord_twc_eq_action_srf_item
+                where   sa.custrecord_twc_saf_a_saf = ${parseInt(safId)}
+                and     srfi.custrecord_twc_srf_itm_tme_srf = (select pea.custrecord_twc_eq_action_srf_item from customrecord_twc_eq_action pea where pea.id = ${parseInt(eqActionId)})
+                order by ea.id
+            `);
+        }
+
         function deleteSaf(safId) {
 
             coreSQL.each(`select id from customrecord_twc_saf_log where custrecord_twc_saf_log_saf = ${safId}`, r => {
@@ -1050,6 +1100,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             approveSafReview: approveSafReview,
             sendBackSafReview: sendBackSafReview,
             getSafTimeBlocks: getSafTimeBlocks,
+            detachSafActionTL: detachSafActionTL,
 
 
             deleteSaf: deleteSaf

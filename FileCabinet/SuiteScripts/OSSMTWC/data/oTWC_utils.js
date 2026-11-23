@@ -1412,7 +1412,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 ${actionStatusFilter}
                 order by srfi.id 
             `, action => {
-                action['saf-detach'] = (action['custrecord_twc_saf_a_status'] == SAF_ACTION_STATUS.Pending) ? '<span class="o-table-action twc-clickable" data-action="detach">detach</span>' : '';
+                // @@NOTE: data-id (eq. action id) is used by the SAF view page (TL detach, oTWC_siteAccess.js: TWCSiteAccessPage.detachSafActionTL), the builder uses the row data
+                action['saf-detach'] = (action['custrecord_twc_saf_a_status'] == SAF_ACTION_STATUS.Pending) ? `<span class="o-table-action twc-clickable" data-action="detach" data-id="${action.ea_id}">detach</span>` : '';
 
                 if (saf.showSelect) {
                     action.select = `<input data-id="${action.id}" data-srf-id="${action.srf_item}" data-srf-parent-id="${action.parent_srf_item || ''}" type="checkbox" />`;

@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_icons.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safAction.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_file.js', './oTWC_srfItem.js', './oTWC_equipAction.js', './oTWC_company.js', './oTWC_profile.js', './oTWC_equipment.js'],
-    (runtime, core, coreSQL, twcIcons, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile, twcSrfItem, twcEqAct, twcCompany, twcProfile, twcEq) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_icons.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safAction.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_file.js', './oTWC_srfItem.js', './oTWC_equipAction.js', './oTWC_company.js', './oTWC_profile.js', './oTWC_equipment.js', './oTWC_config.js'],
+    (runtime, core, coreSQL, twcIcons, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile, twcSrfItem, twcEqAct, twcCompany, twcProfile, twcEq, twcConfig) => {
         var _safUrl = null;
         var _allowedSafTypes = null;
         function getSafUrl() {
@@ -738,6 +738,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             // @@NOTE: 'Action' = SRF item request type (Install / Remove / Swap, via custrecord_twc_eq_action_srf_item, see twcUtils.getSafActions), 'Type' is the equipment (item) type column
             fields[twcSrfItem.Fields.REQUEST_TYPE + '_name'] = { title: 'Action' };
             fields[twcSafAction.Fields.SAF_ACTION_STATUS + '_name'] = { title: 'Status', styles: { width: '120px', 'text-align': 'center' } };
+            // @@NOTE: TL can detach a pending action from the SAF in view mode, whatever the SAF status (no edit / re-submit, the SAF status does not change)
+            //         the cell is built by twcUtils.getSafActions (pending actions only), handled by oTWC_siteAccess.js: TWCSiteAccessPage.detachSafActionTL
+            if (userInfo.isEmployee && userInfo.permission?.lvl > twcConfig.PERMISSION_LEVEL.VIEW) {
+                fields['saf-detach'] = { title: '', nullText: '', noExport: true, styles: { width: '50px', 'text-align': 'center', 'padding': '0px' } };
+            }
 
             // @@REVIEW: we need to fix filters sorting (on table ui) with child rows before we can show
             for (var k in fields) {

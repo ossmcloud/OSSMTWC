@@ -259,6 +259,11 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 twcSiteAccessUtils.sendBackSafReview(payload, twcConfig.userInfo(context));
                 return { status: 'success' };
 
+            } else if (context.request.parameters.action == 'detach-saf-action') {
+                // @@NOTE: TL only, detach a pending action from the SAF without editing it (no status change)
+                var payload = JSON.parse(context.request.body);
+                return twcSiteAccessUtils.detachSafActionTL(payload, twcConfig.userInfo(context));
+
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);
             }

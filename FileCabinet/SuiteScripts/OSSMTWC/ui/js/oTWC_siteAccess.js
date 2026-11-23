@@ -1099,6 +1099,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             initSafMode() {
+                // @@NOTE: TL detach (the column is only rendered for TL, data/oTWC_safUI.js: getSAFInfoPanels_Info_Actions)
+                //         capture phase listener on the document: the table row click handler stops the propagation (O/controls/oTWC_ui_table.js: initEvents, '.o-row' click)
+                //         so a bubbling / delegated handler never gets the click; this also survives the table re-render
+                //         bound first so nothing failing below can skip it
+                //         view mode only (initSafMode): the builder (edit mode) has its own detach handling (TWCSiteAccessBuilder.detachEqAction)
+                if (!this._safDetachBound) {
+                    this._safDetachBound = true;
+                    document.addEventListener('click', e => {
+                        var span = e.target?.closest ? e.target.closest('span.o-table-action[data-action="detach"]') : null;
+                        if (!span) { return; }
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.detachSafActionTL(jQuery(span).data('id'));
+                    }, true);
+                }
+
                 this.ui.find('.twc-preview-file').click(async e => {
                     var file = jQuery(e.currentTarget).data('file')
                     await this.previewFile(file, e)
@@ -1134,6 +1150,33 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 //     })
                 // }
+            }
+
+            // @@NOTE: TL detach of a pending equipment action from the SAF view page: immediate, no edit / re-submit, the SAF status does not change
+            //         server: ui/modules/oTWC_siteAccessUtils.js: detachSafActionTL
+            detachSafActionTL(eqActionId) {
+                if (!eqActionId) { dialog.error('Equipment action not found'); return; }
+                TWCDetachActionForm.open(this, values => {
+                    this.wait();
+                    this.post({ action: 'detach-saf-action' }, { saf: this.data.siteAccessInfo.id, id: eqActionId, reason: values.reason, comment: values.comment }).then(resp => {
+                        if (resp?.error) {
+                            this.waitClose();
+                            dialog.error(resp.error);
+                            return;
+                        }
+                        // @@NOTE: related ATME / Feeders (of a TME) not pending are not detached, the server reports them
+                        if (resp?.skipped?.length > 0) {
+                            this.waitClose();
+                            dialog.error(`The action was detached, but these related actions are not pending and were not detached:<br /><b>${resp.skipped.join('<br />')}</b>`, () => { location.reload(); });
+                            return;
+                        }
+                        location.reload();
+                    }).catch(err => {
+                        this.waitClose();
+                        dialog.error(err);
+                    });
+                    return true;
+                });
             }
 
             // @@NOTE: customers / contractors cancelling their own SAF ('Cancel SAF' button, ui/oTWC_siteAccess_sl.js: externalCanCancel)
