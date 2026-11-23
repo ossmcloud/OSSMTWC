@@ -66,7 +66,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             HEIGHT_ON_TOWER: { name: 'custrecord_twc_srf_itm_ht_on_twr', type: 'float', alias: 'heightonTower', display: 'normal', mandatory: false },
             WEIGHT_KG: { name: 'custrecord_twc_srf_itm_weight_kg', type: 'float', alias: 'weightkg', display: 'normal', mandatory: false },
             VOLTAGE_TYPE: { name: 'custrecord_twc_srf_itm_volt_type', type: 'select', alias: 'voltageType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_voltage_type' },
-            AZIMUTH: { name: 'custrecord_twc_srf_itm_azimuth', type: 'integer', alias: 'azimuth', display: 'normal', mandatory: false },
+            AZIMUTH: { name: 'custrecord_twc_srf_itm_azimuth', type: 'float', alias: 'azimuth', display: 'normal', mandatory: false },
             B_END: { name: 'custrecord_twc_srf_itm_b_end', type: 'text', alias: 'b_End', display: 'normal', mandatory: false },
             CUSTOMER_REF: { name: 'custrecord_twc_srf_itm_cust_ref', type: 'text', alias: 'customerRef', display: 'normal', mandatory: false },
             INVENTORY_FLAG: { name: 'custrecord_twc_srf_itm_invent_flag', type: 'select', alias: 'inventoryFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_inv_flag' },
