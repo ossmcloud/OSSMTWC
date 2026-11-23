@@ -28,6 +28,14 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 if (context.request.parameters.recId) {
                     var srfCode = pageData.siteRequestInfo.name;
                     s.form.f.title += ` - ${srfCode}`;
+                    // @@NOTE: SRF migrated from Radix (data_migration SPEC_v1.2): badge right by the status, outside #srf-record-status as that is replaced when the status changes
+                    var radixMigrated = pageData.siteRequestInfo[twcSrf.Fields.RADIX_MIGRATED] === true || pageData.siteRequestInfo[twcSrf.Fields.RADIX_MIGRATED] == 'T';
+                    var radixMigratedBadge = '';
+                    if (radixMigrated) {
+                        // @@NOTE: the radix id goes in a title attribute: html special characters are stripped
+                        var radixId = String(pageData.siteRequestInfo[twcSrf.Fields.RADIX_ID] || '').replace(/[&<>"']/g, '');
+                        radixMigratedBadge = `<span style="width: 5px;"></span><span class="twc-record-status" style="padding: 0px 11px; vertical-align: middle; background-color: magenta; color: white; white-space: nowrap;" title="This SRF was migrated from Radix${radixId ? ` (Radix Id: ${radixId})` : ''}">Migrated from Radix</span>`;
+                    }
                     pageData.recordStatus = `
                         <div style="display:flex; align-items:flex-start;">
                             <div class="twc-div-span-table">
@@ -36,6 +44,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                                 </span>
                                 <span style="width: 5px;"></span>
                                 ${pageData.recordStatus}
+                                ${radixMigratedBadge}
                                 <span style="width: 5px;"></span>
                                 ${worksPermittedHtml}
                             </div>

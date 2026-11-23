@@ -27,10 +27,12 @@ define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
             // @@IMPORTANT: an SRF is completed only when NONE of its equipment actions is still Pending (same rule as oTWC_srfWorkflowEngine.js: setSRFCompleteStatus)
             //              this used to pick any SRF with at least ONE non pending action (join + not in), completing SRFs that still had pending actions
             //              SRFs with no equipment action at all are left alone (as before)
+            // @@NOTE: SRFs migrated from Radix are skipped (data_migration SPEC_v1.2 §6.5, Q15)
             var sql = `
                 select  srf.id
                 from    customrecord_twc_srf srf
                 where   srf.custrecord_twc_srf_status = ${twcUtils.SrfStatus.LicenceExecuted}
+                and     nvl(srf.${twcSrf.Fields.RADIX_MIGRATED}, 'F') = 'F'
                 and     exists (
                             select  1
                             from    customrecord_twc_eq_action ea

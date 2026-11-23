@@ -155,8 +155,30 @@ define([],
             return String(value).trim().replace(/\s+/g, ' ').toLowerCase();
         }
 
+        // @@NOTE: runs a converter / lookup collecting its RowError, so all the errors of a row are reported together
+        //         var get = collector(); v = get(() => ...); if (get.errors.length > 0) { throw new RowError(get.errors.join('; ')); }
+        //         @@REVIEW: oTWC_dm_equipment.js has its own copy (signed off, left untouched)
+        function collector() {
+            var errors = [];
+            var get = (fn) => {
+                try { return fn(); } catch (error) {
+                    if (error instanceof RowError) { errors.push(error.message); return null; }
+                    throw error;
+                }
+            };
+            get.errors = errors;
+            return get;
+        }
+
+        function required(value, column) {
+            if (value === null || value === undefined) { throw new RowError(`${column}: missing value`); }
+            return value;
+        }
+
         return {
             RowError: RowError,
+            collector: collector,
+            required: required,
             parse: parse,
             parseHeaders: parseHeaders,
             missingColumns: missingColumns,

@@ -3,10 +3,10 @@
  * @NModuleScope public
  */
 // @@NOTE: Radix data migration: registry of the import handlers (one per import type, SPEC_v1.1 §6); add SRF / SAF here when built
-define(['./oTWC_dm_equipment.js'],
-    (dmEquipment) => {
+define(['./oTWC_dm_equipment.js', './oTWC_dm_srf.js'],
+    (dmEquipment, dmSrf) => {
 
-        const HANDLERS = [dmEquipment];
+        const HANDLERS = [dmEquipment, dmSrf];
 
         function get(type) {
             var handler = HANDLERS.find(h => { return h.type == type; });

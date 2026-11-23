@@ -54,7 +54,14 @@ define([],
         }
 
         // @@NOTE: header of the run log csv (oTWC_dm_runs.js: RunLog)
-        const LOG_HEADER = ['timestamp', 'step', 'rowNo', 'radixId', 'result', 'nsRecordType', 'nsId', 'message'];
+        // @@NOTE: SRF import (SPEC_v1.2 §6.2.4, Q7): Radix SDS 'Agreement Template' id => Nexus customrecord_twc_agreement internal id
+        //         empty to start: fill it from the {runName}_values.csv file written by the SRF runs; unmapped templates are left empty with a warning
+        //         e.g. { '2': 5, '7': 6 }
+        const AGREEMENT_TEMPLATE_MAP = {
+            // @@HARDCODED @@GO-LIVE :: Nexus agreement internal ids (differ per account)
+        }
+
+        const LOG_HEADER =['timestamp', 'step', 'rowNo', 'radixId', 'result', 'nsRecordType', 'nsId', 'message'];
 
         return {
             SVC_SCRIPT_ID: SVC_SCRIPT_ID,
@@ -67,6 +74,7 @@ define([],
             LOG_MAX_BYTES: LOG_MAX_BYTES,
             LOG_HEADER: LOG_HEADER,
             RADIX_NAME_FIELDS: RADIX_NAME_FIELDS,
+            AGREEMENT_TEMPLATE_MAP: AGREEMENT_TEMPLATE_MAP,
             Mode: MODE,
             Status: STATUS,
             Result: RESULT

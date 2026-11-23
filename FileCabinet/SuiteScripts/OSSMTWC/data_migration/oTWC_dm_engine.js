@@ -8,9 +8,12 @@
 //           {
 //             type, label,
 //             files:   [{ key, label, required, requiredColumns: [] }],
-//             steps:   [{ key, file, modes: ['import', 'dryrun'], radixId: (row) => id, prepare: (ctx) => {}, process: (row, ctx, rowNo) => result | [result] }],
-//             cleanup: [{ recordType, runField, clearFields: [] }]      // delete mode, in deletion order (children first)
+//             steps:   [{ key, file, modes: ['import', 'dryrun'], radixId: (row) => id, prepare: (ctx) => {}, process: (row, ctx, rowNo) => result | [result], finish: (ctx) => {} }],
+//             cleanup: [{ recordType, runField, clearFields: [], where, clearOnly }]      // delete mode, in deletion order (children first)
 //           }
+//         ctx.loadFile(key) returns the rows of another file of the run (e.g. the SRF step checking the SRF items)
+//         a step whose file was not uploaded (or is empty) is skipped
+//         cleanup.where (optional) replaces 'runField = ?' (one ? = target run name); clearOnly: clear the fields, never delete (records of another run)
 //         result = { result: dmConfig.Result.*, radixId, nsRecordType, nsId, message }; a thrown error logs the row as ERROR and the run goes on
 define(['N/file', 'N/record', 'N/task', 'SuiteBundles/Bundle 548734/O/core.js', './oTWC_dm_config.js', './oTWC_dm_csv.js', './oTWC_dm_lookups.js', './oTWC_dm_runs.js', './oTWC_dm_handlers.js'],
     (file, record, task, core, dmConfig, dmCsv, dmLookups, dmRuns, dmHandlers) => {
@@ -133,8 +136,14 @@ define(['N/file', 'N/record', 'N/task', 'SuiteBundles/Bundle 548734/O/core.js', 
                     dryRun: state.mode == dmConfig.Mode.DRYRUN,
                     cache: cache,
                     rows: loadRows(state, cache, step.file),
-                    step: step.key
+                    step: step.key,
+                    loadFile: (key) => { return loadRows(state, cache, key); }
                 };
+                if (ctx.rows.length == 0) {
+                    core.logDebug('DM ENGINE', `Run ${state.runName}: step ${step.key} skipped, no rows in file '${step.file}'`);
+                    state.cursor = 0;
+                    continue;
+                }
                 // @@IMPORTANT: lookups / setup must be loaded here, outside the row try/catch: an error is then fatal for the run.
                 //              (loaded lazily inside process() a failing query was logged as a row error and re-run for every row, exhausting the units)
                 if (step.prepare) { step.prepare(ctx); }
@@ -173,6 +182,8 @@ define(['N/file', 'N/record', 'N/task', 'SuiteBundles/Bundle 548734/O/core.js', 
                     }
                 }
                 state.cursor = ctx.rows.length;
+                // @@NOTE: end of step hook (e.g. a summary file); must be idempotent, it runs again if the run restarts before the checkpoint below
+                if (step.finish) { step.finish(ctx); }
                 checkpoint(state, log);
             }
             return false;
@@ -197,7 +208,7 @@ define(['N/file', 'N/record', 'N/task', 'SuiteBundles/Bundle 548734/O/core.js', 
             var passes = [];
             handler.cleanup.forEach(c => {
                 if (c.clearFields && c.clearFields.length > 0) { passes.push({ key: `${c.recordType}:clear`, target: c, clear: true }); }
-                passes.push({ key: `${c.recordType}:delete`, target: c, clear: false });
+                if (!c.clearOnly) { passes.push({ key: `${c.recordType}:delete`, target: c, clear: false }); }
             });
 
             var idx = 0;
@@ -216,7 +227,7 @@ define(['N/file', 'N/record', 'N/task', 'SuiteBundles/Bundle 548734/O/core.js', 
                 if (!state.failedIds[pass.key]) { state.failedIds[pass.key] = []; }
                 var failed = state.failedIds[pass.key];
 
-                var where = `${t.runField} = ?`;
+                var where = t.where ? `(${t.where})` : `${t.runField} = ?`;
                 if (pass.clear) { where += ` and (${t.clearFields.map(f => { return `${f} is not null`; }).join(' or ')})`; }
                 var ids = dmLookups.runAll(`select id from ${t.recordType} where ${where} order by id desc`, [state.targetRun])
                     .map(r => { return r.id; })
