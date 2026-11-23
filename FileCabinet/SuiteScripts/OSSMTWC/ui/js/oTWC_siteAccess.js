@@ -383,6 +383,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#calendar.on('change', {});
 
                 this.initExisting();
+
+                // @@NOTE: primary contractor documents (H&S / Method Statement) loaded on open when the contractor is already set:
+                //         existing SAF (edit / re use, the SAF ones are ticked) or new SAF with a pre-populated drop down (e.g. only one customer / contractor)
+                //         they were only loaded when the customer / contractor drop down changed, so the section showed 'no documentation available'
+                this.loadVendorDocuments();
+            }
+
+            loadVendorDocuments() {
+                var vendor = this.ui.getControl('saf-vendor')?.value;
+                if (!vendor) { return; }
+                this.#page.post({ action: 'get-vendor-docs' }, { vendor: vendor })
+                    .then(res => { this.refreshVendorDocuments(res.data); })
+                    .catch(err => { dialog.error(err); });
             }
 
             initExisting() {
@@ -568,11 +581,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             refreshVendorDocuments(documents, what) {
 
-                var safFiles = this.data.siteAccessInfo[twcSaf.Fields.HEALTH__AND__SAFETY];
-                if (safFiles && this.data.siteAccessInfo[twcSaf.Fields.METHOD_STATEMENT]) { safFiles += ','; }
-                safFiles += this.data.siteAccessInfo[twcSaf.Fields.METHOD_STATEMENT];
-                if (safFiles) { safFiles = safFiles.split(',').map(i => { return parseInt(i.trim()); }) }
-                if (!safFiles) { safFiles = []; }
+                // @@NOTE: the SAF H&S / Method Statement files are ticked (multiselect values: array or comma separated string, either may be empty)
+                //         it used to concatenate the raw values ('null' when one was empty), so the saved documents were not always ticked
+                const toIds = (v) => { return (Array.isArray(v) ? v : (v ? v.toString().split(',') : [])).map(i => { return parseInt(`${i}`.trim()); }).filter(i => { return !isNaN(i); }); };
+                var safFiles = toIds(this.data.siteAccessInfo[twcSaf.Fields.HEALTH__AND__SAFETY]).concat(toIds(this.data.siteAccessInfo[twcSaf.Fields.METHOD_STATEMENT]));
 
 
                 var html = jQuery(`<div></div>`);

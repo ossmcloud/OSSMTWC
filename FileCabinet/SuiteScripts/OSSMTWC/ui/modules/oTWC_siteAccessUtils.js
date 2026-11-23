@@ -445,34 +445,45 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 saf.worksPhotosReqDelay = isNaN(photoDelay) ? null : photoDelay;
             }
 
+            // @@NOTE: an existing SAF may still point to company documents that were deleted / replaced since (company file made inactive, oTWC_companyProfileUtils.js)
+            //         NetSuite then refuses to save the SAF (invalid reference on H&S / Method Statement): the inactive files are dropped first
+            if (payload.id && !payload.reUse) {
+                saf.health_and_Safety = keepActiveFiles(saf.health_and_Safety);
+                saf.methodStatement = keepActiveFiles(saf.methodStatement);
+            }
+
             var safId = saf.save();
 
             // attachments
+            // @@NOTE: payload.documents is only sent when the documents section was loaded (ui/js/oTWC_siteAccess.js: refreshVendorDocuments)
+            //         so the selection is applied as is: nothing ticked => no H&S / Method Statement (it used to keep the old ones)
             if (payload.documents) {
 
                 saf = twcSaf.get(safId);
 
                 var docIds = [];
-                for (var d in payload.documents) { if (payload.documents[d]) { docIds.push(d.replace('file_toggle_', '')); } }
+                for (var d in payload.documents) { if (payload.documents[d]) { docIds.push(parseInt(d.replace('file_toggle_', ''))); } }
+                docIds = docIds.filter(i => { return !isNaN(i); });
 
                 try {
+                    var health_and_Safety = [];
+                    var methodStatement = [];
                     if (docIds.length > 0) {
                         var sql = `
                             select  f.id, ft.custrecord_twc_file_type_hs as health_safety, ft.custrecord_twc_file_type_method as method_stat, ft.custrecord_twc_file_type_insurance as insurance
                             from    customrecord_twc_file f
                             join    customrecord_twc_file_type ft on ft.id = f.custrecord_twc_file_type
                             where   f.id in (${docIds.join(',')})
+                            and     f.isinactive = 'F'
                         `;
 
-                        var health_and_Safety = [];
-                        var methodStatement = [];
                         coreSQL.each(sql, f => {
                             if (f.health_safety == 'T') { health_and_Safety.push(f.id); }
                             if (f.method_stat == 'T') { methodStatement.push(f.id); }
                         });
-                        saf.health_and_Safety = health_and_Safety;
-                        saf.methodStatement = methodStatement;
                     }
+                    saf.health_and_Safety = health_and_Safety;
+                    saf.methodStatement = methodStatement;
                     saf.save();
                 } catch (error) {
                     saf.logEx('Error while attaching files', error);
@@ -605,6 +616,15 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             return { id: safId, errors: errors }
 
+        }
+
+        // @@NOTE: multiselect value (array or comma separated string) => the ids of the files still active (customrecord_twc_file), as an array
+        function keepActiveFiles(value) {
+            var ids = Array.isArray(value) ? value : (value ? value.toString().split(',') : []);
+            ids = ids.map(i => { return parseInt(`${i}`.trim()); }).filter(i => { return !isNaN(i); });
+            if (ids.length == 0) { return []; }
+            var active = coreSQL.run(`select id from customrecord_twc_file where isinactive = 'F' and id in (${ids.join(',')})`).map(r => { return parseInt(r.id); });
+            return ids.filter(i => { return active.indexOf(i) >= 0; });
         }
 
         // @@NOTE: customers / contractors (non employees) can cancel their own SAF only when it is Pending or Approved
