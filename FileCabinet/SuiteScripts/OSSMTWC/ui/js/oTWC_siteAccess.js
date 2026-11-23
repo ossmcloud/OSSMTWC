@@ -1463,22 +1463,34 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (review.error) { throw review; }
 
                     const esc = (v) => { return (v || '').toString().replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;'); };
-                    var actionList = (review.actions || []).map(a => { return `<li>${esc(a.eq_action)} - ${esc(a.ea_type)} - ${esc(a.equipment)}</li>`; }).join('');
+
+                    // @@NOTE: same equipment actions table as the reviewer dialog (photosReviewed): pending actions, the ones marked as completed by the reviewer are ticked
+                    //         read only: the approval applies the reviewer's selection (oTWC_siteAccessUtils.js: approveSafReview), to change it the review is sent back
+                    var list = this.postSync({ action: 'saf-action-list' }, { id: this.data.siteAccessInfo.id, actionStatus: twcUtils.SafActionStatus.Pending, showSelect: true });
+                    var reviewedIds = (review.actions || []).map(a => { return parseInt(a.id); });
 
                     var formHtml = jQuery(`
                         <div>
                             <div style="padding-bottom: 7px;"><label>Reviewed by</label> ${esc(review.reviewer)}</div>
                             ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Review Comment (issued to the SAF submitter on approval, you can amend it)', width: '100%', rows: 7, value: review.comment, mandatory: true, lineBreak: true })}
-                            <div style="padding-top: 7px;"><label>Actions marked as completed by the reviewer</label><ul class="twc">${actionList || '<li>none</li>'}</ul></div>
+                            <div style="padding: 7px 0px 3px 0px;"><label>Actions marked as completed by the reviewer (ticked)</label></div>
+                            ${list}
                             <div style="padding-top: 7px;">${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, id: 'send-back-review-button', value: 'Send Back to Reviewer' })}</div>
                         </div>
                     `);
                     var form = twcUI.init({}, formHtml);
+                    var safActionsTable = TWCSafActionTable.get(form.getControl(twcSafAction.Type));
+                    var tableUi = safActionsTable?.ui || form.ui;
+                    tableUi.find('input[type="checkbox"]').each(function () {
+                        var cb = jQuery(this);
+                        cb.prop('checked', reviewedIds.indexOf(parseInt(cb.data('id'))) >= 0);
+                        cb.prop('disabled', true);
+                    });
 
                     var dlg = dialog.open({
                         title: 'Approve completion photos review',
                         content: form.ui,
-                        size: { width: '800px', height: '70vh' },
+                        size: { width: '1000px', height: '70vh' },
                         ok: () => {
                             try {
                                 var comment = (form.getValues().comment || '').trim();
