@@ -50,6 +50,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SDS_FORM_DATA: 'custrecord_twc_srf_sds_form_data',
             TL_NOTES: 'custrecord_twc_srf_notes',
             SUBMISSION_NOTES: 'custrecord_twc_srf_submission_notes',
+            RADIX_ID: 'custrecord_twc_srf_radix_id',
+            RADIX_MIGRATED: 'custrecord_twc_srf_radix_migrated',
+            RADIX_IMPORT_RUN: 'custrecord_twc_srf_radix_import_run',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -100,6 +103,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SDS_FORM_DATA: { name: 'custrecord_twc_srf_sds_form_data', type: 'clobtext', alias: 'sDSFormData', display: 'hidden', mandatory: false },
             TL_NOTES: { name: 'custrecord_twc_srf_notes', type: 'textarea', alias: 'tLNotes', display: 'normal', mandatory: false },
             SUBMISSION_NOTES: { name: 'custrecord_twc_srf_submission_notes', type: 'textarea', alias: 'submissionNotes', display: 'normal', mandatory: false },
+            RADIX_ID: { name: 'custrecord_twc_srf_radix_id', type: 'text', alias: 'radixID', display: 'statictext', mandatory: false },
+            RADIX_MIGRATED: { name: 'custrecord_twc_srf_radix_migrated', type: 'checkbox', alias: 'radixMigrated', display: 'statictext', mandatory: false },
+            RADIX_IMPORT_RUN: { name: 'custrecord_twc_srf_radix_import_run', type: 'text', alias: 'radixImportRun', display: 'statictext', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -386,6 +392,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.SUBMISSION_NOTES);
             } set submissionNotes(value) {
                 this.set(_recordFields.SUBMISSION_NOTES, value)
+            }
+            
+            get radixID() {
+                return this.get(_recordFields.RADIX_ID);
+            } set radixID(value) {
+                this.set(_recordFields.RADIX_ID, value)
+            }
+            
+            get radixMigrated() {
+                return this.get(_recordFields.RADIX_MIGRATED);
+            } set radixMigrated(value) {
+                this.set(_recordFields.RADIX_MIGRATED, value)
+            }
+            
+            get radixImportRun() {
+                return this.get(_recordFields.RADIX_IMPORT_RUN);
+            } set radixImportRun(value) {
+                this.set(_recordFields.RADIX_IMPORT_RUN, value)
             }
             
             get created() {

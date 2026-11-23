@@ -41,6 +41,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FEEDERS_DESCRIPTION: 'custrecord_twc_srf_itm_feeder_desc',
             GIE_LOCATION: 'custrecord_twc_srf_itm_loc_txt',
             MODIFIED_ANTENNA_LOCATION: 'custrecord_twc_srf_itm_loc',
+            RADIX_ID: 'custrecord_twc_srf_itm_radix_id',
+            RADIX_MIGRATED: 'custrecord_twc_srf_itm_radix_migrated',
+            RADIX_IMPORT_RUN: 'custrecord_twc_srf_itm_radix_import_run',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -82,6 +85,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FEEDERS_DESCRIPTION: { name: 'custrecord_twc_srf_itm_feeder_desc', type: 'text', alias: 'feedersDescription', display: 'normal', mandatory: false },
             GIE_LOCATION: { name: 'custrecord_twc_srf_itm_loc_txt', type: 'text', alias: 'gIELocation', display: 'normal', mandatory: false },
             MODIFIED_ANTENNA_LOCATION: { name: 'custrecord_twc_srf_itm_loc', type: 'select', alias: 'modifiedAntennaLocation', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
+            RADIX_ID: { name: 'custrecord_twc_srf_itm_radix_id', type: 'text', alias: 'radixID', display: 'statictext', mandatory: false },
+            RADIX_MIGRATED: { name: 'custrecord_twc_srf_itm_radix_migrated', type: 'checkbox', alias: 'radixMigrated', display: 'statictext', mandatory: false },
+            RADIX_IMPORT_RUN: { name: 'custrecord_twc_srf_itm_radix_import_run', type: 'text', alias: 'radixImportRun', display: 'statictext', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -314,6 +320,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.MODIFIED_ANTENNA_LOCATION, value)
             }
             get modifiedAntennaLocationName() { return this.getText(_recordFields.MODIFIED_ANTENNA_LOCATION); }
+            
+            get radixID() {
+                return this.get(_recordFields.RADIX_ID);
+            } set radixID(value) {
+                this.set(_recordFields.RADIX_ID, value)
+            }
+            
+            get radixMigrated() {
+                return this.get(_recordFields.RADIX_MIGRATED);
+            } set radixMigrated(value) {
+                this.set(_recordFields.RADIX_MIGRATED, value)
+            }
+            
+            get radixImportRun() {
+                return this.get(_recordFields.RADIX_IMPORT_RUN);
+            } set radixImportRun(value) {
+                this.set(_recordFields.RADIX_IMPORT_RUN, value)
+            }
             
             get created() {
                 return this.get(_recordFields.CREATED);
