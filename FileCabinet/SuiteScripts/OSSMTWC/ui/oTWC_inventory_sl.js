@@ -62,6 +62,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
 
             } else {
+                // @@NOTE: contractors (agent pass users) cannot use the Site Equipment locator, they only see equipment per site (siteId)
+                //         the menu item is hidden by configs { "restrict": "customer-menu" } on 'OSSMTWC - Role Feature List' (oTWC_permissions.js: applyRestrictions)
+                //         permission NONE => initView renders the permission error page
+                if (!pageData.userInfo.isEmployee && !pageData.userInfo.companyProfile?.isCustomer) {
+                    pageData.userInfo.permission.lvl = twcConfig.PERMISSION_LEVEL.NONE;
+                    html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
+                    s.form.fieldHtml(html);
+                    return;
+                }
                 pageData.data.inventoryInfo = twcInventoryUtils.getInventoryData(null, pageData.userInfo);
                 html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
                 html = html.replace('{SITE_LOCATOR_PANEL}', twcInventoryUtils.renderInventoryPanel(pageData.userInfo, pageData.permission.featureId));

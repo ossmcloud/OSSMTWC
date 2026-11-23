@@ -114,13 +114,16 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                         }
                     }
 
+                    // @@NOTE: the SDS is customer information only, agent pass (contractor) users never see / print / sign it (oTWC_config.js: canSeeSds)
+                    var canSeeSds = twcConfig.canSeeSds(pageData.userInfo, pageData.siteRequestInfo[twcSrf.Fields.CUSTOMER]);
+
                     var printSDSButton = '';
-                    if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceIssued || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceSigned || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted) {
+                    if (canSeeSds && (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceIssued || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceSigned || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted)) {
                         printSDSButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Print SDS', id: 'print-sds' });
                     }
 
                     var signSrfButton = '';
-                    var signatureWorkflowItem = twcSrfWorkflowEngine.isWaitingForSignature(pageData.userInfo, pageData.siteRequestInfo)
+                    var signatureWorkflowItem = canSeeSds ? twcSrfWorkflowEngine.isWaitingForSignature(pageData.userInfo, pageData.siteRequestInfo) : null;
                     if (signatureWorkflowItem) {
                         if (signatureWorkflowItem.stage_name.toLowerCase().indexOf('pack executed') > 0) {
                             if (pageData.userInfo.canExecutePack) {
@@ -199,6 +202,17 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
         };
 
 
+        // @@NOTE: SRF access (customer / agent pass rules, oTWC_config.js: getSrfAccessFilter) for the post actions on an existing SRF
+        function checkSrfAccess(userInfo, srfId) {
+            if (!srfId) { return; }
+            if (!twcConfig.isUserAllowedSrf(userInfo, srfId)) { throw new Error('You do not have access to this SRF record'); }
+        }
+        // @@NOTE: SDS is customer information only (oTWC_config.js: canSeeSds)
+        function checkSdsAccess(userInfo, srfId) {
+            var srfCustomer = coreSql.first(`select ${twcSrf.Fields.CUSTOMER} as customer from ${twcSrf.Type} where id = ${parseInt(srfId) || 0}`)?.customer;
+            if (!twcConfig.canSeeSds(userInfo, srfCustomer)) { throw new Error('You do not have access to this SDS'); }
+        }
+
         suiteLet.post = (context, s) => {
             var userInfo = twcConfig.userInfo(context);
             if (context.request.parameters.action == 'child-record') {
@@ -208,10 +222,12 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
 
             } else if (context.request.parameters.action == 'save') {
                 var payload = JSON.parse(context.request.body);
+                checkSrfAccess(userInfo, payload.id);
                 return twcSiteRequestUtils.saveSiteSrf(userInfo, payload);
 
             } else if (context.request.parameters.action == 'submit') {
                 var payload = JSON.parse(context.request.body);
+                checkSrfAccess(userInfo, payload.srf);
                 return { id: twcSiteRequestUtils.submitSiteSrf(userInfo, payload) };
 
             } else if (context.request.parameters.action == 'get-reviews') {
@@ -220,13 +236,13 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
 
             } else if (context.request.parameters.action == 'accept-srf-approval') {
                 var payload = JSON.parse(context.request.body);
+                checkSrfAccess(userInfo, payload.srf);
                 return twcSrfWorkflowEngine.acceptSrf(userInfo, payload);
 
             } else if (context.request.parameters.action == 'cancel-srf') {
                 // @@NOTE: SRF cancellation + clean-up, may return { keepGoing: true } (low units): the client posts again (ui/js/oTWC_spaceRequest.js: cancelSrf)
                 var payload = JSON.parse(context.request.body);
-                var srfCustomer = coreSql.first(`select ${twcSrf.Fields.CUSTOMER} as customer from ${twcSrf.Type} where id = ${parseInt(payload.srf) || 0}`)?.customer;
-                if (!twcConfig.isUserAllowedCustomers(userInfo, srfCustomer)) { throw new Error('You do not have access to this SRF record'); }
+                if (!twcConfig.isUserAllowedSrf(userInfo, payload.srf)) { throw new Error('You do not have access to this SRF record'); }
                 return twcSrfWorkflowEngine.cancelSrf(userInfo, payload);
 
             } else if (context.request.parameters.action == 'get-equipment') {
@@ -266,7 +282,9 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 return twcSrfWorkflowEngine.rejectSds(userInfo, JSON.parse(context.request.body))
 
             } else if (context.request.parameters.action == 'get-sds') {
-                return twcSdsEngine.getSds(JSON.parse(context.request.body))
+                var payload = JSON.parse(context.request.body);
+                checkSdsAccess(userInfo, payload.id);
+                return twcSdsEngine.getSds(payload)
 
             } else if (context.request.parameters.action == 'get-sds-equipment') {
                 return { data: twcSdsEngine.getSdsEquipments(JSON.parse(context.request.body)) }
@@ -275,11 +293,15 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 return { data: twcSdsEngine.updateSdsEquipments(JSON.parse(context.request.body)) }
 
             } else if (context.request.parameters.action == 'get-sds-twc-file') {
-                var f = coreSql.first(`select custrecord_twc_sds_pdf as twc_file from customrecord_twc_sds where custrecord_twc_sds_srf = ${JSON.parse(context.request.body).srf}`)?.twc_file;
+                var payload = JSON.parse(context.request.body);
+                checkSdsAccess(userInfo, payload.srf);
+                var f = coreSql.first(`select custrecord_twc_sds_pdf as twc_file from customrecord_twc_sds where custrecord_twc_sds_srf = ${parseInt(payload.srf) || 0}`)?.twc_file;
                 return { twcFile: f }
 
             } else if (context.request.parameters.action == 'sign-sds') {
-                var resp = twcSrfWorkflowEngine.postSignature(userInfo, JSON.parse(context.request.body));
+                var payload = JSON.parse(context.request.body);
+                checkSdsAccess(userInfo, payload.srf);
+                var resp = twcSrfWorkflowEngine.postSignature(userInfo, payload);
                 twcSdsRender.renderSDS(context, resp.srf, true);
                 return resp;
 

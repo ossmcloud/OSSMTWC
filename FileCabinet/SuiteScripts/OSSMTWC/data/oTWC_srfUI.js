@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItem.js', './oTWC_srfItemUI.js', './oTWC_fileUI.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfReview.js', './oTWC_equipment.js'],
-    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItem, twcSrfItemUI, twcFileUI, configUIFields, twcUI, twcSrfReview, twcEq) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItem.js', './oTWC_srfItemUI.js', './oTWC_fileUI.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfReview.js', './oTWC_equipment.js', './oTWC_config.js'],
+    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItem, twcSrfItemUI, twcFileUI, configUIFields, twcUI, twcSrfReview, twcEq, twcConfig) => {
 
         function getSrfTableFields() {
             // @@IMPORTANT: make sure some fields are there as they are needed by the ui:
@@ -428,35 +428,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var whereClause = `where ${twcSrf.Fields.SITE} = ${dataSource.siteId} `;
             var orderBy = `${twcSrf.Fields.SRF_REQUESTED_DATE} desc`;
 
-            // @@NOTE: TWC Employees can see everything
-            if (!userInfo.isEmployee) {
-                var allowedCustomers = [];
-
-                if (userInfo.companyProfile?.isVendor || userInfo.companyProfile?.isBoth) {
-                    // @@NOTE the agent passes specifies what customers can be seen 
-                    var agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${userInfo.profile}`)?.agent_passes || '0';
-                    agentPasses = agentPasses.split(',').map(i => { return parseInt(i.trim()); })
-
-                    // @@NOTE: this filter will ensure that even if a customer was not removed from the agent passes field for a profile but was removed from the ACL list the profile will still not see it
-                    var aclList = coreSQL.run(`select custrecord_twc_acl_cust as cust from customrecord_twc_acl where custrecord_twc_acl_cont = ${userInfo.companyProfile.id}`)
-                    allowedCustomers = agentPasses.filter(ap => { return aclList.find(acl => { return acl.cust == ap; }) })
-                }
-
-                if (userInfo.companyProfile?.isCustomer || userInfo.companyProfile?.isBoth) {
-                    // in case we have a customer or a vendor that is also a customer we include the customer into the customer list
-                    allowedCustomers.push(userInfo.companyProfile.id || 0)
-                }
-
-                // @@NOTE: this is to ensure nothing is shown if no customers on the agent passes field
-                if (allowedCustomers.length == 0) { allowedCustomers.push('0'); }
-
-                whereClause += `and ${twcSrf.Fields.CUSTOMER} in (${allowedCustomers.join(',')})`;
-
-                if (userInfo.companyProfile?.isVendor && !userInfo.companyProfile?.isCustomer) {
-                    // @@NOTE: in addition vendors can only see what was created by their organization
-                    whereClause += `and ${twcSrf.Fields.SRF_SUBMITTED_BY} in (select id from customrecord_twc_prof where custrecord_twc_prof_company = ${userInfo.companyProfile.id})`;
-                }
-            }
+            // @@NOTE: TWC Employees can see everything (empty filter), customers / agent pass rules: oTWC_config.js: getSrfAccessFilter
+            whereClause += twcConfig.getSrfAccessFilter(userInfo);
 
 
             var srfList = twcSrf.select({ where: whereClause, orderBy: orderBy, useNames: true })

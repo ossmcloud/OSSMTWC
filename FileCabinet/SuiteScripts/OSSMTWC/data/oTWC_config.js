@@ -337,6 +337,86 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return false;
         }
 
+        // @@IMPORTANT: Agent Pass rules (profile field custrecord_twc_prof_agent_passes), used by Equipment and SRF (not by SAF: SAF stays on the company ACL, see getUserAllowedCustomers)
+        //              contractor profiles only see the customers on their agent passes that are also on their company ACL (customrecord_twc_acl)
+        //              customer companies (incl. customer + contractor) always see their own company
+        //              returns 'all' for employees, otherwise an array of customer (company) ids (can be empty)
+        function getAgentPassCustomers(userInfo) {
+            if (userInfo.isEmployee) { return 'all'; }
+            var customers = [];
+            if (userInfo.companyProfile?.isVendor) {
+                var agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${parseInt(userInfo.profile) || 0}`)?.agent_passes;
+                agentPasses = parseIdList(agentPasses);
+                // @@NOTE: a customer removed from the ACL but left on the agent passes field is not visible
+                var aclList = coreSQL.run(`select custrecord_twc_acl_cust as cust from customrecord_twc_acl where isinactive = 'F' and custrecord_twc_acl_cont = ${parseInt(userInfo.companyProfile.id) || 0}`);
+                customers = agentPasses.filter(ap => { return aclList.find(acl => { return acl.cust == ap; }); });
+            }
+            if (userInfo.companyProfile?.isCustomer) {
+                var ownId = parseInt(userInfo.companyProfile.id);
+                if (customers.indexOf(ownId) < 0) { customers.push(ownId); }
+            }
+            return customers;
+        }
+
+        function parseIdList(value) {
+            if (!value) { return []; }
+            return value.toString().split(',').map(i => { return parseInt(i.trim()); }).filter(i => { return i; });
+        }
+
+        // @@IMPORTANT: SRF visibility (SRF locator, site 'Existing SRFs' panel, SRF record page and SRF post actions)
+        //                  employees:          all
+        //                  customer company:   all the SRFs of their own company (incl. the ones raised by agent pass users of other companies)
+        //                  contractor (agent): SRFs for a customer on their agent passes, raised by a profile of their own company
+        //                                      that also holds an agent pass for that same customer
+        //              returns a sql fragment starting with ' and ' ('' for employees), alias is the SRF table alias (optional)
+        //              @@NOTE: field ids are literals (custrecord_twc_srf_cust / custrecord_twc_srf_sub_by), oTWC_srf.js is not loaded here to avoid a circular dependency
+        function getSrfAccessFilter(userInfo, alias) {
+            if (userInfo.isEmployee) { return ''; }
+            var a = alias ? `${alias}.` : '';
+            var companyId = parseInt(userInfo.companyProfile?.id) || 0;
+            var conditions = [];
+
+            if (userInfo.companyProfile?.isCustomer) {
+                conditions.push(`${a}custrecord_twc_srf_cust = ${companyId}`);
+            }
+
+            if (userInfo.companyProfile?.isVendor) {
+                var passCustomers = getAgentPassCustomers(userInfo).filter(c => { return c != companyId; });
+                if (passCustomers.length > 0) {
+                    // @@NOTE: profiles of the user's company (home company or linked via customrecord_twc_profilec), with their agent passes
+                    var profiles = coreSQL.run(`
+                        select  p.id, p.custrecord_twc_prof_agent_passes as agent_passes
+                        from    customrecord_twc_prof p
+                        where   p.custrecord_twc_prof_company = ${companyId}
+                        or      p.id in (select pc.${twcProfileCompany.Fields.PROFILE} from ${twcProfileCompany.Type} pc where pc.${twcProfileCompany.Fields.COMPANY} = ${companyId} and pc.isinactive = 'F')
+                    `);
+                    core.array.each(profiles, p => { p.passes = parseIdList(p.agent_passes); });
+
+                    core.array.each(passCustomers, c => {
+                        var submitters = profiles.filter(p => { return p.passes.indexOf(c) >= 0; }).map(p => { return p.id; });
+                        if (submitters.length == 0) { return; }
+                        conditions.push(`(${a}custrecord_twc_srf_cust = ${c} and ${a}custrecord_twc_srf_sub_by in (${submitters.join(',')}))`);
+                    });
+                }
+            }
+
+            // @@NOTE: nothing allowed => nothing shown
+            if (conditions.length == 0) { return ' and 1 = 0 '; }
+            return ` and (${conditions.join(' or ')}) `;
+        }
+
+        function isUserAllowedSrf(userInfo, srfId) {
+            if (userInfo.isEmployee) { return true; }
+            return !!coreSQL.first(`select s.id from customrecord_twc_srf s where s.id = ${parseInt(srfId) || 0} ${getSrfAccessFilter(userInfo, 's')}`);
+        }
+
+        // @@IMPORTANT: the SDS (licence agreement) is customer information only: agent pass (contractor) users can never see / print / sign it
+        //              only employees or users of the SRF customer company
+        function canSeeSds(userInfo, srfCustomer) {
+            if (userInfo.isEmployee) { return true; }
+            return !!userInfo.companyProfile?.isCustomer && !!srfCustomer && srfCustomer == userInfo.companyProfile.id;
+        }
+
         function getUserPref(userInfo) {
             try {
                 var userPref = recu.lookUp(userInfo.recordType, userInfo.recordId, FIELD_ENTITY_USER_PREF);
@@ -401,6 +481,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             getScriptId: getScriptId,
             getUserAllowedCustomers: getUserAllowedCustomers,
             isUserAllowedCustomers: isUserAllowedCustomers,
+            getAgentPassCustomers: getAgentPassCustomers,
+            getSrfAccessFilter: getSrfAccessFilter,
+            isUserAllowedSrf: isUserAllowedSrf,
+            canSeeSds: canSeeSds,
             cfg: getConfig,
             getNsTable: getNsTable,
             getFields: getCustomTableFields,

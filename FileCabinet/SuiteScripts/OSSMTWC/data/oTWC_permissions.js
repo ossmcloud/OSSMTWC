@@ -72,6 +72,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         //              a restricted feature is removed from the permissions / menu items (navigation drop down)
         //              and if it is the current feature the permission level is set to NONE (permission error page)
         //                  restrict: "customer"  => only profiles linked to a company with custrecord_twc_cus_flag = Customer (employees included: they are never a customer)
+        //                  restrict: "customer-menu" => menu item hidden for non customer / non employee users (contractors, e.g. agent pass users)
+        //                                              but the page stays accessible: the page itself decides what they can open (e.g. Site Equipment: site level only, oTWC_inventory_sl.js)
         function applyRestrictions(permission, userInfo) {
             if (!permission?.permissions) { return permission; }
 
@@ -79,12 +81,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (p.configs?.restrict == 'customer') { return !(userInfo.companyProfile?.isCustomer); }
                 return false;
             }
+            const isMenuRestricted = (p) => {
+                if (p.configs?.restrict == 'customer-menu') { return !userInfo.isEmployee && !(userInfo.companyProfile?.isCustomer); }
+                return false;
+            }
 
             var restricted = permission.permissions.filter(p => { return isRestricted(p); });
-            if (restricted.length == 0) { return permission; }
+            var menuRestricted = permission.permissions.filter(p => { return isMenuRestricted(p); });
+            if (restricted.length == 0 && menuRestricted.length == 0) { return permission; }
 
             permission.permissions = permission.permissions.filter(p => { return !isRestricted(p); });
-            permission.menuItems = getMenuItems(permission.permissions);
+            permission.menuItems = getMenuItems(permission.permissions.filter(p => { return !isMenuRestricted(p); }));
 
             if (restricted.find(p => { return p.value == permission.id; })) {
                 permission.lvl = PERMISSION_LEVEL.NONE;

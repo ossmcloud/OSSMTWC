@@ -844,7 +844,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     srf.pack_sign_by_name = packSign?.pack_sign_by_name || 'UNKNOWN';
                     srf.pack_sign_by_date = packSign?.pack_sign_by_date || 'UNKNOWN';
 
-                    if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, srf[twcSrf.Fields.CUSTOMER])) {
+                    // @@NOTE: customer / agent pass rules: oTWC_config.js: getSrfAccessFilter
+                    if (!twcConfig.isUserAllowedSrf(pageData.userInfo, srf.id || pageData.recId)) {
                         throw new Error('You do not have access to see this SRF record');
                     }
 

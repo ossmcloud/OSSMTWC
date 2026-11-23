@@ -132,8 +132,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                and NVL(s.${twcInventory.Fields.EQUIPMENT_LICENCE_STATUS}, 0) != ${twcUtils.EqLicenseStatus.Cancelled} `;
             var orderBy = `order by s.${twcInventory.Fields.EQUIPMENT_ID}`;
 
-            var allowedCustomers = twcConfig.getUserAllowedCustomers(userInfo, true);
+            // @@NOTE: equipment visibility follows the agent passes, see oTWC_config.js: getAgentPassCustomers
+            var allowedCustomers = twcConfig.getAgentPassCustomers(userInfo);
             if (allowedCustomers != 'all') {
+                if (allowedCustomers.length == 0) { allowedCustomers = [0]; }
                 whereClause += `and ${twcInventory.Fields.CUSTOMER} in (${allowedCustomers.join(',')})`;
             }
 

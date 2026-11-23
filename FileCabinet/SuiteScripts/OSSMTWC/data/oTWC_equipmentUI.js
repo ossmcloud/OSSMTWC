@@ -135,8 +135,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function getSiteEquipment(dataSource, userInfo, grouped) {
             var whereClause = { [twcInventory.Fields.SITE]: dataSource.id };
 
-            var allowedCustomers = twcConfig.getUserAllowedCustomers(userInfo, true);
+            // @@NOTE: equipment visibility follows the agent passes (contractors only see the customers on their agent passes), see oTWC_config.js: getAgentPassCustomers
+            var allowedCustomers = twcConfig.getAgentPassCustomers(userInfo);
             if (allowedCustomers != 'all') {
+                if (allowedCustomers.length == 0) { allowedCustomers = [0]; }
                 whereClause[twcInventory.Fields.CUSTOMER] = {
                     op: 'in',
                     values: allowedCustomers
@@ -356,7 +358,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var eq = twcInventory.select({ where: { id: eqId }, useNames: true, returnFirst: true });
             if (!eq) { throw new Error(`No equipment found using id ${eqId}`); }
-            if (!userInfo.isEmployee && !twcConfig.isUserAllowedCustomers(userInfo, eq[twcInventory.Fields.CUSTOMER])) {
+            var allowedCustomers = twcConfig.getAgentPassCustomers(userInfo);
+            if (allowedCustomers != 'all' && allowedCustomers.indexOf(parseInt(eq[twcInventory.Fields.CUSTOMER])) < 0) {
                 throw new Error('You do not have access to see this equipment');
             }
 

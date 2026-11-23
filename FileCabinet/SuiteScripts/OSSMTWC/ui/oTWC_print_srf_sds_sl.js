@@ -8,6 +8,12 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
         const onRequest = (context) => {
             try {
+                // @@IMPORTANT: the SDS is customer information only: agent pass (contractor) users can never see / print it (oTWC_config.js: canSeeSds)
+                if (!context.request.parameters.sdsId) {
+                    var srfCustomer = coreSql.first(`select custrecord_twc_srf_cust as customer from customrecord_twc_srf where id = ${parseInt(context.request.parameters.recId) || 0}`)?.customer;
+                    if (!twcConfig.canSeeSds(twcConfig.userInfo(), srfCustomer)) { throw new Error('You do not have access to this SDS'); }
+                }
+
                 var pdfFile = null;
                 if (context.request.parameters.fromFile == 'T') {
                     // @@NOTE: the SDS is identified by its SRF (recId) or directly by its id (sdsId, TL SDS Files page: oTWC_sdsFiles.js)
