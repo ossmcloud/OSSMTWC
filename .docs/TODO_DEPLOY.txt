@@ -3,6 +3,7 @@
 GO-LIVE:
 --------
 
+SAF_PHOTO_REQ_DELAY_DEFAULT set to 7
 @@IMPORTANT: all (or most script) must be made available to the TWC Customer Center Role
 
 -------------------------------------------------
