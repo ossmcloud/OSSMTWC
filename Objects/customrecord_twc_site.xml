@@ -2600,22 +2600,12 @@
   <permissions>
     <permission>
       <permittedlevel>EDIT</permittedlevel>
-      <permittedrole>[scriptid=customrole1334]</permittedrole>
-      <restriction></restriction>
-    </permission>
-    <permission>
-      <permittedlevel>EDIT</permittedlevel>
       <permittedrole>[scriptid=customrole_ossm_dev]</permittedrole>
       <restriction></restriction>
     </permission>
     <permission>
       <permittedlevel>FULL</permittedlevel>
       <permittedrole>[scriptid=customrole_ossm_twc_acountant]</permittedrole>
-      <restriction></restriction>
-    </permission>
-    <permission>
-      <permittedlevel>FULL</permittedlevel>
-      <permittedrole>[scriptid=customrole_twc_accounts_admin]</permittedrole>
       <restriction></restriction>
     </permission>
     <permission>
@@ -2626,11 +2616,6 @@
     <permission>
       <permittedlevel>EDIT</permittedlevel>
       <permittedrole>[scriptid=customrole1340]</permittedrole>
-      <restriction></restriction>
-    </permission>
-    <permission>
-      <permittedlevel>VIEW</permittedlevel>
-      <permittedrole>[scriptid=customrole1327]</permittedrole>
       <restriction></restriction>
     </permission>
     <permission>

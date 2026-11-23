@@ -793,12 +793,6 @@
           <visible>T</visible>
           <neverEmpty>F</neverEmpty>
         </subList>
-        <subList>
-          <id>[scriptid=customrecord_fsa_site_visit.custrecord_fsa_site_visit_site]</id>
-          <label>FSA - Site Visit Check List</label>
-          <visible>T</visible>
-          <neverEmpty>F</neverEmpty>
-        </subList>
       </subItems>
     </tab>
     <tab>

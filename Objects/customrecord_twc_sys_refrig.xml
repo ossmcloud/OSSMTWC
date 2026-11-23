@@ -47,10 +47,5 @@
       <permittedrole>[scriptid=customrole_ossm_twc_acountant]</permittedrole>
       <restriction></restriction>
     </permission>
-    <permission>
-      <permittedlevel>VIEW</permittedlevel>
-      <permittedrole>[scriptid=customrole_twc_accounts_admin]</permittedrole>
-      <restriction></restriction>
-    </permission>
   </permissions>
 </customrecordtype>

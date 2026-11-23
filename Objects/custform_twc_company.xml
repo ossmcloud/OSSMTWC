@@ -38,7 +38,7 @@
           <mandatory>F</mandatory>
           <displayType>NORMAL</displayType>
           <columnBreak>F</columnBreak>
-          <sameRowAsPrevious>T</sameRowAsPrevious>
+          <sameRowAsPrevious>F</sameRowAsPrevious>
           <quickAdd>F</quickAdd>
         </field>
         <field>

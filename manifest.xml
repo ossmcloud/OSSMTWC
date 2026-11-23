@@ -21,7 +21,6 @@
     <objects>
       <object>custentity_twc_project_site</object>
       <object>customrecord_fsa_job</object>
-      <object>customrecord_fsa_site_visit.custrecord_fsa_site_visit_site</object>
       <object>customrecord_twc_con_flag.val_53620_9061443_sb1_770</object>
       <object>customrecord_twc_con_flag.val_53621_9061443_sb1_193</object>
       <object>customrecord_twc_cus_flag.val_53623_9061443_sb1_299</object>
@@ -31,23 +30,19 @@
       <object>customrecord_twc_infra_type.val_34820_9061443_sb1_334</object>
       <object>customrecord_twc_landlord_flag.val_53625_9061443_sb1_310</object>
       <object>customrecord_twc_lic_mech.val_32654_9061443_sb1_448</object>
-      <object>customrecord_twc_pwr_rdg_status.val_74856_9061443_sb1_817</object>
       <object>customrecord1052</object>
       <object>customrecord1053</object>
       <object>customrecord1054</object>
       <object>customrole_ossm_dev</object>
       <object>customrole_ossm_twc_acountant</object>
-      <object>customrole_twc_accounts_admin</object>
       <object>customrole1319</object>
       <object>customrole1321</object>
-      <object>customrole1327</object>
       <object>customrole1328</object>
       <object>customrole1329</object>
       <object>customrole1330</object>
       <object>customrole1331</object>
       <object>customrole1332</object>
       <object>customrole1333</object>
-      <object>customrole1334</object>
       <object>customrole1335</object>
       <object>customrole1336</object>
       <object>customrole1337</object>

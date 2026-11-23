@@ -635,7 +635,7 @@
       <applyformatting>F</applyformatting>
       <checkspelling>F</checkspelling>
       <defaultchecked>F</defaultchecked>
-      <defaultselection>[scriptid=customrecord_twc_pwr_rdg_status.val_74856_9061443_sb1_817]</defaultselection>
+      <defaultselection></defaultselection>
       <defaultvalue></defaultvalue>
       <description></description>
       <displayheight></displayheight>
@@ -1254,11 +1254,6 @@
     <permission>
       <permittedlevel>VIEW</permittedlevel>
       <permittedrole>[scriptid=customrole1340]</permittedrole>
-      <restriction></restriction>
-    </permission>
-    <permission>
-      <permittedlevel>VIEW</permittedlevel>
-      <permittedrole>[scriptid=customrole1327]</permittedrole>
       <restriction></restriction>
     </permission>
     <permission>

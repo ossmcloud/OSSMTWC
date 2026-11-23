@@ -4608,11 +4608,6 @@
       <restriction></restriction>
     </permission>
     <permission>
-      <permittedlevel>EDIT</permittedlevel>
-      <permittedrole>[scriptid=customrole_twc_accounts_admin]</permittedrole>
-      <restriction></restriction>
-    </permission>
-    <permission>
       <permittedlevel>VIEW</permittedlevel>
       <permittedrole>[scriptid=customrole1331]</permittedrole>
       <restriction></restriction>
@@ -4620,11 +4615,6 @@
     <permission>
       <permittedlevel>EDIT</permittedlevel>
       <permittedrole>[scriptid=customrole1340]</permittedrole>
-      <restriction></restriction>
-    </permission>
-    <permission>
-      <permittedlevel>EDIT</permittedlevel>
-      <permittedrole>[scriptid=customrole1327]</permittedrole>
       <restriction></restriction>
     </permission>
     <permission>

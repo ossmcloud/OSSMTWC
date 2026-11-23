@@ -465,11 +465,6 @@
       <restriction></restriction>
     </permission>
     <permission>
-      <permittedlevel>EDIT</permittedlevel>
-      <permittedrole>[scriptid=customrole1327]</permittedrole>
-      <restriction></restriction>
-    </permission>
-    <permission>
       <permittedlevel>VIEW</permittedlevel>
       <permittedrole>[scriptid=customrole1341]</permittedrole>
       <restriction></restriction>
