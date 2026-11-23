@@ -141,10 +141,11 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                                 // @@NOTE: completion photos review: reviewer reviews -> pending approval -> approver approves / sends back (ui/modules/oTWC_siteAccessUtils.js: setSafReviewed)
                                 if (reviewPending) {
                                     if (pageData.userInfo.canApproveSafReview) {
-                                        actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Approve Review', id: 'approve-review-button' });
+                                        actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Approve Photos Review', id: 'approve-review-button' });
                                     }
                                 } else if (pageData.siteAccessInfo[twcSaf.Fields.COMPLETION_REVIEWER] == pageData.userInfo.profile) {
-                                    actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Completion Reviewed', id: 'review-completion-button' });
+                                    // @@NOTE: step after 'Assign Reviewer' (the assigned reviewer only), the button was 'Completion Reviewed' (client request)
+                                    actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Review Photos', id: 'review-completion-button' });
                                 } else {
                                     actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Assign Reviewer', id: 'assign-reviewer-button' });
                                 }
