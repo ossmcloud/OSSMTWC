@@ -683,7 +683,15 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                         // @@NOTE: no delay on the SAF => default delay (same as svc/oTWC_saf_sts_update_svc.js), an explicit 0 is kept
                         var photoDelay = parseInt(saf.worksPhotosReqDelay);
                         if (isNaN(photoDelay)) { photoDelay = parseInt(twcConfig.SAF_PHOTO_REQ_DELAY_DEFAULT) || 0; }
-                        saf.completionPhotosRequested = saf.worksEndDate.addDays(photoDelay);
+                        // @@NOTE: photos requested = the day the Awaiting Photos job moves the SAF: the day after the LAST time block + delay
+                        //         (it was the approval date + delay), fallback: approval date + delay when the SAF has no time block
+                        var lastBlockDate = coreSQL.first(`select TO_CHAR(MAX(custrecord_twc_saf_tm_blk_date), 'YYYY-MM-DD') as last_date from customrecord_twc_saf_tm_blk where custrecord_twc_saf_tm_blk_saf = ${parseInt(options.saf) || 0}`)?.last_date;
+                        if (lastBlockDate) {
+                            var p = lastBlockDate.split('-').map(x => { return parseInt(x); });
+                            saf.completionPhotosRequested = (new Date(p[0], p[1] - 1, p[2], 12)).addDays(photoDelay + 1);
+                        } else {
+                            saf.completionPhotosRequested = saf.worksEndDate.addDays(photoDelay);
+                        }
                     }
                 }
                 if (options.comment) { saf.reviewComment = options.comment; }

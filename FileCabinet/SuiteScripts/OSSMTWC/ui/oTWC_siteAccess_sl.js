@@ -19,7 +19,20 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 pageData.siteAccessInfo = twcSiteAccessUtils.getSiteAccessInfo(pageData, context.request.parameters.reUse == 'T');
 
                 var safStatus = pageData.siteAccessInfo[twcSaf.Fields.STATUS];
-                var safIsInThePast = context.request.parameters.recId ? pageData.siteAccessInfo[twcSaf.Fields.START_TIME_BLOCK].split(' ')[0] < twcUtils.today() : false;
+                // @@NOTE: 'SAF is in the past' = the day after the LAST time block (it was the start time block: a SAF over several days was in the past from its 2nd day)
+                //         same date as the Awaiting Photos job (svc/oTWC_saf_sts_update_svc.js: MAX time block date), fallback: end / start time block
+                var safIsInThePast = false;
+                if (context.request.parameters.recId) {
+                    var safLastBlockDate = coreSql.first(`
+                        select  TO_CHAR(MAX(tb.${twcSafTimeBlock.Fields.BLOCK_DATE}), 'YYYY-MM-DD') as last_date
+                        from    ${twcSafTimeBlock.Type} tb
+                        where   tb.${twcSafTimeBlock.Fields.SAF} = ${parseInt(context.request.parameters.recId) || 0}
+                    `)?.last_date;
+                    if (!safLastBlockDate) {
+                        safLastBlockDate = (pageData.siteAccessInfo[twcSaf.Fields.END_TIME_BLOCK] || pageData.siteAccessInfo[twcSaf.Fields.START_TIME_BLOCK] || '').split(' ')[0];
+                    }
+                    safIsInThePast = !!safLastBlockDate && safLastBlockDate < twcUtils.today();
+                }
                 var safRequiresSrf = twcUtils.getSafType(pageData.siteAccessInfo[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';
 
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteAccessInfo.siteId || context.request.parameters.siteId, pageData.userInfo);
