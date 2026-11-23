@@ -447,6 +447,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (this.#form.getControl('srf-tme-equipment')) {
                             this.#form.getControl('srf-tme-equipment').hide = (!reqType || reqType == twcSrfItem.RequestType.REMOVE);
                             this.#form.getControl('srf-tme-equipment').mandatory = !(!reqType || reqType == twcSrfItem.RequestType.REMOVE);
+                        }
+                    }
+                    // @@NOTE: ATME / FEEDER picked from the existing equipment (remove / swap): the TME comes from the picked equipment (field read only), no TME picker
+                    if (this.#srfItem[twcSrfItem.Fields.STEP_TYPE] == twcEqUI.EqClass.ATME || this.#srfItem[twcSrfItem.Fields.STEP_TYPE] == twcEqUI.EqClass.FEEDER) {
+                        if (this.#form.getControl('srf-pick-tme-equipment')) {
                             this.#form.getControl('srf-pick-tme-equipment').hide = (!reqType || reqType == twcSrfItem.RequestType.REMOVE || reqType == twcSrfItem.RequestType.SWAP);
                         }
                     }
@@ -740,6 +745,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
                     var fields = twcEqUI.getInventoryTableFields()
+
+                    // @@NOTE: ATME / FEEDER: show the parent TME column (right after the 'Eq. ID' column, column order = row key order)
+                    //         the server already returns the parent TME id / name (ui/modules/oTWC_siteRequestUtils.js: getEquipment)
+                    //         (i) icon => parent TME details dialog (no icon if there is no parent TME)
+                    if (eqClass == twcEqUI.EqClass.ATME || eqClass == twcEqUI.EqClass.FEEDER) {
+                        var tmeKey = `${twcEquipment.Fields.PARENT_TME_ID}_name`;
+                        fields.splice(1, 0, { field: twcEquipment.Fields.PARENT_TME_ID, title: 'Parent TME', prefix: twcEquipment.infoIconPrefix(twcEquipment.Fields.PARENT_TME_ID) });
+                        res.data = res.data.map(eq => {
+                            var row = {};
+                            for (var k in eq) {
+                                if (k == tmeKey) { continue; }
+                                row[k] = eq[k];
+                                if (k == 'name') { row[tmeKey] = eq[tmeKey]; }
+                            }
+                            return row;
+                        });
+                    }
+
                     const onColumnInit = (tbl, col) => {
                         if (col.id == 'id') { return false; }
                         if (!col.id.endsWith('_name')) { if (tbl.columns.find(c => { return c.id == `${col.id}_name`; })) { return false; } }
