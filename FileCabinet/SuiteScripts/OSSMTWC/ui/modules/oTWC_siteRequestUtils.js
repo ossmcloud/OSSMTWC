@@ -86,23 +86,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             });
 
-            var installStatusFilter = '';   // and    eq.custrecordtwc_eq_install_status > ${twcUtils.EqInstallStatus.Draft}
-            if (options.reqType == twcSrfItem.RequestType.SWAP) {
-                installStatusFilter = `and    eq.custrecordtwc_eq_install_status = ${twcUtils.EqInstallStatus.Installed}`;
-            }
-
-            // @@IMPORTANT: equipment that can be picked for Remove / Swap (client rules):
-            //                  - licence status must be Licenced (swap: install status Installed as well, see above)
-            //                  - no equipment action (any SRF) still open on it: Pending, Already Removed or Never Installed
+            // @@IMPORTANT: equipment that can be picked for Remove / Swap (client rules, Issue 307 rev. 2, same for both):
+            //                  - ALL Licenced equipment is listed (a swap no longer requires the equipment to be Installed)
+            //                  - each row gets pick_blocked / pick_warn / pick_note (getPickInfoSql / applyPickInfo): blocked rows are shown but cannot be picked,
+            //                    warnings (never installed) are confirmed by the user (ui/js/oTWC_spaceRequest.js: pickEquipment)
             //              the same equipment picked twice on the SRF being edited is excluded client side (ui/js/oTWC_spaceRequest.js: pickEquipment)
             //              and everything is checked again on save (validateSrfEquipmentPicks)
             //              the parent TME picker (ATME install) uses this function with reqType Install: no filter
+            var isRemoveSwap = options.reqType == twcSrfItem.RequestType.REMOVE || options.reqType == twcSrfItem.RequestType.SWAP;
             var removeFilter = '';
-            if (options.reqType == twcSrfItem.RequestType.REMOVE || options.reqType == twcSrfItem.RequestType.SWAP) {
-                removeFilter = `
-                    and    eq.${twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS} = ${twcUtils.EqLicenseStatus.Licenced}
-                    and    not exists (${getOpenEqActionSql('eq.id')})
-                `;
+            var pickInfoSql = '';
+            if (isRemoveSwap) {
+                removeFilter = `and    eq.${twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS} = ${twcUtils.EqLicenseStatus.Licenced}`;
+                pickInfoSql = `${getPickInfoSql('eq.id')},`;
             }
 
             // @@NOTE: TME / ATME / FEEDER are filtered by the structure selected on the SRF (the client does not pass it for GIE)
@@ -120,38 +116,71 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             eq.${twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION}, BUILTIN.DF(eq.${twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION}) as ${twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION}_name,
                             eq.${twcEquipment.Fields.GIE_LOCATION},
                             BUILTIN.DF(eq.${twcEquipment.Fields.FEEDER_TYPE}) as ${twcEquipment.Fields.FEEDER_TYPE}_name,
+                            ${pickInfoSql}
 
                     from    ${twcEquipment.Type} eq
-                    join   customrecord_twc_infra infra on infra.id = eq.custrecord_twc_equip_str
-                    where  eq.custrecord_twc_equip_customer = ${options.customer}
-                    and    eq.custrecord_twc_equip_class = ${options.eqClass}
-                    and    infra.custrecord_twc_infra_site = ${options.site}
-                    ${installStatusFilter}
+                    left join customrecord_twc_infra infra on infra.id = eq.custrecord_twc_equip_str
+                    where  eq.custrecord_twc_equip_customer = ${parseInt(options.customer) || 0}
+                    and    eq.custrecord_twc_equip_class = ${parseInt(options.eqClass) || 0}
+                    and    (eq.custrecord_twc_equip_site = ${parseInt(options.site) || 0} or infra.custrecord_twc_infra_site = ${parseInt(options.site) || 0})
                     ${structureFilter}
                     ${removeFilter}
                     order by eq.name
                 `
+            // @@NOTE: left join on the infrastructure + equipment site: GIE may have no infrastructure (it used to be an inner join, so those GIE could never be picked)
 
-
-            return coreSQL.run(sql);
+            var rows = coreSQL.run(sql);
+            if (isRemoveSwap) {
+                core.array.each(rows, r => { applyPickInfo(r, r[twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS]); });
+            }
+            return rows;
         }
 
-        // @@NOTE: equipment actions still 'open' on an equipment (it cannot be picked again for remove / swap)
-        //         eqIdSql: sql expression of the equipment id (e.g. 'eq.id' or a number)
-        const OPEN_EA_STATUSES = () => { return [twcUtils.EqActionStatus.Pending, twcUtils.EqActionStatus.AlreadyRemoved, twcUtils.EqActionStatus.NeverInstalled]; };
-        function getOpenEqActionSql(eqIdSql) {
+        // @@IMPORTANT: Issue 307 - can a Licenced equipment be picked for Remove / Swap (client rules, same for both):
+        //                  blocked: an open removal EA (Remove / Swap Unlicence in Pending, Already Removed, Never Installed) on any SRF
+        //                           a Pending install EA (Licence / Swap Licence) with a SAF action (not Detached): outstanding SAF, the user must contact TL
+        //                  warning: never installed (Pending install EA with no SAF action, or install status Not Installed): selectable, on save
+        //                           the install EA is Released and the removal EA is Never Installed (saveEqAction)
+        //              used by the picker (getEquipment) and the save validation (validateSrfEquipmentPicks) so they always agree
+        //              getPickInfoSql: the sub-select columns for the equipment expression eqIdSql (e.g. 'eq.id'), applyPickInfo: sets pick_blocked / pick_warn ('T'/'F') and pick_note
+        function getPickInfoSql(eqIdSql) {
+            var removalTypes = `${twcUtils.EqActionType.Unlicence}, ${twcUtils.EqActionType.SwapUnlicence}`;
+            var installTypes = `${twcUtils.EqActionType.Licence}, ${twcUtils.EqActionType.SwapLicence}`;
+            var openRemoval = `${twcUtils.EqActionStatus.Pending}, ${twcUtils.EqActionStatus.AlreadyRemoved}, ${twcUtils.EqActionStatus.NeverInstalled}`;
             return `
-                select  1
-                from    ${twcEqAct.Type} oea
-                where   oea.${twcEqAct.Fields.EA_EQUIPMENT} = ${eqIdSql}
-                and     oea.${twcEqAct.Fields.EA_STATUS} in (${OPEN_EA_STATUSES().join(',')})
+                (select count(*) from ${twcEqAct.Type} x where x.${twcEqAct.Fields.EA_EQUIPMENT} = ${eqIdSql} and x.${twcEqAct.Fields.EA_TYPE} in (${removalTypes}) and x.${twcEqAct.Fields.EA_STATUS} in (${openRemoval})) as pick_open_removals,
+                (select max(s.name) from ${twcEqAct.Type} x join ${twcSrf.Type} s on s.id = x.${twcEqAct.Fields.EA_SRF}
+                    where x.${twcEqAct.Fields.EA_EQUIPMENT} = ${eqIdSql} and x.${twcEqAct.Fields.EA_TYPE} in (${removalTypes}) and x.${twcEqAct.Fields.EA_STATUS} in (${openRemoval})) as pick_removal_srf,
+                (select count(*) from ${twcEqAct.Type} x where x.${twcEqAct.Fields.EA_EQUIPMENT} = ${eqIdSql} and x.${twcEqAct.Fields.EA_TYPE} in (${installTypes}) and x.${twcEqAct.Fields.EA_STATUS} = ${twcUtils.EqActionStatus.Pending}) as pick_pending_installs,
+                (select count(*) from ${twcEqAct.Type} x join customrecord_twc_saf_action sa on sa.custrecord_twc_saf_a_ea = x.id
+                    where x.${twcEqAct.Fields.EA_EQUIPMENT} = ${eqIdSql} and x.${twcEqAct.Fields.EA_TYPE} in (${installTypes}) and x.${twcEqAct.Fields.EA_STATUS} = ${twcUtils.EqActionStatus.Pending}
+                    and sa.custrecord_twc_saf_a_status != ${twcUtils.SafActionStatus.Detached}) as pick_install_safs,
+                (select max(sf.name) from ${twcEqAct.Type} x join customrecord_twc_saf_action sa on sa.custrecord_twc_saf_a_ea = x.id join customrecord_twc_saf sf on sf.id = sa.custrecord_twc_saf_a_saf
+                    where x.${twcEqAct.Fields.EA_EQUIPMENT} = ${eqIdSql} and x.${twcEqAct.Fields.EA_TYPE} in (${installTypes}) and x.${twcEqAct.Fields.EA_STATUS} = ${twcUtils.EqActionStatus.Pending}
+                    and sa.custrecord_twc_saf_a_status != ${twcUtils.SafActionStatus.Detached}) as pick_install_saf
             `;
         }
+        function applyPickInfo(row, installStatus) {
+            row.pick_blocked = 'F'; row.pick_warn = 'F'; row.pick_note = '';
+            if (parseInt(row.pick_open_removals) > 0) {
+                row.pick_blocked = 'T';
+                row.pick_note = `already selected for removal / swap${row.pick_removal_srf ? ` on ${row.pick_removal_srf}` : ''}`;
+            } else if (parseInt(row.pick_install_safs) > 0) {
+                row.pick_blocked = 'T';
+                row.pick_note = `there is an outstanding SAF${row.pick_install_saf ? ` (${row.pick_install_saf})` : ''} against this equipment, please contact TL`;
+            } else if (parseInt(row.pick_pending_installs) > 0 || installStatus == twcUtils.EqInstallStatus.NotInstalled) {
+                row.pick_warn = 'T';
+                row.pick_note = 'this equipment was never installed';
+            }
+            return row;
+        }
 
-        // @@NOTE: server side check of the equipment picked for Remove / Swap on NEW SRF items (same rules as getEquipment), runs before anything is saved
-        //         only the equipment picked directly is checked, the child equipment (ATME of a removed / swapped TME) follows its parent
+        // @@NOTE: server side check of the equipment picked for Remove / Swap on NEW SRF items (same rules as getEquipment: getPickInfoSql / applyPickInfo), runs before anything is saved
+        //         the equipment picked directly: Licenced, not blocked, not picked twice
+        //         the related equipment (ATME / Feeders following a removed / swapped TME): only the 'outstanding SAF' rule, so an install EA a SAF is working on is never released
+        //         (a swap no longer requires the equipment to be Installed, Issue 307 rev. 2)
         function validateSrfEquipmentPicks(payload) {
-            var picks = [];
+            var picks = []; var related = [];
             core.array.each(Object.values(twcSrfItem.StepType), stepType => {
                 core.array.each(payload[`items_${stepType}`] || [], item => {
                     if (item.id) { return; }
@@ -159,29 +188,39 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     if (reqType != twcSrfItem.RequestType.REMOVE && reqType != twcSrfItem.RequestType.SWAP) { return; }
                     var eqId = parseInt((reqType == twcSrfItem.RequestType.SWAP) ? item.swappedItem?.[twcSrfItem.Fields.EQUIPMENT_ID] : item[twcSrfItem.Fields.EQUIPMENT_ID]);
                     if (eqId) { picks.push({ eqId: eqId, reqType: reqType }); }
+                    core.array.each(item.relatedItems || [], ri => {
+                        var riEqId = parseInt(ri[twcSrfItem.Fields.EQUIPMENT_ID]);
+                        if (riEqId && !ri.id) { related.push(riEqId); }
+                    });
                 });
             });
-            if (picks.length == 0) { return; }
+            if (picks.length == 0 && related.length == 0) { return; }
 
             var eqIds = picks.map(p => { return p.eqId; });
             var dup = eqIds.find((id, idx) => { return eqIds.indexOf(id) != idx; });
+            var allIds = eqIds.concat(related);
 
             var eqInfo = coreSQL.run(`
                 select  eq.id, eq.name,
                         eq.${twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS} as licence_status,
                         eq.${twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS} as install_status,
-                        case when exists (${getOpenEqActionSql('eq.id')}) then 'T' else 'F' end as has_open_ea
+                        ${getPickInfoSql('eq.id')}
                 from    ${twcEquipment.Type} eq
-                where   eq.id in (${eqIds.join(',')})
+                where   eq.id in (${allIds.join(',')})
             `);
+            core.array.each(eqInfo, eq => { applyPickInfo(eq, eq.install_status); });
+
             var errors = [];
             if (dup) { errors.push(`equipment <b>${eqInfo.find(e => { return e.id == dup; })?.name || dup}</b> is selected more than once`); }
             core.array.each(picks, p => {
                 var eq = eqInfo.find(e => { return e.id == p.eqId; });
                 if (!eq) { errors.push(`equipment ${p.eqId} not found`); return; }
                 if (eq.licence_status != twcUtils.EqLicenseStatus.Licenced) { errors.push(`equipment <b>${eq.name}</b> is not Licenced`); }
-                if (p.reqType == twcSrfItem.RequestType.SWAP && eq.install_status != twcUtils.EqInstallStatus.Installed) { errors.push(`equipment <b>${eq.name}</b> is not Installed and cannot be swapped`); }
-                if (eq.has_open_ea == 'T') { errors.push(`equipment <b>${eq.name}</b> already has an open equipment action`); }
+                if (eq.pick_blocked == 'T') { errors.push(`equipment <b>${eq.name}</b>: ${eq.pick_note}`); }
+            });
+            core.array.each(related, eqId => {
+                var eq = eqInfo.find(e => { return e.id == eqId; });
+                if (eq && parseInt(eq.pick_install_safs) > 0) { errors.push(`related equipment <b>${eq.name}</b>: there is an outstanding SAF${eq.pick_install_saf ? ` (${eq.pick_install_saf})` : ''} against this equipment, please contact TL`); }
             });
             if (errors.length > 0) { throw new Error(`The equipment selected for removal / swap is not valid:<br />${errors.join('<br />')}`); }
         }
@@ -422,11 +461,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             saveSiteSrf_validateUnits();
         }
         function saveEqAction(item, payload, equipmentId, requestType) {
-            // @@NOTE: removing equipment that is not on site: the EA is not Pending so it can never be picked by a SAF
+            // @@NOTE: removing (or swapping out, Issue 307 rev. 2) equipment that is not on site: the EA is not Pending so it can never be picked by a SAF
             //              install status Not Installed => EA 'Never Installed', Removed => EA 'Already Removed'
-            //         (a swap requires the equipment to be Installed, see getEquipment)
+            //         never installed: the Pending install EA of its original licence is Released (oTWC_srfWorkflowEngine.js: releasePendingInstallEa)
             var eaStatus = twcUtils.EqActionStatus.Pending;
-            if (requestType == twcUtils.EqActionType.Unlicence && equipmentId) {
+            if ((requestType == twcUtils.EqActionType.Unlicence || requestType == twcUtils.EqActionType.SwapUnlicence) && equipmentId) {
                 var installStatus = coreSQL.first(`select ${twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS} as s from ${twcEquipment.Type} where id = ${parseInt(equipmentId)}`)?.s;
                 if (installStatus == twcUtils.EqInstallStatus.NotInstalled) {
                     eaStatus = twcUtils.EqActionStatus.NeverInstalled;
@@ -442,6 +481,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             eqAction.set(twcEqAct.Fields.EA_TYPE, requestType);
             eqAction.set(twcEqAct.Fields.EA_STATUS, eaStatus);
             eqAction.save();
+
+            if (eaStatus == twcUtils.EqActionStatus.NeverInstalled) { twcSrfWorkflowEngine.releasePendingInstallEa(equipmentId); }
         }
 
 
@@ -520,7 +561,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var srfItemId = item.id;
                     if (!srfItemId) { return; }
                     var eqActions = coreSQL.run(`
-                        SELECT  ea.id, ea.${twcEqAct.Fields.EA_EQUIPMENT} as eq_id, ea.${twcEqAct.Fields.EA_TYPE} as type,
+                        SELECT  ea.id, ea.${twcEqAct.Fields.EA_EQUIPMENT} as eq_id, ea.${twcEqAct.Fields.EA_TYPE} as type, ea.${twcEqAct.Fields.EA_STATUS} as status,
                                 eq.${twcEquipment.Fields.ASSOCIATED_EQUIP_ACTIONS} as eq_assoc_ea
                         FROM    ${twcEqAct.Type} ea
                         LEFT JOIN ${twcEquipment.Type} eq on eq.id = ea.${twcEqAct.Fields.EA_EQUIPMENT}
@@ -538,6 +579,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     var eqFields = [twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS]; var eqValues = [twcUtils.EqLicenseStatus.Licenced];
                                     if (action.eq_assoc_ea == action.id) { eqFields.push(twcEquipment.Fields.ASSOCIATED_EQUIP_ACTIONS); eqValues.push(null); }
                                     recu.submit(twcEquipment.Type, action.eq_id, eqFields, eqValues);
+                                    // @@NOTE: Issue 307 - never installed equipment: its released install EA is pending again (oTWC_srfWorkflowEngine.js: releasePendingInstallEa)
+                                    if (action.status == twcUtils.EqActionStatus.NeverInstalled) { twcSrfWorkflowEngine.restoreReleasedInstallEa(action.eq_id); }
                                 }
                                 if (srfIsDraft) {
                                     recu.del(twcEqAct.Type, action.id);

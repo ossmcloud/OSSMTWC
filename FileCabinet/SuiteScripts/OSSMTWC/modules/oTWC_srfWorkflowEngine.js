@@ -1049,7 +1049,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // @@NOTE: only open EAs (Pending, and removals of equipment not on site: Never Installed / Already Removed, see oTWC_siteRequestUtils.js: saveEqAction)
                 //         already cancelled / completed ones are not touched (this makes the function re-runnable)
                 var eqActions = coreSql.run(`
-                    select  ea.id, ea.${twcEqAct.Fields.EA_EQUIPMENT} as eq_id, ea.${twcEqAct.Fields.EA_TYPE} as ea_type,
+                    select  ea.id, ea.${twcEqAct.Fields.EA_EQUIPMENT} as eq_id, ea.${twcEqAct.Fields.EA_TYPE} as ea_type, ea.${twcEqAct.Fields.EA_STATUS} as ea_status,
                             (select count(*) from customrecord_twc_saf_action sa where sa.custrecord_twc_saf_a_ea = ea.id and sa.custrecord_twc_saf_a_status != ${twcUtils.SafActionStatus.Detached}) as saf_actions
                     from    ${twcEqAct.Type} ea
                     where   ea.${twcEqAct.Fields.EA_SRF} = ${srfId}
@@ -1067,6 +1067,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             eqStatus = twcUtils.EqLicenseStatus.Cancelled;
                         } else if (ea.ea_type == twcUtils.EqActionType.Unlicence || ea.ea_type == twcUtils.EqActionType.SwapUnlicence) {
                             eqStatus = twcUtils.EqLicenseStatus.Licenced;
+                            // @@NOTE: Issue 307 - removal of never installed equipment cancelled: its released install EA is pending again (see releasePendingInstallEa)
+                            if (ea.ea_status == twcUtils.EqActionStatus.NeverInstalled) { restoreReleasedInstallEa(ea.eq_id); }
                         }
                         if (eqStatus) { recu.submit(twcEquipment.Type, ea.eq_id, twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, eqStatus); }
                     }
@@ -1099,17 +1101,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function cancelSrfDraftCleanUp(srfId, unitsLow) {
             var eqActions = coreSql.run(`
                 select  ea.id, ea.${twcEqAct.Fields.EA_EQUIPMENT} as eq_id, ea.${twcEqAct.Fields.RELATED_EA} as related_ea,
+                        ea.${twcEqAct.Fields.EA_TYPE} as ea_type, ea.${twcEqAct.Fields.EA_STATUS} as ea_status,
                         eq.${twcEquipment.Fields.ASSOCIATED_EQUIP_ACTIONS} as eq_assoc_ea
                 from    ${twcEqAct.Type} ea
                 left join ${twcEquipment.Type} eq on eq.id = ea.${twcEqAct.Fields.EA_EQUIPMENT}
                 where   ea.${twcEqAct.Fields.EA_SRF} = ${srfId}
             `);
             // @@NOTE: 1st pass clear the references to the EAs (EA => EA, equipment => EA, only if the equipment points to this EA)
+            //         Issue 307 - removal of never installed equipment: its released install EA is pending again (see releasePendingInstallEa)
             for (var x = 0; x < eqActions.length; x++) {
                 if (unitsLow()) { return false; }
                 var ea = eqActions[x];
                 if (ea.related_ea) { recu.submit(twcEqAct.Type, ea.id, twcEqAct.Fields.RELATED_EA, null); }
                 if (ea.eq_id && ea.eq_assoc_ea == ea.id) { recu.submit(twcEquipment.Type, ea.eq_id, twcEquipment.Fields.ASSOCIATED_EQUIP_ACTIONS, null); }
+                if (ea.eq_id && ea.ea_status == twcUtils.EqActionStatus.NeverInstalled && (ea.ea_type == twcUtils.EqActionType.Unlicence || ea.ea_type == twcUtils.EqActionType.SwapUnlicence)) {
+                    restoreReleasedInstallEa(ea.eq_id);
+                }
             }
             if (unitsLow()) { return false; }
             recu.submit(twcSrf.Type, srfId, twcSrf.Fields.RELATED_EQUIPMENT_ACTIONS, null);
@@ -1198,7 +1205,44 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (pendingActionCount == 0) {
                 recu.submit(twcSrf.Type, srf, twcSrf.Fields.SRF_STATUS, twcUtils.SrfStatus.Completed)
             }
-            
+
+        }
+
+        // @@IMPORTANT: Issue 307 - removing / swapping licenced equipment that was NEVER installed (client rules):
+        //              the equipment still has the Pending install EA (Licence / Swap Licence) of its original licence (only a SAF completion closes it)
+        //              when the removal EA is created (status Never Installed, ui/modules/oTWC_siteRequestUtils.js: saveEqAction) that install EA is Released
+        //              (it will never be installed now, and the original SRF is no longer waiting for it, see svc/oTWC_srf_sts_update_svc.js)
+        //              an install EA a SAF is working on (SAF action not Detached) is never released: that equipment cannot be picked (getEquipmentPickInfo)
+        //              the removal taken off the SRF (line deleted / SRF cancelled) => restoreReleasedInstallEa puts it back to Pending
+        function releasePendingInstallEa(eqId) {
+            if (!parseInt(eqId)) { return; }
+            coreSql.each(`
+                select  ea.id
+                from    ${twcEqAct.Type} ea
+                where   ea.${twcEqAct.Fields.EA_EQUIPMENT} = ${parseInt(eqId)}
+                and     ea.${twcEqAct.Fields.EA_TYPE} in (${twcUtils.EqActionType.Licence}, ${twcUtils.EqActionType.SwapLicence})
+                and     ea.${twcEqAct.Fields.EA_STATUS} = ${twcUtils.EqActionStatus.Pending}
+                and     not exists (
+                            select  1
+                            from    customrecord_twc_saf_action sa
+                            where   sa.custrecord_twc_saf_a_ea = ea.id
+                            and     sa.custrecord_twc_saf_a_status != ${twcUtils.SafActionStatus.Detached}
+                        )
+            `, ea => {
+                recu.submit(twcEqAct.Type, ea.id, twcEqAct.Fields.EA_STATUS, twcUtils.EqActionStatus.Released);
+            });
+        }
+        function restoreReleasedInstallEa(eqId) {
+            if (!parseInt(eqId)) { return; }
+            coreSql.each(`
+                select  ea.id
+                from    ${twcEqAct.Type} ea
+                where   ea.${twcEqAct.Fields.EA_EQUIPMENT} = ${parseInt(eqId)}
+                and     ea.${twcEqAct.Fields.EA_TYPE} in (${twcUtils.EqActionType.Licence}, ${twcUtils.EqActionType.SwapLicence})
+                and     ea.${twcEqAct.Fields.EA_STATUS} = ${twcUtils.EqActionStatus.Released}
+            `, ea => {
+                recu.submit(twcEqAct.Type, ea.id, twcEqAct.Fields.EA_STATUS, twcUtils.EqActionStatus.Pending);
+            });
         }
 
 
@@ -1216,7 +1260,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             postSignature: postSignature,
             acceptSrf: acceptSrf,
             rejectSds: rejectSds,
-            setSRFCompleteStatus: setSRFCompleteStatus
+            setSRFCompleteStatus: setSRFCompleteStatus,
+            releasePendingInstallEa: releasePendingInstallEa,
+            restoreReleasedInstallEa: restoreReleasedInstallEa
 
         }
     });

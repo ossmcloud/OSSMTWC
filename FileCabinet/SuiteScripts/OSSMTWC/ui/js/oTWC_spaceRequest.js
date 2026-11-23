@@ -744,7 +744,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         structure: (eqClass == twcEqUI.EqClass.GIE) ? null : this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE]
                     })
 
-                    // @@NOTE: remove / swap: equipment already on this SRF (saved or not) cannot be picked again (the server filters licence status / open EAs, see getEquipment)
+                    // @@NOTE: remove / swap: equipment already on this SRF (saved or not) cannot be picked again (the server lists the Licenced equipment with a pick note, see getEquipment)
                     if (reqType == twcSrfItem.RequestType.REMOVE || reqType == twcSrfItem.RequestType.SWAP) {
                         var usedEq = this.getSrfUsedEquipment();
                         res.data = res.data.filter(eq => { return usedEq.indexOf(parseInt(eq.id)) < 0; });
@@ -752,6 +752,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
                     var fields = twcEqUI.getInventoryTableFields()
+
+                    // @@NOTE: Issue 307 rev. 2 - remove / swap: all Licenced equipment is listed, the 'Note' column says why a row cannot be picked (red)
+                    //         or what the user must confirm (amber: never installed), see ui/modules/oTWC_siteRequestUtils.js: applyPickInfo
+                    var isRemoveSwap = reqType == twcSrfItem.RequestType.REMOVE || reqType == twcSrfItem.RequestType.SWAP;
+                    if (isRemoveSwap) {
+                        fields.push({
+                            field: 'pick_note', title: 'Note', wrap: true,
+                            formatValue: (v, fv, data) => {
+                                if (!v) { return ''; }
+                                var color = data.pick_blocked == 'T' ? 'red' : 'darkorange';
+                                return `<span style="color: ${color}; font-weight: bold;">${v}</span>`;
+                            }
+                        });
+                    }
 
                     // @@NOTE: ATME / FEEDER: show the parent TME column (right after the 'Eq. ID' column, column order = row key order)
                     //         the server already returns the parent TME id / name (ui/modules/oTWC_siteRequestUtils.js: getEquipment)
@@ -802,9 +816,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var eqTable = new uiTable.TableControl(tblContainer, onColumnInit, { id: 'twc_equipment', fitContainer: false, fitScreen: false })
                     //eqTable.init(this.data.eqLib.filter(el => { return el[twcEqLibUI.Fields.EQUIPMENT_CLASS] == eqClass  }))
                     eqTable.init(res.data);
-                    eqTable.table.on('dblclick', async e => {
+                    const pick = async (pickedEq) => {
                         try {
-                            var pickedEq = e.e.rowsData[0];
                             if (eqClass == twcEqUI.EqClass.TME) {
                                 var res = await this.#page.post({ action: 'get-equipment-children' }, { eq: pickedEq.id })
                                 pickedEq.relatedItems = res.data;
@@ -816,6 +829,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         } catch (error) {
                             dialog.error(error);
                         }
+                    }
+                    eqTable.table.on('dblclick', async e => {
+                        var pickedEq = e.e.rowsData[0];
+                        if (!pickedEq) { return; }
+                        // @@NOTE: blocked (open removal / outstanding SAF): cannot be picked, warning (never installed): the user confirms (checked again on save)
+                        if (isRemoveSwap && pickedEq.pick_blocked == 'T') {
+                            dialog.error(`<b>${pickedEq.name}</b> cannot be selected: ${pickedEq.pick_note}`);
+                            return;
+                        }
+                        if (isRemoveSwap && pickedEq.pick_warn == 'T') {
+                            dialog.confirm(`<b>${pickedEq.name}</b>: ${pickedEq.pick_note}.<br />Do you want to select it anyway?`, () => { pick(pickedEq); });
+                            return;
+                        }
+                        pick(pickedEq);
                     })
                     container.append(tblContainer);
                     eqTable.table.ui.css('overflow', 'unset')
