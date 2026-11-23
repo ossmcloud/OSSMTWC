@@ -510,10 +510,12 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     saf.logInfo('SAF Reused from: ' + recu.lookUp(twcSaf.Type, payload.id, 'name'));
                 } else {
                     // @@NOTE: SAF Log messages are filtered for external users, use the shared constants (data/oTWC_safLog.js: LogMessage)
-                    saf.logInfo(twcSafLog.LogMessage.Edited, resubmitComment || null);
+                    //         the status change is written first, then the edit (with the comment): the log is newest first so the comment shows above the status change,
+                    //         same as a TL status change / comment (editSafStatus), the order used to be reversed here (client request: consistent order)
                     if (oldStatus && oldStatus != saf.status) {
                         saf.logInfo(twcSafLog.LogMessage.StatusChanged, `status changed to: ${twcSaf.getSafStatusName(saf.status)} - old status: ${oldStatusName}`);
                     }
+                    saf.logInfo(twcSafLog.LogMessage.Edited, resubmitComment || null);
                 }
             } else {
                 saf.logInfo('SAF Created');

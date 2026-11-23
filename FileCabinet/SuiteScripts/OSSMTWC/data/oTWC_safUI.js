@@ -903,7 +903,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 },
                 where: where,
-                orderBy: { created: 'desc' },
+                // @@NOTE: newest first, id as tie-break: the rows of one change are written in the same second (it was by created only, so their order was random)
+                //         a change always shows its comment row above its status change row (the status change is written first, see oTWC_siteAccessUtils.js)
+                orderBy: `${twcSafLog.Fields.CREATED} desc, id desc`,
                 showToolbar: false,
                 FieldsInfo: twcSafLog.FieldsInfo,
                 onColumnInit: (tbl, col) => {
