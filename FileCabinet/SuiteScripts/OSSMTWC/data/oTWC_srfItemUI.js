@@ -72,7 +72,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 if (srfItem.stepType == twcSrfItem.StepType.GIE) {
                     dimensionInfo.fields.push({ id: twcSrfItem.Fields.GIE_LOCATION, label: 'GIE Location' })
                 }
-                dimensionInfo.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: twcSrfItem.Fields.EQUIPMENT_LIBRARY, label: 'Eq. Lib', hide: true })
+                // @@NOTE: the value must be set here: a control with an explicit type is not populated from the record (oTWC_configUIFields.js: formatPanelFields)
+                //         without it, edit / duplicate of an item picked from the library cleared the library entry (and so the equipment 'Use Library' flag, oTWC_srfWorkflowEngine.js: initEquipment)
+                dimensionInfo.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: twcSrfItem.Fields.EQUIPMENT_LIBRARY, label: 'Eq. Lib', hide: true, value: srfItem.get(twcSrfItem.Fields.EQUIPMENT_LIBRARY) || '' })
             }
 
             var specInfo = { id: 'srf-item-spec', title: 'Deployment Details', hide: isNewRecord, fields: [] };

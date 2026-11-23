@@ -305,6 +305,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
                 this.#form = twcUIPanel.ui(res);
+
+                // @@NOTE: edit / duplicate: keep the library entry of the item (hidden control), or it is cleared on OK (the form values are copied back on the item)
+                var eqLibCtrl = this.#form.getControl(twcSrfItem.Fields.EQUIPMENT_LIBRARY);
+                var eqLibValue = this.#srfItem[twcSrfItem.Fields.EQUIPMENT_LIBRARY];
+                if (eqLibValue?.value !== undefined) { eqLibValue = eqLibValue.value; }
+                if (eqLibCtrl && !eqLibCtrl.value && eqLibValue) { eqLibCtrl.value = eqLibValue; }
+
                 this.#form.on('change', e => { this.setFormState(e); })
                 this.setFormState();
 
