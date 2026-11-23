@@ -437,7 +437,13 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             saf.startTimeBlock = twcUtils.parsesSAFDateTime(`${earliestDate} ${twcUtils.getTimeBlockTimeRange(earliestBlock).start}`);
             saf.endTimeBlock = twcUtils.parsesSAFDateTime(`${latestDate} ${twcUtils.getTimeBlockTimeRange(latestBlock).end}`);
             saf.conditionsofAccess = b64.decode(options.conditionsOfAccessHtml);
-            saf.worksPhotosReqDelay = payload['saf-photo-delay'] || null;
+            // @@NOTE: photo req. delay: TL only field ('saf-photo-delay', data/oTWC_safUI.js), customers / contractors do not send it => keep the SAF value
+            //         empty => null (the default delay applies, twcConfig.SAF_PHOTO_REQ_DELAY_DEFAULT), 0 is a valid value
+            //         (it used to be always overwritten: an external save, or a TL edit with the empty field, cleared the delay)
+            if (payload['saf-photo-delay'] !== undefined) {
+                var photoDelay = parseInt(payload['saf-photo-delay']);
+                saf.worksPhotosReqDelay = isNaN(photoDelay) ? null : photoDelay;
+            }
 
             var safId = saf.save();
 
@@ -674,7 +680,10 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     saf.status = options.status;
                     if (options.status == twcSaf.Status.Approved) {
                         saf.worksEndDate = (new Date()).addHours(12);
-                        saf.completionPhotosRequested = saf.worksEndDate.addDays(saf.worksPhotosReqDelay || 0);
+                        // @@NOTE: no delay on the SAF => default delay (same as svc/oTWC_saf_sts_update_svc.js), an explicit 0 is kept
+                        var photoDelay = parseInt(saf.worksPhotosReqDelay);
+                        if (isNaN(photoDelay)) { photoDelay = parseInt(twcConfig.SAF_PHOTO_REQ_DELAY_DEFAULT) || 0; }
+                        saf.completionPhotosRequested = saf.worksEndDate.addDays(photoDelay);
                     }
                 }
                 if (options.comment) { saf.reviewComment = options.comment; }

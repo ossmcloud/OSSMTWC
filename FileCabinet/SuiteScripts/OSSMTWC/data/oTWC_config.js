@@ -20,6 +20,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         const TKT_CASE_STATUS = 1;
         const NO_REPLY = 827;
         const SAF_AWAIT_PHOTOS_MAIL_TEMPLATE = 2;
+        // @@GO-LIVE :: default 'Works Photos Req. Delay' (days after the last time block before a SAF goes to Awaiting Photos) when the SAF has none
+        //              used by svc/oTWC_saf_sts_update_svc.js and ui/modules/oTWC_siteAccessUtils.js (approval: completion photos requested date)
+        const SAF_PHOTO_REQ_DELAY_DEFAULT = 7;
 
         const FIELD_ENTITY_USER_PREF = 'custentity_twc_userpref';
 
@@ -473,6 +476,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             TKT_CASE_STATUS: TKT_CASE_STATUS,
             NO_REPLY: NO_REPLY,
             SAF_AWAIT_PHOTOS_MAIL_TEMPLATE: SAF_AWAIT_PHOTOS_MAIL_TEMPLATE,
+            SAF_PHOTO_REQ_DELAY_DEFAULT: SAF_PHOTO_REQ_DELAY_DEFAULT,
             
             userInfo: getUserInfo,
             getLoginProfile: getLoginProfile,

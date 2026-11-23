@@ -29,11 +29,13 @@ define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
         function updateSAFstatus() {
             var currDate = format.format({ value: new Date(), type: format.Type.DATE, timezone: config.load({ type: config.Type.COMPANY_INFORMATION }).getValue({ fieldId: 'timezone' }) })
             // @@TODO: currently we email the primary contractor, is this ok?
+            // @@NOTE: no delay on the SAF => default delay (twcConfig.SAF_PHOTO_REQ_DELAY_DEFAULT, was 0 = the day after the last time block), an explicit 0 is kept
+            var defaultDelay = parseInt(twcConfig.SAF_PHOTO_REQ_DELAY_DEFAULT) || 0;
             var sql = `
                 SELECT saf.id AS saf_id,
                 saf.${twcSaf.Fields.PRIMARY_CONTRACTOR} AS contractor_id,
                 company.custrecordtwc_entity AS vendor_id,
-                NVL(saf.${twcSaf.Fields.WORKS_PHOTOS_REQ_DELAY}, 0) AS delay_days
+                NVL(saf.${twcSaf.Fields.WORKS_PHOTOS_REQ_DELAY}, ${defaultDelay}) AS delay_days
                 FROM ${twcSaf.Type} saf
                 JOIN
                 customrecord_twc_company company
@@ -44,7 +46,7 @@ define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
                     SELECT MAX(tb.${twcTB.Fields.BLOCK_DATE})
                     FROM ${twcTB.Type} tb
                     WHERE tb.${twcTB.Fields.SAF} = saf.id
-                ) + NVL(saf.${twcSaf.Fields.WORKS_PHOTOS_REQ_DELAY}, 0) < '${currDate}'
+                ) + NVL(saf.${twcSaf.Fields.WORKS_PHOTOS_REQ_DELAY}, ${defaultDelay}) < '${currDate}'
 
             `;
 

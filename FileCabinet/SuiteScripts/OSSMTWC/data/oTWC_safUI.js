@@ -314,7 +314,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'saf-work-summary', label: 'Summary of Work', rows: 3, value: dataSource[twcSaf.Fields.SUMMARY_OF_WORKS], width: '100%', lineBreak: true });
 
             if (userInfo.isEmployee) {
-                step3Info.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: 'saf-photo-delay', label: 'Photo Req. Delay', hide: !requiresSrf, allowAll: false, lineBreak: true });
+                // @@NOTE: the SAF value is shown (it was always empty, so a TL edit cleared it), empty = default delay (twcConfig.SAF_PHOTO_REQ_DELAY_DEFAULT)
+                var photoDelay = dataSource[twcSaf.Fields.WORKS_PHOTOS_REQ_DELAY];
+                step3Info.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: 'saf-photo-delay', label: 'Photo Req. Delay (days)', value: (photoDelay === null || photoDelay === undefined) ? '' : photoDelay, hint: `default ${twcConfig.SAF_PHOTO_REQ_DELAY_DEFAULT}`, hide: !requiresSrf, allowAll: false, lineBreak: true });
             }
 
             var eqActionsVisible = false;
