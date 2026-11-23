@@ -1290,12 +1290,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 and     srf.custrecord_twc_srf_cust = ${options.customer}
                 and     srf.custrecord_twc_srf_permit_date is not null
                 and     exists (select 1 from customrecord_twc_eq_action ea where ea.custrecord_twc_eq_action_srf = srf.id and ea.custrecord_twc_eq_action_sts = ${EQ_ACTION_STATUS.Pending})
-                order by srf.custrecord_twc_srf_app_date desc
+                order by srf.id desc
             `, srf => {
+                // @@NOTE: SRF number @ site only (client request): the application date (custrecord_twc_srf_app_date) is never set by the portal (it showed [null]) and the customer is the SAF one
+                //         ordered newest first (it was by application date, always empty)
                 siteSrfs.push({
                     value: srf.value,
-                    text: `${srf.name} [${srf.date}] ${srf.customer} @ ${srf.site}`,
-                    text_render: `<b>${srf.name}</b> [${srf.date}] <i>${srf.customer}</i> @ ${srf.site}`
+                    text: `${srf.name} @ ${srf.site}`,
+                    text_render: `<b>${srf.name}</b> @ ${srf.site}`
                 })
             })
             return siteSrfs;
