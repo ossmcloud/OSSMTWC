@@ -283,6 +283,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             coreSql.each(`
                 select  eq.id as eq_id, sdsi.id as sds_eq_id, srfi.id as srf_eq_id, srfi.custrecord_twc_srf_itm_invent_flag as srf_inventory_flag,
                         sdsi.${twcSdsEquipment.Fields.LICENSE_STATUS} as sds_licence_status,
+                        sdsi.${twcSdsEquipment.Fields.INSTALL_STATUS} as sds_install_status,
                         sdsi.${twcSdsEquipment.Fields.INCLUDE_IN_SDS} as sds_include,
                         ${cancelledSrfSql} as srf_cancelled,
                         ${sqlFields}
@@ -320,6 +321,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // @@NOTE: existing sds eq.: apply the default licence status only if the user has not changed it (i.e.: still the same as the equipment)
                     if (sdsLicenceStatus && eq.sds_licence_status == eq.custrecord_twc_eq_licence_status && sdsLicenceStatus != eq.sds_licence_status) {
                         recu.submit(twcSdsEquipment.Type, eq.sds_eq_id, twcSdsEquipment.Fields.LICENSE_STATUS, sdsLicenceStatus);
+                    }
+                    // @@NOTE: install status: the sds eq. is created the 1st time the Generate SDS dialog is opened (copied from the equipment)
+                    //         works permitted: the works can be completed after that (SAF photos review approved => equipment Installed / Removed, oTWC_siteAccessUtils.js)
+                    //         so the actual site work wins: if the equipment is Installed / Removed and the sds eq. is still behind (Draft / Not Installed, or Installed => Removed) it is updated
+                    //         a manual change on the dialog is otherwise kept (status ahead of / same as the equipment)
+                    var eqInstall = parseInt(eq.custrecordtwc_eq_install_status) || 0;
+                    var sdsInstall = parseInt(eq.sds_install_status) || 0;
+                    if ((eqInstall == twcUtils.EqInstallStatus.Installed || eqInstall == twcUtils.EqInstallStatus.Removed) && sdsInstall < eqInstall) {
+                        recu.submit(twcSdsEquipment.Type, eq.sds_eq_id, twcSdsEquipment.Fields.INSTALL_STATUS, eqInstall);
                     }
                     return;
                 }
