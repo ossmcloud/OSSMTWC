@@ -132,7 +132,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         //         same approach as the SRF (oTWC_srfUI.js: getSrfItems) and SAF (oTWC_utils.js: getSafActions) tables
         //         each list is flattened as parent followed by its children (flagged with .child = true)
         //         if not grouped we just split the equipment by class (one list per class, no child rows)
-        function getSiteEquipment(dataSource, userInfo, grouped) {
+        //         hideInactive: leave out the equipment neither licenced nor installed (oTWC_utils.js: isEquipmentInactive)
+        function getSiteEquipment(dataSource, userInfo, grouped, hideInactive) {
             var whereClause = { [twcInventory.Fields.SITE]: dataSource.id };
 
             // @@NOTE: equipment visibility follows the agent passes (contractors only see the customers on their agent passes), see oTWC_config.js: getAgentPassCustomers
@@ -154,6 +155,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 return item[twcInventory.Fields.EQUIPMENT_INSTALL_STATUS] != twcUtils.EqInstallStatus.Cancelled
                     && item[twcInventory.Fields.EQUIPMENT_LICENCE_STATUS] != twcUtils.EqLicenseStatus.Cancelled;
             });
+            // @@NOTE: 'Hide Inactive' toggle (ui/oTWC_inventory_sl.js), filtered before grouping: an ATME / Feeder whose TME is hidden ends up in the 'unlinked' list
+            if (hideInactive) {
+                items = items.filter(item => {
+                    return !twcUtils.isEquipmentInactive(item[twcInventory.Fields.EQUIPMENT_LICENCE_STATUS], item[twcInventory.Fields.EQUIPMENT_INSTALL_STATUS]);
+                });
+            }
 
             var srfs = getSiteEquipmentSrf(dataSource.id);
             core.array.each(items, item => {
@@ -309,10 +316,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
         // @@NOTE: grouped (default) => TME / GIE tables with the related ATME / Feeders as child rows (+ unlinked ATME / Feeders if any)
         //         not grouped      => one table per equipment class (TME / ATME / Feeders / GIE)
-        function getInvInfoPanels(dataSource, userInfo, grouped) {
+        //         hideInactive     => leave out the equipment neither licenced nor installed (see getSiteEquipment)
+        function getInvInfoPanels(dataSource, userInfo, grouped, hideInactive) {
             dataSource.Type = twcSite.Type;
             if (grouped === undefined) { grouped = true; }
-            var equipment = getSiteEquipment(dataSource, userInfo, grouped);
+            var equipment = getSiteEquipment(dataSource, userInfo, grouped, hideInactive);
 
             var fieldGroups = [];
             if (!grouped) {

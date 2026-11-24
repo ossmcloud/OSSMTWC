@@ -517,7 +517,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         // }
 
 
-        function getSiteInfoPanels(dataSource, userinfo) {
+        // @@NOTE: hideInactive => Equipment section leaves out the equipment neither licenced nor installed (oTWC_utils.js: isEquipmentInactive)
+        //         set by the 'Hide Inactive' toggle in the section (ui/oTWC_siteInfo_sl.js, reload handled in ui/js/oTWC_siteInfo.js)
+        function getSiteInfoPanels(dataSource, userinfo, hideInactive) {
             if (!dataSource) { dataSource = {}; }
             dataSource.Type = twcSite.Type;
 
@@ -533,7 +535,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroups.push(srfUI.getSrfListPanel(dataSource, userinfo));
             fieldGroups.push(safUI.getSafListPanel(dataSource, userinfo));
             fieldGroups.push(ttkUI.getTktListPanel(dataSource, userinfo));
-            fieldGroups.push({ id: 'site-equipment', title: 'Equipment', collapsed: true, controls: eqUI.getInvInfoPanels(dataSource, userinfo) });
+            // @@NOTE: the toggle is never read only (it is not a site field, it just reloads the page), the section is open when the toggle is on (the page was reloaded by it)
+            var eqControls = [{ type: twcUI.CTRL_TYPE.TOGGLE, id: 'hide-inactive-equipment-toggle', label: 'Hide Inactive (not licenced and not installed)', labelNoWrap: true, value: !!hideInactive, small: true, readOnly: false }];
+            eqControls.push(...eqUI.getInvInfoPanels(dataSource, userinfo, undefined, hideInactive));
+            fieldGroups.push({ id: 'site-equipment', title: 'Equipment', collapsed: !hideInactive, controls: eqControls });
 
             return fieldGroups;
         }

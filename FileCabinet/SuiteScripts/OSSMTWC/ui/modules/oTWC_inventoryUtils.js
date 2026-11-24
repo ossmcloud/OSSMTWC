@@ -35,7 +35,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 <div>
                                     {FILTER_COUNTIES}
                                 </div>
-                                
+                                <div>
+                                    {FILTER_HIDE_INACTIVE}
+                                </div>
+
                             </div>
                             <h3 class="twc">Filter by Location</h3>
                             <div class="twc-div-table-r">
@@ -61,6 +64,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             html = html.replace('{FILTER_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Class', width: '50%', multiSelect: true, id: twcEqip.Fields.EQUIPMENT_CLASS, noEmpty: true, dataSource: twcUtils.getEquipmentClass() }));
             html = html.replace('{FILTER_CUSTOMER}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Customer', width: '50%', multiSelect: true, id: twcEqip.Fields.CUSTOMER, noEmpty: true, dataSource: twcUtils.getCustomers(userInfo), noAutoSelect: true }));
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
+            // @@NOTE: hides the rows flagged eq_inactive (see getInventoryData), applied client side (ui/js/oTWC_siteLocatorPanel.js: updateResults)
+            html = html.replace('{FILTER_HIDE_INACTIVE}', twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'twc-hide-inactive-eq', label: 'Hide Inactive (not licenced and not installed)', labelNoWrap: true, value: false, small: true }));
 
             html = html.replace('{FILTER_LAT}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Latitude', id: 'twc-coord-latitude', width: '250px' }));
             html = html.replace('{FILTER_LNG}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Longitude', id: 'twc-coord-longitude', width: '250px' }));
@@ -149,9 +154,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 left join customrecord_twc_infra i on i.id = s.${twcInventory.Fields.INFRASTRUCTURE}                join    ${twcSite.Type} site on site.id = s.${twcInventory.Fields.SITE}
                 left join customrecord_twc_eq_action ea on ea.id = s.custrecord_twc_equip_assoc_eq_action
                 
-                ${whereClause} 
+                ${whereClause}
                 ${orderBy}
             `)
+
+            // @@NOTE: flag for the 'Hide Inactive' toggle (see renderInventoryPanel), column hidden on the table (ui/js/oTWC_inventory.js: colInit)
+            core.array.each(inventoryDetails, r => {
+                r.eq_inactive = twcUtils.isEquipmentInactive(r[twcInventory.Fields.EQUIPMENT_LICENCE_STATUS], r[twcInventory.Fields.EQUIPMENT_INSTALL_STATUS]) ? 'T' : 'F';
+            });
 
             return {
                 inventoryDetails: inventoryDetails,

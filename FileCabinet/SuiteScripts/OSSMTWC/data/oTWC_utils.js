@@ -96,6 +96,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
         }
 
+        // @@NOTE: 'inactive' equipment = neither licenced nor installed, hidden by the 'Hide Inactive' toggle on the equipment lists
+        //         (site equipment page: data/oTWC_equipmentUI.js: getSiteEquipment, equipment locator: ui/modules/oTWC_inventoryUtils.js: getInventoryData)
+        //         licence status Unlicenced / Licence Swapped / Cancelled AND install status Not Installed / Removed / Cancelled
+        const EQ_INACTIVE_LICENCE_STATUS = [EQ_LICENSE_STATUS.Unlicenced, EQ_LICENSE_STATUS.LicenceSwapped, EQ_LICENSE_STATUS.Cancelled];
+        const EQ_INACTIVE_INSTALL_STATUS = [EQ_INSTALL_STATUS.NotInstalled, EQ_INSTALL_STATUS.Removed, EQ_INSTALL_STATUS.Cancelled];
+        function isEquipmentInactive(licenceStatus, installStatus) {
+            return EQ_INACTIVE_LICENCE_STATUS.indexOf(parseInt(licenceStatus)) >= 0
+                && EQ_INACTIVE_INSTALL_STATUS.indexOf(parseInt(installStatus)) >= 0;
+        }
+
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const CUSTOMER_FLAG = {
@@ -1674,6 +1684,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EqActionType: EQ_ACTION_TYPE,
             EqInstallStatus: EQ_INSTALL_STATUS,
             EqLicenseStatus: EQ_LICENSE_STATUS,
+            isEquipmentInactive: isEquipmentInactive,
 
             CustomerFlag: CUSTOMER_FLAG,
             ContractorFlag: CONTRACTOR_FLAG,

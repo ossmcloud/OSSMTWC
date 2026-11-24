@@ -41,6 +41,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                  if (col.id == 'infra_type') { return false; }
                  if(col.id == 'custrecord_twc_equip_str_text'){return false}
                 if (col.id == 'srf_id') { return false; }
+                // @@NOTE: 'Hide Inactive' toggle flag (oTWC_inventoryUtils.js: getInventoryData)
+                if (col.id == 'eq_inactive') { return false; }
                 //if (col.id == 'name') { return false; }
                 if (col.id == twcSite.Fields.ADDRESS_COUNTY || col.id == twcSite.Fields.SITE_TYPE || col.id == twcSite.Fields.SITE_PORTFOLIO) { return false; }
 
@@ -174,13 +176,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     await this.addEquipment();
                 });
                 this.ui.on('change', e => {
-                    if (e.id != 'group-equipment-toggle') { return; }
-                    // @@NOTE: grouped / ungrouped view is rendered server side, reload the page with the 'grouped' parameter (grouped is the default so we only pass grouped=F)
+                    if (e.id != 'group-equipment-toggle' && e.id != 'hide-inactive-equipment-toggle') { return; }
                     var url = new URL(location.href);
-                    if (!e.value || e.value == 'F') {
-                        url.searchParams.set('grouped', 'F');
+                    var on = (e.value && e.value != 'F');
+                    if (e.id == 'group-equipment-toggle') {
+                        // @@NOTE: grouped / ungrouped view is rendered server side, reload the page with the 'grouped' parameter (grouped is the default so we only pass grouped=F)
+                        if (!on) {
+                            url.searchParams.set('grouped', 'F');
+                        } else {
+                            url.searchParams.delete('grouped');
+                        }
                     } else {
-                        url.searchParams.delete('grouped');
+                        // @@NOTE: hide inactive equipment (ui/oTWC_inventory_sl.js), off is the default so we only pass hideInactive=T
+                        if (on) {
+                            url.searchParams.set('hideInactive', 'T');
+                        } else {
+                            url.searchParams.delete('hideInactive');
+                        }
                     }
                     this.wait();
                     location.href = url.toString();

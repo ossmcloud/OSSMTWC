@@ -23,6 +23,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 this.ui.on('change', e => {
                     if (e.id.startsWith('twc-navigation')) { return; }
+                    if (e.id == 'hide-inactive-equipment-toggle') { this.toggleInactiveEquipment(e.value); return; }
                     this.#changes[e.id] = e.value;
                     console.log(this.#changes)
                     this.dirty = true
@@ -61,6 +62,27 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 })
 
+            }
+
+            // @@NOTE: Equipment section 'Hide Inactive' toggle (data/oTWC_siteUI.js: getSiteInfoPanels), the tables are rendered server side so we reload with hideInactive=T (off is the default)
+            //         unsaved changes would be lost, ask first (if the user does not confirm the toggle just stays as it is, the dialog has no cancel callback)
+            toggleInactiveEquipment(value) {
+                var url = new URL(location.href);
+                if (value && value != 'F') {
+                    url.searchParams.set('hideInactive', 'T');
+                } else {
+                    url.searchParams.delete('hideInactive');
+                }
+                var reload = () => {
+                    this.dirty = false;
+                    this.wait();
+                    location.href = url.toString();
+                };
+                if (this.dirty) {
+                    dialog.confirm('The page will be reloaded and your unsaved changes will be lost. Do you wish to continue?', reload);
+                } else {
+                    reload();
+                }
             }
 
             async onSave() {

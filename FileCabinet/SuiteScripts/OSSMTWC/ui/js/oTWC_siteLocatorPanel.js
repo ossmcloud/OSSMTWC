@@ -6,6 +6,10 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/oTWC_dialogEx.js', '../../data/oTWC_site.js', '../../O/controls/oTWC_ui_table.js', './oTWC_googleMap.js'],
     (core, coreSql, b64, twcPageBase, twcConfig, twcIcons, dialog, twcSite, uiTable, googleMap) => {
 
+        // @@NOTE: equipment locator only (ui/modules/oTWC_inventoryUtils.js: renderInventoryPanel), hides the rows flagged eq_inactive (not licenced and not installed)
+        const HIDE_INACTIVE_EQ = 'twc-hide-inactive-eq';
+        function isToggleOn(v) { return v === true || v == 'T'; }
+
         class TWCSiteLocatorPanel {
             #page = null;
             #map = null;
@@ -47,7 +51,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             initEvents() {
                 this.#page.ui.on('change', e => {
                     try {
-                        if (e.id.startsWith('cust') || e.id == 'record_id' || e.id == 'name' || e.id == 'site_id') {
+                        if (e.id.startsWith('cust') || e.id == 'record_id' || e.id == 'name' || e.id == 'site_id' || e.id == HIDE_INACTIVE_EQ) {
                             this.updateResults();
                         } else if (e.id.startsWith('twc-coord')) {
                             this.updateResultsByCoord();
@@ -124,8 +128,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                
                 if (this.#tableData) {
                     siteIds = [];
+                    var hideInactive = isToggleOn(filters[HIDE_INACTIVE_EQ]);
+                    if (hideInactive) { hasFilters = true; }
                     this.#tableDataFiltered = this.#tableData.filter(s => {
                         var match = true;
+                        if (hideInactive && s.eq_inactive == 'T') { return false; }
                         // Handle the date range filter once
                         var filterStart = filters['custrecord_twc_saf_start_time_block'];
                         var filterEnd = filters['custrecord_twc_saf_end_time_block'];
@@ -224,7 +231,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 });
                 if (this.#tableData) {
+                    var hideInactive = isToggleOn(filters[HIDE_INACTIVE_EQ]);
                     this.#tableDataFiltered = this.#tableData.filter(s => {
+                        if (hideInactive && s.eq_inactive == 'T') { return false; }
                         return siteIds.indexOf(s.site_id) >= 0;
                     });
                     this.#sitesTable.refresh(this.#tableDataFiltered);
