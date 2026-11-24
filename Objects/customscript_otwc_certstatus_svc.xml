@@ -41,7 +41,7 @@
       <custscript_otwc_certstatus_svc_p1>{ &quot;type&quot;: &quot;company&quot; }</custscript_otwc_certstatus_svc_p1>
       <isdeployed>T</isdeployed>
       <loglevel>DEBUG</loglevel>
-      <status>SCHEDULED</status>
+      <status>NOTSCHEDULED</status>
       <title>OSSMTWC - Company Status - SVC</title>
       <recurrence>
         <daily>
@@ -56,7 +56,7 @@
       <custscript_otwc_certstatus_svc_p1></custscript_otwc_certstatus_svc_p1>
       <isdeployed>T</isdeployed>
       <loglevel>DEBUG</loglevel>
-      <status>SCHEDULED</status>
+      <status>NOTSCHEDULED</status>
       <title>OSSMTWC - Cert Status - SVC</title>
       <recurrence>
         <daily>

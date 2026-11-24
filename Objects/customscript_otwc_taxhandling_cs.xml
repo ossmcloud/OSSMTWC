@@ -1,7 +1,7 @@
 <clientscript scriptid="customscript_otwc_taxhandling_cs">
   <description></description>
   <isinactive>F</isinactive>
-  <name>OSSMTWC - Tax Handling - UE</name>
+  <name>OSSMTWC - Tax Handling - CS</name>
   <notifyadmins>F</notifyadmins>
   <notifyemails></notifyemails>
   <notifyowner>T</notifyowner>

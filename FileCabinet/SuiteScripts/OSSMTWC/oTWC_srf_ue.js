@@ -84,14 +84,17 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
 
                 let recordRef = srfData[twcSrf.Fields.NAME]
 
-                email.send({
-                    author: twcConfig.NO_REPLY,
-                    recipients: recipient,
-                    subject: 'SRF ' + newStatusText,
-                    body: 'Dear ' + recipientName + ',<br><br>The status of SRF record - ' + recordRef +
-                        ' has changed from ' + (oldStatusText || 'Blank') +
-                        ' to ' + newStatusText + '.'
-                })
+                if (twcConfig.SB) {
+                    // @@GO-LIVE :: email disabled for the initial LIVE deployment (no emails to customers / contractors before go-live) - uncomment at go-live
+                    email.send({
+                        author: twcConfig.NO_REPLY,
+                        recipients: recipient,
+                        subject: 'SRF ' + newStatusText,
+                        body: 'Dear ' + recipientName + ',<br><br>The status of SRF record - ' + recordRef +
+                            ' has changed from ' + (oldStatusText || 'Blank') +
+                            ' to ' + newStatusText + '.'
+                    })
+                }
             } catch (error) {
                 core.logDebug('SRF REQUESTOR EMAIL', error.message)
             }
@@ -130,14 +133,16 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
                 let recordRef = srfData[twcSrf.Fields.NAME]
                 log.debug('recordRef', recordRef)
 
-                email.send({
-                    author: twcConfig.NO_REPLY,
-                    recipients: recipients,
-                    subject: 'SRF ' + newStatusText,
-                    body: 'The status of SRF record - ' + recordRef +
-                        ' has changed from ' + (oldStatusText || 'Blank') +
-                        ' to ' + newStatusText + '.'
-                })
+                // @@GO-LIVE :: email disabled for the initial LIVE deployment (no emails to customers / contractors before go-live) - uncomment at go-live
+                // email.send({
+                //     author: twcConfig.NO_REPLY,
+                //     recipients: recipients,
+                //     subject: 'SRF ' + newStatusText,
+                //     body: 'The status of SRF record - ' + recordRef +
+                //         ' has changed from ' + (oldStatusText || 'Blank') +
+                //         ' to ' + newStatusText + '.'
+                // })
+                log.audit('EMAIL DISABLED (@@GO-LIVE)', `SRF ${recordRef} (signatories): ${oldStatusText || 'Blank'} -> ${newStatusText}, to ${recipients.join(', ')}`);
             } catch (error) {
                 core.logDebug('SRF SIGNATORY EMAIL', error.message)
             }

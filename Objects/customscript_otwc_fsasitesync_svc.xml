@@ -41,7 +41,7 @@
       <custscript_otwc_fsasitesync_svc_p1></custscript_otwc_fsasitesync_svc_p1>
       <isdeployed>T</isdeployed>
       <loglevel>DEBUG</loglevel>
-      <status>SCHEDULED</status>
+      <status>NOTSCHEDULED</status>
       <title>OSSMTWC - FSA Site Sync - SVC</title>
       <recurrence>
         <daily>

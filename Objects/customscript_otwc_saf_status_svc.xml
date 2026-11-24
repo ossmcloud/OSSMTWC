@@ -23,7 +23,7 @@
     <scriptdeployment scriptid="customdeploy_otwc_saf_status_svc">
       <isdeployed>T</isdeployed>
       <loglevel>DEBUG</loglevel>
-      <status>SCHEDULED</status>
+      <status>NOTSCHEDULED</status>
       <title>OSSMTWC - SAF Status - SVC</title>
       <recurrence>
         <daily>

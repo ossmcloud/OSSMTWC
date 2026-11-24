@@ -75,15 +75,18 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
                 if (Array.isArray(address)) address = address[0] && address[0].value
                 if (!address) return
 
-                email.send({
-                    author: twcConfig.NO_REPLY,
-                    recipients: address,
-                    subject: 'SAF ' + newStatusText,
-                    body: 'Dear ' + recipient.name + ',<br><br>The status of SAF record - ' + recordRef +
-                        ' has changed from ' + (oldStatusText || 'Blank') +
-                        ' to ' + newStatusText + '.'
-                })
-
+                if (twcConfig.SB) {
+                    // @@GO-LIVE :: email disabled for the initial LIVE deployment (no emails to customers / contractors before go-live) - uncomment at go-live
+                    email.send({
+                        author: twcConfig.NO_REPLY,
+                        recipients: address,
+                        subject: 'SAF ' + newStatusText,
+                        body: 'Dear ' + recipient.name + ',<br><br>The status of SAF record - ' + recordRef +
+                            ' has changed from ' + (oldStatusText || 'Blank') +
+                            ' to ' + newStatusText + '.'
+                    })
+                }
+                
             } catch (error) {
                 core.logDebug('BEFORE-LOAD', error.message);
             }
