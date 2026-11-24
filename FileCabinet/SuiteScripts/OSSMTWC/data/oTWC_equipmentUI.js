@@ -128,6 +128,20 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return srfs;
         }
 
+        // @@NOTE: customers with equipment on the site (drop down data source { value, text }), Site Info page customer filter (data/oTWC_siteUI.js: getSiteInfoPanels)
+        //         cancelled equipment is left out as it is never shown on the site equipment list (see getSiteEquipment)
+        function getSiteEquipmentCustomers(siteId) {
+            return coreSQL.run(`
+                select  distinct eq.${twcInventory.Fields.CUSTOMER} as value, BUILTIN.DF(eq.${twcInventory.Fields.CUSTOMER}) as text
+                from    ${twcInventory.Type} eq
+                where   eq.${twcInventory.Fields.SITE} = ${parseInt(siteId)}
+                and     eq.${twcInventory.Fields.CUSTOMER} is not null
+                and     NVL(eq.${twcInventory.Fields.EQUIPMENT_INSTALL_STATUS}, 0) != ${twcUtils.EqInstallStatus.Cancelled}
+                and     NVL(eq.${twcInventory.Fields.EQUIPMENT_LICENCE_STATUS}, 0) != ${twcUtils.EqLicenseStatus.Cancelled}
+                order by 2
+            `);
+        }
+
         // @@NOTE: loads all the site equipment in one go and nests the related equipment (ATME / Feeders, linked via PARENT_TME_ID) under its parent (TME / GIE)
         //         same approach as the SRF (oTWC_srfUI.js: getSrfItems) and SAF (oTWC_utils.js: getSafActions) tables
         //         each list is flattened as parent followed by its children (flagged with .child = true)
@@ -172,6 +186,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     : (item[twcInventory.Fields.EQUIPMENT_TYPE + '_name'] || null);
                 var makeModel = [item[twcInventory.Fields.MAKE], item[twcInventory.Fields.MODEL]].filter(x => { return x; });
                 item[MAKE_MODEL_COLUMN] = (makeModel.length > 0) ? makeModel.join(' / ') : null;
+                // @@NOTE: row data only (not a column), used by the Site Info page client side filters (ui/js/oTWC_siteInfo.js: applyEquipmentFilters)
+                item.eq_inactive = twcUtils.isEquipmentInactive(item[twcInventory.Fields.EQUIPMENT_LICENCE_STATUS], item[twcInventory.Fields.EQUIPMENT_INSTALL_STATUS]) ? 'T' : 'F';
             });
 
             if (!grouped) {
@@ -405,6 +421,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         return {
             EqClass: EQ_CLASS_ENUM,
             getEquipmentInfo: getEquipmentInfo,
+            getSiteEquipmentCustomers: getSiteEquipmentCustomers,
 
             getInventoryTableFields: getInventoryTableFields,
             getInvInfoPanels: getInvInfoPanels

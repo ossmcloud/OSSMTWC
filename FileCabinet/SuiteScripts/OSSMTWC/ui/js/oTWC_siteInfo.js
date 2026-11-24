@@ -3,8 +3,11 @@
  * @NModuleScope public
  * @NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../data/oTWC_site.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js'],
-    (core, coreSql, b64, twcPageBase, twcConfig, twcIcons, twcSite, dialog, twcSiteInfoPanel) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../data/oTWC_site.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', '../../data/oTWC_equipment.js'],
+    (core, coreSql, b64, twcPageBase, twcConfig, twcIcons, twcSite, dialog, twcSiteInfoPanel, twcEquipment) => {
+
+        // @@NOTE: Equipment section filters (data/oTWC_siteUI.js: getSiteInfoPanels), rows filtered out get this class (style in ui/views/oTWC_siteInfo.html)
+        const EQ_FILTERED_CLASS = 'twc-eq-filtered';
 
 
 
@@ -23,7 +26,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 this.ui.on('change', e => {
                     if (e.id.startsWith('twc-navigation')) { return; }
-                    if (e.id == 'hide-inactive-equipment-toggle') { this.toggleInactiveEquipment(e.value); return; }
+                    if (e.id == 'hide-inactive-equipment-toggle' || e.id == 'site-equipment-customer') { this.applyEquipmentFilters(); return; }
                     this.#changes[e.id] = e.value;
                     console.log(this.#changes)
                     this.dirty = true
@@ -64,25 +67,66 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             }
 
-            // @@NOTE: Equipment section 'Hide Inactive' toggle (data/oTWC_siteUI.js: getSiteInfoPanels), the tables are rendered server side so we reload with hideInactive=T (off is the default)
-            //         unsaved changes would be lost, ask first (if the user does not confirm the toggle just stays as it is, the dialog has no cancel callback)
-            toggleInactiveEquipment(value) {
-                var url = new URL(location.href);
-                if (value && value != 'F') {
-                    url.searchParams.set('hideInactive', 'T');
-                } else {
-                    url.searchParams.delete('hideInactive');
-                }
-                var reload = () => {
-                    this.dirty = false;
-                    this.wait();
-                    location.href = url.toString();
+            // @@NOTE: Equipment section filters (data/oTWC_siteUI.js: getSiteInfoPanels), applied on screen (no reload):
+            //              'Hide Inactive' toggle => hides the rows flagged eq_inactive (data/oTWC_equipmentUI.js: getSiteEquipment)
+            //              'Customer' drop down   => hides the other customers' rows (TL users only)
+            //         equipment tables = the tables whose rows carry the eq_inactive flag
+            //         grouped view: a parent (TME) stays visible if any of its child rows (ATME / Feeders) is visible, so the child rows are not left without their parent
+            //         the class is set on the row options too (cssClass) so it survives the table being re-rendered (sort / column filter),
+            //         and by onRowInit for when the rows are re-created (back to the original sort order)
+            isEquipmentFiltered(data) {
+                var hideInactive = this.ui.getControl('hide-inactive-equipment-toggle')?.value;
+                hideInactive = (hideInactive === true || hideInactive == 'T');
+                var customer = this.ui.getControl('site-equipment-customer')?.value || '';
+                if (hideInactive && data.eq_inactive == 'T') { return true; }
+                if (customer && (data[twcEquipment.Fields.CUSTOMER] || '').toString() != customer.toString()) { return true; }
+                return false;
+            }
+
+            applyEquipmentFilters() {
+                const isFiltered = (data) => { return this.isEquipmentFiltered(data); };
+                const setFiltered = (row, filtered) => {
+                    var cssClass = (row.cssClass || '').replace(EQ_FILTERED_CLASS, '').trim();
+                    row.cssClass = filtered ? `${cssClass} ${EQ_FILTERED_CLASS}` : cssClass;
+                    if (filtered) {
+                        row.ui().addClass(EQ_FILTERED_CLASS);
+                    } else {
+                        row.ui().removeClass(EQ_FILTERED_CLASS);
+                    }
                 };
-                if (this.dirty) {
-                    dialog.confirm('The page will be reloaded and your unsaved changes will be lost. Do you wish to continue?', reload);
-                } else {
-                    reload();
-                }
+
+                core.array.each(this.ui.controls, c => {
+                    if (c.type != 'table') { return; }
+                    var rows = c.getDataRows();
+                    if (!rows.find(r => { return r.data?.eq_inactive !== undefined; })) { return; }
+
+                    var parent = null; var parentHasVisibleChild = false;
+                    const closeParent = () => {
+                        if (parent && parentHasVisibleChild) { setFiltered(parent, false); }
+                        parent = null; parentHasVisibleChild = false;
+                    };
+                    core.array.each(rows, row => {
+                        var filtered = isFiltered(row.data);
+                        if (row.data.child) {
+                            if (!filtered) { parentHasVisibleChild = true; }
+                        } else {
+                            closeParent();
+                            parent = row;
+                        }
+                        setFiltered(row, filtered);
+                    });
+                    closeParent();
+
+                    if (!c.twcEqFilterInit) {
+                        c.twcEqFilterInit = true;
+                        var rowInit = c.onRowInit;
+                        c.onRowInit = (table, row) => {
+                            var res = rowInit ? rowInit(table, row) : undefined;
+                            if (row.data && isFiltered(row.data)) { row.cssClass = `${row.cssClass || ''} ${EQ_FILTERED_CLASS}`; }
+                            return res;
+                        };
+                    }
+                });
             }
 
             async onSave() {

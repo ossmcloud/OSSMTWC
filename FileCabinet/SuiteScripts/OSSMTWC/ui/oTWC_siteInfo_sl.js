@@ -44,9 +44,7 @@ define(['N/redirect', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bund
             // @@NOTE: if permission lvl is 1 it means view only so even if parameter passed force to read only
             if (pageData.userInfo.permission.lvl == 1) { readOnly = true; }
 
-            // @@NOTE: Equipment section 'Hide Inactive' toggle (data/oTWC_siteUI.js: getSiteInfoPanels), off by default
-            var hideInactive = context.request.parameters.hideInactive == 'T';
-            var fieldGroups = twcSiteInfoUtils.getSiteInfoPanels(pageData.siteInfo.site, pageData.userInfo, hideInactive);
+            var fieldGroups = twcSiteInfoUtils.getSiteInfoPanels(pageData.siteInfo.site, pageData.userInfo);
             html = html.replaceAll('{SITE_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
 
 
