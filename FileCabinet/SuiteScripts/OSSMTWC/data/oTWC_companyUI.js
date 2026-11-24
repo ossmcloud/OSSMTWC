@@ -233,7 +233,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                         }
                     } else if (col.id == twcProfile.Fields.NAME) {
                         // @@NOTE: profiles can be linked to multiple companies (customrecord_twc_profilec), flag the ones where this is not their primary (home) company
-                        var infoIcon = twcIcons.info.replace('width="24px" height="24px"', 'width="14px" height="14px"');
+                        var infoIcon = twcIcons.get('info', 14);
                         col.formatValue = (v, fv, d) => {
                             if (d[twcProfile.Fields.COMPANY] == dataSource.id) { return v; }
                             return `${v} <span title="this is not the profile primary company" style="display: inline-block; vertical-align: middle; cursor: help;">${infoIcon}</span>`;
