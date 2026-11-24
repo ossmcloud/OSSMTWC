@@ -209,7 +209,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 submitInfo[twcTrblTkts.Type] = { id: tktInfo.tkt, fields: [], values: [] };
                 for (let k in tktInfo) {
                     if (k === 'tkt') continue;
-                    if (k == twcTrblTkts.Fields.SCHEDULED_COMPLETION_DATE || k == twcTrblTkts.Fields.CORRECTIVE_ACTION) {
+                    if (k == twcTrblTkts.Fields.PLANNED_RESOLUTION_DATE || k == twcTrblTkts.Fields.RESOLUTION_COMPLETION_DATE) {
                         submitInfo[twcTrblTkts.Type].fields.push(k);
                         submitInfo[twcTrblTkts.Type].values.push(fromJsToNs(tktInfo[k]));
                     } else {

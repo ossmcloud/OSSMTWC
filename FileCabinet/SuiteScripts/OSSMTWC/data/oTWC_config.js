@@ -5,6 +5,10 @@
 define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './oTWC_permissions.js', './oTWC_profileCompany.js'],
     (runtime, core, coreSQL, recu, permissions, twcProfileCompany) => {
 
+        // @@GO-LIVE: @@IMPORTANT: set to false when deploying live
+        const SB = true;
+
+
         const CUSTOM_FIELDS = {
             EMP: {
                 TWC_POWER_USER: 'custentity_twc_prj_power_user'
@@ -15,14 +19,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         // @@HARDCODED: @@GO-LIVE :: these map to internal ids
-        const TOWERCOM_ENTITY = 822;
+        const TOWERCOM_ENTITY = SB ? 822 : 249;
         const TKT_CASE_PROFILE = 1;
         const TKT_CASE_STATUS = 1;
-        const NO_REPLY = 827;
-        const SAF_AWAIT_PHOTOS_MAIL_TEMPLATE = 2;
+        const NO_REPLY = SB ? 827 : 709;
+        const SAF_AWAIT_PHOTOS_MAIL_TEMPLATE = SB ? 2 : 12;
         // @@GO-LIVE :: default 'Works Photos Req. Delay' (days after the last time block before a SAF goes to Awaiting Photos) when the SAF has none
         //              used by svc/oTWC_saf_sts_update_svc.js and ui/modules/oTWC_siteAccessUtils.js (approval: completion photos requested date)
-        const SAF_PHOTO_REQ_DELAY_DEFAULT = 1;
+        const SAF_PHOTO_REQ_DELAY_DEFAULT = SB ? 1 : 7;
 
         const FIELD_ENTITY_USER_PREF = 'custentity_twc_userpref';
 
@@ -48,7 +52,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             Pending: 4,
             // Approved: 5,
             ToBeRenewed: 6,
-            No: 7
+            No: SB ? 7 : 101
         }
 
         function isPowerUser(id) {
@@ -507,6 +511,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         return {
+            SB: SB, 
+
             Fields: CUSTOM_FIELDS,
 
             ROOT_FILE_FOLDER: 'TL Files', // @@NOTE: this is duplicated on twc_utils.js
@@ -521,7 +527,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             NO_REPLY: NO_REPLY,
             SAF_AWAIT_PHOTOS_MAIL_TEMPLATE: SAF_AWAIT_PHOTOS_MAIL_TEMPLATE,
             SAF_PHOTO_REQ_DELAY_DEFAULT: SAF_PHOTO_REQ_DELAY_DEFAULT,
-            
+
             userInfo: getUserInfo,
             getLoginProfile: getLoginProfile,
             getUserPref: getUserPref,

@@ -267,8 +267,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var formConfig = {
                     controls: [
                         { type: twcUI.CTRL_TYPE.TEXTAREA, id: twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE, label: 'Comment', value: '', width: '100%', rows: 7 },
-                        { type: twcUI.CTRL_TYPE.DATE, id: twcTkt.Fields.SCHEDULED_COMPLETION_DATE, label: 'Scheduled Date', value: '', lineBreak: true },
-                        { type: twcUI.CTRL_TYPE.DATE, label: 'Corrective Action Date', id: twcTkt.Fields.CORRECTIVE_ACTION, value: '', lineBreak: true }
+                        { type: twcUI.CTRL_TYPE.DATE, id: twcTkt.Fields.PLANNED_RESOLUTION_DATE, label: 'Scheduled Date', value: '', lineBreak: true },
+                        { type: twcUI.CTRL_TYPE.DATE, label: 'Resolution Completion Date', id: twcTkt.Fields.RESOLUTION_COMPLETION_DATE, value: '', lineBreak: true }
                     ]
                 };
 
@@ -286,8 +286,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             payload.tkt = this.data.trblTktInfo.id;
 
                             if (!payload[twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE] || !payload[twcTkt.Fields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE].trim()) { throw new Error('Please specify a comment'); }
-                            if (!payload[twcTkt.Fields.SCHEDULED_COMPLETION_DATE]) { throw new Error('Please select scheduled Date'); }
-                            if (!payload[twcTkt.Fields.CORRECTIVE_ACTION]) { throw new Error('Please select Corrective Action Date'); }
+                            if (!payload[twcTkt.Fields.PLANNED_RESOLUTION_DATE]) { throw new Error('Please select scheduled Date'); }
+                            if (!payload[twcTkt.Fields.RESOLUTION_COMPLETION_DATE]) { throw new Error('Please select Resolution Completion Date'); }
 
                             this.post({ action: 'resolve-tkt-status' }, payload).then(resp => {
                                 if (resp.error) {

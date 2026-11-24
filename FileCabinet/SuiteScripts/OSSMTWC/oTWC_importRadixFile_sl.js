@@ -113,13 +113,13 @@ define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
 
         // @@HARDCODED: @@GO-LIVE:
         const TWC_SITE_FILE_TYPES = [
-            { name: 'Access Drawings', twcType: 15, radixFolder: 'Access' },
-            { name: 'Agreements', twcType: 20, radixFolder: 'Agreements' },
-            { name: 'CAD Drawings', twcType: 21, radixFolder: 'CAD Drawings' },
-            { name: 'Elevations', twcType: 22, radixFolder: 'Elevations' },
-            { name: 'License Map', twcType: 14, radixFolder: 'Licence Maps' },
-            { name: 'Panoramics', twcType: 23, radixFolder: 'Panoramics' },
-            { name: 'Site Safety', twcType: 24, radixFolder: 'Site Safety' },
+            { name: 'Access Drawings', twcType: twcUtils.SB ? 15 : 103, radixFolder: 'Access' },
+            { name: 'Agreements', twcType: twcUtils.SB ? 20 : 104, radixFolder: 'Agreements' },
+            { name: 'CAD Drawings', twcType: twcUtils.SB ? 21 : 105, radixFolder: 'CAD Drawings' },
+            { name: 'Elevations', twcType: twcUtils.SB ? 22 : 106, radixFolder: 'Elevations' },
+            { name: 'License Map', twcType: twcUtils.SB ? 14 : 102, radixFolder: 'Licence Maps' },
+            { name: 'Panoramics', twcType: twcUtils.SB ? 23 : 107, radixFolder: 'Panoramics' },
+            { name: 'Site Safety', twcType: twcUtils.SB ? 24 : 108, radixFolder: 'Site Safety' },
 
         ]
 

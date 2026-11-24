@@ -4,6 +4,9 @@
  */
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_config.js', './oTWC_file.js', './oTWC_fileType.js', './oTWC_site.js', './oTWC_icons.js', './oTWC_profileCompany.js'],
     (core, cored, coreSQL, twcConfig, twcFile, twcFileType, twcSite, twcIcons, twcProfileCompany) => {
+
+
+
         const HEIGH_LIMIT_FOR_1_CLIMBER = 60;
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
@@ -59,7 +62,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var res = [];
                 for (var k in EQ_INSTALL_STATUS) {
                     if (k == 'lookUp') { continue; }
-                    res.push({value: EQ_INSTALL_STATUS[k], text: k})
+                    res.push({ value: EQ_INSTALL_STATUS[k], text: k })
                 }
                 return res;
             }
@@ -80,8 +83,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             // ProptoUnlicence_LicenceIssued: 10,          // RETIRED (Issue 299)
             Unlicenced: 11,
             Cancelled: 12,
-            LicenceRetained: 13,
-            LicenceSwapped: 14,
+            LicenceRetained: twcConfig.SB ? 13 : 101,
+            LicenceSwapped: twcConfig.SB ? 14 : 102,
 
             lookUp: () => {
                 var res = [];
@@ -92,6 +95,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return res;
             }
         }
+
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const CUSTOMER_FLAG = {
@@ -114,7 +118,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Pending: 4,
             // Approved: 5,
             ToBeRenewed: 6,
-            No: 7
+            No: twcConfig.SB ? 7 : 101
         }
         const COMPANY_ACCREDITATION_STATUS_STYLE = {
             Inactive: { color: 'white', backgroundColor: 'silver' },
@@ -151,10 +155,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `
         }
 
-          const COMPANY_INSURANCE_FIELDS = {
-            EL: { field: 'custrecord_twc_co_el_status', fieldEx: 'custrecord_twc_co_el_expiry', fieldLimit: 'custrecord_twc_co_el_limit', fieldAvailable: 'custrecord_twc_co_el_available_typ', fieldCurrency: 'custrecord_twc_co_el_limit_cur', code: 'el', fieldFile : 'custrecord_twc_co_el_inc_file' },
-            PL: { field: 'custrecord_twc_co_pl_status', fieldEx: 'custrecord_twc_co_pl_expiry', fieldLimit: 'custrecord_twc_co_pl_limit', fieldAvailable: 'custrecord_twc_co_pl_available_typ', fieldCurrency: 'custrecord_twc_co_pl_limit_cur', code: 'pl', fieldFile : 'custrecord_twc_co_pl_inc_file' },
-            PI: { field: 'custrecord_twc_co_pi_status', fieldEx: 'custrecord_twc_co_pi_expiry', fieldLimit: 'custrecord_twc_co_pi_limit', fieldAvailable: 'custrecord_twc_co_pi_available_typ', fieldCurrency: 'custrecord_twc_co_pi_limit_cur', code: 'pi', fieldFile : 'custrecord_twc_co_pi_inc_file' },
+        const COMPANY_INSURANCE_FIELDS = {
+            EL: { field: 'custrecord_twc_co_el_status', fieldEx: 'custrecord_twc_co_el_expiry', fieldLimit: 'custrecord_twc_co_el_limit', fieldAvailable: 'custrecord_twc_co_el_available_typ', fieldCurrency: 'custrecord_twc_co_el_limit_cur', code: 'el', fieldFile: 'custrecord_twc_co_el_inc_file' },
+            PL: { field: 'custrecord_twc_co_pl_status', fieldEx: 'custrecord_twc_co_pl_expiry', fieldLimit: 'custrecord_twc_co_pl_limit', fieldAvailable: 'custrecord_twc_co_pl_available_typ', fieldCurrency: 'custrecord_twc_co_pl_limit_cur', code: 'pl', fieldFile: 'custrecord_twc_co_pl_inc_file' },
+            PI: { field: 'custrecord_twc_co_pi_status', fieldEx: 'custrecord_twc_co_pi_expiry', fieldLimit: 'custrecord_twc_co_pi_limit', fieldAvailable: 'custrecord_twc_co_pi_available_typ', fieldCurrency: 'custrecord_twc_co_pi_limit_cur', code: 'pi', fieldFile: 'custrecord_twc_co_pi_inc_file' },
         }
         const COMPANY_INSURANCE_AVAILABLE_TYPE = {
             NA: 1,
@@ -384,10 +388,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SRFApproved: 5,
             LicenceRequested: 6,
             LicenceIssued: 8,
-            LicenceSigned: 12,
+            LicenceSigned: twcConfig.SB ? 12 : 101,
             LicenceExecuted: 9,
             SRFCancelled: 10,
-            Completed: 13
+            Completed: twcConfig.SB ? 13 : 201
         }
         // @@REVIEW: these could be on the status table since we have one
         const SRF_STATUS_STYLE = {
@@ -471,7 +475,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SRF_DEFAULT_FILE_TYPE = {
-            id: 12,     // SRF Attachment
+            id: twcConfig.SB ? 12 : 109,     // SRF Attachment
             status: 5   // N/A
         }
 
@@ -487,7 +491,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             AwaitingPhotos: 7,
             PhotosReceived: 8,
             // @@HARDCODED @@GO-LIVE :: 'Feedback Issued' (replaces 'Rejected', which is kept only for old SAFs): TL sends the SAF back to the submitter with a comment, the submitter can edit and re-submit
-            FeedbackIssued: 9
+            FeedbackIssued: twcConfig.SB ? 9 : 101
         }
         // @@TOD: these could be on the status table since we have one
         const SAF_STATUS_STYLE = {
@@ -568,7 +572,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Assessed: 2,
             Resolved: 3,
             Cancelled: 4,
-            InProgress : 5
+            InProgress: twcConfig.SB ? 5 : 101
         }
 
         const TKT_STATUS_STYLE = {
@@ -1610,13 +1614,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getTicketPriority() {
             return getLookUpTableValues('customrecord_twc_trbl_tkt_priority');
         }
-        function getTktProfiles(){
-                return coreSQL.run(`select id as value, name as text from customrecord_twc_prof where isinactive = 'F'`)
+        function getTktProfiles() {
+            return coreSQL.run(`select id as value, name as text from customrecord_twc_prof where isinactive = 'F'`)
         }
-        function getTktCompanyProfiles(author){
-                var compProfile = author? coreSQL.run(`SELECT custrecord_twc_prof_company
-                              FROM customrecord_twc_prof WHERE id = ${author} AND isinactive = 'F'`): []
-                return compProfile.length ? compProfile[0].custrecord_twc_prof_company : null
+        function getTktCompanyProfiles(author) {
+            var compProfile = author ? coreSQL.run(`SELECT custrecord_twc_prof_company
+                              FROM customrecord_twc_prof WHERE id = ${author} AND isinactive = 'F'`) : []
+            return compProfile.length ? compProfile[0].custrecord_twc_prof_company : null
         }
 
         function getInventoryStatus() {
@@ -1639,7 +1643,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getRaisedOnBehalf() {
-            return getLookUpTableValues('customrecord_twc_company',"and custrecord_twc_cus_flag = 1");
+            return getLookUpTableValues('customrecord_twc_company', "and custrecord_twc_cus_flag = 1");
         }
 
         // @@NOTE: Length / Width / Depth (mm) shown as a single 'L/W/D' column, e.g.: '600 / 300 / 150' (missing values as '-', all missing => '')
@@ -1652,8 +1656,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         return {
+            SB: twcConfig.SB,
             // @@HARDCODED:
-            TWC_COMPANY: 57,
+            TWC_COMPANY: twcConfig.SB ? 57 : 65,
 
             ROOT_FILE_FOLDER: 'TL Files', // @@NOTE: this is duplicated on twc_confog.js
             HEIGH_LIMIT_FOR_1_CLIMBER: HEIGH_LIMIT_FOR_1_CLIMBER,
@@ -1731,13 +1736,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSafStatusStyle: getSafStatusStyle,
             getSafStatusHtml: getSafStatusHtml,
 
-            getNSCustomers :getNSCustomers,
+            getNSCustomers: getNSCustomers,
             tktStatus: TKT_STATUS,
             getTktStatusName: getTktStatusName,
             getTktStatusStyle: getTktStatusStyle,
             getTktStatusHtml: getTktStatusHtml,
             getTktProfiles: getTktProfiles,
-            getTktCompanyProfiles:getTktCompanyProfiles,
+            getTktCompanyProfiles: getTktCompanyProfiles,
             getRaisedOnBehalf: getRaisedOnBehalf,
 
             tktPriority: TKT_PRIORITY,
@@ -1779,7 +1784,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getVendors: getVendors,
             getEquipmentIds: getEquipmentIds,
             getEquipmentStatus: getEquipmentStatus,
-            getEquipmentClass:getEquipmentClass,
+            getEquipmentClass: getEquipmentClass,
             getSafIds: getSafIds,
             getSrfIds: getSrfIds,
             getSrfStatus: getSrfStatus,
