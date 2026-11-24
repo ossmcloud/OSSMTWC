@@ -1017,7 +1017,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         //                     (a swap is 2 EAs, so both sides are handled)
         //                     SRF Approval Date is kept (not cleared, see below)
         //                     Licence Requested / Issued / Signed: Works Permitted date cleared, SDS status Cancelled,
-        //                          EAs with a SAF action are left alone (EA and equipment): the SAF will complete them
+        //                          EAs with a SAF action: the EA (and the SAF) are left alone, but the equipment licence status IS reset by EA type as above
+        //                          (Issue 306 follow up, client request: the equipment must not stay 'Prop to Licence', the EA / SAF are tidied up manually)
         //          the SRF status is set to Cancelled LAST: if units run low we return { keepGoing: true } and the client calls again (all steps are re-runnable)
         const CANCEL_MIN_UNITS = 100;
 
@@ -1050,23 +1051,34 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 //         already cancelled / completed ones are not touched (this makes the function re-runnable)
                 var eqActions = coreSql.run(`
                     select  ea.id, ea.${twcEqAct.Fields.EA_EQUIPMENT} as eq_id, ea.${twcEqAct.Fields.EA_TYPE} as ea_type, ea.${twcEqAct.Fields.EA_STATUS} as ea_status,
+                            eq.${twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS} as eq_licence_status,
                             (select count(*) from customrecord_twc_saf_action sa where sa.custrecord_twc_saf_a_ea = ea.id and sa.custrecord_twc_saf_a_status != ${twcUtils.SafActionStatus.Detached}) as saf_actions
                     from    ${twcEqAct.Type} ea
+                    left join ${twcEquipment.Type} eq on eq.id = ea.${twcEqAct.Fields.EA_EQUIPMENT}
                     where   ea.${twcEqAct.Fields.EA_SRF} = ${srfId}
                     and     ea.${twcEqAct.Fields.EA_STATUS} in (${twcUtils.EqActionStatus.Pending}, ${twcUtils.EqActionStatus.NeverInstalled}, ${twcUtils.EqActionStatus.AlreadyRemoved})
                 `);
                 for (var x = 0; x < eqActions.length; x++) {
                     if (unitsLow()) { return { keepGoing: true }; }
                     var ea = eqActions[x];
-                    // @@NOTE: works permitted and a SAF raised: let the SAF / SAF action go through, it will tidy up the EA
-                    if (stage == SRF_CANCEL_STAGE.LICENCE && parseInt(ea.saf_actions) > 0) { continue; }
+                    var eqStatus = null;
+                    if (ea.ea_type == twcUtils.EqActionType.Licence || ea.ea_type == twcUtils.EqActionType.SwapLicence) {
+                        eqStatus = twcUtils.EqLicenseStatus.Cancelled;
+                    } else if (ea.ea_type == twcUtils.EqActionType.Unlicence || ea.ea_type == twcUtils.EqActionType.SwapUnlicence) {
+                        eqStatus = twcUtils.EqLicenseStatus.Licenced;
+                    }
+
+                    // @@NOTE: works permitted and a SAF raised: the EA (and the SAF / SAF action) are left as they are (tidied up manually),
+                    //         only the equipment licence status is reset (Issue 306 follow up). The EA stays open so this runs again on a re-run (keepGoing): only submit if it changes
+                    if (stage == SRF_CANCEL_STAGE.LICENCE && parseInt(ea.saf_actions) > 0) {
+                        if (ea.eq_id && eqStatus && parseInt(ea.eq_licence_status) != eqStatus) {
+                            recu.submit(twcEquipment.Type, ea.eq_id, twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, eqStatus);
+                        }
+                        continue;
+                    }
 
                     if (ea.eq_id) {
-                        var eqStatus = null;
-                        if (ea.ea_type == twcUtils.EqActionType.Licence || ea.ea_type == twcUtils.EqActionType.SwapLicence) {
-                            eqStatus = twcUtils.EqLicenseStatus.Cancelled;
-                        } else if (ea.ea_type == twcUtils.EqActionType.Unlicence || ea.ea_type == twcUtils.EqActionType.SwapUnlicence) {
-                            eqStatus = twcUtils.EqLicenseStatus.Licenced;
+                        if (ea.ea_type == twcUtils.EqActionType.Unlicence || ea.ea_type == twcUtils.EqActionType.SwapUnlicence) {
                             // @@NOTE: Issue 307 - removal of never installed equipment cancelled: its released install EA is pending again (see releasePendingInstallEa)
                             if (ea.ea_status == twcUtils.EqActionStatus.NeverInstalled) { restoreReleasedInstallEa(ea.eq_id); }
                         }
