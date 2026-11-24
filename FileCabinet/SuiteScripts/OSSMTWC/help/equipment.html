@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Site Equipment - Nexus Help</title>
+<link rel="stylesheet" href="help.css">
+</head>
+<body>
+<div class="layout">
+<nav class="side"></nav>
+<main>
+<h1>Site Equipment</h1>
+<p class="lead">See the equipment installed on Towercom sites, and its install and licence status.</p>
+
+<div class="warn">Site Equipment is <b>view only</b>. Equipment is added, removed or swapped through a <a href="space-request.html">Space Request (SRF)</a> and the works carried out under a <a href="site-access.html">Site Access request (SAF)</a>. It is never edited on this page.</div>
+
+<div class="toc"><b>On this page</b>
+<ul>
+    <li><a href="#classes">Equipment classes</a></li>
+    <li><a href="#locator">Searching all equipment</a></li>
+    <li><a href="#site">Equipment on one site</a></li>
+    <li><a href="#status">Install and licence status</a></li>
+</ul></div>
+
+<h2 id="classes">Equipment classes</h2>
+<table>
+    <tr><th>Class</th><th>Meaning</th></tr>
+    <tr><td><b>TME</b></td><td>Tower Mounted Equipment: antennas, dishes and other equipment mounted on the structure.</td></tr>
+    <tr><td><b>ATME</b></td><td>Additional Tower Mounted Equipment: equipment attached to an existing TME (for example a radio unit behind an antenna).</td></tr>
+    <tr><td><b>GIE</b></td><td>Ground &amp; Indoor Equipment: cabinets and other equipment on the ground or inside the accommodation.</td></tr>
+    <tr><td><b>Feeders</b></td><td>The cables connecting TME / ATME to the GIE.</td></tr>
+</table>
+
+<h2 id="locator">Searching all equipment</h2>
+<p>Open <b>Site Equipment</b> from the menu (available to customers and Towercom staff). The page is a <a href="getting-started.html#locators">locator</a>.</p>
+<h3>Filters</h3>
+<ul>
+    <li><b>Site</b>, <b>Equipment ID</b>, <b>Status</b> (install status), <b>Class</b>, <b>Customer</b>, <b>Counties</b></li>
+    <li><b>Hide Inactive (not licenced and not installed)</b></li>
+    <li><b>Filter by Location</b>: Latitude, Longitude, Radius (Km)</li>
+</ul>
+<p>When filters are set, the map only shows the sites that have matching equipment.</p>
+<h3>The list</h3>
+<p>Each row shows the equipment ID (with the <b>(i)</b> details icon), structure, customer, install status, licence status, class, type, description, make / model, dimensions (L/W/D), height on tower, the SRF it came from, the site and the infrastructure.</p>
+<ul>
+    <li>Click the <b>SRF</b> to open the Space Request.</li>
+    <li>Click the <b>Site</b> to open the Site page.</li>
+    <li>Click <span class="ui">view</span> to open the site's equipment page with that item highlighted.</li>
+</ul>
+
+<h2 id="site">Equipment on one site</h2>
+<p>Open it from <span class="ui">[Eq.]</span> on the map, from <span class="ui">view</span> in the equipment list, or from the Equipment section of the Site page. The site panel is on the left and the equipment tables on the right.</p>
+<h3>Options in the top bar</h3>
+<ul>
+    <li><b>Hide Inactive</b>: hide equipment that is neither licenced nor installed.</li>
+    <li><b>Group</b> (on by default): group the tables by TME.</li>
+</ul>
+<h3>Grouped view</h3>
+<ul>
+    <li><b>TME / Tower Mounted Equipment</b>: click <b>+</b> next to a TME to see its ATME and feeders, or the <b>+</b> in the header to expand all.</li>
+    <li><b>GIE / Ground &amp; Indoor Equipment</b>.</li>
+    <li><b>Unlinked ATME / Feeders</b>: only shown when some ATME or feeders aren't linked to a TME.</li>
+</ul>
+<h3>Ungrouped view</h3>
+<p>One table per class. In the ATME and Feeders tables, click the <b>TME</b> value to jump to the parent TME row, which flashes briefly.</p>
+<h3>Columns</h3>
+<p>Eq. ID, Class, Install Status, License Status, Customer, Infrastructure, Equipment Type / Feeder Type, Make / Model, Desc, Modified Antenna Location, GIE Location, L/W/D, Height on Tower (m), Az (azimuth), B-End, Cust. Ref, Equipment Flag, SRF.</p>
+<p>When you arrive from a <span class="ui">view</span> link, the selected item scrolls into view and pulses red for a few seconds.</p>
+
+<div class="staff">When the page is opened for a site, staff get an <span class="ui">Add Equipment</span> button. It opens a new equipment record in NetSuite in a new tab. Staff also get a link from each Eq. ID to the NetSuite record.</div>
+
+<h2 id="status">Install and licence status</h2>
+<p>Each piece of equipment has two statuses: whether it is physically on the site (<b>install status</b>) and whether it is covered by a licence (<b>licence status</b>).</p>
+<h3>Install status</h3>
+<table>
+    <tr><th>Status</th><th>Meaning</th></tr>
+    <tr><td>Draft</td><td>Requested on an SRF that hasn't been submitted.</td></tr>
+    <tr><td>Not Installed</td><td>Planned but not yet installed.</td></tr>
+    <tr><td>Installed</td><td>On the site.</td></tr>
+    <tr><td>Removed</td><td>Taken off the site.</td></tr>
+    <tr><td>Cancelled</td><td>The request was cancelled. Cancelled equipment is never shown.</td></tr>
+</table>
+<h3>Licence status</h3>
+<table>
+    <tr><th>Status</th><th>Meaning</th></tr>
+    <tr><td>Draft</td><td>On an SRF that hasn't been submitted.</td></tr>
+    <tr><td>Req to Licence</td><td>Requested on a submitted SRF.</td></tr>
+    <tr><td>Prop to Licence</td><td>The SRF was approved; the licence is being prepared.</td></tr>
+    <tr><td>Licenced</td><td>Covered by an executed licence (SDS).</td></tr>
+    <tr><td>Req to Unlicence / Prop to Unlicence</td><td>Removal requested / approved.</td></tr>
+    <tr><td>Unlicenced</td><td>No longer licenced.</td></tr>
+    <tr><td>Licence Retained</td><td>Equipment removed but the licence is kept (package licences).</td></tr>
+    <tr><td>Licence Swapped</td><td>Replaced by new equipment through a swap.</td></tr>
+    <tr><td>Cancelled</td><td>The request was cancelled.</td></tr>
+</table>
+<p>"Inactive" equipment is equipment that is both unlicenced (Unlicenced, Licence Swapped or Cancelled) and not on site (Not Installed, Removed or Cancelled).</p>
+
+<footer>Nexus User Help &middot; Towercom portal &middot; November 2026</footer>
+</main>
+</div>
+<script src="nav.js"></script>
+</body>
+</html>

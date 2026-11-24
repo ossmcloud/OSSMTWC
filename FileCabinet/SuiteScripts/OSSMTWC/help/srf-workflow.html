@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SRF Workflow - Nexus Help</title>
+<link rel="stylesheet" href="help.css">
+</head>
+<body>
+<div class="layout">
+<nav class="side"></nav>
+<main>
+<h1>SRF Workflow</h1>
+<p class="lead">For Towercom staff: how to review, approve and license a Space Request.</p>
+
+<div class="staff">This page is for Towercom employees only. Customers and contractors never see the workflow.</div>
+
+<div class="toc"><b>On this page</b>
+<ul>
+    <li><a href="#overview">How the workflow works</a></li>
+    <li><a href="#open">Opening the workflow</a></li>
+    <li><a href="#table">The workflow table</a></li>
+    <li><a href="#step">Working on a step</a></li>
+    <li><a href="#response">TL Response: approve or give feedback</a></li>
+    <li><a href="#sds">Producing the SDS</a></li>
+    <li><a href="#execute">Issuing, signing and executing</a></li>
+    <li><a href="#works">Works Permitted</a></li>
+    <li><a href="#other">Reviews, equipment actions and other tools</a></li>
+</ul></div>
+
+<h2 id="overview">How the workflow works</h2>
+<p>When a customer submits an SRF, Nexus creates its workflow: a list of steps (stages), each with a planned date. Steps are set up by Towercom administrators, so the exact steps you see depend on that set-up. Broadly:</p>
+<div class="flow">
+    <span class="step">Initial Review</span><span class="arrow">&rarr;</span>
+    <span class="step">Checks (Space, Facilities, Estates, Accounts)</span><span class="arrow">&rarr;</span>
+    <span class="step">TL Response</span><span class="arrow">&rarr;</span>
+    <span class="step">SRF Approved (customer accepts)</span><span class="arrow">&rarr;</span>
+    <span class="step">SDS / pack produced</span><span class="arrow">&rarr;</span>
+    <span class="step">Reviewed &amp; issued</span><span class="arrow">&rarr;</span>
+    <span class="step">Customer signs</span><span class="arrow">&rarr;</span>
+    <span class="step">TL executes</span>
+</div>
+<p>Completing a step can move the SRF to a new status (shown as the <b>SRF Status Transition</b> on the step). When the customer re-submits after feedback, a new <b>Feedback Loop</b> of steps is added.</p>
+
+<h2 id="open">Opening the workflow</h2>
+<p>On the SRF page (any status except Draft):</p>
+<ul>
+    <li><span class="ui">Open Workflow</span>: opens the workflow in a pop-up.</li>
+    <li><span class="ui">View Workflow</span>: opens it in a new tab, with an <span class="ui">Open SRF</span> button to go back.</li>
+</ul>
+<p>The header shows Site Name, Customer, SRF #, the workflow status and the <b>Works Permitted Date</b>.</p>
+
+<h2 id="table">The workflow table</h2>
+<p>Columns: Step, Description, Assigned To, Planned, Actual, Profile, and a pencil (editable) or lock icon.</p>
+<table>
+    <tr><th>Row colour</th><th>Step status</th></tr>
+    <tr><td><span class="badge b-grey">grey</span></td><td>New</td></tr>
+    <tr><td><span class="badge b-steel">steel blue</span></td><td>In Progress</td></tr>
+    <tr><td><span class="badge b-green">green</span></td><td>Completed</td></tr>
+    <tr><td><span class="badge b-red">red</span></td><td>Failed check</td></tr>
+    <tr><td><span class="badge b-magenta">magenta</span></td><td>Feedback issued</td></tr>
+    <tr><td><span class="badge b-silver">silver</span></td><td>Not Required</td></tr>
+    <tr><td><span class="badge b-crimson">indian red</span></td><td>Cancelled</td></tr>
+</table>
+<ul>
+    <li>Planned dates turn <b>amber</b> within 2 days of the due date and <b>red</b> when due or overdue.</li>
+    <li>Changing a planned date moves all later steps by the same number of working days.</li>
+    <li>Steps added after a re-submission are grouped under <b>Feedback Loop (n)</b>.</li>
+</ul>
+<div class="note">Planned dates count working days but don't skip bank holidays. Adjust them by hand if needed.</div>
+
+<h2 id="step">Working on a step</h2>
+<p>Click the pencil on a step to open it. The dialog shows:</p>
+<ul>
+    <li><b>Actual</b> and <b>Planned</b> dates.</li>
+    <li><b>SRF Status Transition</b>: the SRF status set when you complete this step.</li>
+    <li><b>Next Steps</b>: for each following step, an <b>Assign to</b> employee and, if the step is optional, a <b>Required</b> toggle.</li>
+    <li>The step's own form: checks, comments, drawings, buttons such as Generate SDS.</li>
+</ul>
+<p>Click <span class="ui">Confirm</span> to complete the step. A completed step can only be changed again by the person who completed it, if the step allows it and the next TL Response hasn't been completed.</p>
+
+<h2 id="response">TL Response: approve or give feedback</h2>
+<p>TL Response is the decision step. It becomes available when all the assigned checks are complete. It shows:</p>
+<ul>
+    <li>a <b>Checks Summary</b>: each check as <b>Passed</b>, <b>Failed</b> or <b>Pending</b>, with who and when;</li>
+    <li><b>Comments (visible to the customer on the SRF)</b>: these become the review comments on the SRF and the default additional conditions on the SDS;</li>
+    <li>a choice to <b>approve</b> or <b>issue feedback</b>.</li>
+</ul>
+<p>Approve is only offered when every completed check passed. Issuing feedback sets the SRF to <b>Feedback Issued</b>; the customer edits and re-submits, and a new feedback loop begins.</p>
+<p>When approved, the SRF becomes <b>SRF Approved</b>. The customer then accepts it with <span class="ui">Accept and Request License</span>, which moves it to <b>License Requested</b>.</p>
+
+<h2 id="sds">Producing the SDS</h2>
+<p>On the SDS production step, click <span class="ui">Generate SDS</span>. Three dialogs follow.</p>
+<h3>1. SDS Pack Produce Info</h3>
+<ul>
+    <li><b>Commencement Date</b>*</li>
+    <li><b>Drawing</b> (from the SRF's drawings) and <b>Drawing Reference</b>*</li>
+    <li><b>Include Licence Map</b> (where the customer uses licence maps)</li>
+    <li><b>Additional SRF Conditions</b>, <b>Power Supply Comments</b>*</li>
+    <li><b>Fibre Rights</b>: when on, Fibre Provider, Fibre Duct Route and Notes / Conditions are required</li>
+    <li><b>Previous Fee</b>, <b>Fee Reduction</b>, <b>Fee Uplift</b>, <b>New Fee</b>, <b>Fee Change Breakdown</b>*</li>
+    <li><b>Agreement Template</b>* (the customer's active agreements) and <b>Agreement Condition</b>*</li>
+</ul>
+<h3>2. SDS Agreement Conditions</h3>
+<p>Fill in the values for each chosen condition.</p>
+<h3>3. SDS Equipments</h3>
+<p>Lists <b>all</b> the customer's equipment on the site, not only this SRF's. Tick <b>Include</b> for the equipment the licence covers; ticking a parent ticks its children. You can correct <b>Install Status</b> and <b>Licence Status</b> here. Setting the licence status to Draft or Unlicenced unticks Include.</p>
+<p>Click OK to generate the PDF. It opens in a pop-up. If nothing appears, allow pop-ups for the site.</p>
+<p>While the SDS is a Draft it is regenerated each time, so you can correct and generate again.</p>
+
+<h2 id="execute">Issuing, signing and executing</h2>
+<ol>
+    <li><b>Issue</b>: on the review / issue step, click <span class="ui">Issue SDS</span>. The SRF becomes <b>License Issued</b> and the customer's signatories can sign.</li>
+    <li><b>Reject</b>: <span class="ui">Reject SDS</span> with a rejection comment sends the SDS production step back to In Progress.</li>
+    <li><b>Sign</b>: the customer signs on the SRF (<b>License Signed</b>). See <a href="sds.html#sign">Signing the SDS</a>.</li>
+    <li><b>Execute</b>: employees allowed to execute packs see <span class="ui">Execute SDS</span> on the SRF. The dialog shows who signed and when. Clicking OK <i>enters into a legally binding agreement</i>.</li>
+</ol>
+<p>On execution: the SRF becomes <b>License Executed</b>, the SDS becomes <b>Current</b> (the previous one Superseded), and the equipment becomes <b>Licenced</b> from the commencement date.</p>
+
+<h2 id="works">Works Permitted</h2>
+<p>From License Requested onwards, set the <b>Works Permitted Date</b> in the workflow header (it can't be in the future). The SRF then shows the <b>Works Permitted</b> badge, and its equipment actions can be added to a <a href="site-access.html">SAF</a>.</p>
+<p>When every equipment action of an executed SRF is done, a nightly job sets the SRF to <b>Completed</b>.</p>
+
+<h2 id="other">Reviews, equipment actions and other tools</h2>
+<ul>
+    <li><span class="ui">Reviews</span> (SRF page): every submission and its result: customer comments, TL result, review date, TL comments, checks, new licence fee and fee breakdown.</li>
+    <li><span class="ui">Equipment Actions</span> (SRF page): every action created by the SRF (Licence, Unlicence, Swap) with its status and the SAF it is on.</li>
+    <li><b>Lib</b> link on an SRF line: create an Equipment Library entry from the item.</li>
+    <li>Staff with Full permission can <span class="ui">Save</span> changes to a submitted SRF.</li>
+    <li>On the NetSuite SRF record: <span class="ui">Open SRF</span> opens the portal page.</li>
+</ul>
+
+<footer>Nexus User Help &middot; Towercom portal &middot; November 2026</footer>
+</main>
+</div>
+<script src="nav.js"></script>
+</body>
+</html>

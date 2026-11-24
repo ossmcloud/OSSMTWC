@@ -246,6 +246,18 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
                         var action = jQuery(e.currentTarget).data('action');
                         if (action == 'user-pref') {
                             window.twc.userPref.open();
+                        } else if (action == 'help') {
+                            // @@NOTE: Nexus user help in a pop-up window (same window name: re-used and brought to front if already open)
+                            var helpWidth = Math.min(1150, screen.availWidth - 40);
+                            var helpHeight = Math.min(850, screen.availHeight - 80);
+                            var helpLeft = Math.max(0, Math.round((screen.availWidth - helpWidth) / 2));
+                            var helpTop = Math.max(0, Math.round((screen.availHeight - helpHeight) / 2));
+                            var helpWindow = window.open(jQuery(e.currentTarget).data('url'), 'nexus_help', `popup=yes,width=${helpWidth},height=${helpHeight},left=${helpLeft},top=${helpTop},resizable=yes,scrollbars=yes`);
+                            if (helpWindow) {
+                                helpWindow.focus();
+                            } else {
+                                dialog.message('The help window was blocked, please allow pop-ups for this site.');
+                            }
                         } else if (action == 'show-unhandled-errors') {
                             var html = '';
                             html = uiTable.render({}, this.#unHandledErrors);

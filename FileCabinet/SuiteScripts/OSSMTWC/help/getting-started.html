@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting Started - Nexus Help</title>
+<link rel="stylesheet" href="help.css">
+</head>
+<body>
+<div class="layout">
+<nav class="side"></nav>
+<main>
+<h1>Getting started</h1>
+<p class="lead">How to log in, find your way around, and work with the pages and tables that all of Nexus shares.</p>
+
+<div class="toc"><b>On this page</b>
+<ul>
+    <li><a href="#login">Logging in</a></li>
+    <li><a href="#layout">Page layout</a></li>
+    <li><a href="#menu">The menu</a></li>
+    <li><a href="#locators">Locator pages and record pages</a></li>
+    <li><a href="#modes">View mode and edit mode</a></li>
+    <li><a href="#tables">Working with tables</a></li>
+    <li><a href="#prefs">Your preferences</a></li>
+    <li><a href="#permissions">Permissions</a></li>
+</ul></div>
+
+<h2 id="login">Logging in</h2>
+<p>Customers and contractors log in to the Towercom customer centre with the credentials Towercom gave them. Towercom staff use their normal NetSuite login.</p>
+<p>Your login must be linked to a <b>profile</b> (your personal record) and your profile to a <b>company</b>. If either link is missing you will see a message such as <i>"Your user is not associated to any profile, please contact TL administrator to set you up."</i> Contact Towercom to get set up.</p>
+<div class="note">If you work for more than one company, pick the company you want to act for when you log in. Nexus shows the data of that company only.</div>
+
+<h2 id="layout">Page layout</h2>
+<p>Every Nexus page has the same bar across the top. From left to right:</p>
+<ul>
+    <li><b>Status badge</b>: on record pages, a coloured badge with the record number and its current status.</li>
+    <li><b>Action buttons</b>: buttons for the page, for example <span class="ui">New SAF</span>, <span class="ui">Submit</span> or <span class="ui">Print SDS</span>.</li>
+    <li><b>Edit / Save / Close</b>: see <a href="#modes">View mode and edit mode</a>.</li>
+    <li><b>Menu</b>: the drop-down list of the pages you can open.</li>
+    <li><b>Gear icon</b> (<i>edit user preferences</i>): theme, font size and grid borders.</li>
+    <li><b>Read-only icon</b>: shown when you only have view permission on the page.</li>
+    <li><b>Red exclamation icon</b>: appears only if something went wrong in the page. Click it to see the error and send a report to the support team with <span class="ui">email ossm with error report</span>.</li>
+</ul>
+
+<h2 id="menu">The menu</h2>
+<p>Open the drop-down (it shows <i>-- menu items --</i>) and choose a page. The list only contains the pages your role is allowed to use. The usual entries are:</p>
+<ul>
+    <li><a href="site-locator.html">Site Locator</a></li>
+    <li><a href="equipment.html">Site Equipment</a> (customers and staff)</li>
+    <li><a href="space-request.html">Space Request</a></li>
+    <li><a href="site-access.html">Site Access</a></li>
+    <li><a href="trouble-tickets.html">Trouble Tickets</a></li>
+    <li><a href="sds.html#sdsfiles">SDS Files</a> (customers)</li>
+    <li><a href="company-profile.html">Company Profile</a></li>
+</ul>
+<p>The exact names come from Towercom's set-up and may differ slightly.</p>
+
+<h2 id="locators">Locator pages and record pages</h2>
+<p>Most areas of Nexus have two kinds of page.</p>
+<h3>Locator pages</h3>
+<p>A <b>locator</b> is a search page with three parts:</p>
+<ul>
+    <li><b>Map</b> (top left): one pin per site, coloured by portfolio.</li>
+    <li><b>Filters</b> (top right): filters apply straight away to both the map and the list. <span class="ui">Clear Filters</span> resets them.</li>
+    <li><b>List</b> (below): the matching records. Scroll down and the list grows while the map shrinks; scroll back to the top to restore the map.</li>
+</ul>
+<p><b>Filter by location:</b> enter a <b>Latitude</b>, <b>Longitude</b> and <b>Radius (Km)</b> (5 to 300 km, default 5), or simply <b>double-click the map</b> to search around that point. The map draws a red circle around the area searched.</p>
+<p><b>Map pop-ups:</b> click a pin to see the site name and address and these links. Each opens in a <b>new browser tab</b>:</p>
+<table>
+    <tr><th>Link</th><th>Opens</th></tr>
+    <tr><td><span class="ui">[Info]</span></td><td>The <a href="site-locator.html#site">Site page</a>.</td></tr>
+    <tr><td><span class="ui">[S.A.F.]</span></td><td>A <b>new</b> <a href="site-access.html">Site Access request</a> for this site.</td></tr>
+    <tr><td><span class="ui">[S.R.F.]</span></td><td>A <b>new</b> <a href="space-request.html">Space Request</a> for this site.</td></tr>
+    <tr><td><span class="ui">[T.T.]</span></td><td>A <b>new</b> <a href="trouble-tickets.html">Trouble Ticket</a> for this site.</td></tr>
+    <tr><td><span class="ui">[Eq.]</span></td><td>The <a href="equipment.html">equipment</a> on this site (view only).</td></tr>
+</table>
+<p>Sites without coordinates are listed but don't appear on the map.</p>
+
+<h3>Record pages</h3>
+<p>Clicking a record in a list (for example an SRF ID) opens its <b>record page</b> in view mode in the same tab. Record pages show the site panel on the left (collapsible with the arrow) and the record on the right.</p>
+
+<h2 id="modes">View mode and edit mode</h2>
+<ul>
+    <li>Records open in <b>view mode</b> (read-only).</li>
+    <li>Click <span class="ui">Edit</span> to switch to <b>edit mode</b>. The button only appears if your permission allows editing and the record's status allows changes.</li>
+    <li>In edit mode, <span class="ui">Save</span> stores your changes and <span class="ui">Close</span> returns to view mode without saving.</li>
+    <li>Saving with no changes gives <i>"The record has not changed"</i>.</li>
+    <li>If you try to leave a page with unsaved changes, the browser asks you to confirm.</li>
+</ul>
+<p>Some pages (Space Request, Site Access, Trouble Ticket) replace Save with their own buttons such as <span class="ui">Submit</span>. These are described on each page's help.</p>
+
+<h2 id="tables">Working with tables</h2>
+<ul>
+    <li>Click a column heading to sort. Use the column filter pop-up to pick values (<i>select all</i>, <i>unselect all</i>, <i>clear filter</i>).</li>
+    <li>The table toolbar can offer <span class="ui">copy into clipboard...</span> and <span class="ui">export to csv...</span>.</li>
+    <li>Rows with <b>+</b> / <b>-</b> expand to show related rows (for example the ATME and feeders under a TME).</li>
+    <li>The <b>(i)</b> icon next to an equipment number opens <i>Equipment Details</i>, with a search box to find a property.</li>
+</ul>
+
+<h2 id="prefs">Your preferences</h2>
+<p>Click the <b>gear icon</b> to open <i>user preferences</i>:</p>
+<ul>
+    <li><b>theme</b>: default, dark, mars, forest or ocean</li>
+    <li><b>font size</b>: small, normal, medium or large</li>
+    <li><b>grid borders</b>: none, normal, thick or thicker</li>
+</ul>
+<p>Changes preview straight away. Click OK to keep them. They are saved against your user, so they follow you on any computer.</p>
+
+<h2 id="permissions">Permissions</h2>
+<p>Towercom gives each role a permission level for each page (feature):</p>
+<table>
+    <tr><th>Level</th><th>What you can do</th></tr>
+    <tr><td><b>None</b></td><td>The page is not in your menu. Opening it shows <i>"PERMISSION ERROR - You do not have permission to access this feature"</i>.</td></tr>
+    <tr><td><b>View</b></td><td>Read only. No Edit button and no "New" buttons.</td></tr>
+    <tr><td><b>Edit</b></td><td>Create and edit records.</td></tr>
+    <tr><td><b>Full</b></td><td>Create, edit, delete and other actions (for example managing company files and profiles).</td></tr>
+</table>
+<p>On top of the permission level, what you can see depends on your company:</p>
+<ul>
+    <li><b>Customers</b> see their own company's equipment, requests and tickets.</li>
+    <li><b>Contractors</b> see work for the customers they hold an <b>agent pass</b> for, where the customer has also accepted them as an accredited contractor.</li>
+    <li>Customers and contractors only see sites and structures that Towercom has made <b>public</b>.</li>
+    <li>Towercom staff see everything.</li>
+</ul>
+<p>If you think you should see something you can't, contact Towercom.</p>
+
+<footer>Nexus User Help &middot; Towercom portal &middot; November 2026</footer>
+</main>
+</div>
+<script src="nav.js"></script>
+</body>
+</html>

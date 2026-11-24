@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Space Requests - Nexus Help</title>
+<link rel="stylesheet" href="help.css">
+</head>
+<body>
+<div class="layout">
+<nav class="side"></nav>
+<main>
+<h1>Space Requests (SRF)</h1>
+<p class="lead">Ask Towercom for space on a site to install, remove or swap equipment.</p>
+
+<p>A Space Request Form (SRF) lists the equipment you want to <b>install</b>, <b>remove</b> or <b>swap</b> on one structure of a site. Towercom reviews it, approves it or sends feedback. Once approved, Towercom issues a licence: the <a href="sds.html">Site Data Sheet (SDS)</a>. When the licence is executed and works are permitted, the works are done under a <a href="site-access.html">Site Access request</a>.</p>
+
+<div class="toc"><b>On this page</b>
+<ul>
+    <li><a href="#find">Finding Space Requests</a></li>
+    <li><a href="#create">Creating a Space Request</a></li>
+    <li><a href="#form">The form, step by step</a></li>
+    <li><a href="#items">Adding equipment</a></li>
+    <li><a href="#submit">Saving, submitting and cancelling</a></li>
+    <li><a href="#after">After you submit</a></li>
+    <li><a href="#statuses">SRF statuses</a></li>
+    <li><a href="#who">Who can do what</a></li>
+</ul></div>
+
+<h2 id="find">Finding Space Requests</h2>
+<p>Open <b>Space Request</b> from the menu. Filters: <b>Name</b>, <b>SRF ID</b>, <b>SRF STATUS</b>, <b>Customer</b>, <b>Submitter Company</b>, <b>County</b> and Filter by Location. Click an <b>SRF ID</b> to open it.</p>
+<p>The Site page also lists a site's SRFs in <b>Existing SRFs</b>.</p>
+
+<h2 id="create">Creating a Space Request</h2>
+<p>An SRF is always for one site. Start it from:</p>
+<ul>
+    <li>the <span class="ui">[S.R.F.]</span> link on a map pin, or</li>
+    <li>the <span class="ui">New SRF</span> button on the <a href="site-locator.html#site">Site page</a>.</li>
+</ul>
+<p>You need Edit permission on Space Requests.</p>
+
+<h2 id="form">The form, step by step</h2>
+
+<h3>Customer Information</h3>
+<ul>
+    <li><b>Customer</b>: customers get their own company. It can't be changed after the first save.</li>
+    <li><b>Operator Site ID</b> (mandatory): your own reference for the site. It is filled in automatically when known.</li>
+    <li><b>Structure</b>: the structure (mast, tower, ...) the equipment goes on. It applies to all TME, ATME and feeder lines. If you change it after adding lines, Nexus asks you to confirm before updating them.</li>
+</ul>
+
+<h3>Step 1 to 4: equipment</h3>
+<table>
+    <tr><th>Step</th><th>Table</th><th>Button</th></tr>
+    <tr><td>Step 1 of 6 (TME)</td><td>Request Tower Mounted Equipment (TME) Installation / Removal</td><td><span class="ui">ADD TME</span></td></tr>
+    <tr><td>Step 2 of 6 (ATME)</td><td>Request Additional Tower Mounted Equipment (ATME) Installation / Removal</td><td><span class="ui">ADD ATME</span></td></tr>
+    <tr><td>Step 3 of 6 (Feeders)</td><td>Request Feeders Installation / Removal</td><td><span class="ui">ADD FEEDER</span></td></tr>
+    <tr><td>Step 4 of 6 (GIE)</td><td>Request Ground/Indoor Equipment (GIE) Installation / Removal</td><td><span class="ui">ADD GIE</span></td></tr>
+</table>
+<p>See <a href="#items">Adding equipment</a>. In the ATME and Feeder tables, an existing TME that you are adding to is shown as a greyed-out row for reference.</p>
+
+<h3>Step 5 of 6 (Attachments)</h3>
+<p>The <b>Drawings/GAD &amp; Documents</b> table. Add your drawings and supporting documents here. <b>At least one file is required.</b> See <a href="files.html">Files &amp; attachments</a>.</p>
+
+<h3>Step 6 of 6: (Power Supply)</h3>
+<ul>
+    <li><b>Power Required from Towercom</b></li>
+    <li><b>Alternate Supplier</b></li>
+    <li><b>Power Notes / Comments</b></li>
+    <li><b>Application for own supply made to ESB</b>, <b>Application Date</b>, <b>Application Reference</b></li>
+</ul>
+
+<div class="staff">Staff also see Licencing Mechanism, SRF Type, Revenue Impacting, SRF Status and TL Notes.</div>
+
+<h2 id="items">Adding equipment</h2>
+<p>Before adding a line, pick the <b>Customer</b>, and for TME / ATME / feeders the <b>Structure</b>. Otherwise you get <i>"You need to specify a customer"</i> or <i>"You need to select a structure"</i>.</p>
+<p>Click the <span class="ui">ADD ...</span> button of the right table. The <i>Add new SRF Item</i> dialog has these sections.</p>
+
+<h3>Basic Info</h3>
+<ul>
+    <li><b>Request Type</b>: <b>Install</b>, <b>Remove</b> or <b>Swap</b>. It can't be changed once the line is saved.</li>
+    <li><b>Equipment</b> (Remove and Swap): click <span class="ui">...</span> to pick the existing equipment.</li>
+    <li><b>TME</b> (ATME / feeders): click <span class="ui">...</span> to pick the existing TME the new item goes on.</li>
+    <li><b>Item Type</b>, <b>Description</b>.</li>
+    <li><span class="ui">Pick From Library</span>: choose a make and model from the Towercom equipment library.</li>
+</ul>
+
+<h3>Equipment Specifications</h3>
+<p>Make, Model, Length / Width / Depth (mm), Weight (kg), Voltage Type, and for GIE the accommodation and <b>GIE Location</b>. Not used for feeders.</p>
+
+<h3>Deployment Details</h3>
+<ul>
+    <li>TME / ATME: <b>Height on Tower</b>, <b>Azimuth</b> (0 to 360), <b>B-End</b>, <b>Customer Ref.</b>, <b>Modified Antenna Location</b>.</li>
+    <li>Feeders: <b>Structure</b> and <b>Feeder Type</b>.</li>
+    <li>GIE: <b>Customer Ref.</b></li>
+</ul>
+
+<h3>Related Equipment (TME only)</h3>
+<p>Add the ATME and feeders that belong to the TME directly from its dialog. When swapping a TME, tick the related items you want to swap too.</p>
+
+<h3>The equipment library</h3>
+<p>For some equipment types you must pick from the library: the specification fields stay hidden until you do, and saving without a library item gives <i>"You must pick an item from the library"</i>. In the <i>pick item from library</i> dialog, type in the search box, select a row and click <span class="ui">add</span>, or just double-click the row.</p>
+
+<h3>Picking existing equipment (Remove / Swap)</h3>
+<p>The <i>pick item from list</i> dialog lists your <b>Licenced</b> equipment on the site (on the SRF's structure for TME, ATME and feeders). Double-click a row to pick it. The <b>Note</b> column warns about problems:</p>
+<ul>
+    <li><b>Red</b>, cannot be picked: <i>"already selected for removal / swap on SRF-..."</i> or <i>"there is an outstanding SAF (...) against this equipment, please contact TL"</i>.</li>
+    <li><b>Amber</b>, can be picked after confirming: <i>"this equipment was never installed"</i>.</li>
+</ul>
+
+<h3>Swaps</h3>
+<p>A swap shows the old values struck through and the new values in bold. The new equipment shows as <b>TBA</b> until the SRF is submitted, then gets its own equipment number.</p>
+
+<div class="tip">Use <span class="ui">add and duplicate</span> to add a line and start a copy of it straight away. It is handy for several identical antennas. Only available for Install.</div>
+
+<h2 id="submit">Saving, submitting and cancelling</h2>
+<p>In edit mode the buttons at the bottom of the form depend on the status:</p>
+<table>
+    <tr><th>Status</th><th>Buttons</th></tr>
+    <tr><td>New or Draft</td><td><span class="ui">Save As Draft</span>, <span class="ui">Submit SRF</span>, <span class="ui">Cancel SRF</span></td></tr>
+    <tr><td>Feedback Issued</td><td><span class="ui">Save</span>, <span class="ui">Re-Submit SRF</span></td></tr>
+</table>
+<ul>
+    <li><b>Save As Draft</b> keeps your work without sending it to Towercom. You can come back and finish it later.</li>
+    <li><b>Submit SRF</b> sends it for review. You must enter a comment (<i>"Please enter a comment for this submission"</i>). An SRF needs at least one equipment line and one attached file.</li>
+    <li><b>Re-Submit SRF</b>, after feedback, asks for a comment describing the changes you made.</li>
+    <li><b>Cancel SRF</b> asks for a reason. The reason is recorded in <b>Submission Notes</b>.</li>
+</ul>
+<p>Saving can take a moment; the progress message shows what is being saved (files, items, ...). If some parts fail, they are listed under <i>"Some error occurred while saving:"</i>.</p>
+
+<h3>View-mode buttons</h3>
+<table>
+    <tr><th>Button</th><th>When</th><th>What it does</th></tr>
+    <tr><td><span class="ui">Submit</span></td><td>Draft</td><td>Submits the SRF.</td></tr>
+    <tr><td><span class="ui">Edit &amp; Re-Submit</span></td><td>Feedback Issued</td><td>Opens the SRF for changes so you can re-submit.</td></tr>
+    <tr><td><span class="ui">Accept and Request License</span></td><td>SRF Approved</td><td>Accepts Towercom's approval (including any fee change) and asks for the licence.</td></tr>
+    <tr><td><span class="ui">Sign SDS</span></td><td>License Issued</td><td>Sign the licence. See <a href="sds.html#sign">Signing the SDS</a>.</td></tr>
+    <tr><td><span class="ui">Print SDS</span></td><td>License Issued onwards</td><td>Opens the SDS PDF.</td></tr>
+    <tr><td><span class="ui">Attach File</span></td><td>Any</td><td>Uploads a file to the SRF straight away.</td></tr>
+    <tr><td><span class="ui">Cancel SRF</span></td><td>See <a href="#who">who can cancel</a></td><td>Cancels the SRF.</td></tr>
+</table>
+
+<h2 id="after">After you submit</h2>
+<ul>
+    <li>Towercom reviews the request (space, facilities, estates and accounts checks).</li>
+    <li>If changes are needed, the SRF moves to <span class="badge b-crimson">Feedback Issued</span>. A red <b>Towercom Feedback Info</b> banner at the top shows the review date and comments. Click <span class="ui">Edit &amp; Re-Submit</span>, make the changes and re-submit.</li>
+    <li>If approved, the SRF moves to <b>SRF Approved</b> and a green <b>Towercom Approval Info</b> banner shows the comments and, where relevant, the <b>New License Fee</b>, <b>Fee Uplift</b> or <b>Fee Reduction</b>. Click <span class="ui">Accept and Request License</span> to continue.</li>
+    <li>Towercom then produces the licence (SDS) for you to sign. See <a href="sds.html">Site Data Sheets</a>.</li>
+    <li>Once Towercom executes the licence and records the <b>Works Permitted</b> date, a dark-green <b>Works Permitted</b> badge appears on the SRF. You can now raise the <a href="site-access.html">Site Access request</a> for the works.</li>
+    <li>When all the equipment on the SRF has been installed or removed through Site Access, the SRF becomes <b>Completed</b> automatically.</li>
+</ul>
+<div class="note">SRFs migrated from Radix show a magenta <b>Migrated from Radix</b> badge.</div>
+
+<h2 id="statuses">SRF statuses</h2>
+<div class="flow">
+    <span class="step">Draft</span><span class="arrow">&rarr;</span>
+    <span class="step">Submitted</span><span class="arrow">&rarr;</span>
+    <span class="step">Under Review</span><span class="arrow">&rarr;</span>
+    <span class="step">Feedback Issued &#8644; Re-Submitted</span><span class="arrow">&rarr;</span>
+    <span class="step">SRF Approved</span><span class="arrow">&rarr;</span>
+    <span class="step">License Requested</span><span class="arrow">&rarr;</span>
+    <span class="step">License Issued</span><span class="arrow">&rarr;</span>
+    <span class="step">License Signed</span><span class="arrow">&rarr;</span>
+    <span class="step">License Executed</span><span class="arrow">&rarr;</span>
+    <span class="step">Completed</span>
+</div>
+<table>
+    <tr><th>Status</th><th>Meaning</th><th>Next action by</th></tr>
+    <tr><td>Draft</td><td>Saved but not submitted.</td><td>Customer</td></tr>
+    <tr><td>Submitted</td><td>Sent to Towercom.</td><td>Towercom</td></tr>
+    <tr><td>Under Review</td><td>Towercom is checking the request.</td><td>Towercom</td></tr>
+    <tr><td>Feedback Issued</td><td>Towercom needs changes. Read the feedback banner.</td><td>Customer</td></tr>
+    <tr><td>Re-Submitted</td><td>Changed and sent back after feedback.</td><td>Towercom</td></tr>
+    <tr><td>SRF Approved</td><td>Approved. Accept it to request the licence.</td><td>Customer</td></tr>
+    <tr><td>License Requested</td><td>Towercom is preparing the licence pack.</td><td>Towercom</td></tr>
+    <tr><td>License Issued</td><td>The SDS is ready to sign.</td><td>Customer signatory</td></tr>
+    <tr><td>License Signed</td><td>Signed by the customer.</td><td>Towercom</td></tr>
+    <tr><td>License Executed</td><td>Executed by Towercom. The licence is in force; works can start once permitted.</td><td>Customer / contractor (SAF)</td></tr>
+    <tr><td>Completed</td><td>All installs and removals are done.</td><td>&mdash;</td></tr>
+    <tr><td>SRF Cancelled</td><td>Cancelled. Planned installs are cancelled and planned removals revert to Licenced.</td><td>&mdash;</td></tr>
+</table>
+
+<h2 id="who">Who can do what</h2>
+<ul>
+    <li><b>Customers</b> see all SRFs of their company. They can edit an SRF while it is a Draft, or after Feedback Issued.</li>
+    <li><b>Contractors</b> acting for a customer (agent pass) see the SRFs their own company raised for that customer.</li>
+    <li>Fee details are shown to customers from SRF Approved onwards.</li>
+</ul>
+<h3>Who can cancel</h3>
+<table>
+    <tr><th>Status</th><th>Can be cancelled by</th></tr>
+    <tr><td>Draft, Feedback Issued, SRF Approved</td><td>Anyone with access to the SRF</td></tr>
+    <tr><td>Submitted, Under Review, Re-Submitted</td><td>Towercom staff</td></tr>
+    <tr><td>License Requested, Issued, Signed</td><td>Authorised Towercom staff only</td></tr>
+    <tr><td>License Executed, Completed, Cancelled</td><td>Nobody</td></tr>
+</table>
+<div class="staff">For reviewing and approving SRFs, see <a href="srf-workflow.html">SRF Workflow</a>.</div>
+
+<footer>Nexus User Help &middot; Towercom portal &middot; November 2026</footer>
+</main>
+</div>
+<script src="nav.js"></script>
+</body>
+</html>

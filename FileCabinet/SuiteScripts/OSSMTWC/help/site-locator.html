@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Site Locator - Nexus Help</title>
+<link rel="stylesheet" href="help.css">
+</head>
+<body>
+<div class="layout">
+<nav class="side"></nav>
+<main>
+<h1>Site Locator &amp; Site page</h1>
+<p class="lead">Find a Towercom site and see everything about it in one place.</p>
+
+<div class="toc"><b>On this page</b>
+<ul>
+    <li><a href="#locator">The Site Locator</a></li>
+    <li><a href="#site">The Site page</a></li>
+    <li><a href="#panel">The site panel</a></li>
+    <li><a href="#sections">Site page sections</a></li>
+    <li><a href="#new">Starting a request from the Site page</a></li>
+</ul></div>
+
+<h2 id="locator">The Site Locator</h2>
+<p>Open <b>Site Locator</b> from the menu. It works like every <a href="getting-started.html#locators">locator page</a>: map, filters and list.</p>
+
+<h3>Filters</h3>
+<table>
+    <tr><th>Group</th><th>Filters</th></tr>
+    <tr><td>Site Locator</td><td><b>Site Name</b>, <b>Site Type</b>, <b>County</b>, <b>Portfolio</b> (several values can be picked except for Site Name)</td></tr>
+    <tr><td>Filter by Location</td><td><b>Latitude</b>, <b>Longitude</b>, <b>Radius (Km)</b>. You can also double-click the map.</td></tr>
+    <tr><td>Site Actions</td><td><span class="ui">Clear Filters</span></td></tr>
+</table>
+
+<h3>The list</h3>
+<p>Columns: Site ID, Site Name, Site Type, Address, County, Latitude, Longitude, Portfolio. Click the <b>Site ID</b> or <b>Site Name</b> to open the <a href="#site">Site page</a>.</p>
+
+<h3>The map</h3>
+<p>Pins are coloured by portfolio. Click a pin for the site pop-up with the links <span class="ui">[Info]</span>, <span class="ui">[S.A.F.]</span>, <span class="ui">[S.R.F.]</span>, <span class="ui">[T.T.]</span> and <span class="ui">[Eq.]</span>. See <a href="getting-started.html#locators">Map pop-ups</a>.</p>
+
+<div class="note">Customers and contractors only see active sites that Towercom has published. Towercom staff see all sites.</div>
+<div class="staff">The <span class="ui">New Site</span> button under Site Actions opens a new Site record in NetSuite in a new tab.</div>
+
+<h2 id="site">The Site page</h2>
+<p>The Site page opens from the Site Locator list, from <span class="ui">[Info]</span> on the map, or from a Site link in any other list. The browser tab shows the site name.</p>
+<p>Users with Edit permission on sites can click <span class="ui">Edit</span> to change site details. Everybody else sees the page read-only.</p>
+
+<h2 id="panel">The site panel</h2>
+<p>The panel on the left also appears on SRF, SAF, Trouble Ticket and equipment pages. Collapse or expand it with the arrow icon; Nexus remembers your choice in this browser.</p>
+<ul>
+    <li><b>Small map</b>: the site pin, plus a <b>magenta pin for the access point</b> when the site has separate access coordinates.</li>
+    <li><b>Overview</b>: Site Code, Site Name, Structure (shown as <i>[infra id] type (height m)</i>) and Accommodation.</li>
+    <li><b>Location</b>: Address, County, Easting, Northing, Latitude, Longitude.</li>
+    <li><b>Access</b>: Access Easting / Northing, Access Latitude / Longitude, <b>Directions</b> and <b>Access Instructions</b>.</li>
+</ul>
+<p>Empty values show as <i>---</i>.</p>
+<div class="tip">Read <b>Directions</b> and <b>Access Instructions</b> before every visit. They hold the practical details (gates, keys, tracks) for getting onto the site.</div>
+
+<h2 id="sections">Site page sections</h2>
+<p>The right side is a set of sections. Click a heading to open or close it.</p>
+<table>
+    <tr><th>Section</th><th>What it shows</th></tr>
+    <tr><td><b>Summary</b></td><td><i>Basic Information</i> (code, name, status, alias, level, type, portfolio, SAF Auto Approve, SAF / SRF status, height above sea level), <i>Site Structures</i> (the site's infrastructure with type, status, ownership, height), <i>Location</i> and <i>Access Track / Safety Info</i> (track type, tenant card required, 4x4 required, parking restrictions, crane / MEWP access, safety and special notes).</td></tr>
+    <tr><td><b>Estates</b></td><td>Title (leasehold and rights of way), Leasehold, Planning and Fibre information.</td></tr>
+    <tr><td><b>Assets</b></td><td>Structure details (tower family, anti-climb, fall arrest type, painting dates, locks) and Perimeter (fencing, adjacent ground).</td></tr>
+    <tr><td><b>Facilities</b></td><td>Power (MPRN, meters, phase), Alarms, Air Conditioning and Fire Safety.</td></tr>
+    <tr><td><b>Files</b></td><td>Documents stored against the site. Click a name to preview it. See <a href="files.html">Files &amp; attachments</a>.</td></tr>
+    <tr><td><b>Existing SRFs</b></td><td>Space Requests for this site. Click the SRF ID to open one.</td></tr>
+    <tr><td><b>Existing SAFs</b></td><td>Site Access requests for this site, with their type, contractor, PICW, status, start / end and the access flags (mast, building, rooftop, crane / cherrypicker, electrical, drone).</td></tr>
+    <tr><td><b>Existing Trouble Tickets</b></td><td>Tickets for this site that you are allowed to see.</td></tr>
+    <tr><td><b>Equipment</b></td><td>The equipment on the site, grouped by TME with its ATME and feeders, plus GIE. Use <b>Hide Inactive (not licenced and not installed)</b> to hide old equipment. Staff can also filter by <b>Customer</b>. See <a href="equipment.html">Site Equipment</a>.</td></tr>
+</table>
+<div class="note">Some sections and fields are only shown to Towercom staff. Customers and contractors only see the structures and files that Towercom has made public.</div>
+
+<h2 id="new">Starting a request from the Site page</h2>
+<p>Depending on your permissions, the top bar offers:</p>
+<ul>
+    <li><span class="ui">New SAF</span>: a new <a href="site-access.html">Site Access request</a> for this site.</li>
+    <li><span class="ui">New SRF</span>: a new <a href="space-request.html">Space Request</a> for this site.</li>
+    <li><span class="ui">New Trouble Ticket</span>: a new <a href="trouble-tickets.html">Trouble Ticket</a> for this site.</li>
+</ul>
+<p>Each opens in a new tab with the site already filled in.</p>
+
+<footer>Nexus User Help &middot; Towercom portal &middot; November 2026</footer>
+</main>
+</div>
+<script src="nav.js"></script>
+</body>
+</html>

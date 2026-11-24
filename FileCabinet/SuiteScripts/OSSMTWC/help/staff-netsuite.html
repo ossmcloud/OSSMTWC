@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NetSuite Forms - Nexus Help</title>
+<link rel="stylesheet" href="help.css">
+</head>
+<body>
+<div class="layout">
+<nav class="side"></nav>
+<main>
+<h1>NetSuite back-office forms</h1>
+<p class="lead">For Towercom staff: what Nexus adds to the standard NetSuite record forms.</p>
+
+<div class="staff">Staff work in two places: the Nexus portal pages and the native NetSuite records. Changes made in one are not repeated in the other's screens, but the data is the same.</div>
+
+<div class="toc"><b>On this page</b>
+<ul>
+    <li><a href="#readonly">Records you can't edit in NetSuite</a></li>
+    <li><a href="#company">Company and Profile</a></li>
+    <li><a href="#files">Approving files and insurance</a></li>
+    <li><a href="#site">Site</a></li>
+    <li><a href="#equipment">Equipment and Equipment Library</a></li>
+    <li><a href="#requests">SRF and SAF records</a></li>
+    <li><a href="#infra">Infrastructure and inspections</a></li>
+    <li><a href="#power">Power readings</a></li>
+    <li><a href="#tax">Tax details on transactions</a></li>
+</ul></div>
+
+<h2 id="readonly">Records you can't edit in NetSuite</h2>
+<p>Some records can only be changed through the portal. On these:</p>
+<ul>
+    <li>creating a record shows <i>"this record cannot be manually entered!"</i>;</li>
+    <li>clicking Edit returns to view mode with a <b>Read-Only Record</b> banner.</li>
+</ul>
+<p>Some other records can be edited but not created (<i>"You do not have permission to create this record. This record is EDIT ONLY."</i>). Use the portal page for those records.</p>
+
+<h2 id="company">Company and Profile</h2>
+<h3>Company</h3>
+<ul>
+    <li><span class="ui">Open Company</span> opens the portal Company Profile.</li>
+    <li>The <b>TL Company ID</b> (COM-0000123) is set automatically when the company is created.</li>
+    <li>When an EL / PL / PI insurance status is Active, its expiry date is mandatory and must be in the future.</li>
+</ul>
+<h3>Profile</h3>
+<ul>
+    <li><span class="ui">View Certs History</span> lists all the person's certificate files.</li>
+    <li><span class="ui">Open Company</span> opens the person's company in the portal.</li>
+    <li>When a certificate status is Active, its expiry date is mandatory and must be in the future.</li>
+    <li>Setting the Safe Pass status to Pending sets the person's accreditation status to Pending.</li>
+</ul>
+<p>The accreditation status change date is stamped automatically on both records.</p>
+
+<h2 id="files">Approving files and insurance</h2>
+<p>On a TL File record (view mode):</p>
+<ul>
+    <li><span class="ui">Open Record</span> opens the record the file belongs to.</li>
+    <li>For a company file with status <b>Pending</b>: <span class="ui">Approve File</span>, or <span class="ui">Approve Insurance File</span> for insurance documents.</li>
+</ul>
+<h3>Approve File</h3>
+<p>The <i>Verify File</i> dialog shows the file. Click <span class="ui">Accept</span> (status Received) or <span class="ui">Reject</span> (status Rejected).</p>
+<h3>Approve Insurance File</h3>
+<p>The <i>Verify Insurance File</i> dialog shows the file and asks for:</p>
+<ul>
+    <li><b>New Expiry Date</b> and <b>Insurer</b>;</li>
+    <li>for each of EL, PL, PI: switch on <b>Apply</b> for the covers this certificate includes, then enter Limit, Status and Currency;</li>
+    <li><b>Restrictions</b>.</li>
+</ul>
+<p><span class="ui">Accept</span> writes the details to the company, marks the previous insurance file Superseded and this one Received.</p>
+<h3>Files on other records</h3>
+<p>Records with attachments show <span class="ui">View Files</span> and <span class="ui">Upload File</span>, and a <b>Twc Files</b> list on the Media tab.</p>
+
+<h2 id="site">Site</h2>
+<ul>
+    <li>The record name is set automatically to <b>&lt;Site ID&gt; : &lt;Site Name&gt;</b>.</li>
+    <li>Sites are copied to the FSA mobile app automatically.</li>
+</ul>
+
+<h2 id="equipment">Equipment and Equipment Library</h2>
+<ul>
+    <li>Equipment opened from the portal's <span class="ui">Add Equipment</span> button arrives with the site pre-filled and locked.</li>
+    <li>An Equipment Library entry created from an SRF line (<b>Lib</b> link) copies the class, make, model, description, dimensions, weight and voltage type, and starts as <b>Draft</b>. Equipment Class, Equipment Type and Library Entry Status are mandatory.</li>
+</ul>
+
+<h2 id="requests">SRF and SAF records</h2>
+<ul>
+    <li>SRF record: <span class="ui">Open SRF</span> opens the portal page.</li>
+    <li>SAF record: <span class="ui">Open SAF</span> opens the portal page; the Conditions of Access are shown on the form.</li>
+    <li>Records migrated from Radix show the banner <i>"This transaction was migrated from Radix"</i>.</li>
+    <li>Authorised users have <span class="ui">Delete SRF</span> / <span class="ui">Delete SAF</span>, which remove the request and its related records. Use with great care.</li>
+</ul>
+
+<h2 id="infra">Infrastructure and inspections</h2>
+<ul>
+    <li>Each infrastructure type has its own form. Choosing the form sets the type; records always open in the form of their type.</li>
+    <li>Changing <b>Last Service Date</b> sets <b>Next Aircon Service</b> to one year later.</li>
+    <li>Saving an <b>Inspection</b> with a fall-arrest certificate date updates the infrastructure: last fall-arrest cert date, next date (one year later) and fall-arrest status.</li>
+    <li>A nightly job flags the fall-arrest status of infrastructure whose next certificate date has passed.</li>
+</ul>
+
+<h2 id="power">Power readings</h2>
+<p>The <b>Power Readings</b> tab on a power reading lists the other readings for the same meter.</p>
+<ul>
+    <li>Tick one reading in <b>Select to update latest</b> and click <span class="ui">Update Latest status</span> to make it the latest. The previous latest reading is moved to another status.</li>
+    <li>On save, Nexus works out the days since the last reading, the day / night / peak unit usage, the kWh usage and the kWh amp check, from the meter's previous reading.</li>
+    <li>A new reading also updates the power meter's last reading details.</li>
+</ul>
+
+<h2 id="tax">Tax details on transactions</h2>
+<p>On purchase and sales transactions and journals:</p>
+<ul>
+    <li>Picking a line project copies it to the Customer:Project (Name on journals).</li>
+    <li>With <b>Tax Details Override</b> ticked, choosing a tax code fills the rate and amount; changing basis or rate recalculates the amount.</li>
+    <li>On save, the tax details must match the lines (total basis, rate of the tax code, amount = basis &times; rate). Otherwise <i>"Tax Details validation failed"</i> lists the differences.</li>
+    <li>Vendor bills from a PO can't bill more than is left on the PO; the line is corrected back. A PO line can't be reduced below what's already billed.</li>
+    <li>If <b>STE Transaction Type</b> is empty, you get a one-time warning. Fill it in, or click Save again if it should stay empty.</li>
+</ul>
+
+<footer>Nexus User Help &middot; Towercom portal &middot; November 2026</footer>
+</main>
+</div>
+<script src="nav.js"></script>
+</body>
+</html>
