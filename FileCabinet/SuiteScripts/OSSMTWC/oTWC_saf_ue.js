@@ -76,7 +76,7 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
                 if (!address) return
 
                 if (twcConfig.SB) {
-                    // @@GO-LIVE :: email disabled for the initial LIVE deployment (no emails to customers / contractors before go-live) - uncomment at go-live
+                    // @@GO-LIVE :: email sent only in the sandbox (twcConfig.SB), so no emails go to customers / contractors on LIVE before go-live - remove the SB check at go-live
                     email.send({
                         author: twcConfig.NO_REPLY,
                         recipients: address,
