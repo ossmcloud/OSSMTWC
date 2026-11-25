@@ -411,7 +411,7 @@
       <storevalue>T</storevalue>
       <subtab></subtab>
     </customrecordcustomfield>
-    <customrecordcustomfield scriptid="custrecord2">
+    <customrecordcustomfield scriptid="custrecord_twc_comments">
       <accesslevel>2</accesslevel>
       <aidescription></aidescription>
       <allowquickadd>F</allowquickadd>
@@ -462,6 +462,11 @@
     <permission>
       <permittedlevel>VIEW</permittedlevel>
       <permittedrole>[scriptid=customrole1340]</permittedrole>
+      <restriction></restriction>
+    </permission>
+    <permission>
+      <permittedlevel>EDIT</permittedlevel>
+      <permittedrole>[scriptid=customrole1327]</permittedrole>
       <restriction></restriction>
     </permission>
     <permission>
