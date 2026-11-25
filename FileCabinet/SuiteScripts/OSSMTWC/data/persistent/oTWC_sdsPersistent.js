@@ -31,6 +31,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             AGREEMENT_CONDITIONS: 'custrecord_twc_sds_agr_conds',
             AGREEMENT_CONDITIONS_DATA: 'custrecord_twc_sds_agr_cond_data',
             PDF: 'custrecord_twc_sds_pdf',
+            RADIX_ID: 'custrecord_twc_sds_radix_id',
+            RADIX_MIGRATED: 'custrecord_twc_sds_radix_migrated',
+            RADIX_IMPORT_RUN: 'custrecord_twc_sds_radix_import_run',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -62,6 +65,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             AGREEMENT_CONDITIONS: { name: 'custrecord_twc_sds_agr_conds', type: 'multiselect', alias: 'agreementConditions', display: 'normal', mandatory: false, recordType: 'customrecord_twc_agreement_cond' },
             AGREEMENT_CONDITIONS_DATA: { name: 'custrecord_twc_sds_agr_cond_data', type: 'clobtext', alias: 'agreementConditionsData', display: 'hidden', mandatory: false },
             PDF: { name: 'custrecord_twc_sds_pdf', type: 'select', alias: 'pDF', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
+            RADIX_ID: { name: 'custrecord_twc_sds_radix_id', type: 'text', alias: 'radixID', display: 'statictext', mandatory: false },
+            RADIX_MIGRATED: { name: 'custrecord_twc_sds_radix_migrated', type: 'checkbox', alias: 'radixMigrated', display: 'statictext', mandatory: false },
+            RADIX_IMPORT_RUN: { name: 'custrecord_twc_sds_radix_import_run', type: 'text', alias: 'radixImportRun', display: 'statictext', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -231,6 +237,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get pDFName() { return this.getText(_recordFields.PDF); }
             
+            get radixID() {
+                return this.get(_recordFields.RADIX_ID);
+            } set radixID(value) {
+                this.set(_recordFields.RADIX_ID, value)
+            }
+            
+            get radixMigrated() {
+                return this.get(_recordFields.RADIX_MIGRATED);
+            } set radixMigrated(value) {
+                this.set(_recordFields.RADIX_MIGRATED, value)
+            }
+            
+            get radixImportRun() {
+                return this.get(_recordFields.RADIX_IMPORT_RUN);
+            } set radixImportRun(value) {
+                this.set(_recordFields.RADIX_IMPORT_RUN, value)
+            }
+            
             get created() {
                 return this.get(_recordFields.CREATED);
             } set created(value) {
@@ -263,8 +287,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_SDS,
 
-            get: function (id) {
-                var rec = new OSSMTWC_SDS(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_SDS(id, staticLoad);
                 rec.load();
                 return rec;
             }, 

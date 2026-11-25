@@ -12,6 +12,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             LOG_TYPE: 'custrecord_twc_saf_log_type',
             MESSAGE: 'custrecord_twc_saf_log_message',
             ADDITIONAL_INFO: 'custrecord_twc_saf_log_notes',
+            CATEGORY: 'custrecord_twc_saf_log_category',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -22,15 +23,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SAF: { name: 'custrecord_twc_saf_log_saf', type: 'select', alias: 'sAF', display: 'normal', mandatory: false, recordType: 'customrecord_twc_saf' },
             PROFILE: { name: 'custrecord_twc_saf_log_profile', type: 'select', alias: 'profile', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
             LOG_TYPE: { name: 'custrecord_twc_saf_log_type', type: 'text', alias: 'logType', display: 'normal', mandatory: false },
-            MESSAGE: { name: 'custrecord_twc_saf_log_message', type: 'text', alias: 'message', display: 'normal', mandatory: false },
+            MESSAGE: { name: 'custrecord_twc_saf_log_message', type: 'clobtext', alias: 'message', display: 'normal', mandatory: false },
             ADDITIONAL_INFO: { name: 'custrecord_twc_saf_log_notes', type: 'clobtext', alias: 'additionalInfo', display: 'normal', mandatory: false },
+            CATEGORY: { name: 'custrecord_twc_saf_log_category', type: 'text', alias: 'category', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
             MODIFIED_BY: { name: 'lastmodifiedby', type: 'select', alias: 'last_modified_by', display: 'inline', recordType: 'employee'}, 
         }
 
-        class OSSMTWC_SAF_Logs extends customRec.RecordBase {
+        class OSSMTWC_SAFLogs extends customRec.RecordBase {
             constructor(id, staticLoad) {
                 super(_recordType, _recordFieldInfo, id, staticLoad);
             }
@@ -72,6 +74,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.ADDITIONAL_INFO, value)
             }
             
+            get category() {
+                return this.get(_recordFields.CATEGORY);
+            } set category(value) {
+                this.set(_recordFields.CATEGORY, value)
+            }
+            
             get created() {
                 return this.get(_recordFields.CREATED);
             } set created(value) {
@@ -102,16 +110,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Type: _recordType,
             Fields: _recordFields,
             FieldsInfo: _recordFieldInfo,
-            PersistentRecord: OSSMTWC_SAF_Logs,
+            PersistentRecord: OSSMTWC_SAFLogs,
 
-            get: function (id) {
-                var rec = new OSSMTWC_SAF_Logs(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_SAFLogs(id, staticLoad);
                 rec.load();
                 return rec;
             }, 
 
             select: function (options) {
-                var rec = new OSSMTWC_SAF_Logs();
+                var rec = new OSSMTWC_SAFLogs();
                 return rec.select(options);
             }
 

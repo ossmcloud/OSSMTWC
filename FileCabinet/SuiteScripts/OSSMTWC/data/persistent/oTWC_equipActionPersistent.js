@@ -14,6 +14,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EA_TYPE: 'custrecord_twc_eq_action_type',
             RELATED_EA: 'custrecord_twc_eq_real_ea',
             EA_STATUS: 'custrecord_twc_eq_action_sts',
+            RADIX_ID: 'custrecord_twc_eq_action_radix_id',
+            RADIX_MIGRATED: 'custrecord_twc_eq_action_radix_migrated',
+            RADIX_IMPORT_RUN: 'custrecord_twc_eq_action_radix_import_ru',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -28,6 +31,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EA_TYPE: { name: 'custrecord_twc_eq_action_type', type: 'select', alias: 'eAType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action_type' },
             RELATED_EA: { name: 'custrecord_twc_eq_real_ea', type: 'select', alias: 'relatedEA', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action' },
             EA_STATUS: { name: 'custrecord_twc_eq_action_sts', type: 'select', alias: 'eAStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_eq_action_sts' },
+            RADIX_ID: { name: 'custrecord_twc_eq_action_radix_id', type: 'text', alias: 'radixID', display: 'statictext', mandatory: false },
+            RADIX_MIGRATED: { name: 'custrecord_twc_eq_action_radix_migrated', type: 'checkbox', alias: 'radixMigrated', display: 'statictext', mandatory: false },
+            RADIX_IMPORT_RUN: { name: 'custrecord_twc_eq_action_radix_import_ru', type: 'text', alias: 'radixImportRun', display: 'statictext', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -43,7 +49,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set name(value) {
                 this.set('name', value)
             }
-                        
+            
             get eAEquipment() {
                 return this.get(_recordFields.EA_EQUIPMENT);
             } set eAEquipment(value) {
@@ -93,6 +99,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get eAStatusName() { return this.getText(_recordFields.EA_STATUS); }
             
+            get radixID() {
+                return this.get(_recordFields.RADIX_ID);
+            } set radixID(value) {
+                this.set(_recordFields.RADIX_ID, value)
+            }
+            
+            get radixMigrated() {
+                return this.get(_recordFields.RADIX_MIGRATED);
+            } set radixMigrated(value) {
+                this.set(_recordFields.RADIX_MIGRATED, value)
+            }
+            
+            get radixImportRun() {
+                return this.get(_recordFields.RADIX_IMPORT_RUN);
+            } set radixImportRun(value) {
+                this.set(_recordFields.RADIX_IMPORT_RUN, value)
+            }
+            
             get created() {
                 return this.get(_recordFields.CREATED);
             } set created(value) {
@@ -125,8 +149,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_Equip_Action,
 
-            get: function (id) {
-                var rec = new OSSMTWC_Equip_Action(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_Equip_Action(id, staticLoad);
                 rec.load();
                 return rec;
             }, 

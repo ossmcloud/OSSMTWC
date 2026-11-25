@@ -533,7 +533,17 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             fieldGroups.push(srfUI.getSrfListPanel(dataSource, userinfo));
             fieldGroups.push(safUI.getSafListPanel(dataSource, userinfo));
             fieldGroups.push(ttkUI.getTktListPanel(dataSource, userinfo));
-            fieldGroups.push({ id: 'site-equipment', title: 'Equipment', collapsed: true, controls: eqUI.getInvInfoPanels(dataSource, userinfo) });
+            // @@NOTE: Equipment section filters, applied on screen (ui/js/oTWC_siteInfo.js: applyEquipmentFilters): 'Hide Inactive' toggle (not licenced and not installed, oTWC_utils.js: isEquipmentInactive)
+            //         and 'Customer' drop down (TL users only, customers with equipment on the site)
+            //         never read only: they are not site fields
+            var eqFilters = { id: 'site-equipment-filters', renderAsTable: { 'table-layout': 'auto' }, controls: [] };
+            if (userinfo?.isEmployee) {
+                eqFilters.controls.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'site-equipment-customer', label: 'Customer', width: '250px', value: '', noAutoSelect: true, readOnly: false, dataSource: eqUI.getSiteEquipmentCustomers(dataSource.id) });
+            }
+            eqFilters.controls.push({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'hide-inactive-equipment-toggle', label: 'Hide Inactive (not licenced and not installed)', labelNoWrap: true, value: false, small: true, readOnly: false });
+            var eqControls = [eqFilters];
+            eqControls.push(...eqUI.getInvInfoPanels(dataSource, userinfo));
+            fieldGroups.push({ id: 'site-equipment', title: 'Equipment', collapsed: true, controls: eqControls });
 
             return fieldGroups;
         }

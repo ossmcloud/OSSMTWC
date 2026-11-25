@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_icons.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safAction.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_file.js', './oTWC_srfItem.js', './oTWC_equipAction.js', './oTWC_company.js', './oTWC_profile.js', './oTWC_equipment.js'],
-    (runtime, core, coreSQL, twcIcons, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile, twcSrfItem, twcEqAct, twcCompany, twcProfile, twcEq) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_icons.js', './oTWC_utils.js', './oTWC_site.js', './oTWC_lock.js', './oTWC_infrastructure.js', './oTWC_siteLevel.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_configUIFields.js', './oTWC_planning.js', './oTWC_siteRow.js', './oTWC_powerSupply.js', './oTWC_land.js', './oTWC_saf.js', './oTWC_safCrew.js', './oTWC_safAction.js', './oTWC_safTimeBlock.js', './oTWC_safLog.js', './oTWC_file.js', './oTWC_srfItem.js', './oTWC_equipAction.js', './oTWC_company.js', './oTWC_profile.js', './oTWC_equipment.js', './oTWC_config.js'],
+    (runtime, core, coreSQL, twcIcons, twcUtils, twcSite, twcLock, twcInfra, twcSiteLevel, twcUI, configUIFields, twcPlan, twcRow, twcPowerSupply, twcLand, twcSaf, twcSafCrew, twcSafAction, twcSafTimeBlock, twcSafLog, twcFile, twcSrfItem, twcEqAct, twcCompany, twcProfile, twcEq, twcConfig) => {
         var _safUrl = null;
         var _allowedSafTypes = null;
         function getSafUrl() {
@@ -21,6 +21,24 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
             if (saf.code == 'SAF') { return saf.code; }
             return `<a class="twc" href="${getSafUrl()}&recId=${saf.id}" target="_blank">${saf.code}</a>`
+        }
+
+        // @@NOTE: SAF calendar day colour (server: getSAFInfoPanels_Builder_Step_0, client: ui/js/oTWC_siteAccess.js when a block is reserved / removed)
+        //         amber = some time blocks of the day are booked, red = all of them, null = none (the day keeps its default colour)
+        //         dayTimeBlocks: getAllSafTimeBlocks()[date] ({ blocksCount, <saf key>: { blocks: [ { block: { id } } ] } }), totalBlocks: number of time blocks in a day
+        //         distinct block ids are counted (it was 'more than 3 bookings')
+        function getCalendarDayCss(dayTimeBlocks, totalBlocks) {
+            if (!dayTimeBlocks) { return null; }
+            var booked = [];
+            for (var k in dayTimeBlocks) {
+                if (k == 'blocksCount' || !dayTimeBlocks[k]?.blocks) { continue; }
+                core.array.each(dayTimeBlocks[k].blocks, b => {
+                    var blockId = b?.block?.id;
+                    if (blockId != null && booked.indexOf(`${blockId}`) < 0) { booked.push(`${blockId}`); }
+                });
+            }
+            if (booked.length == 0) { return null; }
+            return (totalBlocks > 0 && booked.length >= totalBlocks) ? 'o-calendar-red' : 'o-calendar-orange';
         }
 
         function renderTimeBlocks(options) {
@@ -117,6 +135,13 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return safCrews;
         }
 
+        // @@NOTE: SAF equipment actions tables, SRF column link (TL employees only, null for everyone else): opens the SRF page (view mode) in a new tab
+        //         custrecord_twc_srf_itm_srf (SRF id) is returned by twcUtils.getSafActions / getSrfActions
+        function getSafEqActionSrfLink(userInfo) {
+            if (!userInfo?.isEmployee) { return null; }
+            return { url: core.url.script('otwc_spacerequest_sl') + '&recId=${' + twcSrfItem.Fields.SRF + '}', valueField: twcSrfItem.Fields.SRF, target: '_blank' };
+        }
+
         function getSafEqAction(dataSource) {
             var safActions = [];
             if (dataSource.id && !dataSource.reUse) {
@@ -183,16 +208,18 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             var specialDates = {}; var datesContent = {};
             if (options?.siteTimeBlocks) {
+                var totalBlocks = twcUtils.getSafTimeBlocks().length;
                 for (var k in options.siteTimeBlocks) {
                     datesContent[k] = [];
-                    specialDates[k] = { css: options.siteTimeBlocks[k].blocksCount > 3 ? 'o-calendar-red' : 'o-calendar-orange' }
+                    var dayCss = getCalendarDayCss(options.siteTimeBlocks[k], totalBlocks);
+                    if (dayCss) { specialDates[k] = { css: dayCss }; }
                     for (var ks in options.siteTimeBlocks[k]) {
                         if (ks == 'blocksCount') { continue; }
                         if (options.siteTimeBlocks[k][ks].saf.id) {
                             datesContent[k].push(`${getSafLink(options.siteTimeBlocks[k][ks].saf)}`);
                         } else {
                             // @@NOTE: a SAF wiht no ID means the saf exists but this user cannot see it, so we just mark the slots used
-                            datesContent[k].push(`${options.siteTimeBlocks[k][ks].blocks.length} slots used`);
+                            datesContent[k].push(`${options.siteTimeBlocks[k][ks].blocks.length} slots used<br />`);
                         }
                     }
                 }
@@ -290,6 +317,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var primaryContractors = getPrimaryContractors(userInfo, dataSource);
             var primaryContractor = dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR] || (primaryContractors.length == 1 ? primaryContractors[0].value : null);
 
+            // @@NOTE: editing an existing SAF: the saved customer / primary contractor must be in their drop down lists, otherwise the value is lost
+            //         and the SAF cannot be re-submitted (e.g. external user editing a SAF whose customer / contractor is not in the companies they can act for)
+            if (isExistingSaf) {
+                const ensureOption = (list, value, text) => {
+                    if (value && !list.find(c => { return c.value == value; })) { list.unshift({ value: value, text: text || '???' }); }
+                }
+                ensureOption(customers, dataSource[twcSaf.Fields.CUSTOMER], dataSource[twcSaf.Fields.CUSTOMER + '_name']);
+                ensureOption(primaryContractors, dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR], dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR + '_name']);
+            }
+
             var step3Info = { id: 'site-access-step-3a', fields: [] };
             fieldGroup.controls.push(step3Info);
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-customer', label: 'Customer', allowAll: false, value: customer, dataSource: customers });
@@ -297,7 +334,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             step3Info.fields.push({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'saf-work-summary', label: 'Summary of Work', rows: 3, value: dataSource[twcSaf.Fields.SUMMARY_OF_WORKS], width: '100%', lineBreak: true });
 
             if (userInfo.isEmployee) {
-                step3Info.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: 'saf-photo-delay', label: 'Photo Req. Delay', hide: !requiresSrf, allowAll: false, lineBreak: true });
+                // @@NOTE: the SAF value is shown (it was always empty, so a TL edit cleared it), empty = default delay (twcConfig.SAF_PHOTO_REQ_DELAY_DEFAULT)
+                var photoDelay = dataSource[twcSaf.Fields.WORKS_PHOTOS_REQ_DELAY];
+                step3Info.fields.push({ type: twcUI.CTRL_TYPE.NUMBER, id: 'saf-photo-delay', label: 'Photo Req. Delay (days)', value: (photoDelay === null || photoDelay === undefined) ? '' : photoDelay, hint: `default ${twcConfig.SAF_PHOTO_REQ_DELAY_DEFAULT}`, hide: !requiresSrf, allowAll: false, lineBreak: true });
             }
 
             var eqActionsVisible = false;
@@ -306,23 +345,30 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             }
             //
             var step3CInfo = { id: 'site-access-step-3c', title: 'Equipment Actions', hide: !eqActionsVisible, fields: [] };
+            // @@NOTE: equipment actions tables: the ID column and the SRF link are for TL employees only (see getSafEqActionSrfLink)
+            var srfLink = getSafEqActionSrfLink(userInfo);
             fieldGroup.controls.push(step3CInfo);
             var eqActionTableControl = {
                 id: `saf-eq-action-table`,
                 type: twcUI.CTRL_TYPE.TABLE,
                 label: 'Equipment Actions',
                 columns: [
-                    { id: 'ea_id', title: 'ID', styles: { width: '50px' }, noFilter: true, noSort: true },
-                    { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF', styles: { width: '125px' } },
-                    { id: twcEqAct.Fields.EA_EQUIPMENT + '_name', title: 'Equipment' },
+                    { id: 'ea_id', title: 'ID', styles: { width: '50px' }, noFilter: true, noSort: true, hide: !userInfo.isEmployee },
+                    { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF', styles: { width: '125px' }, link: srfLink, nullText: '' },
+                    { id: twcEqAct.Fields.EA_EQUIPMENT + '_name', title: 'Equipment', prefix: twcEq.infoIconPrefix(twcEqAct.Fields.EA_EQUIPMENT) },
+                    // @@NOTE: equipment parent TME / make / model (client request, see twcUtils.getSafActions / getSrfActions)
+                    { id: 'eq_parent_tme', title: 'Parent TME', nullText: '' },
+                    { id: 'eq_make', title: 'Make', nullText: '' },
+                    { id: 'eq_model', title: 'Model', nullText: '' },
                     { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
-                    { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Item' },
+                    { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Type' },
                     { id: twcSrfItem.Fields.DESCRIPTION, title: 'Description' },
                     { id: twcSrfItem.Fields.HEIGHT_ON_TOWER, title: 'Height on Tower', nullText: '' },
                     { id: twcSrfItem.Fields.AZIMUTH, title: 'Azimuth', nullText: '' },
-                    { id: twcSrfItem.Fields.TYPE_OPT + '_name', title: 'Feeder Type', nullText: '' },
+                    { id: twcSrfItem.Fields.FEEDER_TYPE + '_name', title: 'Feeder Type', nullText: '' },
                     { id: twcSrfItem.Fields.B_END, title: 'B-End', nullText: '' },
-                    { id: twcEqAct.Fields.EA_TYPE + '_name', title: 'Type' },
+                    // @@NOTE: 'Action' = SRF item request type (Install / Remove / Swap, via custrecord_twc_eq_action_srf_item, see twcUtils.getSafActions), 'Type' is the equipment (item) type column
+                    { id: twcSrfItem.Fields.REQUEST_TYPE + '_name', title: 'Action' },
                     { id: twcSafAction.Fields.SAF_ACTION_STATUS + '_name', title: 'Status' },
                     { id: 'saf-detach', title: '', styles: { 'width': '50px', 'text-align': 'center', 'padding': '0px' }, noSort: true, noFilter: true },
                 ],
@@ -357,6 +403,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
                 // @@NOTE: the PICW is cleared on a re-used SAF
                 picwInfo = coreSQL.first('select id, custrecord_twc_prof_company as contractor, custrecord_twc_prof_phone as phone from customrecord_twc_prof where id = ' + dataSource[twcSaf.Fields.PICW]);
+                // @@NOTE: a profile can be linked to multiple companies (customrecord_twc_profilec), so the PICW staff list must be the SAF primary contractor's staff, not the PICW home company's
+                if (picwInfo && dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR]) { picwInfo.contractor = dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR]; }
 
             } else if (!isExistingSaf && primaryContractors.length == 1) {
                 // @@NOTE: this is to manage SAF entered by clients, they will be the only primary contractor
@@ -518,11 +566,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 if (requiresSrf) {
                     if (userInfo.isEmployee) { fieldGroups.push(getSAFInfoPanels_WorkFlowInfo(dataSource, userInfo)); }
                     fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Images(dataSource, userInfo));
+                    // @@NOTE: completion photos process log (PHOTOS category) in its own table
+                    fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo, twcSafLog.LogCategory.Photos));
                 }
 
                 fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Files(dataSource, userInfo));
 
-                if (userInfo.isEmployee) { fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo)); }
+                // @@NOTE: external users see the log too, limited to status changes and comments (see getSAFInfoPanels_WorkFlowInfo_Logs)
+                fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo));
 
             }
             fieldGroups.push(getSAFInfoPanels_Existing(dataSource, userInfo));
@@ -563,10 +614,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 type: twcUI.CTRL_TYPE.TABLE,
                 label: 'Equipment Actions',
                 columns: [
-                    { id: 'expand', title: '', noSort: true, noFilter: true, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } },
+                    { id: 'expand', title: '', noExport: true, noSort: true, noFilter: true, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } },
                     { id: 'select', title: checkAllInput, noSort: true, noFilter: true, styles: { width: '50px', 'text-align': 'center', 'padding': '0px' } },
-                    { id: 'ea_id', title: 'ID', styles: { width: '50px' }, noFilter: true, noSort: true },
-                    { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF' },
+                    // @@NOTE: the ID column and the SRF link are for TL employees only (see getSafEqActionSrfLink)
+                    { id: 'ea_id', title: 'ID', styles: { width: '50px' }, noFilter: true, noSort: true, hide: !userInfo?.isEmployee },
+                    { id: twcSrfItem.Fields.SRF + '_name', title: 'SRF', link: getSafEqActionSrfLink(userInfo), nullText: '' },
+                    // @@NOTE: equipment id / parent TME / make / model (client request, to identify the kit, see twcUtils.getSrfActions)
+                    { id: twcEqAct.Fields.EA_EQUIPMENT + '_name', title: 'Equip ID', nullText: '' },
+                    { id: 'eq_parent_tme', title: 'Parent TME', nullText: '' },
+                    { id: 'eq_make', title: 'Make', nullText: '' },
+                    { id: 'eq_model', title: 'Model', nullText: '' },
                     { id: twcSrfItem.Fields.STEP_TYPE + '_name', title: 'Class' },
                     { id: twcSrfItem.Fields.ITEM_TYPE + '_name', title: 'Eq. Type' },
                     { id: 'srf_eq_action_type', title: 'Type' },
@@ -683,19 +740,31 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 fields['select'] = { title: '', nullText: '', noSort: true, noFilter: true, styles: { width: '50px', 'text-align': 'center', 'padding': '0px' } };
             }
 
-            fields['expand'] = { title: '', noSort: true, noFilter: true, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
-            fields['ea_id'] = { title: 'ID', styles: { width: '50px' }, link: eaActionLink, noFilter: true, noSort: true };
-            fields[twcSrfItem.Fields.SRF + '_name'] = { title: 'SRF', styles: { width: '125px' } };
-            fields[twcEqAct.Fields.EA_EQUIPMENT + '_name'] = { title: 'Equipment', link: equipLink };
+            fields['expand'] = { title: '', noExport: true, noSort: true, noFilter: true, nullText: '', styles: { width: '30px', 'text-align': 'center', padding: '0px' } };
+            // @@NOTE: the ID column and the SRF link are for TL employees only (see getSafEqActionSrfLink)
+            fields['ea_id'] = { title: 'ID', styles: { width: '50px' }, link: eaActionLink, noFilter: true, noSort: true, hide: !userInfo.isEmployee };
+            fields[twcSrfItem.Fields.SRF + '_name'] = { title: 'SRF', styles: { width: '125px' }, link: getSafEqActionSrfLink(userInfo), nullText: '' };
+            // @@NOTE: (i) icon => equipment details dialog
+            fields[twcEqAct.Fields.EA_EQUIPMENT + '_name'] = { title: 'Equipment', link: equipLink, prefix: twcEq.infoIconPrefix(twcEqAct.Fields.EA_EQUIPMENT) };
+            // @@NOTE: equipment parent TME / make / model (client request, see twcUtils.getSafActions)
+            fields['eq_parent_tme'] = { title: 'Parent TME', nullText: '' };
+            fields['eq_make'] = { title: 'Make', nullText: '' };
+            fields['eq_model'] = { title: 'Model', nullText: '' };
             fields[twcSrfItem.Fields.STEP_TYPE + '_name'] = { title: 'Class' };
-            fields[twcSrfItem.Fields.ITEM_TYPE + '_name'] = { title: 'Item' };
+            fields[twcSrfItem.Fields.ITEM_TYPE + '_name'] = { title: 'Type' };
             fields[twcSrfItem.Fields.DESCRIPTION] = { title: 'Description' };
             fields[twcSrfItem.Fields.HEIGHT_ON_TOWER] = { title: 'Height on Tower', nullText: '' };
             fields[twcSrfItem.Fields.AZIMUTH] = { title: 'Azimuth', nullText: '' };
-            fields[twcSrfItem.Fields.TYPE_OPT + '_name'] = { title: 'Feeder Type', nullText: '' };
+            fields[twcSrfItem.Fields.FEEDER_TYPE + '_name'] = { title: 'Feeder Type', nullText: '' };
             fields[twcSrfItem.Fields.B_END] = { title: 'B-End', nullText: '' };
-            fields[twcEqAct.Fields.EA_TYPE + '_name'] = { title: 'Type' };
+            // @@NOTE: 'Action' = SRF item request type (Install / Remove / Swap, via custrecord_twc_eq_action_srf_item, see twcUtils.getSafActions), 'Type' is the equipment (item) type column
+            fields[twcSrfItem.Fields.REQUEST_TYPE + '_name'] = { title: 'Action' };
             fields[twcSafAction.Fields.SAF_ACTION_STATUS + '_name'] = { title: 'Status', styles: { width: '120px', 'text-align': 'center' } };
+            // @@NOTE: TL can detach a pending action from the SAF in view mode, whatever the SAF status (no edit / re-submit, the SAF status does not change)
+            //         the cell is built by twcUtils.getSafActions (pending actions only), handled by oTWC_siteAccess.js: TWCSiteAccessPage.detachSafActionTL
+            if (userInfo.isEmployee && userInfo.permission?.lvl > twcConfig.PERMISSION_LEVEL.VIEW) {
+                fields['saf-detach'] = { title: '', nullText: '', noExport: true, styles: { width: '50px', 'text-align': 'center', 'padding': '0px' } };
+            }
 
             // @@REVIEW: we need to fix filters sorting (on table ui) with child rows before we can show
             for (var k in fields) {
@@ -735,6 +804,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             workFlowInfo.fields.push({ id: twcSaf.Fields.COMPLETION_PHOTOS_REQUESTED, label: 'Photos Requested' })
             workFlowInfo.fields.push({ id: twcSaf.Fields.COMPLETION_PHOTOS_RECEIVED, label: 'Photos Received', lineBreak: true })
             workFlowInfo.fields.push({ id: twcSaf.Fields.REVIEW_COMMENT, width: '100%', rows: 5, label: 'Review Comment', lineBreak: true })
+            // @@NOTE: completion photos review approval step (ui/modules/oTWC_siteAccessUtils.js: setSafReviewed / approveSafReview)
+            workFlowInfo.fields.push({ id: twcSaf.Fields.REVIEW_PENDING_APPROVAL, label: 'Review Pending Approval' })
+            workFlowInfo.fields.push({ id: twcSaf.Fields.REVIEW_APPROVED_BY, label: 'Review Approved By' })
+            workFlowInfo.fields.push({ id: twcSaf.Fields.REVIEW_APPROVED_DATE, label: 'Review Approved Date', lineBreak: true })
+            workFlowInfo.fields.push({ id: twcSaf.Fields.PROPOSED_REVIEW_COMMENT, width: '100%', rows: 5, label: 'Proposed Review Comment (reviewer)', lineBreak: true })
 
             configUIFields.formatPanelFields(dataSource, fieldGroup);
             return fieldGroup;
@@ -789,22 +863,49 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
 
-        function getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo) {
-            var fieldGroup = { id: 'site-access-workflow-logs', title: 'SAF Logs', collapsed: false, controls: [] };
-            var workFlowLogsInfo = { id: 'site-access-logs', collapsed: false, fields: [] };
+        // @@NOTE: category: empty = main SAF Log (everything but the PHOTOS category), twcSafLog.LogCategory.Photos = Completion Photos Log
+        function getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo, category) {
+            var isPhotos = category == twcSafLog.LogCategory.Photos;
+            var fieldGroup = { id: isPhotos ? 'site-access-photos-logs' : 'site-access-workflow-logs', title: isPhotos ? 'Completion Photos Log' : 'SAF Logs', collapsed: false, controls: [] };
+
+            var where = `where ${twcSafLog.Fields.SAF} = ${parseInt(dataSource.id) || 0}`;
+            if (isPhotos) {
+                where += `
+ and ${twcSafLog.Fields.CATEGORY} = '${twcSafLog.LogCategory.Photos}'`;
+            } else {
+                where += `
+ and (${twcSafLog.Fields.CATEGORY} is null or ${twcSafLog.Fields.CATEGORY} != '${twcSafLog.LogCategory.Photos}')`;
+            }
+
+            // @@NOTE: TL users see the full log, external users only see status changes, comments and edit / re-submit entries (with their comment)
+            //         errors (stack traces), reviewer assignments / reviews / approvals, detach notes, etc. stay TL only
+            if (!userInfo.isEmployee) {
+                // @@NOTE: the message field is a long text (CLOB) in NetSuite, 'in' / '=' do not work on it in SuiteQL, 'like' does (no wildcards = exact match)
+                var msg = twcSafLog.LogMessage;
+                var msgFilter = [msg.StatusChanged, msg.Comment, msg.Edited].map(m => { return `${twcSafLog.Fields.MESSAGE} like '${m}'`; }).join(' or ');
+                where += `
+ and (${msgFilter})
+                         and ${twcSafLog.Fields.LOG_TYPE} in ('${twcSafLog.LogType.INFO}', '${twcSafLog.LogType.WARNING}')`;
+            }
+
+            var workFlowLogsInfo = { id: isPhotos ? 'site-access-photos-logs-info' : 'site-access-logs', collapsed: false, fields: [] };
             fieldGroup.controls.push(workFlowLogsInfo);
             workFlowLogsInfo.fields.push({
-                id: `${twcSafLog.Type}`,
+                // @@NOTE: the table control id must be unique on the page (two log tables), the record type is then taken from recordType
+                id: isPhotos ? `${twcSafLog.Type}_photos` : `${twcSafLog.Type}`,
+                recordType: twcSafLog.Type,
                 fields: {
                     [twcSafLog.Fields.LOG_TYPE]: { title: 'Type', styles: { width: '100px' } },
                     [twcSafLog.Fields.CREATED]: { title: 'Date/Time', styles: { width: '120px' } },
                     [twcSafLog.Fields.PROFILE]: { title: 'Profile', styles: { width: '100px' } },
                     [twcSafLog.Fields.MESSAGE]: { title: 'Message', styles: { width: '100px' } },
-                    [twcSafLog.Fields.ADDITIONAL_INFO]: { title: 'Info', nullText: '' },
+                    [twcSafLog.Fields.ADDITIONAL_INFO]: { title: 'Info', nullText: '', wrap: true },
 
                 },
-                where: { [twcSafLog.Fields.SAF]: dataSource.id },
-                orderBy: { created: 'desc' },
+                where: where,
+                // @@NOTE: newest first, id as tie-break: the rows of one change are written in the same second (it was by created only, so their order was random)
+                //         a change always shows its comment row above its status change row (the status change is written first, see oTWC_siteAccessUtils.js)
+                orderBy: `${twcSafLog.Fields.CREATED} desc, id desc`,
                 showToolbar: false,
                 FieldsInfo: twcSafLog.FieldsInfo,
                 onColumnInit: (tbl, col) => {
@@ -830,6 +931,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             getSafTableFields: getSafTableFields,
             getSAFInfoPanels: getSAFInfoPanels,
             renderTimeBlocks: renderTimeBlocks,
+            getCalendarDayCss: getCalendarDayCss,
 
             getSafListPanel: getSAFInfoPanels_Existing
         }

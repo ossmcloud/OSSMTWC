@@ -4,8 +4,8 @@
  *@NModuleScope public
  *@NAmdConfig  /SuiteBundles/Bundle 548734/O/config.json
  */
-define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_config.js', './data/oTWC_utils.js', './data/oTWC_file.js', './data/oTWC_fileUI.js', './O/oTWC_nsFileUtils.js'],
-    function (file, uis, core, coreSQL, recu, twcConfig, twcUtils, twcFile, twcFileUI, nsFileUtils) {
+define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './data/oTWC_config.js', './data/oTWC_utils.js', './data/oTWC_file.js', './data/oTWC_fileUI.js', './O/oTWC_nsFileUtils.js', './data/oTWC_equipmentUI.js'],
+    function (file, uis, core, coreSQL, recu, twcConfig, twcUtils, twcFile, twcFileUI, nsFileUtils, twcEquipmentUI) {
         var suiteLet = uis.new({ title: 'TL Micro Service' });
         suiteLet.get = (context, s) => {
             return { status: 'success' };
@@ -38,6 +38,11 @@ define(['N/file', 'O/suitlet', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
             } else if (context.request.parameters.action == 'upload-file') {
                 var payload = JSON.parse(context.request.body);
                 return { id: saveTwcFile(context, payload) };
+
+            } else if (context.request.parameters.action == 'get-equipment-info') {
+                // @@NOTE: equipment details dialog ((i) icon next to the equipment id in the tables, ui/views/oTWC_baseView.js: showEquipmentInfo)
+                var payload = JSON.parse(context.request.body);
+                return twcEquipmentUI.getEquipmentInfo(payload, twcConfig.userInfo(context));
                 
 
             } else {

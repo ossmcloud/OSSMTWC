@@ -60,7 +60,7 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
 
                 if (String(oldStatus) === String(newStatus)) return
 
-                let statuses = [twcSaf.Status.Approved, twcSaf.Status.Rejected, twcSaf.Status.Cancelled]
+                let statuses = [twcSaf.Status.Approved, twcSaf.Status.Rejected, twcSaf.Status.Cancelled, twcSaf.Status.FeedbackIssued]
 
                 if (statuses.indexOf(Number(newStatus)) == -1) return
                 var safData = recu.lookUp(rec.type, rec.id, [twcSaf.Fields.SAF_AUTHOR, twcSaf.Fields.SAF_ID, twcSaf.Fields.NAME])
@@ -75,15 +75,18 @@ define(['N/file', 'N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'N/redire
                 if (Array.isArray(address)) address = address[0] && address[0].value
                 if (!address) return
 
-                email.send({
-                    author: twcConfig.NO_REPLY,
-                    recipients: address,
-                    subject: 'SAF ' + newStatusText,
-                    body: 'Dear ' + recipient.name + ',<br><br>The status of SAF record - ' + recordRef +
-                        ' has changed from ' + (oldStatusText || 'Blank') +
-                        ' to ' + newStatusText + '.'
-                })
-
+                if (twcConfig.SB) {
+                    // @@GO-LIVE :: email sent only in the sandbox (twcConfig.SB), so no emails go to customers / contractors on LIVE before go-live - remove the SB check at go-live
+                    email.send({
+                        author: twcConfig.NO_REPLY,
+                        recipients: address,
+                        subject: 'SAF ' + newStatusText,
+                        body: 'Dear ' + recipient.name + ',<br><br>The status of SAF record - ' + recordRef +
+                            ' has changed from ' + (oldStatusText || 'Blank') +
+                            ' to ' + newStatusText + '.'
+                    })
+                }
+                
             } catch (error) {
                 core.logDebug('BEFORE-LOAD', error.message);
             }

@@ -119,6 +119,14 @@ Each page is five pieces — copy `ui/oTWC_siteInfo_*` when adding one:
 - `svc/*_svc.js` are Scheduled Scripts (logic usually in `modules/` or a helper). They must self-throttle: inside the processing loop check **`core.env.units()`** (note the `()` — it's a function) and when it drops below ~50 stop and return a restart marker / resume cursor (e.g. `{ lastId }`); `execute()` then requeues the same script with `N/task`, passing the cursor in a JSON script parameter. Follow `svc/oTWC_certStatus_svc.js` + `modules/oTWC_certStatusEngine.js` for any new job. (`svc/oTWC_infra_sts_update_svc.js` does not requeue — fine for small volumes only.)
 - Always mind NetSuite governance units in loops (record loads/saves are expensive); prefer one SQL select over per-row `N/record` loads.
 
+## Sandbox / LIVE switch (`SB`)
+
+`data/oTWC_config.js` (top of the module) has `const SB = true;`. It selects the sandbox or the LIVE internal id wherever the two accounts differ (`twcConfig.SB ? <sb id> : <live id>`, re-exported as `twcUtils.SB`).
+
+- **When deploying / pushing files to LIVE (TWC_LIVE), `SB` MUST be changed to `const SB = false;`.** In the sandbox (TWC_SB) it must be `true`. Before any push, deploy or deploy dry run, check its value against the target account and remind the user if it is wrong.
+- It is a plain constant on purpose: detecting the account with `N/runtime` / `core.env.sb()` while the module is being defined throws `SUITESCRIPT_API_UNAVAILABLE_IN_DEFINE`. Don't replace it with a runtime check at define time.
+- A new id that differs between the accounts: `twcConfig.SB ? <sb id> : <live id>`, tagged `// @@HARDCODED @@GO-LIVE`.
+
 ## Ignore
 
 `.docs/` (outdated — see above), `data_nx/`, `FileCabinet/Templates/`, `Objects/`, `AccountConfiguration/`, `FileUtils/`, `.temp/`.

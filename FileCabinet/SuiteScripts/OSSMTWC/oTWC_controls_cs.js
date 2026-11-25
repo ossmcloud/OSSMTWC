@@ -55,7 +55,198 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
             testFunction() {
 
                 try {
-                    twcSrfWorkflowEngine.initEquipment({ srf: 156 });
+                    // @@NOTE: ONE-OFF FIX - Issue 299: retired equipment licence statuses 'Prop to Licence - Licence Requested / Issued / Signed' and 'Prop to Unlicence - ...'
+                    //         equipment (and SDS equipment lines) in one of those statuses go back to 'Prop to Licence' / 'Prop to Unlicence' (the equipment stays there until the licence is executed)
+                    //         the retired values are found by name on customrecord_twc_equip_licence_status (some of them are not in twcUtils.EqLicenseStatus)
+                    //         run BEFORE inactivating the retired values in NetSuite
+                    var retired = coreSQL.run(`
+                        select  id, name,
+                                case when LOWER(name) like 'prop to licence -%' then ${twcUtils.EqLicenseStatus.ProptoLicence} else ${twcUtils.EqLicenseStatus.ProptoUnlicence} end as new_status
+                        from    customrecord_twc_equip_licence_status
+                        where   LOWER(name) like 'prop to licence -%' or LOWER(name) like 'prop to unlicence -%'
+                    `);
+                    console.table(retired);
+                    if (retired.length == 0) { alert('No retired licence status found'); return; }
+                    var newStatus = {}; core.array.each(retired, r => { newStatus[r.id] = r.new_status; });
+                    var retiredIds = retired.map(r => { return r.id; }).join(',');
+
+                    var toFix = coreSQL.run(`
+                        select  'customrecord_twc_equip' as rec_type, 'custrecord_twc_eq_licence_status' as field, id, name, custrecord_twc_eq_licence_status as status, BUILTIN.DF(custrecord_twc_eq_licence_status) as status_name
+                        from    customrecord_twc_equip
+                        where   custrecord_twc_eq_licence_status in (${retiredIds})
+                        union all
+                        select  'customrecord_twc_sds_item' as rec_type, 'custrecord_twc_sds_item_license_status' as field, id, name, custrecord_twc_sds_item_license_status as status, BUILTIN.DF(custrecord_twc_sds_item_license_status) as status_name
+                        from    customrecord_twc_sds_item
+                        where   custrecord_twc_sds_item_license_status in (${retiredIds})
+                    `);
+                    console.table(toFix.map(r => { return { type: r.rec_type, id: r.id, name: r.name, status: r.status_name, new_status: newStatus[r.status] == twcUtils.EqLicenseStatus.ProptoLicence ? 'Prop to Licence' : 'Prop to Unlicence' }; }));
+                    if (toFix.length == 0) { alert('Nothing to fix (see console for the retired statuses)'); return; }
+                    if (!confirm(`Move ${toFix.length} record(s) (equipment / SDS lines) out of the retired licence statuses? (see console for the list)`)) { return; }
+
+                    var fixed = 0; var failed = 0;
+                    core.array.each(toFix, r => {
+                        try {
+                            recu.submit(r.rec_type, r.id, r.field, newStatus[r.status]);
+                            fixed++;
+                            console.log(`FIXED: ${r.rec_type} ${r.id} (${r.name}) - ${r.status_name} -> ${newStatus[r.status]}`);
+                        } catch (error) {
+                            failed++;
+                            console.log(`FAILED: ${r.rec_type} ${r.id} (${r.name})`, error);
+                        }
+                    });
+                    console.log(`DONE - fixed: ${fixed} - failed: ${failed}`);
+                    alert(`Done - fixed: ${fixed} - failed: ${failed} (see console)`);
+                    return;
+
+                    // @@NOTE: ONE-OFF FIX - completed SAF actions wrongly detached (SAF action picker offered 'detach from <SAF>' on completed EAs, fixed in data/oTWC_utils.js: getSrfActions)
+                    //         wrongly detached = SAF action status Detached but 'complete' still ticked (a legit detach only happens while pending, so complete is never ticked)
+                    //         for each one:
+                    //              - the SAF action goes back to Complete (detach reason / comment cleared)
+                    //              - the SAF actions created on OTHER SAFs for the same EA after it, not completed themselves, are deleted (the wrong attach)
+                    //              - the EA points back to the original SAF
+                    var wrongDetached = coreSQL.run(`
+                        select  sa.id, sa.custrecord_twc_saf_a_saf as saf, BUILTIN.DF(sa.custrecord_twc_saf_a_saf) as saf_name,
+                                sa.custrecord_twc_saf_a_ea as ea, ea.name as ea_name, sa.created,
+                                ea.custrecord_twc_eq_action_saf as ea_saf, BUILTIN.DF(ea.custrecord_twc_eq_action_saf) as ea_saf_name,
+                                BUILTIN.DF(ea.custrecord_twc_eq_action_sts) as ea_status
+                        from    customrecord_twc_saf_action sa
+                        join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea
+                        where   sa.custrecord_twc_saf_a_status = ${twcUtils.SafActionStatus.Detached}
+                        and     sa.custrecord_twc_saf_a_complete = 'T'
+                        order by sa.id
+                    `);
+                    core.array.each(wrongDetached, w => {
+                        w.wrongAttached = coreSQL.run(`
+                            select  sa.id, sa.custrecord_twc_saf_a_saf as saf, BUILTIN.DF(sa.custrecord_twc_saf_a_saf) as saf_name, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as status
+                            from    customrecord_twc_saf_action sa
+                            where   sa.custrecord_twc_saf_a_ea = ${w.ea}
+                            and     sa.custrecord_twc_saf_a_saf != ${w.saf}
+                            and     sa.id > ${w.id}
+                            and     NVL(sa.custrecord_twc_saf_a_complete, 'F') = 'F'
+                        `);
+                    });
+                    console.table(wrongDetached.map(w => {
+                        return {
+                            saf_action: w.id, ea: w.ea_name, ea_status: w.ea_status, restore_on: w.saf_name, ea_saf_now: w.ea_saf_name,
+                            delete_saf_actions: w.wrongAttached.map(a => { return `${a.id} (${a.saf_name} - ${a.status})`; }).join(', ')
+                        };
+                    }));
+                    if (wrongDetached.length == 0) { alert('Nothing to fix'); return; }
+                    if (!confirm(`Restore ${wrongDetached.length} wrongly detached SAF action(s)? (see console for the list)`)) { return; }
+
+                    var fixed = 0; var failed = 0;
+                    core.array.each(wrongDetached, w => {
+                        try {
+                            core.array.each(w.wrongAttached, a => {
+                                recu.del('customrecord_twc_saf_action', a.id);
+                                console.log(`DELETED: SAF action ${a.id} on ${a.saf_name} (${w.ea_name})`);
+                            });
+                            recu.submit('customrecord_twc_saf_action', w.id,
+                                ['custrecord_twc_saf_a_status', 'custrecord_twc_saf_a_detach_reason', 'custrecord_twc_saf_a_detach_comment'],
+                                [twcUtils.SafActionStatus.Complete, null, null]);
+                            recu.submit('customrecord_twc_eq_action', w.ea, 'custrecord_twc_eq_action_saf', w.saf);
+                            fixed++;
+                            console.log(`FIXED: SAF action ${w.id} restored on ${w.saf_name} (${w.ea_name})`);
+                        } catch (error) {
+                            failed++;
+                            console.log(`FAILED: SAF action ${w.id} on ${w.saf_name} (${w.ea_name})`, error);
+                        }
+                    });
+                    console.log(`DONE - fixed: ${fixed} - failed: ${failed}`);
+                    alert(`Done - fixed: ${fixed} - failed: ${failed} (see console)`);
+                    return;
+
+                    /*
+                    // @@NOTE: ONE-OFF FIX - SRF Review Space / Facilities check passed
+                    //         the Facilities workflow stage (id 4) was configured with pass field / form field custrecord_twc_srf_rev_space_check_pass instead of custrecord_twc_srf_rev_fac_check_pass
+                    //         so the Facilities check overwrote the Space check result and the Facilities check result was never saved on the review record
+                    //         the right results are on the workflow items (custrecord_twc_srf_wkfi_review_passed): resets both fields on the review record from the latest completed Space / Facilities item
+                    // @@HARDCODED: workflow stage ids 3 (Space) and 4 (Facilities)
+                    const STAGE_SPACE = 3; const STAGE_FACILITIES = 4;
+                    var reviews = {};
+                    coreSQL.each(`
+                        select  r.id as review_id, BUILTIN.DF(r.custrecord_twc_srf_rev_srf) as srf, r.custrecord_twc_srf_rev_iter as iter,
+                                r.custrecord_twc_srf_rev_space_check_pass as cur_space, r.custrecord_twc_srf_rev_fac_check_pass as cur_fac,
+                                wi.id as item_id, wi.custrecord_twc_srf_wkfi_stage as stage, wi.custrecord_twc_srf_wkfi_review_passed as passed
+                        from    customrecord_twc_srf_rev r
+                        join    customrecord_twc_srf_wkfi wi on wi.custrecord_twc_srf_wkfi_review = r.id
+                        where   wi.custrecord_twc_srf_wkfi_stage in (${STAGE_SPACE}, ${STAGE_FACILITIES})
+                        and     wi.custrecord_twc_srf_wkfi_status = ${twcSrfWorkflowEngine.WorkflowStatus.COMPLETED}
+                        order by r.id, wi.id desc
+                    `, row => {
+                        var rev = reviews[row.review_id];
+                        if (!rev) {
+                            rev = reviews[row.review_id] = { id: row.review_id, srf: row.srf, iter: row.iter, curSpace: row.cur_space == 'T', curFac: row.cur_fac == 'T', space: null, fac: null };
+                        }
+                        // @@NOTE: rows are ordered by item id desc, so the first one per stage is the latest (a stage can be completed more than once in the same iteration)
+                        if (row.stage == STAGE_SPACE && rev.space === null) { rev.space = row.passed == 'T'; }
+                        if (row.stage == STAGE_FACILITIES && rev.fac === null) { rev.fac = row.passed == 'T'; }
+                    });
+
+                    var toFix = [];
+                    for (var k in reviews) {
+                        var rev = reviews[k];
+                        rev.fields = []; rev.values = [];
+                        // @@NOTE: only set a field when its check has been completed, otherwise leave it as it is
+                        if (rev.space !== null && rev.space !== rev.curSpace) { rev.fields.push('custrecord_twc_srf_rev_space_check_pass'); rev.values.push(rev.space); }
+                        if (rev.fac !== null && rev.fac !== rev.curFac) { rev.fields.push('custrecord_twc_srf_rev_fac_check_pass'); rev.values.push(rev.fac); }
+                        if (rev.fields.length > 0) { toFix.push(rev); }
+                    }
+                    console.table(toFix.map(r => { return { review: r.id, srf: r.srf, iter: r.iter, cur_space: r.curSpace, new_space: r.space, cur_fac: r.curFac, new_fac: r.fac }; }));
+                    if (toFix.length == 0) { alert('Nothing to fix'); return; }
+                    if (!confirm(`Fix Space / Facilities check passed on ${toFix.length} SRF Review record(s)? (see console for the list)`)) { return; }
+
+                    var fixed = 0; var failed = 0;
+                    core.array.each(toFix, r => {
+                        try {
+                            recu.submit('customrecord_twc_srf_rev', r.id, r.fields, r.values);
+                            fixed++;
+                            console.log(`FIXED: review ${r.id} (${r.srf} - iter ${r.iter}) -> space: ${r.space} - facilities: ${r.fac}`);
+                        } catch (error) {
+                            failed++;
+                            console.log(`FAILED: review ${r.id} (${r.srf} - iter ${r.iter})`, error);
+                        }
+                    });
+                    console.log(`DONE - fixed: ${fixed} - failed: ${failed}`);
+                    alert(`Done - fixed: ${fixed} - failed: ${failed} (see console)`);
+                    return;
+                    */
+                    
+                    
+
+                    //twcSrfWorkflowEngine.initEquipment({ srf: 156 });
+
+                    // @@NOTE: ONE-OFF FIX - ATME / Feeders added to an existing TME via SRF were created without parent TME
+                    //         (initEquipment read a non existing constant TMI_ID instead of TME_ID, fixed in modules/oTWC_srfWorkflowEngine.js)
+                    //         sets the equipment Parent TME from the SRF item TME (custrecord_twc_srf_itm_tme_id)
+                    // if (!confirm('Fix missing Parent TME on equipment created from SRF items?')) { return; }
+                    // var fixed = 0; var failed = 0; var done = {};
+                    // var toFix = coreSQL.run(`
+                        // select  eq.id, eq.name, srfi.custrecord_twc_srf_itm_tme_id as parent_id, BUILTIN.DF(srfi.custrecord_twc_srf_itm_tme_id) as parent_name,
+                                // BUILTIN.DF(srfi.custrecord_twc_srf_itm_srf) as srf
+                        // from    customrecord_twc_equip eq
+                        // join    customrecord_twc_eq_action ea on ea.custrecord_twc_eq_action_eq = eq.id
+                        // join    customrecord_twc_srf_itm srfi on srfi.id = ea.custrecord_twc_eq_action_srf_item
+                        // where   eq.custrecord_twc_equip_parent_tme_id is null
+                        // and     srfi.custrecord_twc_srf_itm_tme_id is not null
+                        // order by eq.id
+                    // `);
+                    // console.log(`EQUIPMENT TO FIX: ${toFix.length}`, toFix);
+                    // core.array.each(toFix, e => {
+                        // // @@NOTE: the same equipment could come back more than once (more than one action), only fix it once
+                        // if (done[e.id]) { return; }
+                        // done[e.id] = true;
+                        // try {
+                            // recu.submit(twcEquipment.Type, e.id, twcEquipment.Fields.PARENT_TME_ID, e.parent_id);
+                            // fixed++;
+                            // console.log(`FIXED: ${e.name} -> parent: ${e.parent_name} (${e.srf})`);
+                        // } catch (error) {
+                            // failed++;
+                            // console.log(`FAILED: ${e.name} -> parent: ${e.parent_name} (${e.srf})`, error);
+                        // }
+                    // });
+                    // console.log(`DONE - fixed: ${fixed} - failed: ${failed}`);
+                    // alert(`Done - fixed: ${fixed} - failed: ${failed} (see console)`);
                     //console.log(twcSdsEngine.getFormData({ id: 133 }))
 
                     //twcSrfWorkflowEngine.initWorkFlow({srf: 136})

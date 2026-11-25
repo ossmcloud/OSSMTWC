@@ -1,0 +1,60 @@
+Section,Constant,File,Line,Table,Table Name,Values,Notes
+Custom record / list,PUBLIC_FLAG,data/oTWC_utils.js,10,customrecord_twc_site_public; customrecord_twc_infra_publ,OSSMTWC - Site Public; OSSMTWC - Infra Public,Yes=1; TL=2,Same ids used on both tables
+Custom record / list,EQ_LIB_STATUS,data/oTWC_utils.js,17,customrecord_twc_eq_lib_sts,OSSMTWC - Equip-Lib Library Entry Status,Inactive=1; Draft=2; Active=3,
+Custom record / list,EQ_LIB_USE,data/oTWC_utils.js,24,customrecord_twc_equip_use_lib,OSSMTWC - Equipment Use Library,Draft=1; Yes=2; No=3,
+Custom record / list,EQ_ACTION_STATUS,data/oTWC_utils.js,31,customrecord_twc_eq_action_sts,OSSMTWC - Equip-Action Status,Pending=1; Complete=2; Cancelled=3; Released=4; AlreadyInstalled=5; NeverInstalled=6; AlreadyRemoved=7,
+Custom record / list,EQ_ACTION_TYPE,data/oTWC_utils.js,42,customrecord_twc_eq_action_type,OSSMTWC - Equip-Action Type,Licence=1; Unlicence=2; SwapLicence=5; SwapUnlicence=6,
+Custom record / list,EQ_INSTALL_STATUS,data/oTWC_utils.js,51,customrecord_twc_equip_install_status,OSSMTWC - Equipment Install Status,Draft=1; NotInstalled=2; Installed=3; Removed=4; Cancelled=5,
+Custom record / list,EQ_LICENSE_STATUS,data/oTWC_utils.js,68,customrecord_twc_equip_licence_status,OSSMTWC - Equipment Licence Status,Draft=1; ReqtoLicence=2; ProptoLicence=3; Licenced=6; ReqtoUnlicence=7; ProptoUnlicence=8; Unlicenced=11; Cancelled=12; LicenceRetained=13; LicenceSwapped=14,"Retired (commented out, Issue 299): 4, 5, 9, 10"
+Custom record / list,CUSTOMER_FLAG,data/oTWC_utils.js,97,customrecord_twc_cus_flag,OSSMTWC - Customer Flag,Customer=1; No=2,Duplicate in data/oTWC_config.js:30
+Custom record / list,CUSTOMER_FLAG,data/oTWC_config.js,30,customrecord_twc_cus_flag,OSSMTWC - Customer Flag,Customer=1; No=2,Duplicate of data/oTWC_utils.js:97
+Custom record / list,CONTRACTOR_FLAG,data/oTWC_utils.js,103,customrecord_twc_con_flag,OSSMTWC - Contractor Flag,Contractor=1; SubContractor=2; No=3,Duplicate in data/oTWC_config.js:36
+Custom record / list,CONTRACTOR_FLAG,data/oTWC_config.js,36,customrecord_twc_con_flag,OSSMTWC - Contractor Flag,Contractor=1; SubContractor=2; No=3,Duplicate of data/oTWC_utils.js:103
+Custom record / list,COMPANY_ACCREDITATION_STATUS,data/oTWC_utils.js,110,customrecord_twc_co_accred_status,OSSMTWC - Company Accreditation Status,Inactive=1; Accredited=2; CertsExpired=3; Pending=4; ToBeRenewed=6; No=7,Approved=5 commented out; duplicate in data/oTWC_config.js:44
+Custom record / list,COMPANY_ACCREDITATION_STATUS,data/oTWC_config.js,44,customrecord_twc_co_accred_status,OSSMTWC - Company Accreditation Status,Inactive=1; Accredited=2; CertsExpired=3; Pending=4; ToBeRenewed=6; No=7,@@IMPORTANT duplicate of data/oTWC_utils.js:110
+Custom record / list,PROFILE_ACCREDITATION_STATUS,data/oTWC_utils.js,167,customrecord_twc_prof_accred_status,OSSMTWC - Profile Accreditation Status,Pending=1; Accredited=2; SPExpired=3; NoSiteAccess=4; Inactive=6,
+Custom record / list,NO_ACTIVE_EXPIRED,data/oTWC_utils.js,185,customrecord_twc_no_active_options,OSSMTWC - No/Active Options,No=1; Active=2; Expired=3; Pending=4,Profile cert statuses and company insurance statuses
+Custom record / list,FILE_STATUS,data/oTWC_utils.js,214,customrecord_twc_file_status,OSSMTWC - File Status,Pending=1; Rejected=2; Approved=3; Superseded=4; NA=5; Received=6,
+Custom record / list,SAF_ACTION_STATUS,data/oTWC_utils.js,328,customrecord_twc_saf_action_status,OSSMTWC - SAF Action Status,Pending=1; Complete=2; Detached=3; AwaitingPhotos=4,
+Custom record / list,EA_ACTION_STATUS,data/oTWC_utils.js,335,(not determinable),,Pending=1; Complete=2,Exported as twcUtils.EaActionStatus but not used anywhere; probably customrecord_twc_eq_action_sts (already covered by EQ_ACTION_STATUS)
+Custom record / list,INFRA_TYPE,data/oTWC_utils.js,341,customrecord_twc_infra_type,OSSMTWC - Infra Type,Accommodation=1; Structure=2; Fibre=3; Generator=4,
+Custom record / list,INFRA_STATUS,data/oTWC_utils.js,349,customrecord_twc_infra_sts,OSSMTWC - Infra Status,Active=1; UTS=2; Option=3; ToBeRetired=4; Retired=5; NotLive=6; Planned=7,
+Custom record / list,SRF_ITEM_STEP_TYPE,data/oTWC_utils.js,360,customrecord_twc_eq_class,OSSMTWC - Equipment Class,TME=1; ATME=2; GIE=3; FEEDER=4,SRF item field custrecord_twc_srf_itm_stype
+Custom record / list,EQ_CLASS_ENUM,data/oTWC_equipmentUI.js,8,customrecord_twc_eq_class,OSSMTWC - Equipment Class,TME=1; ATME=2; GIE=3; FEEDER=4,Duplicate of SRF_ITEM_STEP_TYPE (@@TODO merge)
+Custom record / list,SRF_ITEM_REQUEST_TYPE,data/oTWC_utils.js,367,customrecord_twc_srf_itm_req_type,OSSMTWC - SRF Item Request Type,INSTALL=1; REMOVE=2; SWAP=3,
+Custom record / list,SRF_LICENCE_MECHANISM,data/oTWC_utils.js,373,customrecord_twc_lic_mech,OSSMTWC - Licence Mechanism,Online=1; Traditional=2,
+Custom record / list,SRF_STATUS,data/oTWC_utils.js,378,customrecord_twc_srf_status,OSSMTWC - SRF Status,Submitted=1; UnderReview=2; FeedbackIssued=3; Resubmitted=4; SRFApproved=5; LicenceRequested=6; LicenceIssued=8; LicenceExecuted=9; SRFCancelled=10; Draft=11; LicenceSigned=12; Completed=13,11 (Draft) is also the default in getSrfStatusName / Style / Html
+Custom record / list,EQ_PACKAGE,data/oTWC_utils.js,452,customrecord_twc_package,OSSMTWC - Package,Yes=1; No=2,Equipment field custrecord_twc_equip_package
+Custom record / list,SDS_STATUS,data/oTWC_utils.js,458,customrecord_twc_sds_status,OSSMTWC - SDS Status,Draft=1; Current=2; Superseded=3; Cancelled=4,
+Custom record / list,SRF_REVIEW_STATUS,data/oTWC_utils.js,467,customrecord_twc_tl_review_result,OSSMTWC - TL Review Result,Approved=1; FeedbackIssued=2,SRF review field custrecord_twc_srf_rev_tl_rev_res
+Custom record / list,SRF_DEFAULT_FILE_TYPE.id,data/oTWC_utils.js,473,customrecord_twc_file_type,OSSMTWC - File Type,SRF Attachment=12,
+Custom record / list,SRF_DEFAULT_FILE_TYPE.status,data/oTWC_utils.js,473,customrecord_twc_file_status,OSSMTWC - File Status,N/A=5,
+Custom record / list,SAF_STATUS,data/oTWC_utils.js,480,customrecord_twc_saf_status,OSSMTWC - SAF Status,Pending=1; Approved=2; Rejected=3; PartiallyComplete=4; Complete=5; Cancelled=6; AwaitingPhotos=7; PhotosReceived=8; FeedbackIssued=9,
+Custom record / list,SAF_TIME_BLOCK,data/oTWC_utils.js,541,customrecord_twc_tm_blk_opt,OSSMTWC - SAF Time Block Options,A_8_TO_10=1; B_10_TO_12=2; C_12_TO_15=3; D_15_TO_18=4,
+Custom record / list,TKT_STATUS,data/oTWC_utils.js,566,customrecord_twc_trbl_tkt_status,OSSMTWC - Trouble Ticket Status,New=1; Assessed=2; Resolved=3; Cancelled=4; InProgress=5,
+Custom record / list,TKT_PRIORITY,data/oTWC_utils.js,610,customrecord_twc_trbl_tkt_priority,OSSMTWC - Trouble Ticket Priority,None=0; Urgent=1; High=2; Medium=3; Low=4; Monitored=5; UTS=6; Corrective_Action=7,None=0 is not a record
+Custom record / list,TWC_COMPANY,data/oTWC_utils.js,1656,customrecord_twc_company,OSSMTWC - Company,Towercom=57,Towercom's own company record
+Custom record / list,SITE_TYPE,data/oTWC_site.js,10,customrecord_twc_site_type,OSSMTWC - Site Type,NO_STRUCTURE=4; STRUCTURE_ON_ROOFTOP=5,
+Custom record / list,WORKFLOW_STATUS,modules/oTWC_srfWorkflowEngine.js,16,customrecord_twc_srf_wkf_status,OSSMTWC - SRF Workflow Status,NEW=1; IN_PROGRESS=2; COMPLETED=3; CANCELLED=4; NOT_REQUIRED=5,
+Custom record / list,TWC_STATUS_ACTIVE,modules/oTWC_fsaSiteSyncEngine.js,37,customrecord_twc_site_sts,OSSMTWC - Site Status,Active=1,
+Custom record / list,FSA_STATUS,modules/oTWC_fsaSiteSyncEngine.js,38,custrecord_fsa_site_status (on customrecord_fsa_site),FSA bundle - FSA Site status,ACTIVE=1; OTHER=2,
+Custom record / list,TWC_SITE_FILE_TYPES,oTWC_importRadixFile_sl.js,115,customrecord_twc_file_type,OSSMTWC - File Type,Access Drawings=15; Agreements=20; CAD Drawings=21; Elevations=22; License Map=14; Panoramics=23; Site Safety=24,twcType per Radix site folder
+Custom record / list,SAF type literal (SQL),svc/oTWC_saf_sts_update_svc.js,44,customrecord_twc_saf_type,OSSMTWC - SAF Type,4,R_TYPE = 4 in the Awaiting Photos query (only SAF type requesting completion photos); tag at line 54
+Custom record / list,AGREEMENT_TEMPLATE_MAP,data_migration/oTWC_dm_config.js,60,customrecord_twc_agreement,OSSMTWC - SDS Agreement,(empty),Radix agreement id -> Nexus agreement id; to be filled per account
+Custom record / list,FSA_FORM_SUPPORT_CASE,oTWC_fsaJob_ue.js,30,customrecord_fsa_form,"FSA bundle - FSA form ""Support Case""",33,
+Custom record / list,STAGE_SPACE / STAGE_FACILITIES,oTWC_controls_cs.js,165,customrecord_twc_srf_wks,OSSMTWC - SRF Workflow Stage,Space=3; Facilities=4,Test/debug file
+Native record,TOWERCOM_ENTITY,data/oTWC_config.js,18,entity,Entity,822,Towercom's own entity (support case company; message author; custrecordtwc_entity of the Towercom company)
+Native record,TKT_CASE_PROFILE,data/oTWC_config.js,19,supportcase.profile,Support case profile,1,
+Native record,TKT_CASE_STATUS,data/oTWC_config.js,20,supportcase.status,Support case status,1,
+Native record,NO_REPLY,data/oTWC_config.js,21,employee,Employee,827,No-reply email author
+Native record,SAF_AWAIT_PHOTOS_MAIL_TEMPLATE,data/oTWC_config.js,22,emailtemplate,Email template,2,SAF Awaiting Photos email
+Native record,TKT_CASE_CATEGORY,oTWC_fsaJob_ue.js,52,supportcase.category,Support case type,4,Used when the FSA form type is empty
+"Script, deployment, parameter, folder",SVC_SCRIPT_ID,data_migration/oTWC_dm_config.js,10,Script record,,customscript_twc_dm_import_svc,
+"Script, deployment, parameter, folder",SVC_DEPLOYMENT_ID,data_migration/oTWC_dm_config.js,12,Script deployment,,customdeploy_twc_dm_import_svc,
+"Script, deployment, parameter, folder",SVC_PARAM_FOLDER,data_migration/oTWC_dm_config.js,14,Script parameter,,custscript_twc_dm_folder,
+"Script, deployment, parameter, folder",ROOT_FOLDER_PARENT / ROOT_FOLDER_NAME,data_migration/oTWC_dm_config.js,17,File Cabinet folder,SuiteScripts > OSSMTWC - Radix,-15 / OSSMTWC - Radix,Looked up by name; must exist
+"Script, deployment, parameter, folder",SCRIPT_ID,svc/oTWC_fsaSiteSync_svc.js,12,Script record,,customscript_otwc_fsasitesync_svc,
+"Script, deployment, parameter, folder",DEPLOY_ID,svc/oTWC_fsaSiteSync_svc.js,13,Script deployment,,customdeploy_otwc_fsasitesync_svc,
+"Script, deployment, parameter, folder",PARAM_P1,svc/oTWC_fsaSiteSync_svc.js,14,Script parameter,,custscript_otwc_fsasitesync_svc_p1,
+"Script, deployment, parameter, folder",deploymentId (inline),ui/views/oTWC_baseView.js,150,Script deployment,Any portal Suitelet opened from the page menu,1,Assumes one deployment per script
+Untagged,RADIX_FILE_TYPES,oTWC_importRadixFile_sl.js,87,customrecord_twc_file_type,OSSMTWC - File Type,1; 2; 5; 6; 7; 9; 11; 12,Not tagged @@HARDCODED but hard-coded the same way (twcType per Radix file type)

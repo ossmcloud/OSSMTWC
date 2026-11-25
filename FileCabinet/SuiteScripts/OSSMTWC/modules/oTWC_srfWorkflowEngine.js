@@ -99,17 +99,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     eq.b_End = action[twcSrfItem.Fields.B_END];
                     eq.customerRef = action[twcSrfItem.Fields.CUSTOMER_REF];
                     eq.inventoryFlag = action[twcSrfItem.Fields.INVENTORY_FLAG];
-                    eq.optType = action[twcSrfItem.Fields.TYPE_OPT];
+                    eq.feederType = action[twcSrfItem.Fields.FEEDER_TYPE];
                     eq.voltageType = action[twcSrfItem.Fields.VOLTAGE_TYPE];
+                    // @@NOTE: SRF item 'Modified Antenna Location' => equipment custrecord_twc_equip_location (same list), SRF item 'GIE Location' => equipment 'GIE Location'
+                    eq.modifiedAntennaLocation = action[twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION];
+                    eq.gIELocation = action[twcSrfItem.Fields.GIE_LOCATION];
                     eq.associatedEQUIP_ACTIONs = action.act_id;
 
                     // get the parent equipment
+                    // @@NOTE: TMI_ID_SRF = parent TME is a line of this SRF (its equipment is created above, the actions are sorted so TMEs come first)
+                    //         TME_ID     = parent TME is an existing equipment picked from the site (this used to read a non-existing 'TMI_ID' constant so the parent was never set)
+                    var parentEqId = null;
                     if (action[twcSrfItem.Fields.TMI_ID_SRF]) {
                         var parent = actions.find(a => { return a.id == action[twcSrfItem.Fields.TMI_ID_SRF]; })
-                        eq.parentTMEID = parent?.eq_id;
-                    } else if (action[twcSrfItem.Fields.TMI_ID]) {
-                        eq.parentTMEID = action[twcSrfItem.Fields.TMI_ID]
+                        parentEqId = parent?.eq_id;
                     }
+                    if (!parentEqId && action[twcSrfItem.Fields.TME_ID]) {
+                        parentEqId = action[twcSrfItem.Fields.TME_ID];
+                    }
+                    if (parentEqId) { eq.parentTMEID = parentEqId; }
 
 
                 } else if (action.ea_type == twcUtils.EqActionType.Unlicence || action.ea_type == twcUtils.EqActionType.SwapUnlicence) {
@@ -130,8 +138,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+        // @@NOTE: SDS Commencement Date of the SRF (the current SDS, or the latest one not cancelled), as a NetSuite date value (null if not set)
+        //         Issue 299: copied on the equipment 'Licence Commencement Date' (LICENCE_COMMENCEMENT_DATE) when the licence is executed
+        function getSdsCommencementDate(srfId) {
+            var sds = coreSql.first(`
+                select  TO_CHAR(${twcSds.Fields.COMMENCMENT_DATE}, 'YYYY-MM-DD') as comm_date
+                from    ${twcSds.Type}
+                where   ${twcSds.Fields.SRF} = ${parseInt(srfId)}
+                and     NVL(${twcSds.Fields.STATUS}, 0) != ${twcUtils.SdsStatus.Cancelled}
+                order by case when ${twcSds.Fields.STATUS} = ${twcUtils.SdsStatus.Current} then 0 else 1 end, id desc
+            `);
+            return (sds?.comm_date) ? twcUtils.fromJsToNs(sds.comm_date) : null;
+        }
+
+        // @@IMPORTANT: Issue 299 - equipment licence status by SRF status (called with the 'licence' status, unlicence actions are mapped below):
+        //                  Submitted / Re-submitted          => Req to Licence      / Req to Unlicence
+        //                  SRF Approved                      => Prop to Licence     / Prop to Unlicence
+        //                  Licence Requested / Issued / Signed => no change (the 'Prop to ... - Licence Requested / Issued / Signed' values are retired)
+        //                  Licence Executed                  => Licenced            / Unlicenced
+        //                                                       Licenced: 'Licence Commencement Date' (LICENCE_COMMENCEMENT_DATE) = SDS Commencement Date
+        //                                                       Unlicence (removal, NOT swap) of equipment with Package = Yes => Licence Retained
         function updateEquipment(options, licenseStatus) {
             var actions = getEqActions(options);
+            var sdsCommDate = undefined;
             core.array.each(actions, action => {
 
                 // @@TODO: this should not happen but it did so I need to keep going but we should remove this line
@@ -148,20 +177,29 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     } else if (licenseStatus == twcUtils.EqLicenseStatus.ReqtoLicence) {
                         s = twcUtils.EqLicenseStatus.ReqtoUnlicence;
 
-                    } else if (licenseStatus == twcUtils.EqLicenseStatus.ProptoLicence_LicenceRequested) {
-                        s = twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceRequested;
-
-                    } else if (licenseStatus == twcUtils.EqLicenseStatus.ProptoLicence_LicenceIssued) {
-                        s = twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceIssued;
-
                     } else if (licenseStatus == twcUtils.EqLicenseStatus.Licenced) {
                         s = twcUtils.EqLicenseStatus.Unlicenced;
-
+                        // @@NOTE: removal (not swap) of equipment that is part of a package => the licence is retained
+                        if (action.ea_type == twcUtils.EqActionType.Unlicence) {
+                            var pkg = coreSql.first(`select ${twcEquipment.Fields.PACKAGE} as pkg from ${twcEquipment.Type} where id = ${parseInt(action.eq_id)}`)?.pkg;
+                            if (pkg == twcUtils.EqPackage.Yes) { s = twcUtils.EqLicenseStatus.LicenceRetained; }
+                        }
                     }
 
                 }
 
-                recu.submit(twcEquipment.Type, action.eq_id, twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, s);
+                if (s == twcUtils.EqLicenseStatus.Licenced) {
+                    // @@NOTE: the equipment becomes licenced => 'Licence Commencement Date' = SDS Commencement Date (same submit as the status)
+                    //         unlicence actions never get here as 'Licenced' (mapped above). No SDS commencement date => the date is left as it is
+                    if (sdsCommDate === undefined) { sdsCommDate = getSdsCommencementDate(options.srf); }
+                    if (sdsCommDate) {
+                        recu.submit(twcEquipment.Type, action.eq_id, [twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, twcEquipment.Fields.LICENCE_COMMENCEMENT_DATE], [s, sdsCommDate]);
+                    } else {
+                        recu.submit(twcEquipment.Type, action.eq_id, twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, s);
+                    }
+                } else {
+                    recu.submit(twcEquipment.Type, action.eq_id, twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, s);
+                }
             });
         }
 
@@ -176,6 +214,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var srf = twcSrf.get(options.srf);
             if (srf.state == 'new') { throw new Error(`No SRF Found for id: ${options.srf}`); }
             if (srf.sRFStatus != twcUtils.SrfStatus.Draft && srf.sRFStatus != twcUtils.SrfStatus.FeedbackIssued) { throw new Error(`Invalid SRF Status: ${srf.sRFStatusName}`); }
+
+            // @@NOTE: the user must enter a comment when submitting / re-submitting (ui/js/oTWC_spaceRequest.js: askSubmitComment)
+            var submitComment = (options.submitComment || '').trim();
+            if (!submitComment) { throw new Error(`A comment is required to submit the SRF`); }
 
             var wkf = coreSql.first(`select id from ${twcSrfWorkflow.Type} where ${twcSrfWorkflow.Fields.SRF} = ${options.srf}`)
             if (srf.sRFStatus == twcUtils.SrfStatus.FeedbackIssued) {
@@ -212,8 +254,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 recu.submit(twcSrfWorkflowItem.Type, feedbackIssuedStage[0].id, [twcSrfWorkflowItem.Fields.STATUS, twcSrfWorkflowItem.Fields.ACTUAL], [WORKFLOW_STATUS.COMPLETED, new Date()]);
 
-                // increase feed back count
-                recu.submit(twcSrf.Type, options.srf, [twcSrf.Fields.SRF_STATUS, twcSrf.Fields.FEEDBACK_LOOP_ITERATIONS], [twcUtils.SrfStatus.Resubmitted, (srf.feedbackLoopIterations || 1) + 1]);
+                // increase feed back count (and keep the latest submission comment on the SRF)
+                recu.submit(twcSrf.Type, options.srf, [twcSrf.Fields.SRF_STATUS, twcSrf.Fields.FEEDBACK_LOOP_ITERATIONS, twcSrf.Fields.SUBMISSION_NOTES], [twcUtils.SrfStatus.Resubmitted, (srf.feedbackLoopIterations || 1) + 1, submitComment]);
+
+                saveSubmissionComment(options.srf, submitComment, options.profile);
 
                 return;
             } else {
@@ -254,8 +298,26 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 srfWorkflowItem.save();
             })
 
-            recu.submit(twcSrf.Type, options.srf, [twcSrf.Fields.SRF_STATUS, twcSrf.Fields.FEEDBACK_LOOP_ITERATIONS], [twcUtils.SrfStatus.Submitted, 1]);
+            recu.submit(twcSrf.Type, options.srf, [twcSrf.Fields.SRF_STATUS, twcSrf.Fields.FEEDBACK_LOOP_ITERATIONS, twcSrf.Fields.SUBMISSION_NOTES], [twcUtils.SrfStatus.Submitted, 1, submitComment]);
 
+            saveSubmissionComment(options.srf, submitComment, options.profile);
+        }
+
+        // @@NOTE: stores the submission / re-submission comment (and who submitted) on the SRF Review record of the current iteration (SRF feedback loop count, so this must run after it is set)
+        //         the review record is created here if not there yet, the review stage (updateWorkflow) will then pick up this same record (twcUtils.getSrfReviewRecord)
+        function saveSubmissionComment(srfId, comment, profile) {
+            var reviewRecordInfo = twcUtils.getSrfReviewRecord({ srf: srfId });
+            if (!reviewRecordInfo) { throw new Error(`Could not find the workflow for srf: ${srfId}`); }
+            var reviewRecord = twcSrfReview.get(reviewRecordInfo.id);
+            reviewRecord.name = `R${reviewRecordInfo.srf_name}_${reviewRecordInfo.feedback_loop_count}`;
+            if (!reviewRecordInfo.id) {
+                reviewRecord.sRF = reviewRecordInfo.srf;
+                reviewRecord.reviewIteration = reviewRecordInfo.feedback_loop_count;
+            }
+            reviewRecord.customerSubmissionComments = comment;
+            // @@NOTE: profile of the user submitting / re-submitting (set by ui/modules/oTWC_siteRequestUtils.js: submitSiteSrf)
+            reviewRecord.submittedBy = profile || null;
+            reviewRecord.save();
         }
 
         function getNextStepId(workflowId, stepId) {
@@ -273,6 +335,138 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `)?.id;
         }
 
+        // @@NOTE: PLANNED DATES - propagation of a planned date change to the following steps
+        //         - a step planned date moved later / earlier by N working days => the following steps are moved by the same N working days
+        //         - the checks (consecutive review steps) are one group: the group ends on the LATEST planned date of its enabled checks
+        //           so the steps after the checks move only when that latest check date moves (and by the same amount)
+        //         - disabled checks / steps (NOT REQUIRED) are skipped: no planned date and they do not count
+        //         - a check enabled again with no planned date gets: end of the previous step + stage 'planned date delta'
+        //         - completed / cancelled steps are never moved, the actual date is never used
+        //         - dates already set (e.g. typed by the user) are kept, they are only moved by the shift
+        //         working days (no weekends), same as the dates set when the workflow is created (addWorkingDays)
+        const PLAN_DATE = {
+            toDate: (s) => { if (!s) { return null; } var p = s.split('-'); return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)); },
+            toJs: (d) => { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; },
+            isWorkDay: (d) => { return d.getDay() != 0 && d.getDay() != 6; },
+            // signed number of working days from a to b ('YYYY-MM-DD')
+            diff: (a, b) => {
+                if (!a || !b || a == b) { return 0; }
+                var sign = (b > a) ? 1 : -1;
+                var d = PLAN_DATE.toDate(a); var end = PLAN_DATE.toJs(PLAN_DATE.toDate(b)); var n = 0;
+                while (PLAN_DATE.toJs(d) != end) {
+                    d.setDate(d.getDate() + sign);
+                    if (PLAN_DATE.isWorkDay(d)) { n += sign; }
+                }
+                return n;
+            },
+            // moves a date ('YYYY-MM-DD') by n working days (n can be negative)
+            shift: (s, n) => {
+                if (!s || !n) { return s; }
+                var sign = (n > 0) ? 1 : -1;
+                var d = PLAN_DATE.toDate(s); var moved = 0;
+                while (moved < Math.abs(n)) {
+                    d.setDate(d.getDate() + sign);
+                    if (PLAN_DATE.isWorkDay(d)) { moved++; }
+                }
+                return PLAN_DATE.toJs(d);
+            }
+        }
+
+        // @@NOTE: workflow steps in the same order as getWorkFlow (the workflow table), with what is needed for the planned dates
+        function getPlanSteps(workflowId) {
+            return coreSql.run(`
+                select  wi.id, wi.custrecord_twc_srf_wkfi_status as status,
+                        TO_CHAR(wi.custrecord_twc_srf_wkfi_planned, 'YYYY-MM-DD') as planned,
+                        ws.custrecord_twc_srf_wks_plan_delta_days as delta_days, ws.custrecord_twc_srf_wks_is_review as is_review
+                from    customrecord_twc_srf_wkfi wi
+                join    customrecord_twc_srf_wks ws on ws.id = wi.custrecord_twc_srf_wkfi_stage
+                where   wi.custrecord_twc_srf_wkfi_parent = ${workflowId}
+                order by custrecord_twc_srf_wks_seq_outer, wi.created, ws.custrecord_twc_srf_wks_seq_no, wi.created
+            `);
+        }
+
+        // @@NOTE: propagates the planned date changes made by an update (before = getPlanSteps taken before the update was saved)
+        //         returns true if any planned date was changed
+        function propagatePlannedDates(workflowId, before) {
+            if (!workflowId || !before || before.length == 0) { return false; }
+
+            var after = getPlanSteps(workflowId);
+            var beforeById = {};
+            core.array.each(before, s => { beforeById[s.id] = s; });
+
+            // @@NOTE: segments: one step, or a group of consecutive review steps (the checks)
+            var segments = [];
+            core.array.each(after, s => {
+                s.status = parseInt(s.status);
+                var last = segments[segments.length - 1];
+                if (s.is_review == 'T' && last?.isGroup) {
+                    last.steps.push(s);
+                } else {
+                    segments.push({ isGroup: s.is_review == 'T', steps: [s] });
+                }
+            });
+
+            const isActive = (status) => { return status != WORKFLOW_STATUS.NOT_REQUIRED && status != WORKFLOW_STATUS.CANCELLED; };
+            const isLocked = (status) => { return status == WORKFLOW_STATUS.COMPLETED || status == WORKFLOW_STATUS.CANCELLED; };
+            // end of a segment: latest planned date of its active steps, the end of the previous segment if none
+            const segmentEnd = (steps, prevEnd, useBefore) => {
+                var end = null;
+                core.array.each(steps, s => {
+                    var status = useBefore ? parseInt(beforeById[s.id]?.status) : s.status;
+                    var planned = useBefore ? beforeById[s.id]?.planned : s.planned;
+                    if (!isActive(status) || !planned) { return; }
+                    if (!end || planned > end) { end = planned; }
+                });
+                return end || prevEnd;
+            };
+
+            var changed = false;
+            const setPlanned = (s, planned) => {
+                if ((s.planned || null) == (planned || null)) { return; }
+                recu.submit(twcSrfWorkflowItem.Type, s.id, twcSrfWorkflowItem.Fields.PLANNED, planned ? twcUtils.fromJsToNs(planned) : null);
+                s.planned = planned;
+                changed = true;
+            }
+
+            var shift = 0; var prevEndBefore = null; var prevEndAfter = null;
+            core.array.each(segments, seg => {
+                // @@NOTE: recalc = the segment end must be re-evaluated (it has open steps or steps changed by this update)
+                //         a segment with only completed / not required steps not touched by this update does not change the shift (it passes through)
+                var recalc = false;
+                core.array.each(seg.steps, s => {
+                    var b = beforeById[s.id];
+                    // @@NOTE: plannedChanged: the planned date was set by this update (e.g. typed by the user) => it is kept as it is, never shifted
+                    var plannedChanged = !b || (b.planned || null) != (s.planned || null);
+                    var statusChanged = !b || parseInt(b.status) != s.status;
+                    if (plannedChanged || statusChanged) { recalc = true; }
+
+                    if (s.status == WORKFLOW_STATUS.NOT_REQUIRED) {
+                        setPlanned(s, null);
+                        return;
+                    }
+                    if (isLocked(s.status)) { return; }
+                    recalc = true;
+
+                    if (!s.planned) {
+                        // @@NOTE: step enabled again by this update (e.g. a check) with no planned date: end of the previous segment + stage delta
+                        if (statusChanged && prevEndAfter) {
+                            setPlanned(s, PLAN_DATE.shift(prevEndAfter, parseInt(s.delta_days) || 0));
+                        }
+                    } else if (!plannedChanged && shift) {
+                        setPlanned(s, PLAN_DATE.shift(s.planned, shift));
+                    }
+                });
+
+                var endBefore = segmentEnd(seg.steps, prevEndBefore, true);
+                var endAfter = segmentEnd(seg.steps, prevEndAfter, false);
+                if (recalc) { shift = PLAN_DATE.diff(endBefore, endAfter); }
+                prevEndBefore = endBefore;
+                prevEndAfter = endAfter;
+            });
+
+            return changed;
+        }
+
         function updateWorkflow(userInfo, options) {
             var response = { status: 'success' };
 
@@ -283,12 +477,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 items = options.items;
             }
 
+            // @@NOTE: planned dates before this update, used to move the following steps when a planned date / check changes (propagatePlannedDates)
+            var planStepsBefore = (items && options.wkf) ? getPlanSteps(options.wkf) : null;
+
             if (items) {
                 var stepNotRequired = false; var someStepIsInProgress = false; var lastReviewStepId = null;
-                core.array.each(items, item => {
+                core.array.each(items, (item, idx) => {
                     var fields = []; var values = [];
-                    fields.push(twcSrfWorkflowItem.Fields.PROFILE);
-                    values.push(userInfo.profile)
+                    // @@NOTE: only the first item is the step being actioned by the user; the following items are the subsequent steps
+                    //         (set to in progress / not required) and must NOT be stamped with the profile of the user completing this step
+                    if (idx == 0) {
+                        fields.push(twcSrfWorkflowItem.Fields.PROFILE);
+                        values.push(userInfo.profile)
+                    }
                     for (var k in item) {
                         if (!k.startsWith('cust')) { continue; }
                         fields.push(k);
@@ -376,6 +577,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 })
 
+                // @@NOTE: TL Response (approve / feedback) comments back to the customer (oTWC_srfWorkflowEngineUI.js: WorkflowFormItem.render)
+                //         saved on the current SRF Review record (TL Review Comments): shown to the customer on the SRF page (oTWC_srfUI.js: getFeedbackReviewRecords)
+                //         and used as default 'Additional SRF Conditions' when the SDS is created (oTWC_sdsEngine.js: getSds)
+                //         saved BEFORE the SRF status changes (below) so it is there when the customer is notified
+                if (options.tlReviewComments !== undefined && options.tlReviewComments !== null) {
+                    var reviewRecordInfo = twcUtils.getSrfReviewRecord(options);
+                    if (reviewRecordInfo.id) {
+                        recu.submit(twcSrfReview.Type, reviewRecordInfo.id, twcSrfReview.Fields.TL_REVIEW_COMMENTS, options.tlReviewComments);
+                    } else {
+                        var reviewRecord = twcSrfReview.get();
+                        reviewRecord.name = `R${reviewRecordInfo.srf_name}_${reviewRecordInfo.feedback_loop_count}`;
+                        reviewRecord.sRF = reviewRecordInfo.srf;
+                        reviewRecord.reviewIteration = reviewRecordInfo.feedback_loop_count;
+                        reviewRecord.tLReviewComments = options.tlReviewComments;
+                        reviewRecord.save();
+                    }
+                }
+
                 if (!someStepIsInProgress && lastReviewStepId) {
                     // @@NOTE: this can hapen if the 'Initial Review' or 'Re-Submit Review' (basically the TL Review and any feedback loop) was processed withiout selecting any review stage
                     var nextStep = getNextStepId(options.wkf, lastReviewStepId);
@@ -385,6 +604,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 }
 
+                // @@NOTE: a planned date moved / a check enabled or disabled by this update: move the planned dates of the following steps (see PLAN_DATE notes above)
+                if (planStepsBefore && propagatePlannedDates(options.wkf, planStepsBefore)) { response.reload = true; }
+
                 if (options.setStatus) {
                     recu.submit(twcSrf.Type, options.srf, twcSrf.Fields.SRF_STATUS, options.setStatus);
                     if (options.setStatus == twcUtils.SrfStatus.SRFApproved) {
@@ -393,12 +615,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     } else if (options.setStatus == twcUtils.SrfStatus.Resubmitted) {
                         updateEquipment(options, twcUtils.EqLicenseStatus.ReqtoLicence)
 
-                    } else if (options.setStatus == twcUtils.SrfStatus.LicenceRequested) {
-                        updateEquipment(options, twcUtils.EqLicenseStatus.ProptoLicence_LicenceRequested)
-
-                    } else if (options.setStatus == twcUtils.SrfStatus.LicenceIssued) {
-                        updateEquipment(options, twcUtils.EqLicenseStatus.ProptoLicence_LicenceIssued)
-
+                    // @@NOTE: Issue 299 - Licence Requested / Issued / Signed: the equipment licence status is NOT changed (it stays Prop to Licence / Prop to Unlicence)
                     } else if (options.setStatus == twcUtils.SrfStatus.LicenceExecuted) {
                         updateEquipment(options, twcUtils.EqLicenseStatus.Licenced)
                         
@@ -763,6 +980,177 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
         }
 
+        // @@IMPORTANT: SRF cancellation (client rules, Issue: SRF Cancellation)
+        //              who can cancel at which status, used to show the 'Cancel SRF' button (oTWC_spaceRequest_sl.js) AND enforced by cancelSrf
+        //                  Draft                                           : user and TL
+        //                  Submitted, Under Review, Resubmitted            : TL only
+        //                  Feedback Issued                                 : user and TL
+        //                  SRF Approved                                    : TL only
+        //                  Licence Requested, Licence Issued, Licence Signed : TL power users only (employee flag custentity_twc_prj_power_user)
+        //                  any other status (Licence Executed, Completed, Cancelled): nobody
+        //              the customer access check (twcConfig.isUserAllowedCustomers) is done by the caller (the SRF page already enforces it on load)
+        const SRF_CANCEL_STAGE = { DRAFT: 'draft', REVIEW: 'review', APPROVED: 'approved', LICENCE: 'licence' };
+        function getSrfCancelStage(srfStatus) {
+            var s = parseInt(srfStatus);
+            if (s == twcUtils.SrfStatus.Draft) { return SRF_CANCEL_STAGE.DRAFT; }
+            if ([twcUtils.SrfStatus.Submitted, twcUtils.SrfStatus.UnderReview, twcUtils.SrfStatus.FeedbackIssued, twcUtils.SrfStatus.Resubmitted].indexOf(s) >= 0) { return SRF_CANCEL_STAGE.REVIEW; }
+            if (s == twcUtils.SrfStatus.SRFApproved) { return SRF_CANCEL_STAGE.APPROVED; }
+            if ([twcUtils.SrfStatus.LicenceRequested, twcUtils.SrfStatus.LicenceIssued, twcUtils.SrfStatus.LicenceSigned].indexOf(s) >= 0) { return SRF_CANCEL_STAGE.LICENCE; }
+            return null;
+        }
+        function canCancelSrf(userInfo, srfStatus) {
+            var s = parseInt(srfStatus);
+            var stage = getSrfCancelStage(s);
+            if (!stage) { return false; }
+            // @@NOTE: customers can cancel when Draft, Feedback Issued or SRF Approved
+            if (stage == SRF_CANCEL_STAGE.DRAFT || s == twcUtils.SrfStatus.FeedbackIssued || s == twcUtils.SrfStatus.SRFApproved) { return true; }
+            if (!userInfo.isEmployee) { return false; }
+            if (stage == SRF_CANCEL_STAGE.LICENCE) { return !!userInfo.powerUser; }
+            return true;
+        }
+
+        // @@NOTE: cancels an SRF and tidies up (see canCancelSrf for who can do it)
+        //          Draft    : SRF items and equipment actions (EA) are deleted
+        //          any other: pending EAs are cancelled and their equipment licence status reset BY EA TYPE (whatever the current status):
+        //                          install (Licence / Swap Licence)   => equipment Cancelled
+        //                          remove  (Unlicence / Swap Unlicence) => equipment Licenced
+        //                     (a swap is 2 EAs, so both sides are handled)
+        //                     SRF Approval Date is kept (not cleared, see below)
+        //                     Licence Requested / Issued / Signed: Works Permitted date cleared, SDS status Cancelled,
+        //                          EAs with a SAF action: the EA (and the SAF) are left alone, but the equipment licence status IS reset by EA type as above
+        //                          (Issue 306 follow up, client request: the equipment must not stay 'Prop to Licence', the EA / SAF are tidied up manually)
+        //          the SRF status is set to Cancelled LAST: if units run low we return { keepGoing: true } and the client calls again (all steps are re-runnable)
+        const CANCEL_MIN_UNITS = 100;
+
+        // @@NOTE: SRF 'Submission Notes' when cancelled: who (profile name, or user name if no profile, and company) + when + the reason entered by the user
+        function getCancelNotes(userInfo, comment) {
+            var who = userInfo.profileInfo?.name || userInfo.contact?.name || userInfo.name || 'unknown user';
+            if (userInfo.companyProfile?.name) { who += ` (${userInfo.companyProfile.name})`; }
+            return `Cancelled by ${who} on ${(new Date()).format()}:\n${comment}`;
+        }
+        function cancelSrf(userInfo, options) {
+            if (!options?.srf) { throw new Error('invalid parameters passed'); }
+            var srfId = parseInt(options.srf);
+            // @@NOTE: a comment (the reason) is mandatory when cancelling an SRF (ui/js/oTWC_spaceRequest.js: askCancelComment)
+            //         it is saved on the SRF 'Submission Notes' preceded by who cancelled it (see getCancelNotes)
+            var cancelComment = (options.comment || '').trim();
+            if (!cancelComment) { throw new Error('Please, specify a comment (reason) to cancel the SRF'); }
+
+            var srf = coreSql.first(`select id, ${twcSrf.Fields.SRF_STATUS} as status, ${twcSrf.Fields.CUSTOMER} as customer from ${twcSrf.Type} where id = ${srfId}`);
+            if (!srf) { throw new Error(`No SRF found using id ${srfId}`); }
+            if (!canCancelSrf(userInfo, srf.status)) { throw new Error('You are not allowed to cancel this SRF at its current status'); }
+
+            var stage = getSrfCancelStage(srf.status);
+            const unitsLow = () => { return core.env.units() < CANCEL_MIN_UNITS; };
+
+            if (stage == SRF_CANCEL_STAGE.DRAFT) {
+                if (!cancelSrfDraftCleanUp(srfId, unitsLow)) { return { keepGoing: true }; }
+
+            } else {
+                // @@NOTE: only open EAs (Pending, and removals of equipment not on site: Never Installed / Already Removed, see oTWC_siteRequestUtils.js: saveEqAction)
+                //         already cancelled / completed ones are not touched (this makes the function re-runnable)
+                var eqActions = coreSql.run(`
+                    select  ea.id, ea.${twcEqAct.Fields.EA_EQUIPMENT} as eq_id, ea.${twcEqAct.Fields.EA_TYPE} as ea_type, ea.${twcEqAct.Fields.EA_STATUS} as ea_status,
+                            eq.${twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS} as eq_licence_status,
+                            (select count(*) from customrecord_twc_saf_action sa where sa.custrecord_twc_saf_a_ea = ea.id and sa.custrecord_twc_saf_a_status != ${twcUtils.SafActionStatus.Detached}) as saf_actions
+                    from    ${twcEqAct.Type} ea
+                    left join ${twcEquipment.Type} eq on eq.id = ea.${twcEqAct.Fields.EA_EQUIPMENT}
+                    where   ea.${twcEqAct.Fields.EA_SRF} = ${srfId}
+                    and     ea.${twcEqAct.Fields.EA_STATUS} in (${twcUtils.EqActionStatus.Pending}, ${twcUtils.EqActionStatus.NeverInstalled}, ${twcUtils.EqActionStatus.AlreadyRemoved})
+                `);
+                for (var x = 0; x < eqActions.length; x++) {
+                    if (unitsLow()) { return { keepGoing: true }; }
+                    var ea = eqActions[x];
+                    var eqStatus = null;
+                    if (ea.ea_type == twcUtils.EqActionType.Licence || ea.ea_type == twcUtils.EqActionType.SwapLicence) {
+                        eqStatus = twcUtils.EqLicenseStatus.Cancelled;
+                    } else if (ea.ea_type == twcUtils.EqActionType.Unlicence || ea.ea_type == twcUtils.EqActionType.SwapUnlicence) {
+                        eqStatus = twcUtils.EqLicenseStatus.Licenced;
+                    }
+
+                    // @@NOTE: works permitted and a SAF raised: the EA (and the SAF / SAF action) are left as they are (tidied up manually),
+                    //         only the equipment licence status is reset (Issue 306 follow up). The EA stays open so this runs again on a re-run (keepGoing): only submit if it changes
+                    if (stage == SRF_CANCEL_STAGE.LICENCE && parseInt(ea.saf_actions) > 0) {
+                        if (ea.eq_id && eqStatus && parseInt(ea.eq_licence_status) != eqStatus) {
+                            recu.submit(twcEquipment.Type, ea.eq_id, twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, eqStatus);
+                        }
+                        continue;
+                    }
+
+                    if (ea.eq_id) {
+                        if (ea.ea_type == twcUtils.EqActionType.Unlicence || ea.ea_type == twcUtils.EqActionType.SwapUnlicence) {
+                            // @@NOTE: Issue 307 - removal of never installed equipment cancelled: its released install EA is pending again (see releasePendingInstallEa)
+                            if (ea.ea_status == twcUtils.EqActionStatus.NeverInstalled) { restoreReleasedInstallEa(ea.eq_id); }
+                        }
+                        if (eqStatus) { recu.submit(twcEquipment.Type, ea.eq_id, twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS, eqStatus); }
+                    }
+                    recu.submit(twcEqAct.Type, ea.id, twcEqAct.Fields.EA_STATUS, twcUtils.EqActionStatus.Cancelled);
+                }
+
+                if (unitsLow()) { return { keepGoing: true }; }
+                if (stage == SRF_CANCEL_STAGE.LICENCE && twcUtils.SdsStatus.Cancelled) {
+                    coreSql.each(`select id from ${twcSds.Type} where ${twcSds.Fields.SRF} = ${srfId} and NVL(${twcSds.Fields.STATUS}, 0) != ${twcUtils.SdsStatus.Cancelled}`, sds => {
+                        recu.submit(twcSds.Type, sds.id, twcSds.Fields.STATUS, twcUtils.SdsStatus.Cancelled);
+                    });
+                }
+
+                if (unitsLow()) { return { keepGoing: true }; }
+                cancelWorkflow({ srf: srfId });
+            }
+
+            if (unitsLow()) { return { keepGoing: true }; }
+            var fields = [twcSrf.Fields.SRF_STATUS, twcSrf.Fields.SUBMISSION_NOTES]; var values = [twcUtils.SrfStatus.SRFCancelled, getCancelNotes(userInfo, cancelComment)];
+            // @@NOTE: the SRF Approval Date is NOT cleared on cancel (Issue 306 asked for it, no longer required: the date is kept as a record of the approval)
+            if (stage == SRF_CANCEL_STAGE.LICENCE) { fields.push(twcSrf.Fields.WORKS_PERMITTED_DATE); values.push(null); }
+            recu.submit(twcSrf.Type, srfId, fields, values);
+
+            return { cancelled: true };
+        }
+
+        // @@NOTE: Draft SRF cancellation: delete EAs and SRF items, references between records are cleared first or NetSuite refuses the delete
+        //         returns false if it ran out of units (re-runnable: it only works on the records still there)
+        //         a draft SRF never ran initEquipment: install EAs have no equipment, remove EAs point to existing (licenced) equipment that must NOT change
+        function cancelSrfDraftCleanUp(srfId, unitsLow) {
+            var eqActions = coreSql.run(`
+                select  ea.id, ea.${twcEqAct.Fields.EA_EQUIPMENT} as eq_id, ea.${twcEqAct.Fields.RELATED_EA} as related_ea,
+                        ea.${twcEqAct.Fields.EA_TYPE} as ea_type, ea.${twcEqAct.Fields.EA_STATUS} as ea_status,
+                        eq.${twcEquipment.Fields.ASSOCIATED_EQUIP_ACTIONS} as eq_assoc_ea
+                from    ${twcEqAct.Type} ea
+                left join ${twcEquipment.Type} eq on eq.id = ea.${twcEqAct.Fields.EA_EQUIPMENT}
+                where   ea.${twcEqAct.Fields.EA_SRF} = ${srfId}
+            `);
+            // @@NOTE: 1st pass clear the references to the EAs (EA => EA, equipment => EA, only if the equipment points to this EA)
+            //         Issue 307 - removal of never installed equipment: its released install EA is pending again (see releasePendingInstallEa)
+            for (var x = 0; x < eqActions.length; x++) {
+                if (unitsLow()) { return false; }
+                var ea = eqActions[x];
+                if (ea.related_ea) { recu.submit(twcEqAct.Type, ea.id, twcEqAct.Fields.RELATED_EA, null); }
+                if (ea.eq_id && ea.eq_assoc_ea == ea.id) { recu.submit(twcEquipment.Type, ea.eq_id, twcEquipment.Fields.ASSOCIATED_EQUIP_ACTIONS, null); }
+                if (ea.eq_id && ea.ea_status == twcUtils.EqActionStatus.NeverInstalled && (ea.ea_type == twcUtils.EqActionType.Unlicence || ea.ea_type == twcUtils.EqActionType.SwapUnlicence)) {
+                    restoreReleasedInstallEa(ea.eq_id);
+                }
+            }
+            if (unitsLow()) { return false; }
+            recu.submit(twcSrf.Type, srfId, twcSrf.Fields.RELATED_EQUIPMENT_ACTIONS, null);
+            for (var x = 0; x < eqActions.length; x++) {
+                if (unitsLow()) { return false; }
+                recu.del(twcEqAct.Type, eqActions[x].id);
+            }
+
+            // @@NOTE: child items (ATME linked to a TME of this SRF) first, then the rest
+            var srfItems = coreSql.run(`
+                select  id, ${twcSrfItem.Fields.TMI_ID_SRF} as parent_item
+                from    ${twcSrfItem.Type}
+                where   ${twcSrfItem.Fields.SRF} = ${srfId}
+                order by case when ${twcSrfItem.Fields.TMI_ID_SRF} is null then 1 else 0 end, id
+            `);
+            for (var x = 0; x < srfItems.length; x++) {
+                if (unitsLow()) { return false; }
+                recu.del(twcSrfItem.Type, srfItems[x].id);
+            }
+            return true;
+        }
+
         function deleteWorkflow(options) {
             if (!options) { throw new Error('no parameters passed'); }
 
@@ -829,7 +1217,44 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (pendingActionCount == 0) {
                 recu.submit(twcSrf.Type, srf, twcSrf.Fields.SRF_STATUS, twcUtils.SrfStatus.Completed)
             }
-            
+
+        }
+
+        // @@IMPORTANT: Issue 307 - removing / swapping licenced equipment that was NEVER installed (client rules):
+        //              the equipment still has the Pending install EA (Licence / Swap Licence) of its original licence (only a SAF completion closes it)
+        //              when the removal EA is created (status Never Installed, ui/modules/oTWC_siteRequestUtils.js: saveEqAction) that install EA is Released
+        //              (it will never be installed now, and the original SRF is no longer waiting for it, see svc/oTWC_srf_sts_update_svc.js)
+        //              an install EA a SAF is working on (SAF action not Detached) is never released: that equipment cannot be picked (getEquipmentPickInfo)
+        //              the removal taken off the SRF (line deleted / SRF cancelled) => restoreReleasedInstallEa puts it back to Pending
+        function releasePendingInstallEa(eqId) {
+            if (!parseInt(eqId)) { return; }
+            coreSql.each(`
+                select  ea.id
+                from    ${twcEqAct.Type} ea
+                where   ea.${twcEqAct.Fields.EA_EQUIPMENT} = ${parseInt(eqId)}
+                and     ea.${twcEqAct.Fields.EA_TYPE} in (${twcUtils.EqActionType.Licence}, ${twcUtils.EqActionType.SwapLicence})
+                and     ea.${twcEqAct.Fields.EA_STATUS} = ${twcUtils.EqActionStatus.Pending}
+                and     not exists (
+                            select  1
+                            from    customrecord_twc_saf_action sa
+                            where   sa.custrecord_twc_saf_a_ea = ea.id
+                            and     sa.custrecord_twc_saf_a_status != ${twcUtils.SafActionStatus.Detached}
+                        )
+            `, ea => {
+                recu.submit(twcEqAct.Type, ea.id, twcEqAct.Fields.EA_STATUS, twcUtils.EqActionStatus.Released);
+            });
+        }
+        function restoreReleasedInstallEa(eqId) {
+            if (!parseInt(eqId)) { return; }
+            coreSql.each(`
+                select  ea.id
+                from    ${twcEqAct.Type} ea
+                where   ea.${twcEqAct.Fields.EA_EQUIPMENT} = ${parseInt(eqId)}
+                and     ea.${twcEqAct.Fields.EA_TYPE} in (${twcUtils.EqActionType.Licence}, ${twcUtils.EqActionType.SwapLicence})
+                and     ea.${twcEqAct.Fields.EA_STATUS} = ${twcUtils.EqActionStatus.Released}
+            `, ea => {
+                recu.submit(twcEqAct.Type, ea.id, twcEqAct.Fields.EA_STATUS, twcUtils.EqActionStatus.Pending);
+            });
         }
 
 
@@ -841,11 +1266,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             updateWorkflow: updateWorkflow,
             deleteWorkflow: deleteWorkflow,
             cancelWorkflow: cancelWorkflow,
+            canCancelSrf: canCancelSrf,
+            cancelSrf: cancelSrf,
             isWaitingForSignature: isWaitingForSignature,
             postSignature: postSignature,
             acceptSrf: acceptSrf,
             rejectSds: rejectSds,
-            setSRFCompleteStatus: setSRFCompleteStatus
+            setSRFCompleteStatus: setSRFCompleteStatus,
+            releasePendingInstallEa: releasePendingInstallEa,
+            restoreReleasedInstallEa: restoreReleasedInstallEa
 
         }
     });

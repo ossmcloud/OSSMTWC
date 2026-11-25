@@ -1,0 +1,24 @@
+<scheduledscript scriptid="customscript_otwc_infra_sts_update">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>OSSMTWC - Infra Status Update - SVC</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <scriptfile>[/SuiteScripts/OSSMTWC/svc/oTWC_infra_sts_update_svc.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_otwc_infra_sts_update">
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>NOTSCHEDULED</status>
+      <title>OSSMTWC - Infra Status Update - SVC</title>
+      <recurrence>
+        <single>
+          <repeat></repeat>
+          <startdate>2026-07-13</startdate>
+          <starttime>17:00:00Z</starttime>
+        </single>
+      </recurrence>
+    </scriptdeployment>
+  </scriptdeployments>
+</scheduledscript>

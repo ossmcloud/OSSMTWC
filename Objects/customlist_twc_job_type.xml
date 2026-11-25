@@ -1,0 +1,76 @@
+<customlist scriptid="customlist_twc_job_type">
+  <description></description>
+  <isinactive>F</isinactive>
+  <isordered>T</isordered>
+  <name>Job Type</name>
+  <customvalues>
+    <customvalue scriptid="val_93281_9061443_sb1_385">
+      <isinactive>F</isinactive>
+      <value>Power Reading</value>
+    </customvalue>
+    <customvalue scriptid="val_93282_9061443_sb1_957">
+      <isinactive>F</isinactive>
+      <value>Generator Service</value>
+    </customvalue>
+    <customvalue scriptid="val_93283_9061443_sb1_813">
+      <isinactive>F</isinactive>
+      <value>Vegetation Management</value>
+    </customvalue>
+    <customvalue scriptid="val_93284_9061443_sb1_230">
+      <isinactive>F</isinactive>
+      <value>A/C Temp Check</value>
+    </customvalue>
+    <customvalue scriptid="val_93285_9061443_sb1_700">
+      <isinactive>F</isinactive>
+      <value>A/C Service</value>
+    </customvalue>
+    <customvalue scriptid="val_93286_9061443_sb1_200">
+      <isinactive>F</isinactive>
+      <value>Intruder Alarm Service</value>
+    </customvalue>
+    <customvalue scriptid="val_93287_9061443_sb1_766">
+      <isinactive>F</isinactive>
+      <value>Fire Alarm Service</value>
+    </customvalue>
+    <customvalue scriptid="val_93288_9061443_sb1_864">
+      <isinactive>F</isinactive>
+      <value>Fire Extinguisher Service</value>
+    </customvalue>
+    <customvalue scriptid="val_93289_9061443_sb1_844">
+      <isinactive>F</isinactive>
+      <value>Structure Inspection</value>
+    </customvalue>
+    <customvalue scriptid="val_93290_9061443_sb1_691">
+      <isinactive>F</isinactive>
+      <value>Fall Arrest Certification - Latchway</value>
+    </customvalue>
+    <customvalue scriptid="val_93291_9061443_sb1_239">
+      <isinactive>F</isinactive>
+      <value>Fall Arrest Certification - Fallguard</value>
+    </customvalue>
+    <customvalue scriptid="val_93292_9061443_sb1_411">
+      <isinactive>F</isinactive>
+      <value>Rooftop Inspection</value>
+    </customvalue>
+    <customvalue scriptid="val_93293_9061443_sb1_749">
+      <isinactive>F</isinactive>
+      <value>Wooden Pole Inspection</value>
+    </customvalue>
+    <customvalue scriptid="val_93294_9061443_sb1_253">
+      <isinactive>F</isinactive>
+      <value>Visual Inspection</value>
+    </customvalue>
+    <customvalue scriptid="val_93295_9061443_sb1_528">
+      <isinactive>F</isinactive>
+      <value>Tower Painting</value>
+    </customvalue>
+    <customvalue scriptid="val_93296_9061443_sb1_540">
+      <isinactive>F</isinactive>
+      <value>Site Audit</value>
+    </customvalue>
+    <customvalue scriptid="val_93297_9061443_sb1_523">
+      <isinactive>F</isinactive>
+      <value>E&amp;LP Service</value>
+    </customvalue>
+  </customvalues>
+</customlist>

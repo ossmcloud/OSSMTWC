@@ -106,6 +106,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
 
                 if (col.id == 'site_id_text') {
+                    col.title = 'Site';
                     col.link = {
                         url: core.url.script('otwc_siteinfo_sl') + '&recId=${site_id}',
                         valueField: 'site_id'
@@ -117,6 +118,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     col.formatValue = (v) => {
                         return twcSrf.getSrfStatusHtml(v, 'twc-record-status-row');
                     }
+                }
+                // @@NOTE: Works Permitted flag (works permitted date set on the SRF Workflow), see oTWC_siteLocatorUtils.js: getSiteSrf
+                if (col.id == 'works_permitted') {
+                    col.title = 'Works Permitted';
+                    col.nullText = '';
+                    col.styles = { 'text-align': 'center', width: '130px' }
+                    col.formatValue = (v) => {
+                        return twcSrf.getSrfWorksPermittedHtml(v, 'twc-record-status-row');
+                    }
+                    // @@NOTE: show it right after the SRF Status column (columns are sorted by sortIdx, assigned in steps of 10 in data order and the status column comes first)
+                    var statusCol = tbl.columns.find(c => { return c.id == `${twcSrf.Fields.SRF_STATUS}_text`; });
+                    if (statusCol && statusCol.sortIdx != null) { col.sortIdx = statusCol.sortIdx + 5; }
                 }
                 if (col.id == twcSrf.Fields.OPERATOR_SITE_ID) { col.nullText = ''; }
 
@@ -138,6 +151,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         class TWCSpaceRequestItemForm {
             #page = null;
             #srfItem = null;
+            #descReadOnlyInit = null;
             #form = null;
             #mode = null;
             #isEdit = false;
@@ -291,6 +305,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
                 this.#form = twcUIPanel.ui(res);
+
+                // @@NOTE: edit / duplicate: keep the library entry of the item (hidden control), or it is cleared on OK (the form values are copied back on the item)
+                var eqLibCtrl = this.#form.getControl(twcSrfItem.Fields.EQUIPMENT_LIBRARY);
+                var eqLibValue = this.#srfItem[twcSrfItem.Fields.EQUIPMENT_LIBRARY];
+                if (eqLibValue?.value !== undefined) { eqLibValue = eqLibValue.value; }
+                if (eqLibCtrl && !eqLibCtrl.value && eqLibValue) { eqLibCtrl.value = eqLibValue; }
+
                 this.#form.on('change', e => { this.setFormState(e); })
                 this.setFormState();
 
@@ -420,12 +441,24 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.#form.getControl('srf-equipment').mandatory = !(!reqType || reqType == twcSrfItem.RequestType.INSTALL);
                     this.#form.getControl('srf-pick-equipment').hide = (!reqType || reqType == twcSrfItem.RequestType.INSTALL);
                     this.#form.getControl(twcSrfItem.Fields.ITEM_TYPE).hide = (!reqType || reqType == twcSrfItem.RequestType.REMOVE);
+                    // @@NOTE: a removal has nothing to describe: the description is the picked equipment's (read only)
+                    //         any other request type restores the control's original state (e.g. the form opened read only)
+                    var descCtrl = this.#form.getControl(twcSrfItem.Fields.DESCRIPTION);
+                    if (descCtrl) {
+                        if (this.#descReadOnlyInit === null) { this.#descReadOnlyInit = !!descCtrl.readOnly; }
+                        descCtrl.readOnly = (reqType == twcSrfItem.RequestType.REMOVE) ? true : this.#descReadOnlyInit;
+                    }
                     this.#addAndCopyButton?.css('display', reqType == twcSrfItem.RequestType.INSTALL ? 'inline-block' : 'none');
 
                     if (this.#srfItem[twcSrfItem.Fields.STEP_TYPE] == twcEqUI.EqClass.ATME) {
                         if (this.#form.getControl('srf-tme-equipment')) {
                             this.#form.getControl('srf-tme-equipment').hide = (!reqType || reqType == twcSrfItem.RequestType.REMOVE);
                             this.#form.getControl('srf-tme-equipment').mandatory = !(!reqType || reqType == twcSrfItem.RequestType.REMOVE);
+                        }
+                    }
+                    // @@NOTE: ATME / FEEDER picked from the existing equipment (remove / swap): the TME comes from the picked equipment (field read only), no TME picker
+                    if (this.#srfItem[twcSrfItem.Fields.STEP_TYPE] == twcEqUI.EqClass.ATME || this.#srfItem[twcSrfItem.Fields.STEP_TYPE] == twcEqUI.EqClass.FEEDER) {
+                        if (this.#form.getControl('srf-pick-tme-equipment')) {
                             this.#form.getControl('srf-pick-tme-equipment').hide = (!reqType || reqType == twcSrfItem.RequestType.REMOVE || reqType == twcSrfItem.RequestType.SWAP);
                         }
                     }
@@ -559,6 +592,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     srfItem[twcSrfItem.Fields.WIDTH_MM] = pickedEq[twcEquipment.Fields.WIDTH_MM];
                     srfItem[twcSrfItem.Fields.DEPTH_MM] = pickedEq[twcEquipment.Fields.HEIGHTDEPTH_MM];
                     srfItem[twcSrfItem.Fields.WEIGHT_KG] = pickedEq[twcEquipment.Fields.WEIGHT_KG];
+                    // @@NOTE: equipment location fields (see ui/modules/oTWC_siteRequestUtils.js: getEquipment)
+                    srfItem[twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION] = pickedEq[twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION];
+                    srfItem[twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION + '_name'] = pickedEq[twcEquipment.Fields.MODIFIED_ANTENNA_LOCATION + '_name'];
+                    srfItem[twcSrfItem.Fields.GIE_LOCATION] = pickedEq[twcEquipment.Fields.GIE_LOCATION];
 
                     if (pickedEq.relatedItems) {
                         core.array.each(pickedEq.relatedItems, i => {
@@ -615,6 +652,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     const onColumnInit = (tbl, col) => {
                         var cf = fields.find(cf => { return cf.field == col.id });
                         if (!cf) { return false; }
+                        if (cf.hide) { return false; }
                         for (var k in cf) { col[k] = cf[k]; }
                         col.nullText = '';
                     }
@@ -667,6 +705,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
+            // @@NOTE: ids of the equipment already referenced by the SRF items (all item tables, related / child items included)
+            //         the item being edited is skipped so its own equipment can be picked again
+            getSrfUsedEquipment() {
+                var used = [];
+                const add = (id) => { id = parseInt(id); if (id && used.indexOf(id) < 0) { used.push(id); } };
+                const scan = (rows) => {
+                    core.array.each(rows || [], row => {
+                        if (row === this.#srfItem || (row.id && row.id == this.#srfItem.id)) { return; }
+                        add(row[twcSrfItem.Fields.EQUIPMENT_ID]);
+                        add(row.swappedItem?.[twcSrfItem.Fields.EQUIPMENT_ID]);
+                        scan(row.relatedItems);
+                    });
+                }
+                for (var k in twcEquipment.StepType) {
+                    scan(this.#page.ui.getControl(`${twcSrfItem.Type}_${twcEquipment.StepType[k]}`)?.data);
+                }
+                return used;
+            }
+
             pickEquipment(eqClass, callback) {
                 try {
                     if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER]) {
@@ -677,26 +734,74 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                     if (!this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER]) { throw new Error('You need to specify a customer'); }
 
+                    var reqType = this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value;
                     var res = this.#page.postSync({ action: 'get-equipment' }, {
                         site: this.data.siteInfo.site.id,
                         customer: this.data.siteRequestInfo[twcSrf.Fields.CUSTOMER],
                         eqClass: eqClass,
-                        reqType: this.#form.getControl(twcSrfItem.Fields.REQUEST_TYPE).value,
+                        reqType: reqType,
                         // @@NOTE: TME / ATME / FEEDER can only be picked from the structure selected on the SRF
                         structure: (eqClass == twcEqUI.EqClass.GIE) ? null : this.data.siteRequestInfo[twcSrf.Fields.STRUCTURE]
                     })
 
+                    // @@NOTE: remove / swap: equipment already on this SRF (saved or not) cannot be picked again (the server lists the Licenced equipment with a pick note, see getEquipment)
+                    if (reqType == twcSrfItem.RequestType.REMOVE || reqType == twcSrfItem.RequestType.SWAP) {
+                        var usedEq = this.getSrfUsedEquipment();
+                        res.data = res.data.filter(eq => { return usedEq.indexOf(parseInt(eq.id)) < 0; });
+                    }
+
 
                     var fields = twcEqUI.getInventoryTableFields()
+
+                    // @@NOTE: Issue 307 rev. 2 - remove / swap: all Licenced equipment is listed, the 'Note' column says why a row cannot be picked (red)
+                    //         or what the user must confirm (amber: never installed), see ui/modules/oTWC_siteRequestUtils.js: applyPickInfo
+                    var isRemoveSwap = reqType == twcSrfItem.RequestType.REMOVE || reqType == twcSrfItem.RequestType.SWAP;
+                    if (isRemoveSwap) {
+                        fields.push({
+                            field: 'pick_note', title: 'Note', wrap: true,
+                            formatValue: (v, fv, data) => {
+                                if (!v) { return ''; }
+                                var color = data.pick_blocked == 'T' ? 'red' : 'darkorange';
+                                return `<span style="color: ${color}; font-weight: bold;">${v}</span>`;
+                            }
+                        });
+                    }
+
+                    // @@NOTE: ATME / FEEDER: show the parent TME column (right after the 'Eq. ID' column, column order = row key order)
+                    //         the server already returns the parent TME id / name (ui/modules/oTWC_siteRequestUtils.js: getEquipment)
+                    //         (i) icon => parent TME details dialog (no icon if there is no parent TME)
+                    if (eqClass == twcEqUI.EqClass.ATME || eqClass == twcEqUI.EqClass.FEEDER) {
+                        var tmeKey = `${twcEquipment.Fields.PARENT_TME_ID}_name`;
+                        fields.splice(1, 0, { field: twcEquipment.Fields.PARENT_TME_ID, title: 'Parent TME', prefix: twcEquipment.infoIconPrefix(twcEquipment.Fields.PARENT_TME_ID) });
+                        res.data = res.data.map(eq => {
+                            var row = {};
+                            for (var k in eq) {
+                                if (k == tmeKey) { continue; }
+                                row[k] = eq[k];
+                                if (k == 'name') { row[tmeKey] = eq[tmeKey]; }
+                            }
+                            return row;
+                        });
+                    }
+
                     const onColumnInit = (tbl, col) => {
                         if (col.id == 'id') { return false; }
                         if (!col.id.endsWith('_name')) { if (tbl.columns.find(c => { return c.id == `${col.id}_name`; })) { return false; } }
                         var cf = fields.find(cf => { return cf.field == col.id.replace('_name', '') });
                         if (!cf) { return false; }
                         if (cf.field == twcEquipment.Fields.EQUIPMENT_LICENCE_STATUS) { return false; }
+                        if (cf.hide) { return false; }
                         for (var k in cf) { col[k] = cf[k]; }
                         col.nullText = '';
-                        if (col.id == 'name') { col.addCount = true; }
+                        // @@NOTE: feeders: the 'Type' column shows the feeder type (same as the site equipment tables), the equipment type name is left on the row (copied on the SRF item when picked)
+                        if (eqClass == twcEqUI.EqClass.FEEDER && col.id == `${twcEquipment.Fields.EQUIPMENT_TYPE}_name`) {
+                            col.formatValue = (v, fv, data) => { return data[`${twcEquipment.Fields.FEEDER_TYPE}_name`] || ''; };
+                        }
+                        if (col.id == 'name') {
+                            col.addCount = true;
+                            // @@NOTE: (i) icon => equipment details dialog (the icon click does not pick the row)
+                            col.prefix = twcEquipment.infoIconPrefix('id');
+                        }
                     }
 
                     var container = jQuery(`
@@ -711,9 +816,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var eqTable = new uiTable.TableControl(tblContainer, onColumnInit, { id: 'twc_equipment', fitContainer: false, fitScreen: false })
                     //eqTable.init(this.data.eqLib.filter(el => { return el[twcEqLibUI.Fields.EQUIPMENT_CLASS] == eqClass  }))
                     eqTable.init(res.data);
-                    eqTable.table.on('dblclick', async e => {
+                    const pick = async (pickedEq) => {
                         try {
-                            var pickedEq = e.e.rowsData[0];
                             if (eqClass == twcEqUI.EqClass.TME) {
                                 var res = await this.#page.post({ action: 'get-equipment-children' }, { eq: pickedEq.id })
                                 pickedEq.relatedItems = res.data;
@@ -725,6 +829,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         } catch (error) {
                             dialog.error(error);
                         }
+                    }
+                    eqTable.table.on('dblclick', async e => {
+                        var pickedEq = e.e.rowsData[0];
+                        if (!pickedEq) { return; }
+                        // @@NOTE: blocked (open removal / outstanding SAF): cannot be picked, warning (never installed): the user confirms (checked again on save)
+                        if (isRemoveSwap && pickedEq.pick_blocked == 'T') {
+                            dialog.error(`<b>${pickedEq.name}</b> cannot be selected: ${pickedEq.pick_note}`);
+                            return;
+                        }
+                        if (isRemoveSwap && pickedEq.pick_warn == 'T') {
+                            dialog.confirm(`<b>${pickedEq.name}</b>: ${pickedEq.pick_note}.<br />Do you want to select it anyway?`, () => { pick(pickedEq); });
+                            return;
+                        }
+                        pick(pickedEq);
                     })
                     container.append(tblContainer);
                     eqTable.table.ui.css('overflow', 'unset')
@@ -755,6 +873,103 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+
+        // @@NOTE: 'Reviews' button (TL employees only): all the SRF Review records of the SRF, latest on top (server: ui/modules/oTWC_siteRequestUtils.js: getSrfReviews)
+        //         the table columns follow the keys of the rows built in render() (in order), text columns are wrapped
+        class TWCSrfReviewsForm {
+            #page = null;
+            #srf = null;
+            constructor(page, srf) {
+                this.#page = page;
+                this.#srf = srf;
+            }
+
+            // @@NOTE: comments are free text entered by users, so escape them before rendering as html
+            static textHtml(value) {
+                if (value === null || value === undefined || value === '') { return ''; }
+                return value.toString().replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('\n', '<br />');
+            }
+
+            static checksHtml(r) {
+                var checks = [
+                    { name: 'Space', pass: r.space_pass, com: r.space_com },
+                    { name: 'Facilities', pass: r.fac_pass, com: r.fac_com },
+                    { name: 'Estates', pass: r.est_pass, com: r.est_com },
+                    { name: 'Accounts', pass: r.acc_pass, com: r.acc_com },
+                ];
+                var html = '';
+                core.array.each(checks, c => {
+                    if (c.pass != 'T' && !c.com) { return; }
+                    html += `<div style="margin-bottom: 3px;">${c.pass == 'T' ? '&#9989;' : '&#10060;'} <b>${c.name}</b>${c.com ? ': ' + TWCSrfReviewsForm.textHtml(c.com) : ''}</div>`;
+                });
+                return html;
+            }
+
+            render() {
+                var form = jQuery(`<div>${twcIcons.wait({ size: 64, message: 'loading...' })}</div>`);
+                dialog.message({ title: 'SRF Reviews', message: form, width: '90%', height: '80vh' });
+
+                this.#page.post({ action: 'get-reviews' }, { srf: this.#srf.id })
+                    .then(res => {
+                        var rows = (res.data || []).map(r => {
+                            return {
+                                id: r.id,
+                                iteration: r.iteration,
+                                submitted: r.submitted,
+                                submitted_by: r.submitted_by,
+                                customer_comments: TWCSrfReviewsForm.textHtml(r.customer_comments),
+                                tl_result: r.tl_result,
+                                tl_review_date: r.tl_review_date,
+                                tl_comments: TWCSrfReviewsForm.textHtml(r.tl_comments),
+                                checks: TWCSrfReviewsForm.checksHtml(r),
+                                new_licence_fee: r.new_licence_fee,
+                                fee_breakdown: TWCSrfReviewsForm.textHtml(r.fee_breakdown),
+                            }
+                        });
+
+                        if (rows.length == 0) {
+                            form.html('<div style="padding: 7px;">no reviews found for this SRF</div>');
+                            return;
+                        }
+
+                        const COLUMNS = {
+                            iteration: { title: '#', styles: { width: '40px', 'text-align': 'center' } },
+                            submitted: { title: 'Submitted', type: 'date' },
+                            submitted_by: { title: 'Submitted By' },
+                            customer_comments: { title: 'Customer Comments', wrap: true, styles: { 'min-width': '250px' } },
+                            tl_result: { title: 'TL Result' },
+                            tl_review_date: { title: 'TL Review Date', type: 'date' },
+                            tl_comments: { title: 'TL Comments', wrap: true, styles: { 'min-width': '250px' } },
+                            checks: { title: 'Checks', wrap: true, styles: { 'min-width': '250px' } },
+                            new_licence_fee: { title: 'New Licence Fee', type: 'float' },
+                            fee_breakdown: { title: 'Fee Breakdown', wrap: true, styles: { 'min-width': '200px' } },
+                        };
+                        const onColumnInit = (table, col) => {
+                            var c = COLUMNS[col.id];
+                            if (!c) { return false; }
+                            for (var k in c) { col[k] = c[k]; }
+                            col.nullText = '';
+                            col.noFilter = true;
+                            col.noSort = true;
+                        }
+
+                        form.html('');
+                        var tblContainer = jQuery(`<div style="height: calc(80vh - 120px); overflow: auto;"></div>`);
+                        form.append(tblContainer);
+                        var table = new uiTable.TableControl(tblContainer, onColumnInit, { id: 'twc_srf_reviews', fitContainer: false, fitScreen: false, showFooter: false });
+                        table.init(rows);
+                        table.table.ui.css('overflow', 'unset');
+                    }).catch(err => {
+                        form.html('');
+                        dialog.error(err);
+                    });
+            }
+
+            static open(page, srf) {
+                var form = new TWCSrfReviewsForm(page, srf);
+                form.render();
+            }
+        }
 
         class TWCEquipmentActionsForm {
             #page = null;
@@ -819,14 +1034,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             var eqActionHtml = jQuery(`
                                 <div class="${isChild ? 'twc-eqa-child' : 'twc-eqa-header'}" data-eqa-group="${groupId}">
                                     <div class="twc-eqa-toggle" style="width: 30px; text-align: center; padding: 0px;"></div>
-                                    <div ${padding}>${icon}${eqAction[twcEqAct.Fields.EA_EQUIPMENT + '_name']}</div>
+                                    <div ${padding}>${icon}${twcEquipment.infoIconHtml(eqAction[twcEqAct.Fields.EA_EQUIPMENT])}${eqAction[twcEqAct.Fields.EA_EQUIPMENT + '_name']}</div>
                                     <div>${eqAction[twcEquipment.Fields.EQUIPMENT_CLASS]}</div>
                                     <div>${eqAction[twcEquipment.Fields.EQUIPMENT_TYPE]}</div>
                                     <div>${eqAction[twcEquipment.Fields.MAKE] || ''}</div>
                                     <div>${eqAction[twcEquipment.Fields.MODEL] || ''}</div>
                                     <div>${eqAction[twcEquipment.Fields.HEIGHT_ON_TOWER_M] ?? ''}</div>
                                     <div>${eqAction[twcEquipment.Fields.AZIMUTH] ?? ''}</div>
-                                    <div>${eqAction[twcEquipment.Fields.OPT_TYPE] || ''}</div>
+                                    <div>${eqAction[twcEquipment.Fields.FEEDER_TYPE] || ''}</div>
                                     <div>${eqAction[twcEquipment.Fields.B_END] || ''}</div>
                                     <div>${eqAction[twcEqAct.Fields.EA_TYPE + '_name']}</div>
                                     <div>${eqAction[twcEqAct.Fields.EA_STATUS + '_name']}</div>
@@ -973,6 +1188,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             })
                         })
 
+                        this.ui.getControl('view-reviews-button')?.on('click', e => {
+                            TWCSrfReviewsForm.open(this, this.data.siteRequestInfo);
+                        })
+
                         this.ui.getControl('view-equipment-actions')?.on('click', e => {
                             TWCEquipmentActionsForm.open(this, this.data.siteRequestInfo);
                         })
@@ -983,9 +1202,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         })
 
                         this.ui.getControl('submit-button')?.on('click', e => {
-                            dialog.confirmAsync('Are you sure you want to submit this request?').then(() => {
+                            this.askSubmitComment(comment => {
                                 this.wait();
-                                this.post({ action: 'submit' }, { srf: this.data.siteRequestInfo.id })
+                                this.post({ action: 'submit' }, { srf: this.data.siteRequestInfo.id, submitComment: comment })
                                     .then(res => {
                                         location.reload();
                                     }).catch(err => {
@@ -998,7 +1217,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             location.href = location.href + "&edit=T";
                         })
                         this.ui.getControl('submit-srf-button')?.on('click', e => {
-                            dialog.confirmAsync('Are you sure you wish to submit this SRF?').then(() => {
+                            this.askSubmitComment(comment => {
+                                this.data.siteRequestInfo.submitComment = comment;
                                 this.data.siteRequestInfo.submitOnSave = true;
                                 this.data.siteRequestInfo.dirty = true;
                                 this.dirty = true;
@@ -1021,12 +1241,32 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         });
 
                         //this.ui.getControl('cancel-srf-button')?.on('click', e => {
+                        // @@NOTE: SRF cancellation goes through its own action (permission check + clean-up, oTWC_srfWorkflowEngine.js: cancelSrf), NOT through save
+                        //         a new SRF never saved has nothing to clean up: just leave the page
                         this.page.find('[id="cancel-srf-button"]').on('click', e => {
-                            dialog.confirmAsync('Are you sure you wish to cancel this SRF?').then(() => {
-                                this.data.siteRequestInfo[twcSrf.Fields.SRF_STATUS] = twcUtils.SrfStatus.SRFCancelled;
-                                this.data.siteRequestInfo.dirty = true;
-                                this.dirty = true;
-                                this.onSave(e);
+                            if (!this.data.siteRequestInfo.id) {
+                                dialog.confirmAsync('Are you sure you wish to cancel this SRF?').then(() => {
+                                    this.dirty = false;
+                                    location.href = core.url.script('otwc_spacerequest_sl');
+                                });
+                                return;
+                            }
+                            // @@NOTE: a comment (reason) is mandatory, saved on the SRF 'Submission Notes' with who cancelled it (oTWC_srfWorkflowEngine.js: cancelSrf)
+                            this.askCancelComment(async comment => {
+                                this.wait();
+                                try {
+                                    // @@NOTE: the server returns keepGoing when it is running low on units, every call carries on from where the previous one stopped
+                                    var res = null; var calls = 0;
+                                    do {
+                                        if (++calls > 50) { throw new Error('SRF cancellation did not complete, please try again'); }
+                                        res = await this.post({ action: 'cancel-srf' }, { srf: this.data.siteRequestInfo.id, comment: comment });
+                                    } while (res?.keepGoing);
+                                    this.dirty = false;
+                                    location.reload();
+                                } catch (err) {
+                                    this.waitClose();
+                                    dialog.error(err);
+                                }
                             });
                         });
 
@@ -1077,7 +1317,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                     }
                                     // @@NOTE: TME table: feeder rows (related items) show the feeder type under the 'Description' column
                                     if (c.id == `${twcSrfItem.Type}_${twcSrfItem.StepType.TME}` && column.id == twcSrfItem.Fields.DESCRIPTION && data[twcSrfItem.Fields.STEP_TYPE] == twcSrfItem.StepType.FEEDER) {
-                                        const feederType = (d) => { return d[twcSrfItem.Fields.TYPE_OPT + '_name'] || ''; };
+                                        const feederType = (d) => { return d[twcSrfItem.Fields.FEEDER_TYPE + '_name'] || ''; };
                                         var feederTypeValue = feederType(data);
                                         if (data.swappedItem && feederType(data.swappedItem) != feederTypeValue) {
                                             return `
@@ -1486,6 +1726,50 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             }
 
+
+            // @@NOTE: submit / re-submit (after feedback issued) => the user must enter a comment, it is stored on the SRF Review record of the iteration
+            //         and on the SRF 'Submission Notes' field (see modules/oTWC_srfWorkflowEngine.js: initWorkFlow)
+            // @@NOTE: cancel SRF => the user must enter a comment (reason), stored on the SRF 'Submission Notes' preceded by who cancelled it (modules/oTWC_srfWorkflowEngine.js: cancelSrf)
+            askCancelComment(callback) {
+                var form = twcUI.init({
+                    controls: [
+                        { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'cancel_comment', width: '100%', rows: 12, mandatory: true, label: 'Please enter the reason for cancelling this SRF' }
+                    ]
+                });
+                dialog.confirm({ title: 'Are you sure you wish to cancel this SRF?', message: form.ui, width: '700px', height: '450px' }, dlg => {
+                    try {
+                        var comment = (form.getValues().cancel_comment || '').trim();
+                        if (!comment) { throw new Error('Please, enter the reason for cancelling the SRF'); }
+                        callback(comment);
+                    } catch (error) {
+                        dialog.error(error);
+                        return false;
+                    }
+                });
+            }
+
+            askSubmitComment(callback) {
+                var isResubmit = this.data.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcUtils.SrfStatus.FeedbackIssued;
+                var form = twcUI.init({
+                    controls: [
+                        {
+                            type: twcUI.CTRL_TYPE.TEXTAREA, id: 'submit_comment', width: '100%', rows: 12, mandatory: true,
+                            label: isResubmit ? 'Please enter a comment describing the changes made to this SRF' : 'Please enter a comment for this submission'
+                        }
+                    ]
+                });
+                var title = isResubmit ? 'Are you sure you wish to re-submit this SRF?' : 'Are you sure you wish to submit this SRF?';
+                dialog.confirm({ title: title, message: form.ui, width: '700px', height: '450px' }, dlg => {
+                    try {
+                        var comment = (form.getValues().submit_comment || '').trim();
+                        if (!comment) { throw new Error('Please, enter a comment'); }
+                        callback(comment);
+                    } catch (error) {
+                        dialog.error(error);
+                        return false;
+                    }
+                });
+            }
 
             async onSave(e) {
                 try {

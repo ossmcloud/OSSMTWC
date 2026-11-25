@@ -23,6 +23,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSrfStatusName: twcUtils.getSrfStatusName,
             getSrfStatusStyle: twcUtils.getSrfStatusStyle,
             getSrfStatusHtml: twcUtils.getSrfStatusHtml,
+            getSrfWorksPermittedHtml: twcUtils.getSrfWorksPermittedHtml,
 
             get: function (id) {
                 var rec = new OSSMTWC_SRF(id);

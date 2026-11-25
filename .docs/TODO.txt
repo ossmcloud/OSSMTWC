@@ -21,39 +21,17 @@ For Option B - different site
 - The Structure and Accommodation fields are not reused and must be entered anew as appropriate
 
 
-
-
-
-SRF Swap:
-    Swap ATME/FEEDER: we should make sure swapped stuff here is not swapped on the TME section and vice versa
-
-    Swap Item and 2 related items
-    Save, then edit and uncheck one of the 2 related items 
-    Save, the related item is not deleted
-        when unchecking a related swap item that was saved, ask for deletion and add item to .deleted_items collection
-
-SRF:
-    If we remove an item (install or swap) after the equipment is created we should delete the equipment I guess????
-    after status is SRFApproved wse should not let edit items
-
-
-Workflow:
-	Planned dates 
-		Only changes to planned dates (pull forward, or push out) should affect future planned dates.
-            Exception of the 4x check steps after initial review, should not be able to re-forecast these.
-
-
-
 _________________________________________________________________________________________________________________________________________________
 
-FRAMEWORK:
+LATER:
+    make sure Workflow Records cannot be edited via in-line editing (with script too)
 	port largeFiles from OMT
-	File Preview: use blobs
-
+	
 _________________________________________________________________________________________________________________________________________________
 
 IMPORTANT:
 ----------
+    // @@IMPORTANT NOTE: License Maps are only available for Vodafone but it that changes we'll need to add a 'customer' field to the TWC File table and use it here
 	Field re-labelled cause an issue when the object is re-built
 	DropDown - noAutoSelect - does not really work as intended
 	RecordBase.select : noAlias and useNames are same thing, remove useNames

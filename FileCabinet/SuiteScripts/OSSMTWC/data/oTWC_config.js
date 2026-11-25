@@ -2,8 +2,12 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './oTWC_permissions.js'],
-    (runtime, core, coreSQL, recu, permissions) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', './oTWC_permissions.js', './oTWC_profileCompany.js'],
+    (runtime, core, coreSQL, recu, permissions, twcProfileCompany) => {
+
+        // @@GO-LIVE: @@IMPORTANT: set to false when deploying live
+        const SB = true;
+
 
         const CUSTOM_FIELDS = {
             EMP: {
@@ -15,11 +19,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         // @@HARDCODED: @@GO-LIVE :: these map to internal ids
-        const TOWERCOM_ENTITY = 822;
+        const TOWERCOM_ENTITY = SB ? 822 : 249;
         const TKT_CASE_PROFILE = 1;
         const TKT_CASE_STATUS = 1;
-        const NO_REPLY = 827;
-        const SAF_AWAIT_PHOTOS_MAIL_TEMPLATE = 2;
+        const NO_REPLY = SB ? 827 : 709;
+        const SAF_AWAIT_PHOTOS_MAIL_TEMPLATE = SB ? 2 : 12;
+        // @@GO-LIVE :: default 'Works Photos Req. Delay' (days after the last time block before a SAF goes to Awaiting Photos) when the SAF has none
+        //              used by svc/oTWC_saf_sts_update_svc.js and ui/modules/oTWC_siteAccessUtils.js (approval: completion photos requested date)
+        const SAF_PHOTO_REQ_DELAY_DEFAULT = SB ? 1 : 7;
 
         const FIELD_ENTITY_USER_PREF = 'custentity_twc_userpref';
 
@@ -45,7 +52,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             Pending: 4,
             // Approved: 5,
             ToBeRenewed: 6,
-            No: 7
+            No: SB ? 7 : 101
         }
 
         function isPowerUser(id) {
@@ -163,11 +170,35 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
 
 
+        // @@NOTE: finds the profile of the logged in user for the given company
+        //         entityId: the logged in entity (core.env.user()), on a Customer Center contact login this is the company the contact chose at login
+        //         email: the logged in user email (runtime.getCurrentUser().email), on a contact login this is the contact email
+        //         the profile username is either the entity itself or the contact (found by email)
+        //         linked = 'T' if the profile home company is companyId or the profile is linked to companyId (customrecord_twc_profilec)
+        //         profiles linked to the company come first, so if linked = 'F' then the user has no profile for this company
+        function getLoginProfile(entityId, email, companyId) {
+            return coreSQL.first({
+                query: `
+                    select  p.id, p.name, p.custrecord_twc_prof_phone as phone, p.custrecord_twc_prof_co_desig_cont as designated_contact,
+                            p.custrecord_twc_prof_username as username, e.email, e.entitytitle as user_name, NVL(e.mobilephone, e.phone) as user_phone,
+                            case when p.custrecord_twc_prof_company = ? or pc.id is not null then 'T' else 'F' end as linked
+                    from    customrecord_twc_prof p
+                    join    entity e on e.id = p.custrecord_twc_prof_username
+                    left join ${twcProfileCompany.Type} pc on pc.${twcProfileCompany.Fields.PROFILE} = p.id and pc.${twcProfileCompany.Fields.COMPANY} = ? and pc.isinactive = 'F'
+                    where   p.isinactive = 'F'
+                    and     (p.custrecord_twc_prof_username = ? or LOWER(e.email) = LOWER(?))
+                    order by (case when p.custrecord_twc_prof_company = ? or pc.id is not null then 0 else 1 end), (case when p.custrecord_twc_prof_username = ? then 0 else 1 end), p.id
+                `,
+                params: [companyId || 0, companyId || 0, entityId, email || '-', companyId || 0, entityId]
+            });
+        }
+
         function getUserInfo(context) {
 
             var userInfo = coreSQL.first({
                 query: `
-                    select  e.id, e.type, e.email, e.entitytitle as name, NVL(e.mobilephone, e.phone) as phone, emp.custentity_twc_prj_power_user as power_user, emp.custentity_twc_can_execute_pack as can_execute_pack
+                    select  e.id, e.type, e.email, e.entitytitle as name, NVL(e.mobilephone, e.phone) as phone, emp.custentity_twc_prj_power_user as power_user, emp.custentity_twc_can_execute_pack as can_execute_pack,
+                            emp.custentity_twc_saf_photo_approver as saf_photo_approver
                     from    entity e
                     left join employee emp on emp.id = e.id
                     where   e.id = ?
@@ -177,8 +208,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
 
             userInfo.powerUser = userInfo.power_user == 'T';
             userInfo.canExecutePack = userInfo.can_execute_pack == 'T';
+            // @@NOTE: employee checkbox 'Can Approve SAF Photo Reviews', approves the completion photos reviews before they are issued to the SAF submitter
+            userInfo.canApproveSafReview = userInfo.saf_photo_approver == 'T';
             delete userInfo.power_user;
             delete userInfo.can_execute_pack;
+            delete userInfo.saf_photo_approver;
 
             if (context) { userInfo.permission = permissions.get(context); }
 
@@ -225,32 +259,37 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 throw new Error('Could not determine login type');
             }
 
-            if (!userInfo.isEmployee) {
-                // @@NOTE: the oly way to detect that the logged in user is not the main customer but a contact with access is if the email on runtime is different than what we loaded for the customer
-                //         in such case we get the contact details as well in case we need it for soe reason
-                var contactEmail = runtime.getCurrentUser().email;
-                if (userInfo.email != contactEmail) {
+            // @@NOTE: feature restrictions (e.g. customer only) depend on the user's company, see oTWC_permissions.js: applyRestrictions
+            if (userInfo.permission) { permissions.applyRestrictions(userInfo.permission, userInfo); }
 
-                    userInfo.contact = coreSQL.first({
-                        query: `
-                            select  id, email, entitytitle as name, NVL(mobilephone, phone) as phone
-                            from    entity e
-                            join    customercompanycontact ce on ce.contactscompany = ?
-                            where email = ?
-                        `,
-                        params: [
-                            userInfo.id,
-                            contactEmail
-                        ]
-                    })
+            var profileInfo = null;
+            if (userInfo.isEmployee) {
+                profileInfo = coreSQL.first(`select id, custrecord_twc_prof_phone as phone, name, custrecord_twc_prof_co_desig_cont as designated_contact from customrecord_twc_prof where custrecord_twc_prof_username = ${userInfo.recordId}`);
+            } else {
+                // @@NOTE: a contact can be associated to multiple customers, on login (Customer Center) the contact chooses the company
+                //         and core.env.user() (userInfo.id) is the chosen company entity, so userInfo.companyProfile is already the chosen company
+                //         the profile is the one whose username is the logged in entity or the contact (matched by the runtime email)
+                //         and it must be linked to the chosen company (home company or customrecord_twc_profilec)
+                profileInfo = getLoginProfile(userInfo.id, runtime.getCurrentUser().email, userInfo.companyProfile.id);
+                if (profileInfo && profileInfo.linked != 'T') {
+                    throw new Error(`Your profile is not associated to company "${userInfo.companyProfile.name}", please contact TL administrator to set you up.`);
+                }
 
+                if (profileInfo && profileInfo.username != userInfo.id) {
+                    // @@NOTE: the logged in user is not the main customer but a contact with access, we keep the contact details as well
+                    userInfo.contact = { id: profileInfo.username, email: profileInfo.email, name: profileInfo.user_name, phone: profileInfo.user_phone };
                     userInfo.recordType = 'contact';
                     userInfo.recordId = userInfo.contact.id;
+                }
 
+                if (profileInfo) {
+                    delete profileInfo.username;
+                    delete profileInfo.email;
+                    delete profileInfo.user_name;
+                    delete profileInfo.user_phone;
+                    delete profileInfo.linked;
                 }
             }
-
-            var profileInfo = coreSQL.first(`select id, custrecord_twc_prof_phone as phone, name, custrecord_twc_prof_co_desig_cont as designated_contact from customrecord_twc_prof where custrecord_twc_prof_username = ${userInfo.recordId}`);
 
             userInfo.profile = profileInfo?.id || null;
             userInfo.profileInfo = profileInfo;
@@ -305,6 +344,130 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return false;
         }
 
+        // @@IMPORTANT: Agent Pass rules (profile field custrecord_twc_prof_agent_passes), used by Equipment, SRF and SAF visibility (getSrfAccessFilter / getSafAccessFilter)
+        //              the SAF customer pick list still follows the company ACL (getUserAllowedCustomers / oTWC_utils.js: getCompanies)
+        //              contractor profiles only see the customers on their agent passes that are also on their company ACL (customrecord_twc_acl)
+        //              customer companies (incl. customer + contractor) always see their own company
+        //              returns 'all' for employees, otherwise an array of customer (company) ids (can be empty)
+        function getAgentPassCustomers(userInfo) {
+            if (userInfo.isEmployee) { return 'all'; }
+            var customers = [];
+            if (userInfo.companyProfile?.isVendor) {
+                var agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${parseInt(userInfo.profile) || 0}`)?.agent_passes;
+                agentPasses = parseIdList(agentPasses);
+                // @@NOTE: a customer removed from the ACL but left on the agent passes field is not visible
+                var aclList = coreSQL.run(`select custrecord_twc_acl_cust as cust from customrecord_twc_acl where isinactive = 'F' and custrecord_twc_acl_cont = ${parseInt(userInfo.companyProfile.id) || 0}`);
+                customers = agentPasses.filter(ap => { return aclList.find(acl => { return acl.cust == ap; }); });
+            }
+            if (userInfo.companyProfile?.isCustomer) {
+                var ownId = parseInt(userInfo.companyProfile.id);
+                if (customers.indexOf(ownId) < 0) { customers.push(ownId); }
+            }
+            return customers;
+        }
+
+        function parseIdList(value) {
+            if (!value) { return []; }
+            return value.toString().split(',').map(i => { return parseInt(i.trim()); }).filter(i => { return i; });
+        }
+
+        // @@IMPORTANT: SRF visibility (SRF locator, site 'Existing SRFs' panel, SRF record page and SRF post actions)
+        //                  employees:          all
+        //                  customer company:   all the SRFs of their own company (incl. the ones raised by agent pass users of other companies)
+        //                  contractor (agent): SRFs for a customer on their agent passes, raised by a profile of their own company
+        //                                      that also holds an agent pass for that same customer
+        //              returns a sql fragment starting with ' and ' ('' for employees), alias is the SRF table alias (optional)
+        //              @@NOTE: field ids are literals (custrecord_twc_srf_cust / custrecord_twc_srf_sub_by), oTWC_srf.js is not loaded here to avoid a circular dependency
+        function getSrfAccessFilter(userInfo, alias) {
+            if (userInfo.isEmployee) { return ''; }
+            var a = alias ? `${alias}.` : '';
+            var companyId = parseInt(userInfo.companyProfile?.id) || 0;
+            var conditions = [];
+
+            if (userInfo.companyProfile?.isCustomer) {
+                conditions.push(`${a}custrecord_twc_srf_cust = ${companyId}`);
+            }
+
+            conditions.push(...getAgentPassConditions(userInfo, `${a}custrecord_twc_srf_cust`, `${a}custrecord_twc_srf_sub_by`));
+
+            // @@NOTE: nothing allowed => nothing shown
+            if (conditions.length == 0) { return ' and 1 = 0 '; }
+            return ` and (${conditions.join(' or ')}) `;
+        }
+
+        // @@NOTE: agent pass conditions (contractor users only, shared by the SRF / SAF access filters):
+        //         one '(customer = X and raised by in (...))' per customer on the user's agent passes (getAgentPassCustomers, own company excluded),
+        //         raised by = a profile of the user's company (home company or linked via customrecord_twc_profilec) that also holds an agent pass for that customer
+        //         customerField / raisedByField: the sql column expressions (with the table alias)
+        function getAgentPassConditions(userInfo, customerField, raisedByField) {
+            var conditions = [];
+            if (userInfo.isEmployee || !userInfo.companyProfile?.isVendor) { return conditions; }
+            var companyId = parseInt(userInfo.companyProfile?.id) || 0;
+            var passCustomers = getAgentPassCustomers(userInfo).filter(c => { return c != companyId; });
+            if (passCustomers.length == 0) { return conditions; }
+
+            var profiles = coreSQL.run(`
+                select  p.id, p.custrecord_twc_prof_agent_passes as agent_passes
+                from    customrecord_twc_prof p
+                where   p.custrecord_twc_prof_company = ${companyId}
+                or      p.id in (select pc.${twcProfileCompany.Fields.PROFILE} from ${twcProfileCompany.Type} pc where pc.${twcProfileCompany.Fields.COMPANY} = ${companyId} and pc.isinactive = 'F')
+            `);
+            core.array.each(profiles, p => { p.passes = parseIdList(p.agent_passes); });
+
+            core.array.each(passCustomers, c => {
+                var raisedBy = profiles.filter(p => { return p.passes.indexOf(c) >= 0; }).map(p => { return p.id; });
+                if (raisedBy.length == 0) { return; }
+                conditions.push(`(${customerField} = ${c} and ${raisedByField} in (${raisedBy.join(',')}))`);
+            });
+            return conditions;
+        }
+
+        // @@IMPORTANT: SAF visibility (SAF locator list, SAF calendar links / SAF numbers, SAF record page and SAF save)
+        //                  employees:          all
+        //                  customer company:   all the SAFs of their own company (incl. the ones raised by agent pass users of other companies)
+        //                  contractor:         SAFs where their company is the Primary Contractor
+        //                                      + agent pass: SAFs for a customer on their agent passes, raised (SAF author) by a profile of their own company
+        //                                        that also holds an agent pass for that same customer
+        //              a SAF not visible is shown as 'slot used' on the calendar (no SAF number, no link)
+        //              returns a sql fragment starting with ' and ' ('' for employees), alias is the SAF table alias (optional)
+        //              @@NOTE: field ids are literals (custrecord_twc_saf_customer / custrecord_twc_saf_primary_contractor / custrecord_twc_saf_author), oTWC_saf.js is not loaded here
+        function getSafAccessFilter(userInfo, alias) {
+            if (userInfo.isEmployee) { return ''; }
+            var a = alias ? `${alias}.` : '';
+            var companyId = parseInt(userInfo.companyProfile?.id) || 0;
+            var conditions = [];
+
+            if (userInfo.companyProfile?.isCustomer) {
+                conditions.push(`${a}custrecord_twc_saf_customer = ${companyId}`);
+            }
+            if (userInfo.companyProfile?.isVendor) {
+                conditions.push(`${a}custrecord_twc_saf_primary_contractor = ${companyId}`);
+            }
+
+            conditions.push(...getAgentPassConditions(userInfo, `${a}custrecord_twc_saf_customer`, `${a}custrecord_twc_saf_author`));
+
+            // @@NOTE: nothing allowed => nothing shown
+            if (conditions.length == 0) { return ' and 1 = 0 '; }
+            return ` and (${conditions.join(' or ')}) `;
+        }
+
+        function isUserAllowedSaf(userInfo, safId) {
+            if (userInfo.isEmployee) { return true; }
+            return !!coreSQL.first(`select s.id from customrecord_twc_saf s where s.id = ${parseInt(safId) || 0} ${getSafAccessFilter(userInfo, 's')}`);
+        }
+
+        function isUserAllowedSrf(userInfo, srfId) {
+            if (userInfo.isEmployee) { return true; }
+            return !!coreSQL.first(`select s.id from customrecord_twc_srf s where s.id = ${parseInt(srfId) || 0} ${getSrfAccessFilter(userInfo, 's')}`);
+        }
+
+        // @@IMPORTANT: the SDS (licence agreement) is customer information only: agent pass (contractor) users can never see / print / sign it
+        //              only employees or users of the SRF customer company
+        function canSeeSds(userInfo, srfCustomer) {
+            if (userInfo.isEmployee) { return true; }
+            return !!userInfo.companyProfile?.isCustomer && !!srfCustomer && srfCustomer == userInfo.companyProfile.id;
+        }
+
         function getUserPref(userInfo) {
             try {
                 var userPref = recu.lookUp(userInfo.recordType, userInfo.recordId, FIELD_ENTITY_USER_PREF);
@@ -348,6 +511,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         }
 
         return {
+            SB: SB, 
+
             Fields: CUSTOM_FIELDS,
 
             ROOT_FILE_FOLDER: 'TL Files', // @@NOTE: this is duplicated on twc_utils.js
@@ -361,13 +526,21 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             TKT_CASE_STATUS: TKT_CASE_STATUS,
             NO_REPLY: NO_REPLY,
             SAF_AWAIT_PHOTOS_MAIL_TEMPLATE: SAF_AWAIT_PHOTOS_MAIL_TEMPLATE,
-            
+            SAF_PHOTO_REQ_DELAY_DEFAULT: SAF_PHOTO_REQ_DELAY_DEFAULT,
+
             userInfo: getUserInfo,
+            getLoginProfile: getLoginProfile,
             getUserPref: getUserPref,
             setUserPref: setUserPref,
             getScriptId: getScriptId,
             getUserAllowedCustomers: getUserAllowedCustomers,
             isUserAllowedCustomers: isUserAllowedCustomers,
+            getAgentPassCustomers: getAgentPassCustomers,
+            getSrfAccessFilter: getSrfAccessFilter,
+            isUserAllowedSrf: isUserAllowedSrf,
+            getSafAccessFilter: getSafAccessFilter,
+            isUserAllowedSaf: isUserAllowedSaf,
+            canSeeSds: canSeeSds,
             cfg: getConfig,
             getNsTable: getNsTable,
             getFields: getCustomTableFields,

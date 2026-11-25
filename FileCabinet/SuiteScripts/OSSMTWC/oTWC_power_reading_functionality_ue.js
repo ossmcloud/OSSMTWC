@@ -529,7 +529,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 };
 
                 var powerMeterRec = record.load({
-                    type: 'customrecordcustomrecord_twc_pwr_mtr',
+                    type: 'customrecord_twc_pwr_mtr',
                     id: powerReadRec.getValue({ fieldId: fields.POWER_METER }),
                     isDynamic: false
                 });

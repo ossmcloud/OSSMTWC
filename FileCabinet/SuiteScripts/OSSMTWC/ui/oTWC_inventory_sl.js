@@ -33,10 +33,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 let actions = '';
 
+                // @@NOTE: hide the equipment neither licenced nor installed (oTWC_utils.js: isEquipmentInactive), off by default, reload with hideInactive=T (ui/js/oTWC_inventory.js)
+                var hideInactive = context.request.parameters.hideInactive == 'T';
+                actions += `<div style="white-space: nowrap; width: 80px; margin-top: -11px;">${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'hide-inactive-equipment-toggle', label: 'Hide Inactive', labelNoWrap: true, value: hideInactive, small: true })}</div>`;
+
                 // @@NOTE: grouped view (default) shows TME / GIE with the related ATME / Feeders as child rows, ungrouped shows one table per equipment class
                 var grouped = context.request.parameters.grouped != 'F';
                 actions += `<div style="white-space: nowrap; width: 36px; margin-top: -11px;">${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'group-equipment-toggle', label: 'Group', labelNoWrap: true, value: grouped, small: true })}</div>`;
-
+                
                 // @@NOTES: User can add Inventory by clicking on Add Equipment Button.
                 if (context.request.parameters.siteId && pageData.userInfo.isEmployee) {
                     actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Add Equipment', id: 'add-equipment-button' });
@@ -54,7 +58,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     readOnly = true;
                 }
 
-                var fieldGroups = twcInventoryUtils.getInvInfoPanels(pageData.siteInfo.site, pageData.userInfo, grouped);
+                var fieldGroups = twcInventoryUtils.getInvInfoPanels(pageData.siteInfo.site, pageData.userInfo, grouped, hideInactive);
                 html = html.replaceAll('{SITE_REQUEST_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
                 if (actions) {
                     // @@NOTE: flex so the group toggle and the add button sit side by side
@@ -62,6 +66,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
 
             } else {
+                // @@NOTE: contractors (agent pass users) cannot use the Site Equipment locator, they only see equipment per site (siteId)
+                //         the menu item is hidden by configs { "restrict": "customer-menu" } on 'OSSMTWC - Role Feature List' (oTWC_permissions.js: applyRestrictions)
+                //         permission NONE => initView renders the permission error page
+                if (!pageData.userInfo.isEmployee && !pageData.userInfo.companyProfile?.isCustomer) {
+                    pageData.userInfo.permission.lvl = twcConfig.PERMISSION_LEVEL.NONE;
+                    html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
+                    s.form.fieldHtml(html);
+                    return;
+                }
                 pageData.data.inventoryInfo = twcInventoryUtils.getInventoryData(null, pageData.userInfo);
                 html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteLocatorPanel');
                 html = html.replace('{SITE_LOCATOR_PANEL}', twcInventoryUtils.renderInventoryPanel(pageData.userInfo, pageData.permission.featureId));

@@ -1,0 +1,20 @@
+<customlist scriptid="customlist_twc_equip_wind_regime">
+  <description></description>
+  <isinactive>F</isinactive>
+  <isordered>T</isordered>
+  <name>_twc_equip_wind_regime</name>
+  <customvalues>
+    <customvalue scriptid="val_51339_9061443_sb1_621">
+      <isinactive>F</isinactive>
+      <value>40 m/s</value>
+    </customvalue>
+    <customvalue scriptid="val_51340_9061443_sb1_203">
+      <isinactive>F</isinactive>
+      <value>150 km/h</value>
+    </customvalue>
+    <customvalue scriptid="val_51341_9061443_sb1_402">
+      <isinactive>F</isinactive>
+      <value>250 km/h</value>
+    </customvalue>
+  </customvalues>
+</customlist>

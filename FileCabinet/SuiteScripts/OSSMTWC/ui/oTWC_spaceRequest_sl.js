@@ -21,10 +21,21 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteRequestInfo.siteId || context.request.parameters.siteId, pageData.userInfo);
 
                 //
+                // @@NOTE: Works Permitted flag next to the status, outside #srf-record-status as that is replaced when the status changes (oTWC_srfWorkflowEngineUI.js)
+                //         #srf-works-permitted is refreshed when TL changes the date on the SRF Workflow
+                var worksPermittedHtml = `<span id="srf-works-permitted" style="display: inline-flex; vertical-align: middle;">${twcSrf.getSrfWorksPermittedHtml(pageData.siteRequestInfo[twcSrf.Fields.WORKS_PERMITTED_DATE])}</span>`;
                 pageData.recordStatus = `<div class="twc-div-span-table" id="srf-record-status">${twcSrf.getSrfStatusHtml(pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS])}</div>`;
                 if (context.request.parameters.recId) {
                     var srfCode = pageData.siteRequestInfo.name;
                     s.form.f.title += ` - ${srfCode}`;
+                    // @@NOTE: SRF migrated from Radix (data_migration SPEC_v1.2): badge right by the status, outside #srf-record-status as that is replaced when the status changes
+                    var radixMigrated = pageData.siteRequestInfo[twcSrf.Fields.RADIX_MIGRATED] === true || pageData.siteRequestInfo[twcSrf.Fields.RADIX_MIGRATED] == 'T';
+                    var radixMigratedBadge = '';
+                    if (radixMigrated) {
+                        // @@NOTE: the radix id goes in a title attribute: html special characters are stripped
+                        var radixId = String(pageData.siteRequestInfo[twcSrf.Fields.RADIX_ID] || '').replace(/[&<>"']/g, '');
+                        radixMigratedBadge = `<span style="width: 5px;"></span><span class="twc-record-status" style="padding: 0px 11px; vertical-align: middle; background-color: magenta; color: white; white-space: nowrap;" title="This SRF was migrated from Radix${radixId ? ` (Radix Id: ${radixId})` : ''}">Migrated from Radix</span>`;
+                    }
                     pageData.recordStatus = `
                         <div style="display:flex; align-items:flex-start;">
                             <div class="twc-div-span-table">
@@ -33,6 +44,9 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                                 </span>
                                 <span style="width: 5px;"></span>
                                 ${pageData.recordStatus}
+                                ${radixMigratedBadge}
+                                <span style="width: 5px;"></span>
+                                ${worksPermittedHtml}
                             </div>
                         </div>
                     `;
@@ -99,21 +113,26 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                         readOnly = true;
                     }
 
-                    var viewWorkFlowButton = ''; var openWorkFlowButton = '';
+                    var viewWorkFlowButton = ''; var openWorkFlowButton = ''; var reviewsButton = '';
                     if (pageData.userInfo.isEmployee) {
                         if (context.request.parameters.recId && pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] != twcSrf.Status.Draft) {
                             viewWorkFlowButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'View Workflow', id: 'view-workflow-button' });
                             openWorkFlowButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Open Workflow', id: 'open-workflow-button' });
+                            // @@NOTE: TL employees only, opens a dialog with all the SRF Review records (ui/js/oTWC_spaceRequest.js: TWCSrfReviewsForm)
+                            reviewsButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Reviews', id: 'view-reviews-button' });
                         }
                     }
 
+                    // @@NOTE: the SDS is customer information only, agent pass (contractor) users never see / print / sign it (oTWC_config.js: canSeeSds)
+                    var canSeeSds = twcConfig.canSeeSds(pageData.userInfo, pageData.siteRequestInfo[twcSrf.Fields.CUSTOMER]);
+
                     var printSDSButton = '';
-                    if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceIssued || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceSigned || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted) {
+                    if (canSeeSds && (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceIssued || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceSigned || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.LicenceExecuted || pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.Completed)) {
                         printSDSButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Print SDS', id: 'print-sds' });
                     }
 
                     var signSrfButton = '';
-                    var signatureWorkflowItem = twcSrfWorkflowEngine.isWaitingForSignature(pageData.userInfo, pageData.siteRequestInfo)
+                    var signatureWorkflowItem = canSeeSds ? twcSrfWorkflowEngine.isWaitingForSignature(pageData.userInfo, pageData.siteRequestInfo) : null;
                     if (signatureWorkflowItem) {
                         if (signatureWorkflowItem.stage_name.toLowerCase().indexOf('pack executed') > 0) {
                             if (pageData.userInfo.canExecutePack) {
@@ -127,9 +146,12 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     }
 
                     var submitSrfButton = ''; var cancelSrfButton = '';
-                    if (canSubmit) {
+                    // @@NOTE: who can cancel at which status: oTWC_srfWorkflowEngine.js: canCancelSrf (also enforced on post 'cancel-srf')
+                    if (context.request.parameters.recId && twcSrfWorkflowEngine.canCancelSrf(pageData.userInfo, pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS])) {
                         cancelSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SRF', id: 'cancel-srf-button' });
-                        if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued) {
+                    }
+                    if (canSubmit) {
+                        if(pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.FeedbackIssued) {
                             submitSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Edit & Re-Submit', id: 'edit-submit-button' });    
                         } else {
                             submitSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Submit', id: 'submit-button' });    
@@ -139,7 +161,6 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                     var acceptApprovalButton = '';
                     if (pageData.siteRequestInfo[twcSrf.Fields.SRF_STATUS] == twcSrf.Status.SRFApproved) {
                         acceptApprovalButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Accept and Request License', id: 'accept-srf-approval' });
-                        cancelSrfButton = twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SRF', id: 'cancel-srf-button' });
 
                         if (pageData.userInfo.isEmployee && !pageData.userInfo.powerUser) {
                             acceptApprovalButton = '';
@@ -169,6 +190,7 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                             ${printSDSButton}
                             ${openWorkFlowButton}
                             ${viewWorkFlowButton}
+                            ${reviewsButton}
                             ${acceptApprovalButton}
                             ${submitSrfButton}
                             ${cancelSrfButton}
@@ -189,6 +211,17 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
         };
 
 
+        // @@NOTE: SRF access (customer / agent pass rules, oTWC_config.js: getSrfAccessFilter) for the post actions on an existing SRF
+        function checkSrfAccess(userInfo, srfId) {
+            if (!srfId) { return; }
+            if (!twcConfig.isUserAllowedSrf(userInfo, srfId)) { throw new Error('You do not have access to this SRF record'); }
+        }
+        // @@NOTE: SDS is customer information only (oTWC_config.js: canSeeSds)
+        function checkSdsAccess(userInfo, srfId) {
+            var srfCustomer = coreSql.first(`select ${twcSrf.Fields.CUSTOMER} as customer from ${twcSrf.Type} where id = ${parseInt(srfId) || 0}`)?.customer;
+            if (!twcConfig.canSeeSds(userInfo, srfCustomer)) { throw new Error('You do not have access to this SDS'); }
+        }
+
         suiteLet.post = (context, s) => {
             var userInfo = twcConfig.userInfo(context);
             if (context.request.parameters.action == 'child-record') {
@@ -198,15 +231,28 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
 
             } else if (context.request.parameters.action == 'save') {
                 var payload = JSON.parse(context.request.body);
+                checkSrfAccess(userInfo, payload.id);
                 return twcSiteRequestUtils.saveSiteSrf(userInfo, payload);
 
             } else if (context.request.parameters.action == 'submit') {
                 var payload = JSON.parse(context.request.body);
+                checkSrfAccess(userInfo, payload.srf);
                 return { id: twcSiteRequestUtils.submitSiteSrf(userInfo, payload) };
+
+            } else if (context.request.parameters.action == 'get-reviews') {
+                var payload = JSON.parse(context.request.body);
+                return { data: twcSiteRequestUtils.getSrfReviews(userInfo, payload) };
 
             } else if (context.request.parameters.action == 'accept-srf-approval') {
                 var payload = JSON.parse(context.request.body);
+                checkSrfAccess(userInfo, payload.srf);
                 return twcSrfWorkflowEngine.acceptSrf(userInfo, payload);
+
+            } else if (context.request.parameters.action == 'cancel-srf') {
+                // @@NOTE: SRF cancellation + clean-up, may return { keepGoing: true } (low units): the client posts again (ui/js/oTWC_spaceRequest.js: cancelSrf)
+                var payload = JSON.parse(context.request.body);
+                if (!twcConfig.isUserAllowedSrf(userInfo, payload.srf)) { throw new Error('You do not have access to this SRF record'); }
+                return twcSrfWorkflowEngine.cancelSrf(userInfo, payload);
 
             } else if (context.request.parameters.action == 'get-equipment') {
                 return { data: twcSiteRequestUtils.getEquipment(JSON.parse(context.request.body)) }
@@ -245,7 +291,9 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 return twcSrfWorkflowEngine.rejectSds(userInfo, JSON.parse(context.request.body))
 
             } else if (context.request.parameters.action == 'get-sds') {
-                return twcSdsEngine.getSds(JSON.parse(context.request.body))
+                var payload = JSON.parse(context.request.body);
+                checkSdsAccess(userInfo, payload.id);
+                return twcSdsEngine.getSds(payload)
 
             } else if (context.request.parameters.action == 'get-sds-equipment') {
                 return { data: twcSdsEngine.getSdsEquipments(JSON.parse(context.request.body)) }
@@ -254,11 +302,15 @@ define(['N/render', 'N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBund
                 return { data: twcSdsEngine.updateSdsEquipments(JSON.parse(context.request.body)) }
 
             } else if (context.request.parameters.action == 'get-sds-twc-file') {
-                var f = coreSql.first(`select custrecord_twc_sds_pdf as twc_file from customrecord_twc_sds where custrecord_twc_sds_srf = ${JSON.parse(context.request.body).srf}`)?.twc_file;
+                var payload = JSON.parse(context.request.body);
+                checkSdsAccess(userInfo, payload.srf);
+                var f = coreSql.first(`select custrecord_twc_sds_pdf as twc_file from customrecord_twc_sds where custrecord_twc_sds_srf = ${parseInt(payload.srf) || 0}`)?.twc_file;
                 return { twcFile: f }
 
             } else if (context.request.parameters.action == 'sign-sds') {
-                var resp = twcSrfWorkflowEngine.postSignature(userInfo, JSON.parse(context.request.body));
+                var payload = JSON.parse(context.request.body);
+                checkSdsAccess(userInfo, payload.srf);
+                var resp = twcSrfWorkflowEngine.postSignature(userInfo, payload);
                 twcSdsRender.renderSDS(context, resp.srf, true);
                 return resp;
 

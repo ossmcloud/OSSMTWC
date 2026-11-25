@@ -185,6 +185,26 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#accessConditionsSection = this.ui.ui.find('#saf-access-condition-info-2');
 
                 this.ui.getControl('saf-submit').on('click', e => {
+                    // @@NOTE: external users editing / re-submitting a SAF must describe their changes, the comment goes on the SAF Log
+                    //         (flag set server side in ui/oTWC_siteAccess_sl.js, pageData.userInfo is not available client side in production)
+                    if (this.data.requireResubmitComment) {
+                        var form = twcUI.init({
+                            controls: [
+                                { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'resubmit_comment', label: 'Please describe the changes made to this SAF', width: '100%', rows: 10, mandatory: true }
+                            ]
+                        });
+                        dialog.confirm({ title: 'Are you sure you wish to re-submit the Access Request?', message: form.ui, width: '650px', height: '400px' }, dlg => {
+                            try {
+                                var comment = (form.getValues().resubmit_comment || '').trim();
+                                if (!comment) { throw new Error('Please, enter a comment'); }
+                                this.submitForm(comment);
+                            } catch (error) {
+                                dialog.error(error);
+                                return false;
+                            }
+                        });
+                        return;
+                    }
                     dialog.confirm('Are you sure you wish to submit the Access Request?', () => {
                         this.submitForm();
                     })
@@ -319,7 +339,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         }
                         timeBlock.blocksCount++;
 
-                        this.#calendar.specialDates[timeBlockDate] = { css: timeBlock.blocksCount > 3 ? 'o-calendar-red' : 'o-calendar-orange' }
+                        // @@NOTE: amber = some time blocks booked, red = all of them (data/oTWC_safUI.js: getCalendarDayCss)
+                        this.#calendar.specialDates[timeBlockDate] = { css: twcSafUI.getCalendarDayCss(timeBlock, (this.data.timeBlocks || []).length) || 'o-calendar-orange' }
 
                         if (!timeBlock['t']) {
                             timeBlock['t'] = {
@@ -363,6 +384,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.#calendar.on('change', {});
 
                 this.initExisting();
+
+                // @@NOTE: primary contractor documents (H&S / Method Statement) loaded on open when the contractor is already set:
+                //         existing SAF (edit / re use, the SAF ones are ticked) or new SAF with a pre-populated drop down (e.g. only one customer / contractor)
+                //         they were only loaded when the customer / contractor drop down changed, so the section showed 'no documentation available'
+                this.loadVendorDocuments();
+            }
+
+            loadVendorDocuments() {
+                var vendor = this.ui.getControl('saf-vendor')?.value;
+                if (!vendor) { return; }
+                this.#page.post({ action: 'get-vendor-docs' }, { vendor: vendor })
+                    .then(res => { this.refreshVendorDocuments(res.data); })
+                    .catch(err => { dialog.error(err); });
             }
 
             initExisting() {
@@ -513,8 +547,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                         if (idx >= 0) { this.#calendar.datesContent[b.date].splice(idx, 1) }
                                     }
 
-                                    this.#calendar.specialDates[b.date] = { css: this.#accessRequirements.timeBlocks[b.date].blocksCount > 3 ? 'o-calendar-red' : 'o-calendar-orange' }
-                                    if (this.#accessRequirements.timeBlocks[b.date].blocksCount == 0) {
+                                    // @@NOTE: amber = some time blocks booked, red = all of them, none => default colour (data/oTWC_safUI.js: getCalendarDayCss)
+                                    var dayCss = twcSafUI.getCalendarDayCss(this.#accessRequirements.timeBlocks[b.date], (this.data.timeBlocks || []).length);
+                                    if (dayCss) {
+                                        this.#calendar.specialDates[b.date] = { css: dayCss };
+                                    } else {
                                         delete this.#calendar.specialDates[b.date]
                                     }
 
@@ -548,11 +585,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             refreshVendorDocuments(documents, what) {
 
-                var safFiles = this.data.siteAccessInfo[twcSaf.Fields.HEALTH__AND__SAFETY];
-                if (safFiles && this.data.siteAccessInfo[twcSaf.Fields.METHOD_STATEMENT]) { safFiles += ','; }
-                safFiles += this.data.siteAccessInfo[twcSaf.Fields.METHOD_STATEMENT];
-                if (safFiles) { safFiles = safFiles.split(',').map(i => { return parseInt(i.trim()); }) }
-                if (!safFiles) { safFiles = []; }
+                // @@NOTE: the SAF H&S / Method Statement files are ticked (multiselect values: array or comma separated string, either may be empty)
+                //         it used to concatenate the raw values ('null' when one was empty), so the saved documents were not always ticked
+                const toIds = (v) => { return (Array.isArray(v) ? v : (v ? v.toString().split(',') : [])).map(i => { return parseInt(`${i}`.trim()); }).filter(i => { return !isNaN(i); }); };
+                var safFiles = toIds(this.data.siteAccessInfo[twcSaf.Fields.HEALTH__AND__SAFETY]).concat(toIds(this.data.siteAccessInfo[twcSaf.Fields.METHOD_STATEMENT]));
 
 
                 var html = jQuery(`<div></div>`);
@@ -709,7 +745,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
 
-            submitForm() {
+            submitForm(resubmitComment) {
                 try {
 
                     this.#page.wait();
@@ -717,6 +753,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var values = this.ui.getValues();
                     var saf = this.data.siteAccessInfo;
                     for (var k in values) { saf[k] = values[k]; }
+                    if (resubmitComment) { saf.resubmitComment = resubmitComment; }
                     saf['saf-picw-staff-name'] = this.ui.getControl('saf-picw-staff').valueObj?.text;
 
                     if (this.#vendorDocuments) { saf.documents = this.#vendorDocuments.getValues(); }
@@ -1078,6 +1115,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
 
             initSafMode() {
+                // @@NOTE: TL detach (the column is only rendered for TL, data/oTWC_safUI.js: getSAFInfoPanels_Info_Actions)
+                //         capture phase listener on the document: the table row click handler stops the propagation (O/controls/oTWC_ui_table.js: initEvents, '.o-row' click)
+                //         so a bubbling / delegated handler never gets the click; this also survives the table re-render
+                //         bound first so nothing failing below can skip it
+                //         view mode only (initSafMode): the builder (edit mode) has its own detach handling (TWCSiteAccessBuilder.detachEqAction)
+                if (!this._safDetachBound) {
+                    this._safDetachBound = true;
+                    document.addEventListener('click', e => {
+                        var span = e.target?.closest ? e.target.closest('span.o-table-action[data-action="detach"]') : null;
+                        if (!span) { return; }
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.detachSafActionTL(jQuery(span).data('id'));
+                    }, true);
+                }
+
                 this.ui.find('.twc-preview-file').click(async e => {
                     var file = jQuery(e.currentTarget).data('file')
                     await this.previewFile(file, e)
@@ -1087,6 +1140,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.getControl('change-status-button')?.on('click', e => { this.changeStatus(); })
                 this.ui.getControl('assign-reviewer-button')?.on('click', e => { this.assignReviewer(); })
                 this.ui.getControl('review-completion-button')?.on('click', e => { this.photosReviewed(); })
+                this.ui.getControl('approve-review-button')?.on('click', e => { this.approveReview(); })
 
                 this.#safActionTable = TWCSafActionTable.get(this.ui.getControl(twcSafAction.Type));
                 // var safActionsTable = this.ui.getControl(twcSafAction.Type);
@@ -1114,7 +1168,73 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 // }
             }
 
+            // @@NOTE: TL detach of a pending equipment action from the SAF view page: immediate, no edit / re-submit, the SAF status does not change
+            //         server: ui/modules/oTWC_siteAccessUtils.js: detachSafActionTL
+            detachSafActionTL(eqActionId) {
+                if (!eqActionId) { dialog.error('Equipment action not found'); return; }
+                TWCDetachActionForm.open(this, values => {
+                    this.wait();
+                    this.post({ action: 'detach-saf-action' }, { saf: this.data.siteAccessInfo.id, id: eqActionId, reason: values.reason, comment: values.comment }).then(resp => {
+                        if (resp?.error) {
+                            this.waitClose();
+                            dialog.error(resp.error);
+                            return;
+                        }
+                        // @@NOTE: related ATME / Feeders (of a TME) not pending are not detached, the server reports them
+                        if (resp?.skipped?.length > 0) {
+                            this.waitClose();
+                            dialog.error(`The action was detached, but these related actions are not pending and were not detached:<br /><b>${resp.skipped.join('<br />')}</b>`, () => { location.reload(); });
+                            return;
+                        }
+                        location.reload();
+                    }).catch(err => {
+                        this.waitClose();
+                        dialog.error(err);
+                    });
+                    return true;
+                });
+            }
+
+            // @@NOTE: customers / contractors cancelling their own SAF ('Cancel SAF' button, ui/oTWC_siteAccess_sl.js: externalCanCancel)
+            //         no status drop down: the status is always Cancelled (the only allowed status), the comment (reason) is mandatory (checked again on the server)
+            cancelSafExternal() {
+                var form = twcUI.init({
+                    controls: [
+                        { type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Please enter the reason for cancelling this SAF', value: '', width: '100%', rows: 7, mandatory: true },
+                    ]
+                });
+                dialog.open({
+                    title: 'Cancel SAF',
+                    content: form.ui,
+                    size: { width: '500px', height: '300px' },
+                    ok: () => {
+                        try {
+                            var comment = (form.getValues().comment || '').trim();
+                            if (!comment) { throw new Error('Please, specify the reason for cancelling the SAF'); }
+                            this.wait();
+                            this.post({ action: 'edit-saf-status' }, { saf: this.data.siteAccessInfo.id, status: this.data.allowedStatues[0].value, comment: comment }).then(resp => {
+                                if (resp.error) {
+                                    this.waitClose();
+                                    dialog.error(resp.error);
+                                    return;
+                                }
+                                location.reload();
+                            }).catch(err => {
+                                dialog.error(err);
+                                this.waitClose();
+                            });
+                            return true;
+                        } catch (error) {
+                            this.waitClose();
+                            dialog.error(error);
+                            return false;
+                        }
+                    }
+                })
+            }
+
             changeStatus() {
+                if (this.data.externalCancel) { this.cancelSafExternal(); return; }
                 var formConfig = {
                     controls: [
                         { type: twcUI.CTRL_TYPE.SELECT, id: 'status', dataSource: this.data.allowedStatues, value: this.data.siteAccessInfo[twcSaf.Fields.STATUS], lineBreak: true },
@@ -1122,6 +1242,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     ]
                 }
                 var form = twcUI.init(formConfig);
+                // @@NOTE: statuses with forceComment (Feedback Issued, Cancelled) make the comment mandatory (checked again on OK and on the server)
+                const setCommentMandatory = () => {
+                    form.getControl('comment').mandatory = !!form.getControl('status').valueObj?.forceComment;
+                }
+                form.getControl('status').on('change', e => { setCommentMandatory(); });
+                setCommentMandatory();
                 dialog.open({
                     title: 'Change Status / Comment',
                     content: form.ui,
@@ -1132,7 +1258,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             var payload = form.getValues();
                             payload.saf = this.data.siteAccessInfo.id;
                             if (form.getControl('status').valueObj.forceComment) {
-                                if (!payload.comment) { throw new Error('Please, specify a comment'); }
+                                if (!(payload.comment || '').trim()) { throw new Error('Please, specify a comment'); }
                             }
                             this.post({ action: 'edit-saf-status' }, payload).then(resp => {
                                 if (resp.error) {
@@ -1213,12 +1339,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             var errors = photos.filter(p => { return p.error !== undefined; })
                             if (errors.length > 0) {
                                 var errorHtml = '';
-                                core.array.each(errors, e => { errorHtml += `<b>${e.name}</b>: ${e.error.error}<hr />`; });
+                                core.array.each(errors, e => { errorHtml += `<b>${e.name}</b>: ${this.uploadErrorMessage(e.error)}<hr />`; });
                                 dialog.error(errorHtml, () => { location.reload(); });
                                 return;
                             }
 
-                            this.postSync({ action: 'edit-saf-status' }, { saf: this.data.siteAccessInfo.id, status: twcSaf.Status.PhotosReceived });
+                            // @@NOTE: the photos are uploaded at this point, a status change failure must not be reported as an upload failure
+                            try {
+                                this.postSync({ action: 'edit-saf-status' }, { saf: this.data.siteAccessInfo.id, status: twcSaf.Status.PhotosReceived });
+                            } catch (error) {
+                                dialog.error(`The photos were uploaded but the SAF status could not be changed to 'Photos Received': ${this.uploadErrorMessage(error)}`, () => { location.reload(); });
+                                return;
+                            }
 
                             dlg.close();
                             location.reload();
@@ -1245,6 +1377,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     return;
                 }
 
+                // @@NOTE: success / failure handlers passed to the same then() (not then().catch()): an exception thrown further down the chain
+                //         (next upload or the final callback) must not be caught here and flag an uploaded photo as failed
                 this.post({ action: 'upload-saf-photo' }, { saf: this.data.siteAccessInfo.id, photo: photos[idx] }).then(resp => {
                     if (resp.error) {
                         photoListItem.html(twcIcons.get('exclamation', 16, 'red'));
@@ -1252,15 +1386,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     } else {
                         photoListItem.html(twcIcons.get('shieldCheck', 16, 'lime'));
                     }
-
-                    this.uploadPhoto(photoList, photos, idx + 1, callback);
-
-
-                }).catch(err => {
+                }, err => {
                     photoListItem.html(twcIcons.get('exclamation', 16, 'red'));
                     photos[idx].error = err;
+                }).then(() => {
                     this.uploadPhoto(photoList, photos, idx + 1, callback);
                 });
+            }
+
+            // @@NOTE: errors may come as the server response ({ error: ... }), an Error or a plain string
+            uploadErrorMessage(err) {
+                var e = (err && err.error !== undefined) ? err.error : err;
+                if (e === undefined || e === null || e === '') { return 'unknown error'; }
+                if (typeof e === 'string') { return e; }
+                return e.message || JSON.stringify(e);
             }
 
             assignReviewer() {
@@ -1296,14 +1435,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 try {
                     var list = this.postSync({ action: 'saf-action-list' }, { id: this.data.siteAccessInfo.id, actionStatus: twcUtils.SafActionStatus.Pending, showSelect: true });
                     var formHtml = jQuery(`
-                        ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Review Comment', width: '100%', rows: 5, value: this.data.siteAccessInfo[twcSaf.Fields.REVIEW_COMMENT], mandatory: true, lineBreak: true })}
+                        <div style="padding: 3px 0px 7px 0px; color: var(--label-color); font-style: italic;">The review will be sent for approval before it is issued to the SAF submitter.</div>
+                        ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Review Comment', width: '100%', rows: 5, value: this.data.siteAccessInfo[twcSaf.Fields.PROPOSED_REVIEW_COMMENT] || this.data.siteAccessInfo[twcSaf.Fields.REVIEW_COMMENT], mandatory: true, lineBreak: true })}
                         ${list}
                     `);
                     var form = twcUI.init({}, formHtml);
                     var safActionsTable = TWCSafActionTable.get(form.getControl(twcSafAction.Type));
 
                     dialog.open({
-                        title: 'Completion photo reviewed',
+                        title: 'Completion photo reviewed (submit for approval)',
                         content: form.ui,
                         size: { width: '1000px', height: '70vh' },
                         ok: () => {
@@ -1313,7 +1453,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 var actions = safActionsTable.checked();
                                 if (actions.length == 0) { throw new Error('No action selected'); }
 
-                                this.postSync({ action: 'saf-set-reviewed' }, { saf: this.data.siteAccessInfo.id, comment: values.comment, actions: actions });
+                                var res = this.postSync({ action: 'saf-set-reviewed' }, { saf: this.data.siteAccessInfo.id, comment: values.comment, actions: actions });
+                                if (res?.error) { throw res; }
                                 location.reload();
                                 return true;
                             } catch (error) {
@@ -1322,6 +1463,80 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             }
 
                         }
+                    });
+
+                } catch (error) {
+                    dialog.error(error);
+                }
+            }
+
+            // @@NOTE: approver step of the completion photos review (employees with 'Can Approve SAF Photo Reviews' only, enforced on the server)
+            //         approve (the comment can be amended) => actions completed, status changed, comment issued to the submitter
+            //         send back => back to the reviewer with a note
+            approveReview() {
+                try {
+                    var review = this.postSync({ action: 'saf-get-pending-review' }, { saf: this.data.siteAccessInfo.id });
+                    if (review.error) { throw review; }
+
+                    const esc = (v) => { return (v || '').toString().replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;'); };
+
+                    // @@NOTE: same equipment actions table as the reviewer dialog (photosReviewed): pending actions, the ones marked as completed by the reviewer are ticked
+                    //         read only: the approval applies the reviewer's selection (oTWC_siteAccessUtils.js: approveSafReview), to change it the review is sent back
+                    var list = this.postSync({ action: 'saf-action-list' }, { id: this.data.siteAccessInfo.id, actionStatus: twcUtils.SafActionStatus.Pending, showSelect: true });
+                    var reviewedIds = (review.actions || []).map(a => { return parseInt(a.id); });
+
+                    var formHtml = jQuery(`
+                        <div>
+                            <div style="padding-bottom: 7px;"><label>Reviewed by</label> ${esc(review.reviewer)}</div>
+                            ${twcUI.render({ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'comment', label: 'Review Comment (issued to the SAF submitter on approval, you can amend it)', width: '100%', rows: 7, value: review.comment, mandatory: true, lineBreak: true })}
+                            <div style="padding: 7px 0px 3px 0px;"><label>Actions marked as completed by the reviewer (ticked)</label></div>
+                            ${list}
+                            <div style="padding-top: 7px;">${twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, id: 'send-back-review-button', value: 'Send Back to Reviewer' })}</div>
+                        </div>
+                    `);
+                    var form = twcUI.init({}, formHtml);
+                    var safActionsTable = TWCSafActionTable.get(form.getControl(twcSafAction.Type));
+                    var tableUi = safActionsTable?.ui || form.ui;
+                    tableUi.find('input[type="checkbox"]').each(function () {
+                        var cb = jQuery(this);
+                        cb.prop('checked', reviewedIds.indexOf(parseInt(cb.data('id'))) >= 0);
+                        cb.prop('disabled', true);
+                    });
+
+                    var dlg = dialog.open({
+                        title: 'Approve completion photos review',
+                        content: form.ui,
+                        size: { width: '1000px', height: '70vh' },
+                        ok: () => {
+                            try {
+                                var comment = (form.getValues().comment || '').trim();
+                                if (!comment) { throw new Error('Please, specify a review comment'); }
+                                var res = this.postSync({ action: 'saf-approve-review' }, { saf: this.data.siteAccessInfo.id, comment: comment });
+                                if (res?.error) { throw res; }
+                                location.reload();
+                                return true;
+                            } catch (error) {
+                                dialog.error(error);
+                                return false;
+                            }
+                        }
+                    });
+
+                    form.ui.find('#send-back-review-button').on('click', e => {
+                        e.preventDefault();
+                        var noteForm = twcUI.init({ controls: [{ type: twcUI.CTRL_TYPE.TEXTAREA, id: 'note', label: 'Note for the reviewer', width: '100%', rows: 7, mandatory: true }] });
+                        dialog.confirm({ title: 'Send review back to the reviewer', message: noteForm.ui, width: '600px', height: '350px' }, () => {
+                            try {
+                                var note = (noteForm.getValues().note || '').trim();
+                                if (!note) { throw new Error('Please, specify a note for the reviewer'); }
+                                var res = this.postSync({ action: 'saf-send-back-review' }, { saf: this.data.siteAccessInfo.id, note: note });
+                                if (res?.error) { throw res; }
+                                location.reload();
+                            } catch (error) {
+                                dialog.error(error);
+                                return false;
+                            }
+                        });
                     });
 
                 } catch (error) {

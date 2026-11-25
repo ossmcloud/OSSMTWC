@@ -1,0 +1,36 @@
+﻿Name,RADIX SDS ID,SRF (RADIX SRF ID),Site,Customer,Status,Commencment Date,Drawing Reference,Include License Map,Additional SRF Coniditons,Power Supply Comments,Fibre Rights,Fibre Duct Route Reference,Fibre Provider,Fibre Other Provider,Fibre Notes,Previous License Fee,Fee Reduction,Fee Uplift,New License Fee,Fee Charge Break Down,Agreement Template,Agreement Conditions,Agreement Conditions Data
+,4195,7078,TWD5223 : Waterford,Vodafone,Draft,03/09/2024,TWD5223-VF-03 Rev. C,0,,Vodafone arranged own supply.,0,,-,,,"25,307.00",0.00,0.00,"25,307.00",-,26,SDS-COND00031|SDS-COND00032,
+,4638,7584,TKE1009 : Cappagh,Enet,Draft,03/06/2026,TKE1009-ENet-65 Rev. BM,0,,Temporary power connection from Towercom in accordance with Schedule 4(d) of the MSLA.,0,,-,,,"87,932.51","-19,634.68",0.00,"68,297.89","Remove 2x 0.3m Dishes (Enet New)
+Remove 2x 0.6m Dishes (Bau)
+Remove 1x 0.9m Dish (Enet New)",7,SDS-COND00005|SDS-COND00007,{"5-field_1":"Schedule 6 Part 2"}
+,4650,7607,TCN5220 : Virginia,eir Mobile,Draft,01/04/2026,TCN5220-eirM-LD-02,0,-,Temporary power connection from Towercom.,1,TCN5220-eirM-LD-02,Openeir,,Fibre duct access in accordance with Schedule 4 (Part B) of the MSLA.,"10,477.95",0.00,0.00,"10,477.95",Fibre Install,32,SDS-COND00006,
+,4637,7612,TKE1009 : Cappagh,Enet,Draft,04/06/2026,TKE1009-ENet-66 Rev. BN,0,-,"Temporary power connection from Towercom in accordance with Schedule 4(d) of the MSLA.
+",0,,-,,,"74,011.89","-5,714.00",0.00,"68,297.89",Remove 0.6m Dish @35m (Enet New),7,SDS-COND00005|SDS-COND00007,{"5-field_1":"Schedule 6 Part 2"}
+,4551,7679,TWX1040 : Shelmalier,Enet,Draft,29/06/2026,TWX1040-TWX1047-Enet-3D_BLD-20,0,This is a multi-mast site and the Licence Fee includes equipment listed under TWX1040 - S7680.,Temporary power connection from Towercom in accordance with Schedule 4(d) of the MSLA.,0,,-,,,"26,050.08","-5,397.00",0.00,"20,653.08","Remove 0.3m Dish @20.5m.
+This is a multi-mast site and the Licence Fee includes equipment listed under TWX1040 - S7680.",7,SDS-COND00005|SDS-COND00007,{"5-field_1":"Schedule 6A Part 1"}
+,4550,7680,TWX1040 : Shelmalier,Enet,Draft,29/06/2026,TWX1040-TWX1047-Enet-3D_BLD-20,0,This is a multi-mast site and the equipment listed is covered in the total Licence Fee under TWX1047 - S7679. ,Temporary power connection from Towercom in accordance with Schedule 4(d) of the MSLA.,0,,-,,,1.00,0.00,0.00,1.00,"Install 0.3m Dish @ 33.5m.
+This is a multi-mast site and the equipment listed is covered in the total Licence Fee under TWX1047 - S7679.",7,SDS-COND00006,
+,4655,7749,TDU2013 : Coolmine,Virgin Media,Draft,28/07/2026,TDU2013- VMI-3D_BLD-13,0,-,"Temporary power connection from Towercom.
+",0,,-,,,"27,536.33",0.00,"1,418.00","28,954.33",Install 0.3m Dish @24m,38,SDS-COND00006,
+,4623,7756,TDL1034 : Mongorry Hill,Vodafone,Draft,04/08/2026,TDL1034-VF-09 Rev. I,1,,Vodafone arranged own supply.,0,,-,,,"69,409.88",0.00,"7,610.40","77,020.28",Install 3x RRUs,2,SDS-COND00011|SDS-COND00002|SDS-COND00003|SDS-COND00035,"{""2-field_1"":""TDL1034-TCF01 Rev. 1.0"",""3-field_1"":""TDL1034-TCF01 Rev. 1.0"",""35-field_1"":""2"",""35-field_2"":""6688.5""}"
+,4646,7759,TGY5129 : Kilcolgan,Vodafone,Draft,10/08/2026,TGY5129-VF-3D_BLD-02,0,,Vodafone arranged own supply.,0,,-,,,"16,562.00",0.00,0.00,"16,562.00",-,26,SDS-COND00031|SDS-COND00032,
+,4645,7767,TWW3008 : Glenteige,Vodafone,Draft,10/08/2026,TWW3008-VF-09 Rev. I,1,,"Operator arranged own supply.
+",0,,-,,,"108,970.91",0.00,"7,653.00","116,623.91",Install 3x Std RRUs,2,SDS-COND00011|SDS-COND00002,{"2-field_1":"TWW3008-TCF01 Rev. 1.0"}
+,4643,7792,TCK1015 : Coronea,Vodafone,Draft,24/08/2026,TCK1015-VF-3D_BLD-02,1,,"Temporary power connection from Towercom.
+",0,,-,,,"106,990.25",0.00,0.00,"106,990.25","Remove 1.2m Dish @8m
+Install 0.9m Dish @7m",2,SDS-COND00011|SDS-COND00002|SDS-COND00003,"{""2-field_1"":""TCK1015-TCF01 Rev 1.0"",""3-field_1"":""TCK1015-TCF01 Rev 1.0""}"
+,4649,7795,TCK2032 : Mallow,Vodafone,Draft,24/08/2026,TCK2032-VF-12 Rev. L,1,-,"Operator arranged own supply.
+",0,,-,,,"114,173.11",0.00,0.00,"114,173.11","Remove 0.9m Dish @18m
+Install 0.9m Dish @14.75m",2,SDS-COND00011|SDS-COND00002|SDS-COND00003,"{""2-field_1"":""TCK2032-TCF01 Rev 1.0"",""3-field_1"":""TCK2032-TCF01 Rev 1.0""}"
+,4635,7797,TMN7313 : Castleblaney,Vodafone,Draft,20/08/2026,TMN7313-VF-UTS_BLD-03,0,,"Temporary power connection from Towercom.
+",0,,-,,,"51,184.00",0.00,0.00,"51,184.00",-,2,SDS-COND00011|SDS-COND00035,"{""35-field_1"":""2"",""35-field_2"":""6500""}"
+,4652,7806,TCK1029 : Knockgour,Vodafone,Draft,01/09/2026,TCK1029-VF-05 Rev. E,0,,Temporary power connection from Towercom.,0,,-,,,"114,541.88",0.00,"1,590.00","116,131.88","Remove 0.6m Dish @24.4m
+Install 1m Dish @ 17.25m",2,SDS-COND00011|SDS-COND00002|SDS-COND00003,"{""2-field_1"":""TCK1029-TCF01 Rev. 1.0"",""3-field_1"":""TCK1029-TCF01 Rev. 1.0""}"
+,4642,7808,TMO6353 : Geesala,Vodafone,Draft,01/09/2026,TMO6353-VF-2D_BLD-B 02,0,-,Temporary power supply from Towercom.,0,,-,,,"35,544.00",0.00,0.00,"35,544.00",TX Relocation,2,SDS-COND00011,
+,4636,7798,TLM6041 : Drumkeeran,Vodafone,Current,24/08/2026, TLM6041-VF-05 Rev. E,0,-,"Temporary power connection from Towercom.
+",0,,-,,,"34,122.00",0.00,0.00,"34,122.00","Remove 0.6m Dish @ 14.5m
+Install 0.6m Dish @ 14m",2,SDS-COND00011,
+,3837,6853,TGY3021 : Tuam,eir Mobile,Draft,,0,0,,,,,,,,,,,,,,,
+,4345,7428,TDU2013 : Coolmine,Manna,Current,08/10/2025,0,0,-,Temporary power connection from Towercom. ,0,,-,,,0.00,0.00,"3,200.00","3,200.00",New Site install,39,SDS-COND00050,
+,4545,7735,TCK5196 : Scartbaun,Vodafone,Superceded,16/07/2026,TCK5196-VF-UTS_BLD-06,0,,"Vodafone arranged own supply.
+",0,,-,,,"22,083.00",0.00,0.00,"22,083.00",-,26,SDS-COND00031|SDS-COND00032|SDS-COND00035,"{""35-field_1"":""2"",""35-field_2"":""6500""}"

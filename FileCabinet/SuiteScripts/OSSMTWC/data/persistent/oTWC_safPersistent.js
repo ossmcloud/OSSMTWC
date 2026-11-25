@@ -39,6 +39,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             STRUCTURE: 'custrecord_twc_saf_strcture',
             HEALTH__AND__SAFETY: 'custrecord_twc_saf_health_safety',
             METHOD_STATEMENT: 'custrecord_twc_saf_method_statement',
+            REVIEW_PENDING_APPROVAL: 'custrecord_twc_saf_rev_pending',
+            PROPOSED_REVIEW_COMMENT: 'custrecord_twc_saf_rev_prop_cmt',
+            PROPOSED_COMPLETED_ACTIONS: 'custrecord_twc_saf_rev_prop_acts',
+            REVIEW_APPROVED_BY: 'custrecord_twc_saf_rev_approved_by',
+            REVIEW_APPROVED_DATE: 'custrecord_twc_saf_rev_approved',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -78,6 +83,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             STRUCTURE: { name: 'custrecord_twc_saf_strcture', type: 'select', alias: 'structure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
             HEALTH__AND__SAFETY: { name: 'custrecord_twc_saf_health_safety', type: 'multiselect', alias: 'health_and_Safety', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
             METHOD_STATEMENT: { name: 'custrecord_twc_saf_method_statement', type: 'multiselect', alias: 'methodStatement', display: 'normal', mandatory: false, recordType: 'customrecord_twc_file' },
+            REVIEW_PENDING_APPROVAL: { name: 'custrecord_twc_saf_rev_pending', type: 'checkbox', alias: 'reviewPendingApproval', display: 'normal', mandatory: false },
+            PROPOSED_REVIEW_COMMENT: { name: 'custrecord_twc_saf_rev_prop_cmt', type: 'clobtext', alias: 'proposedReviewComment', display: 'normal', mandatory: false },
+            PROPOSED_COMPLETED_ACTIONS: { name: 'custrecord_twc_saf_rev_prop_acts', type: 'clobtext', alias: 'proposedCompletedActions', display: 'normal', mandatory: false },
+            REVIEW_APPROVED_BY: { name: 'custrecord_twc_saf_rev_approved_by', type: 'select', alias: 'reviewApprovedBy', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
+            REVIEW_APPROVED_DATE: { name: 'custrecord_twc_saf_rev_approved', type: 'datetimetz', alias: 'reviewApprovedDate', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -300,6 +310,37 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get methodStatementName() { return this.getText(_recordFields.METHOD_STATEMENT); }
             
+            get reviewPendingApproval() {
+                return this.get(_recordFields.REVIEW_PENDING_APPROVAL);
+            } set reviewPendingApproval(value) {
+                this.set(_recordFields.REVIEW_PENDING_APPROVAL, value)
+            }
+            
+            get proposedReviewComment() {
+                return this.get(_recordFields.PROPOSED_REVIEW_COMMENT);
+            } set proposedReviewComment(value) {
+                this.set(_recordFields.PROPOSED_REVIEW_COMMENT, value)
+            }
+            
+            get proposedCompletedActions() {
+                return this.get(_recordFields.PROPOSED_COMPLETED_ACTIONS);
+            } set proposedCompletedActions(value) {
+                this.set(_recordFields.PROPOSED_COMPLETED_ACTIONS, value)
+            }
+            
+            get reviewApprovedBy() {
+                return this.get(_recordFields.REVIEW_APPROVED_BY);
+            } set reviewApprovedBy(value) {
+                this.set(_recordFields.REVIEW_APPROVED_BY, value)
+            }
+            get reviewApprovedByName() { return this.getText(_recordFields.REVIEW_APPROVED_BY); }
+            
+            get reviewApprovedDate() {
+                return this.get(_recordFields.REVIEW_APPROVED_DATE);
+            } set reviewApprovedDate(value) {
+                this.set(_recordFields.REVIEW_APPROVED_DATE, value)
+            }
+            
             get created() {
                 return this.get(_recordFields.CREATED);
             } set created(value) {
@@ -332,8 +373,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_SAF,
 
-            get: function (id) {
-                var rec = new OSSMTWC_SAF(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_SAF(id, staticLoad);
                 rec.load();
                 return rec;
             }, 

@@ -17,6 +17,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return twcUtils.getFiles({ filters: filters });
         }
         function getSiteLicenseMapFiles(siteId, companyId) {
+
+            if (!recu.lookUp(twcCompany.Type, companyId, twcCompany.Fields.SDS_INCLUDE_LICENSE_MAP)) { return []; }
+
             return twcUtils.getFiles({
                 filters: {
                     [twcFile.Fields.RECORD_TYPE]: twcSite.Type,
@@ -48,12 +51,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getSrfInfo(recId) {
             var srfInfo = {}
+            // @@NOTE: operator name = company 'T/A' (trading as) name, falls back to the NetSuite customer name
             srfInfo.srf = coreSql.first(`
                     SELECT      srf.id, srf.custrecord_twc_srf_op_site_id, srf.custrecord_twc_srf_site, srf.name, TO_CHAR(srf.custrecord_twc_srf_approval_date, 'DD-MM-YYYY') as approval_date,
                                 case srf.custrecord_twc_srf_pwr_supp_req_from_tl when 'T' then 'Yes' else 'No' end as power_supply_required,
                                 srf.custrecord_twc_srf_power_notes,
                                 srf.custrecord_twc_srf_cust as company_id, company.name as customer_name,
-                                company.custrecordtwc_entity, cae.addrtext AS customer_address, c.altname as operator_name, custrecord_twc_co_number as company_number, custrecord_twc_co_regd_office as registered_office,
+                                company.custrecordtwc_entity, cae.addrtext AS customer_address, NVL(company.custrecord_twc_co_ta_name, c.altname) as operator_name, custrecord_twc_co_number as company_number, custrecord_twc_co_regd_office as registered_office,
                                 TO_CHAR(srf.custrecord_twc_srf_lic_pack_signed, 'DD-MM-YYYY @ HH24:Mi:ss') as client_signed, BUILTIN.DF(srf.custrecord_twc_srf_lic_pack_sign_by) as client_singed_by,
                                 TO_CHAR(srf.custrecord_twc_srf_lic_pack_exec, 'DD-MM-YYYY @ HH24:Mi:ss') as tl_signed, BUILTIN.DF(srf.custrecord_twc_srf_lic_pack_exec_by) as tl_signed_by,
                                 
@@ -117,26 +121,31 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             });
 
             const siteID = srfInfo.srf.custrecord_twc_srf_site;
+            // @@NOTE: coordinates from the site Location section (not the Access section)
             srfInfo.siteDetails = coreSql.first(`
                     select id, custrecord_twc_site_id as site_id, custrecord_twc_site_name as site_name, custrecord_twc_site_address as address, custrecord_twc_site_address_zip as add_zipCode, 
-                        BUILTIN.DF(custrecord_twc_site_address_county) as add_county, custrecord_twc_site_easting_access as easting, custrecord_twc_site_northing_access as northing, 
-                        custrecord_twc_site_longitude_access as longitude, custrecord_twc_site_latitude_access as latitude,
+                        BUILTIN.DF(custrecord_twc_site_address_county) as add_county, custrecord_twc_site_easting as easting, custrecord_twc_site_northing as northing, 
+                        custrecord_twc_site_longitude as longitude, custrecord_twc_site_latitude as latitude,
 
                     from customrecord_twc_site 
                     where id = ${siteID}`)
+
+            // @@NOTE: SDS 'Site Access Reference Documents': names of the site access documents, the same files attached to the SDS pack (oTWC_sdsRender.js: getDrawings)
+            srfInfo.srf.site_access_doc = getSiteAccessFiles(siteID).map(f => { return f.name; }).filter(n => { return !!n; }).join(', ');
 
 
 
             var srfItems = coreSql.run(`
                 select  sds.id as sds_id, sdsi.id as sds_eq_id,
-                        eq.id, eq.custrecord_twc_equip_parent_tme_id as parent_tme, BUILTIN.DF(eqAct.custrecord_twc_eq_action_srf) as srf_id, sdsi.custrecord_twc_sds_item_equipment_class as equip_class,
+                        eq.id, eq.name as eq_name, eq.custrecord_twc_equip_parent_tme_id as parent_tme, BUILTIN.DF(eqAct.custrecord_twc_eq_action_srf) as srf_id, sdsi.custrecord_twc_sds_item_equipment_class as equip_class,
                         NVL(lsts.custrecord_twc_equip_licence_status_sds, lsts.name) as status, BUILTIN.DF(sdsi.custrecord_twc_sds_item_equipment_type) as type,
                         sdsi.custrecord_twc_sds_item_description as description, sdsi.custrecord_twc_sds_item_length as length,
                         sdsi.custrecord_twc_sds_item_width as width, sdsi.custrecord_twc_sds_item_depth as depth,
                         sdsi.custrecord_twc_sds_item_height_on_tower as equip_height, sdsi.custrecord_twc_sds_item_weight as weight,
                         sdsi.custrecord_twc_sds_item_azimuth as azimuth, sdsi.custrecord_twc_sds_item_b_end as b_end, 
                         BUILTIN.DF(eq.custrecord_twc_equip_str) as location,
-                        BUILTIN.DF(sdsi.custrecord_twc_sds_item_inventory_flag) as inventory_flag
+                        BUILTIN.DF(sdsi.custrecord_twc_sds_item_inventory_flag) as inventory_flag,
+                        sdsi.custrecord_twc_sds_item_make as make, sdsi.custrecord_twc_sds_item_model as model, BUILTIN.DF(eq.custrecord_twc_equip_opt_type) as feeder_type
                 from    customrecord_twc_sds_item sdsi
                 join    customrecord_twc_sds sds on sds.id = sdsi.custrecord_twc_sds_item_parent 
                 join    customrecord_twc_equip eq on eq.id = sdsi.custrecord_twc_sds_item_eq
@@ -258,17 +267,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sdsLicenceStatusDefaults = {
                 [twcUtils.EqLicenseStatus.ReqtoLicence]: twcUtils.EqLicenseStatus.Licenced,
                 [twcUtils.EqLicenseStatus.ProptoLicence]: twcUtils.EqLicenseStatus.Licenced,
-                [twcUtils.EqLicenseStatus.ProptoLicence_LicenceRequested]: twcUtils.EqLicenseStatus.Licenced,
-                [twcUtils.EqLicenseStatus.ProptoLicence_LicenceIssued]: twcUtils.EqLicenseStatus.Licenced,
                 [twcUtils.EqLicenseStatus.ReqtoUnlicence]: twcUtils.EqLicenseStatus.ProptoUnlicence,
                 [twcUtils.EqLicenseStatus.ProptoUnlicence]: twcUtils.EqLicenseStatus.ProptoUnlicence,
-                [twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceRequested]: twcUtils.EqLicenseStatus.ProptoUnlicence,
-                [twcUtils.EqLicenseStatus.ProptoUnlicence_LicenceIssued]: twcUtils.EqLicenseStatus.ProptoUnlicence,
+                // @@NOTE: Issue 299 - the 'Prop to Licence / Unlicence - Licence Requested / Issued' statuses are retired (equipment stays Prop to Licence / Unlicence until executed)
             };
+
+            // @@NOTE: equipment associated with a cancelled SRF is not included in the SDS: the equipment associated EA is an install (Licence / Swap Licence)
+            //         raised by an SRF that has been cancelled (i.e. equipment that only exists because of that SRF)
+            //         removals on a cancelled SRF are NOT excluded: that equipment is still on site / licenced (cancelSrf resets it to Licenced)
+            var cancelledSrfSql = `
+                case when srfa.${twcSrf.Fields.SRF_STATUS} = ${twcUtils.SrfStatus.SRFCancelled}
+                      and eqa.custrecord_twc_eq_action_type in (${twcUtils.EqActionType.Licence}, ${twcUtils.EqActionType.SwapLicence})
+                     then 'T' else 'F' end`;
 
             coreSql.each(`
                 select  eq.id as eq_id, sdsi.id as sds_eq_id, srfi.id as srf_eq_id, srfi.custrecord_twc_srf_itm_invent_flag as srf_inventory_flag,
                         sdsi.${twcSdsEquipment.Fields.LICENSE_STATUS} as sds_licence_status,
+                        sdsi.${twcSdsEquipment.Fields.INSTALL_STATUS} as sds_install_status,
+                        sdsi.${twcSdsEquipment.Fields.INCLUDE_IN_SDS} as sds_include,
+                        ${cancelledSrfSql} as srf_cancelled,
                         ${sqlFields}
                 
                 from    customrecord_twc_sds sds 
@@ -282,9 +299,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 left join customrecord_twc_srf_itm srfi on srfi.custrecord_twc_srf_itm_srf = sds.custrecord_twc_sds_srf
                                                        and srfi.custrecord_twc_srf_itm_equip_id = eq.id
 
+                left join customrecord_twc_eq_action eqa on eqa.id = eq.custrecord_twc_equip_assoc_eq_action
+                left join ${twcSrf.Type} srfa on srfa.id = eqa.custrecord_twc_eq_action_srf
+
                 where   sds.id = ${sdsId}
                 order by eq.created, BUILTIN.DF(eq.custrecord_twc_equip_class)
             `, eq => {
+
+                if (eq.srf_cancelled == 'T') {
+                    // @@NOTE: already on the SDS (added before the SRF was cancelled): exclude it rather than deleting it
+                    if (eq.sds_eq_id && eq.sds_include == 'T') {
+                        recu.submit(twcSdsEquipment.Type, eq.sds_eq_id, twcSdsEquipment.Fields.INCLUDE_IN_SDS, false);
+                    }
+                    return;
+                }
 
                 var sdsLicenceStatus = sdsLicenceStatusDefaults[eq.custrecord_twc_eq_licence_status];
 
@@ -293,6 +321,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // @@NOTE: existing sds eq.: apply the default licence status only if the user has not changed it (i.e.: still the same as the equipment)
                     if (sdsLicenceStatus && eq.sds_licence_status == eq.custrecord_twc_eq_licence_status && sdsLicenceStatus != eq.sds_licence_status) {
                         recu.submit(twcSdsEquipment.Type, eq.sds_eq_id, twcSdsEquipment.Fields.LICENSE_STATUS, sdsLicenceStatus);
+                    }
+                    // @@NOTE: install status: the sds eq. is created the 1st time the Generate SDS dialog is opened (copied from the equipment)
+                    //         works permitted: the works can be completed after that (SAF photos review approved => equipment Installed / Removed, oTWC_siteAccessUtils.js)
+                    //         so the actual site work wins: if the equipment is Installed / Removed and the sds eq. is still behind (Draft / Not Installed, or Installed => Removed) it is updated
+                    //         a manual change on the dialog is otherwise kept (status ahead of / same as the equipment)
+                    var eqInstall = parseInt(eq.custrecordtwc_eq_install_status) || 0;
+                    var sdsInstall = parseInt(eq.sds_install_status) || 0;
+                    if ((eqInstall == twcUtils.EqInstallStatus.Installed || eqInstall == twcUtils.EqInstallStatus.Removed) && sdsInstall < eqInstall) {
+                        recu.submit(twcSdsEquipment.Type, eq.sds_eq_id, twcSdsEquipment.Fields.INSTALL_STATUS, eqInstall);
                     }
                     return;
                 }
@@ -323,8 +360,14 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         }
 
+        // @@NOTE: SDS Equipments dialog (oTWC_sdsEngineUI.js: manageSDEquipment), only the fields editable on the dialog can be updated
+        const SDS_EQ_EDITABLE_FIELDS = [twcSdsEquipment.Fields.INCLUDE_IN_SDS, twcSdsEquipment.Fields.INSTALL_STATUS, twcSdsEquipment.Fields.LICENSE_STATUS, twcSdsEquipment.Fields.DESCRIPTION];
         function updateSdsEquipments(payload) {
-            recu.submit(twcSdsEquipment.Type, payload.id, payload.field, payload.value);
+            if (SDS_EQ_EDITABLE_FIELDS.indexOf(payload.field) < 0) { throw new Error(`Field cannot be updated: ${payload.field}`); }
+            var value = payload.value;
+            // @@NOTE: description is a free-form text field (max 300 chars)
+            if (payload.field == twcSdsEquipment.Fields.DESCRIPTION) { value = (value || '').toString().trim().substring(0, 300); }
+            recu.submit(twcSdsEquipment.Type, payload.id, payload.field, value);
         }
 
         // @@NOTE: returns the sds equipment ordered as parent / child: each parent (TME / GIE) is followed by its related equipment (ATME / Feeders)

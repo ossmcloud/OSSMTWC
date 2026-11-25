@@ -42,39 +42,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSrf.Fields.SRF_REQUESTED_DATE} desc`;
 
-            // @@NOTE: TWC Employees can see everything
-            if (!userInfo.isEmployee) {
-                var allowedCustomers = [];
-
-                if (userInfo.companyProfile?.isVendor || userInfo.companyProfile?.isBoth) {
-                    // @@NOTE the agent passes specifies what customers can be seen 
-                    var agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${userInfo.profile}`)?.agent_passes || '0';
-                    agentPasses = agentPasses.split(',').map(i => { return parseInt(i.trim()); })
-
-                    // @@NOTE: this filter will ensure that even if a customer was not removed from the agent passes field for a profile but was removed from the ACL list the profile will still not see it
-                    var aclList = coreSQL.run(`select custrecord_twc_acl_cust as cust from customrecord_twc_acl where custrecord_twc_acl_cont = ${userInfo.companyProfile.id}`)
-                    allowedCustomers = agentPasses.filter(ap => { return aclList.find(acl => { return acl.cust == ap; }) })
-                }
-
-                if (userInfo.companyProfile?.isCustomer || userInfo.companyProfile?.isBoth) {
-                    // in case we have a customer or a vendor that is also a customer we include the customer into the customer list
-                    allowedCustomers.push(userInfo.companyProfile.id || 0)
-                }
-
-                // @@NOTE: this is to ensure nothing is shown if no customers on the agent passes field
-                if (allowedCustomers.length == 0) { allowedCustomers.push('0'); }
-
-                whereClause += `and ${twcSrf.Fields.CUSTOMER} in (${allowedCustomers.join(',')})`;
-
-                if (userInfo.companyProfile?.isVendor && !userInfo.companyProfile?.isCustomer) {
-                    // @@NOTE: in addition vendors can only see what was created by their organization
-                    whereClause += `and ${twcSrf.Fields.SRF_SUBMITTED_BY} in (select id from customrecord_twc_prof where custrecord_twc_prof_company = ${userInfo.companyProfile.id})`;
-                }
-            }
+            // @@NOTE: TWC Employees can see everything (empty filter), customers / agent pass rules: oTWC_config.js: getSrfAccessFilter
+            whereClause += twcConfig.getSrfAccessFilter(userInfo, 's');
 
             var sql = `
                 select  ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO}, 
                         comp.id as cust_submit_by_company, comp.name as cust_submit_by_company_name,
+                        TO_CHAR(s.${twcSrf.Fields.WORKS_PERMITTED_DATE}, 'yyyy-MM-dd') as works_permitted
 
                 from    ${twcSrf.Type} s
                 join    ${twcSite.Type} site on site.id = s.${twcSrf.Fields.SITE}
@@ -106,16 +80,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var whereClause = 'where 1 = 1 ';
             var orderBy = `order by s.${twcSaf.Fields.CREATED} desc`;
 
-            if (userInfo.companyProfile?.isBoth) {
-                whereClause += `and (
-                       ${twcSaf.Fields.PRIMARY_CONTRACTOR} = ${userInfo.companyProfile.id || 0}
-                    or ${twcSaf.Fields.CUSTOMER} = ${userInfo.companyProfile.id || 0}
-                )`;
-            } else if (userInfo.companyProfile?.isVendor) {
-                whereClause += `and ${twcSaf.Fields.PRIMARY_CONTRACTOR} = ${userInfo.companyProfile.id || 0}`;
-            } else if (userInfo.companyProfile?.isCustomer) {
-                whereClause += `and ${twcSaf.Fields.CUSTOMER} = ${userInfo.companyProfile.id || 0}`;
-            }
+            // @@NOTE: TWC Employees can see everything (empty filter), customer / primary contractor / agent pass rules: oTWC_config.js: getSafAccessFilter
+            //         (same as before for customers / primary contractors, agent pass users also see the SAFs raised by their colleagues for their agent pass customers)
+            whereClause += twcConfig.getSafAccessFilter(userInfo, 's');
 
             var safs = coreSQL.run(`
                 select  ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}

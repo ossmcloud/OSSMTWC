@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Tax Handling client script&colon; UAT test script</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="tax-handling-client-script-uat-test-script">Tax Handling client script: UAT test script</h1>
+<p><strong>Script:</strong> <code>SuiteScripts/OSSMTWC/oTWC_taxHandling_cs.js</code> (Client Script)
+<strong>Environment:</strong> Sandbox
+<strong>Tester:</strong> ______________________  <strong>Date:</strong> ____________  <strong>Build / file date:</strong> ____________</p>
+<hr>
+<h2 id="1-what-is-being-tested">1. What is being tested</h2>
+<p>One client script now replaces five older scripts. It does four jobs, switched on per record type:</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>What it does</th>
+<th>Record types</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Project copy</strong></td>
+<td>Choosing a project in the line column <strong>Project</strong> (<code>custcol_ossm_twcm_project</code>) copies it into the native <strong>Customer:Project</strong> column (item / expense lines) or <strong>Name</strong> column (journal lines). Clearing the project clears it.</td>
+<td>All record types the script is deployed on</td>
+</tr>
+<tr>
+<td><strong>Tax handling</strong></td>
+<td>With <strong>Tax Details Override</strong> ticked:<br>• picking a tax code on a Tax Details line fills <strong>Tax Rate</strong> and <strong>Tax Amount</strong>;<br>• changing <strong>Tax Basis</strong> or <strong>Tax Rate</strong> recalculates <strong>Tax Amount</strong>;<br>• <strong>Tax Basis</strong> is always set to the net amount of the transaction line it belongs to;<br>• Tax Details lines whose transaction line was deleted are removed.</td>
+<td>Vendor Bill, Vendor Credit</td>
+</tr>
+<tr>
+<td><strong>Tax check</strong></td>
+<td>With <strong>Tax Details Override</strong> ticked, <strong>Save is blocked</strong> when:<br>• the total net of the lines doesn't match the total Tax Basis, <strong>or</strong><br>• Tax Basis × Tax Rate doesn't match the Tax Amount on any Tax Details line (1 cent tolerance).</td>
+<td>Vendor Bill, Vendor Credit, Purchase Order, Vendor Return, Invoice, Credit Memo, Sales Order, Sales Return</td>
+</tr>
+<tr>
+<td><strong>PO cap</strong></td>
+<td>On item lines that came from a PO:<br>• you type the invoiced <strong>Amount</strong> and <strong>Quantity</strong> is worked out at the PO rate;<br>• <strong>Rate</strong> is always the PO rate;<br>• a line can never bill more than is left on the PO line: if it would, Quantity and Amount are corrected to what remains and a message is shown.</td>
+<td>Vendor Bill, Vendor Credit</td>
+</tr>
+</tbody>
+</table>
+<p><strong>When the Tax Basis is corrected</strong> (Vendor Bill and Vendor Credit, override ticked):</p>
+<ul>
+<li><strong>New documents only:</strong> once, automatically, as soon as NetSuite has generated the tax details.</li>
+<li><strong>Any document:</strong> when the <strong>Tax Details</strong> tab is clicked.</li>
+<li><strong>Any document:</strong> on <strong>Save</strong>, just before the tax check.</li>
+</ul>
+<hr>
+<h2 id="2-before-you-start">2. Before you start</h2>
+<h3 id="21-test-data">2.1 Test data</h3>
+<p>Fill in the internal ids / names you will use.</p>
+<table>
+<thead>
+<tr>
+<th>Ref</th>
+<th>Data</th>
+<th>Value used</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>Vendor (SuiteTax nexus Ireland)</td>
+<td></td>
+</tr>
+<tr>
+<td>D2</td>
+<td>Customer</td>
+<td></td>
+</tr>
+<tr>
+<td>D3</td>
+<td>Project (for the Project column)</td>
+<td></td>
+</tr>
+<tr>
+<td>D4</td>
+<td>Tax code 23%</td>
+<td></td>
+</tr>
+<tr>
+<td>D5</td>
+<td>Tax code 13.5%</td>
+<td></td>
+</tr>
+<tr>
+<td>D6</td>
+<td>Tax code 0%</td>
+<td></td>
+</tr>
+<tr>
+<td>D7</td>
+<td>Item A, no units of measure</td>
+<td></td>
+</tr>
+<tr>
+<td>D8</td>
+<td>Item B, <strong>with</strong> units of measure (e.g. bought in boxes of 10), if used in the account</td>
+<td></td>
+</tr>
+<tr>
+<td>D9</td>
+<td><strong>PO-1</strong>: approved, 2 lines:<br>• Line 1: Item A, Qty 1, Rate 1,000.00 (lump sum)<br>• Line 2: Item A, Qty 10, Rate 50.00</td>
+<td></td>
+</tr>
+<tr>
+<td>D10</td>
+<td><strong>PO-2</strong>: approved, 1 line: Item B (UOM), Qty 2 boxes, Rate 100.00 per box</td>
+<td></td>
+</tr>
+<tr>
+<td>D11</td>
+<td>Expense account</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-tester-tips">2.2 Tester tips</h3>
+<ul>
+<li><strong>Tax Details Override</strong> is the checkbox on the <strong>Tax Details</strong> subtab. Many tests need it <strong>ticked</strong>; this is stated in each test.</li>
+<li>Keep the browser console open (F12 → Console). Any script problem is logged as <code>oTWC_taxHandling_cs (...)</code>. Note any such line in the Notes column, even if the test passes.</li>
+<li><strong>Pass</strong> = the actual result matches the expected result exactly. Otherwise record <strong>Fail</strong> with a screenshot.</li>
+</ul>
+<hr>
+<h2 id="3-tests">3. Tests</h2>
+<p>Result column: <strong>P</strong> = pass, <strong>F</strong> = fail, <strong>N/A</strong> = not applicable.</p>
+<h3 id="a-project-copy-all-record-types">A. Project copy (all record types)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Record</th>
+<th>Steps</th>
+<th>Expected</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1</td>
+<td>Vendor Bill (item line)</td>
+<td>New bill for D1 → add an item line → set <strong>Project</strong> = D3.</td>
+<td><strong>Customer:Project</strong> on the line shows D3 immediately, without having to leave the field.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>A2</td>
+<td>Vendor Bill (item line)</td>
+<td>Continue A1 → click <strong>Add</strong> / <strong>OK</strong> straight after picking the project.</td>
+<td>The committed line keeps Customer:Project = D3. It must not be blank.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>A3</td>
+<td>Vendor Bill (expense line)</td>
+<td>Add an expense line (D11) → set <strong>Project</strong> = D3 → commit.</td>
+<td>Customer:Project = D3 on the expense line.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>A4</td>
+<td>Vendor Bill</td>
+<td>Edit the line from A1 → clear <strong>Project</strong>.</td>
+<td>Customer:Project is cleared too.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>A5</td>
+<td>Journal Entry</td>
+<td>New journal → on a line set <strong>Project</strong> = D3.</td>
+<td>The <strong>Name</strong> column = D3.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>A6</td>
+<td>Purchase Order</td>
+<td>New PO → item line → <strong>Project</strong> = D3.</td>
+<td>Customer:Project = D3.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>A7</td>
+<td>Invoice</td>
+<td>New invoice for D2 → item line → <strong>Project</strong> = D3.</td>
+<td>Customer:Project = D3.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>A8</td>
+<td>Sales Order</td>
+<td>Same as A7 on a sales order.</td>
+<td>Customer:Project = D3.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>A9</td>
+<td>Vendor Credit, Credit Memo, Vendor Return, Sales Return</td>
+<td>Repeat A1 on each.</td>
+<td>Customer:Project = D3 on each.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="b-tax-handling-while-editing-vendor-bill-repeat-b1-b6-on-vendor-credit-as-b1c-b6c">B. Tax handling while editing: Vendor Bill (repeat B1-B6 on Vendor Credit as B1c-B6c)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Steps</th>
+<th>Expected</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B1</td>
+<td>New bill for D1 → item line Item A, Amount 100.00 → commit → <strong>Tax Details</strong> subtab → tick <strong>Tax Details Override</strong> → on the tax line for that item, set Tax Code = D4 (23%).</td>
+<td><strong>Tax Rate</strong> = 23%, <strong>Tax Basis</strong> = 100.00 (the item line's net), <strong>Tax Amount</strong> = 23.00.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>B2</td>
+<td>Continue B1 → change the Tax Code to D5 (13.5%).</td>
+<td>Tax Rate = 13.5%, Tax Basis = 100.00, Tax Amount = 13.50.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>B3</td>
+<td>Continue → change <strong>Tax Rate</strong> by hand to 10%.</td>
+<td>Tax Amount = 10.00. Tax Basis stays 100.00.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>B4</td>
+<td>Continue → type <strong>Tax Basis</strong> = 80.00.</td>
+<td>Tax Basis goes back to 100.00 (the line net) and Tax Amount is recalculated at the current rate.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>B5</td>
+<td>Untick <strong>Tax Details Override</strong> → change a tax line's Tax Code.</td>
+<td>The script changes nothing: no rate or amount filled in by the script.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>B6</td>
+<td>Tick override → pick a tax code that has <strong>no rate</strong> set up (if one exists).</td>
+<td>Rate and amount are left as they were, not set to 0. No error shown.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="c-tax-basis-correction-vendor-bill-repeat-on-vendor-credit-as-c1c-c8c">C. Tax Basis correction: Vendor Bill (repeat on Vendor Credit as C1c-C8c)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Steps</th>
+<th>Expected</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td><strong>New</strong> bill from <strong>PO-1</strong> (PO → <strong>Bill</strong>). Wait for the page to load fully. Open <strong>Tax Details</strong> with override ticked.</td>
+<td>Every Tax Details line has Tax Basis = the net of its bill line, and Tax Amount = Basis × Rate. Corrected automatically on open.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>C2</td>
+<td>Continue C1 → <strong>Expenses and Items</strong> tab → change line 1 Amount to 600.00 → commit → click the <strong>Tax Details</strong> tab.</td>
+<td>The Tax Details line for line 1 shows Tax Basis = 600.00, with Tax Amount recalculated.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>C3</td>
+<td>Continue → change line 2 Amount → commit → <strong>don't</strong> open the Tax Details tab → <strong>Save</strong>.</td>
+<td>The save goes through. Reopen the bill: line 2's Tax Basis = its net, Tax Amount correct.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>C4</td>
+<td><strong>Edit</strong> an existing saved bill whose Tax Basis is wrong (if available).</td>
+<td><strong>Not</strong> corrected on open, by design. Corrected when the <strong>Tax Details</strong> tab is clicked, or on Save.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>C5</td>
+<td>Bill with 3 lines, override ticked, all tax lines correct → <strong>delete</strong> item line 2 → click the <strong>Tax Details</strong> tab.</td>
+<td>The Tax Details line(s) for the deleted line are <strong>removed</strong>. The others stay.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>C6</td>
+<td>As C5, but delete a line and <strong>Save</strong> without opening Tax Details.</td>
+<td>Saves. Reopen: no Tax Details line left for the deleted line.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>C7</td>
+<td>A bill line carrying <strong>two tax types</strong> (if the account uses more than one tax type on a line).</td>
+<td>Both Tax Details lines keep Tax Basis = the line net. Neither is removed.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>C8</td>
+<td>Override <strong>unticked</strong> → edit lines → open Tax Details → Save.</td>
+<td>The script corrects or removes nothing. SuiteTax calculates the tax as normal on save.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="d-tax-check-on-save-all-tax-check-record-types">D. Tax check on save (all tax-check record types)</h3>
+<p>For each record type, override must be ticked unless stated. <strong>Blocked</strong> means a pop-up titled <strong>&quot;Tax Details validation failed&quot;</strong> appears, lists every problem, and the record is <strong>not</strong> saved.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Record</th>
+<th>Steps</th>
+<th>Expected</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>Vendor Bill</td>
+<td>Correct tax details → Save.</td>
+<td>Saves.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D2</td>
+<td>Vendor Bill</td>
+<td>On a tax line, type <strong>Tax Amount</strong> = 25.00 where Basis 100 × 23% = 23.00 → Save.</td>
+<td>Blocked. The message shows the line, reference and tax code: &quot;100.00 x 23% = 23.00, but Tax Amount is 25.00&quot;.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D3</td>
+<td>Vendor Bill</td>
+<td>Tax Amount off by 0.01 (e.g. 23.01) → Save.</td>
+<td>Saves (within tolerance).</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D4</td>
+<td>Purchase Order</td>
+<td>Override ticked → item line 100.00 → set the tax line Tax Basis to 80.00 and Tax Amount to 18.40 → Save.</td>
+<td>Blocked. The message shows the lines' total net 100.00 vs Tax Basis total 80.00, plus the line with the difference. On the PO the basis is <strong>not</strong> corrected automatically, by design.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D5</td>
+<td>Purchase Order</td>
+<td>Correct tax details → Save.</td>
+<td>Saves.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D6</td>
+<td>Vendor Return</td>
+<td>Repeat D4 and D5.</td>
+<td>Same as D4 and D5.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D7</td>
+<td>Invoice</td>
+<td>Repeat D2, D4 and D5.</td>
+<td>Same as D2, D4 and D5.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D8</td>
+<td>Credit Memo</td>
+<td>Repeat D2, D4 and D5.</td>
+<td>Same as D2, D4 and D5.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D9</td>
+<td>Sales Order</td>
+<td>Repeat D2, D4 and D5.</td>
+<td>Same as D2, D4 and D5.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D10</td>
+<td>Sales Return</td>
+<td>Repeat D2, D4 and D5.</td>
+<td>Same as D2, D4 and D5.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D11</td>
+<td>Vendor Credit</td>
+<td>Repeat D1 and D2.</td>
+<td>Same as D1 and D2.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D12</td>
+<td>Any of the above</td>
+<td>Override <strong>unticked</strong> → wrong-looking tax details → Save.</td>
+<td>Saves. SuiteTax recalculates on submit.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D13</td>
+<td>Journal Entry</td>
+<td>Normal journal → Save.</td>
+<td>Saves. No tax check.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D14</td>
+<td>Vendor Bill</td>
+<td>Add a <strong>Subtotal</strong> item and/or an <strong>Item Group</strong> → correct tax details → Save.</td>
+<td>Saves. Subtotal and group lines aren't counted twice.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D15</td>
+<td>Vendor Bill</td>
+<td>Add a <strong>Discount</strong> item (negative line) with its tax line correct → Save.</td>
+<td>Saves.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="e-po-cap-vendor-bill-bill-from-po-1-unless-stated">E. PO cap: Vendor Bill (bill from PO-1 unless stated)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Steps</th>
+<th>Expected</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E1</td>
+<td>New bill from PO-1 → line 1 (Qty 1, Rate 1,000) → type <strong>Amount</strong> = 400.00 → commit.</td>
+<td>Quantity = 0.4, Rate = 1,000.00, Amount = <strong>400.00 exactly as typed</strong>. No message.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>E2</td>
+<td>Save the E1 bill. Create a <strong>second</strong> bill from PO-1 → line 1 → type Amount = 700.00.</td>
+<td>Corrected: Quantity = 0.6, Amount = 600.00, Rate = 1,000.00. A message says the PO must be amended to bill more.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>E3</td>
+<td>On the second bill, line 1 → type <strong>Quantity</strong> = 0.9 instead.</td>
+<td>Corrected to Quantity 0.6, Amount 600.00, with the same message.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>E4</td>
+<td>Line 2 (Qty 10, Rate 50) → change <strong>Rate</strong> to 60 → commit.</td>
+<td>Rate goes back to 50.00 and Amount = Quantity × 50.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>E5</td>
+<td>Type an over-limit Amount → click <strong>Add</strong> / <strong>OK</strong> immediately without leaving the field.</td>
+<td>Still corrected to what remains, with one message (not two).</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>E6</td>
+<td>Copy line 2 onto the same bill so two bill lines point to the <strong>same</strong> PO line. Set 6 units on the first and type 6 on the second.</td>
+<td>The second line is capped at 4 (10 − 6).</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>E7</td>
+<td><strong>Edit</strong> the saved bill from E1 → line 1 → type Amount = 400.00 (same as saved).</td>
+<td>Not capped. Its own saved 0.4 counts as available.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>E8</td>
+<td>On a bill from PO-1, add a <strong>manual</strong> item line (not from the PO) → type any Amount / Quantity / Rate.</td>
+<td>The script doesn't touch the line.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>E9</td>
+<td>New bill from <strong>PO-2</strong> (UOM item) → type Amount = 150.00.</td>
+<td>Quantity = 1.5 (boxes), Rate = 100.00 per box. An Amount over 200.00 is capped at 2 boxes / 200.00.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>E10</td>
+<td><strong>Vendor Credit</strong> created from a Vendor Return or PO, if used.</td>
+<td><strong>Business decision:</strong> the PO cap is also active on Vendor Credit. Confirm this is wanted. If credits must not be capped, raise it so the cap is switched off for Vendor Credit.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="f-general--regression">F. General / regression</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Steps</th>
+<th>Expected</th>
+<th>Result</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1</td>
+<td>Run any failing save from section D.</td>
+<td>Only <strong>one</strong> pop-up appears, never two different alerts (would mean an old script is still deployed).</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>F2</td>
+<td>Open a bill with 50+ lines and override ticked → click the Tax Details tab → Save.</td>
+<td>No noticeable slowdown, at most a second or two. No browser &quot;page unresponsive&quot; warning.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>F3</td>
+<td>Review the browser console across all tests.</td>
+<td>No <code>oTWC_taxHandling_cs (...)</code> errors logged.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>F4</td>
+<td>Open each record type in <strong>View</strong> mode.</td>
+<td>No errors. Nothing changes.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>F5</td>
+<td>Repeat a sample of tests (A1, B1, C2, D2, E2) with a <strong>non-admin AP user</strong>.</td>
+<td>Same results. If a rate isn't filled in for this user, the role may lack permission to read the SuiteTax rate record.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="4-sign-off">4. Sign-off</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Tests</th>
+<th>Passed</th>
+<th>Failed</th>
+<th>Open issues</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A. Project copy</td>
+<td>9</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>B. Tax handling (Bill + Credit)</td>
+<td>12</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>C. Tax Basis correction (Bill + Credit)</td>
+<td>16</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>D. Tax check on save</td>
+<td>15</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>E. PO cap</td>
+<td>10</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>F. General</td>
+<td>5</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Business decision recorded for E10 (PO cap on Vendor Credit):</strong> ☐ keep ☐ remove</p>
+<p>UAT accepted: ☐ Yes ☐ No (see open issues)</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Role</th>
+<th>Signature</th>
+<th>Date</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>Business owner</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Finance / AP lead</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>OSSM consultant</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+            
+            
+        </body>
+        </html>

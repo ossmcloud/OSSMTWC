@@ -30,7 +30,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             CUSTOMER_REF: 'custrecord_twc_srf_itm_cust_ref',
             INVENTORY_FLAG: 'custrecord_twc_srf_itm_invent_flag',
             FEEDER_COUNT: 'custrecord_twc_srf_itm_feeder_count',
-            TYPE_OPT: 'custrecord_twc_srf_itm_type_opt',
+            FEEDER_TYPE: 'custrecord_twc_srf_itm_type_opt',
             FILENAME: 'custrecord_twc_srf_itm_filename',
             POWER_REQUESTED_FROM_TC: 'custrecord_twc_srf_itm_pwr_req_from_tc',
             ALTERNATE_SUPPLIER: 'custrecord_twc_srf_itm_alt_sup',
@@ -39,8 +39,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             APPLICATION_DATE: 'custrecord_twc_srf_itm_app_date',
             APPLICATION_REFERENCE: 'custrecord_twc_srf_itm_app_ref',
             FEEDERS_DESCRIPTION: 'custrecord_twc_srf_itm_feeder_desc',
-            LOCATION_TEXT: 'custrecord_twc_srf_itm_loc_txt',
-            LOCATION_OBSOLETE: 'custrecord_twc_srf_itm_loc',
+            GIE_LOCATION: 'custrecord_twc_srf_itm_loc_txt',
+            MODIFIED_ANTENNA_LOCATION: 'custrecord_twc_srf_itm_loc',
+            RADIX_ID: 'custrecord_twc_srf_itm_radix_id',
+            RADIX_MIGRATED: 'custrecord_twc_srf_itm_radix_migrated',
+            RADIX_IMPORT_RUN: 'custrecord_twc_srf_itm_radix_import_run',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -66,12 +69,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             HEIGHT_ON_TOWER: { name: 'custrecord_twc_srf_itm_ht_on_twr', type: 'float', alias: 'heightonTower', display: 'normal', mandatory: false },
             WEIGHT_KG: { name: 'custrecord_twc_srf_itm_weight_kg', type: 'float', alias: 'weightkg', display: 'normal', mandatory: false },
             VOLTAGE_TYPE: { name: 'custrecord_twc_srf_itm_volt_type', type: 'select', alias: 'voltageType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip_voltage_type' },
-            AZIMUTH: { name: 'custrecord_twc_srf_itm_azimuth', type: 'integer', alias: 'azimuth', display: 'normal', mandatory: false },
+            AZIMUTH: { name: 'custrecord_twc_srf_itm_azimuth', type: 'float', alias: 'azimuth', display: 'normal', mandatory: false },
             B_END: { name: 'custrecord_twc_srf_itm_b_end', type: 'text', alias: 'b_End', display: 'normal', mandatory: false },
             CUSTOMER_REF: { name: 'custrecord_twc_srf_itm_cust_ref', type: 'text', alias: 'customerRef', display: 'normal', mandatory: false },
             INVENTORY_FLAG: { name: 'custrecord_twc_srf_itm_invent_flag', type: 'select', alias: 'inventoryFlag', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_inv_flag' },
             FEEDER_COUNT: { name: 'custrecord_twc_srf_itm_feeder_count', type: 'text', alias: 'feederCount', display: 'normal', mandatory: false },
-            TYPE_OPT: { name: 'custrecord_twc_srf_itm_type_opt', type: 'select', alias: 'typeopt', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_typ_opt' },
+            FEEDER_TYPE: { name: 'custrecord_twc_srf_itm_type_opt', type: 'select', alias: 'feederType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_typ_opt' },
             FILENAME: { name: 'custrecord_twc_srf_itm_filename', type: 'document', alias: 'filename', display: 'normal', mandatory: false },
             POWER_REQUESTED_FROM_TC: { name: 'custrecord_twc_srf_itm_pwr_req_from_tc', type: 'checkbox', alias: 'powerrequestedfromTC', display: 'normal', mandatory: false },
             ALTERNATE_SUPPLIER: { name: 'custrecord_twc_srf_itm_alt_sup', type: 'text', alias: 'alternateSupplier', display: 'normal', mandatory: false },
@@ -80,8 +83,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             APPLICATION_DATE: { name: 'custrecord_twc_srf_itm_app_date', type: 'date', alias: 'applicationdate', display: 'normal', mandatory: false },
             APPLICATION_REFERENCE: { name: 'custrecord_twc_srf_itm_app_ref', type: 'text', alias: 'applicationreference', display: 'normal', mandatory: false },
             FEEDERS_DESCRIPTION: { name: 'custrecord_twc_srf_itm_feeder_desc', type: 'text', alias: 'feedersDescription', display: 'normal', mandatory: false },
-            LOCATION_TEXT: { name: 'custrecord_twc_srf_itm_loc_txt', type: 'text', alias: 'locationText', display: 'normal', mandatory: false },
-            LOCATION_OBSOLETE: { name: 'custrecord_twc_srf_itm_loc', type: 'select', alias: 'locationOBSOLETE', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
+            GIE_LOCATION: { name: 'custrecord_twc_srf_itm_loc_txt', type: 'text', alias: 'gIELocation', display: 'normal', mandatory: false },
+            MODIFIED_ANTENNA_LOCATION: { name: 'custrecord_twc_srf_itm_loc', type: 'select', alias: 'modifiedAntennaLocation', display: 'normal', mandatory: false, recordType: 'customrecord_twc_srf_itm_loc_type' },
+            RADIX_ID: { name: 'custrecord_twc_srf_itm_radix_id', type: 'text', alias: 'radixID', display: 'statictext', mandatory: false },
+            RADIX_MIGRATED: { name: 'custrecord_twc_srf_itm_radix_migrated', type: 'checkbox', alias: 'radixMigrated', display: 'statictext', mandatory: false },
+            RADIX_IMPORT_RUN: { name: 'custrecord_twc_srf_itm_radix_import_run', type: 'text', alias: 'radixImportRun', display: 'statictext', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -216,7 +222,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get voltageTypeName() { return this.getText(_recordFields.VOLTAGE_TYPE); }
             
-            
             get azimuth() {
                 return this.get(_recordFields.AZIMUTH);
             } set azimuth(value) {
@@ -248,12 +253,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.FEEDER_COUNT, value)
             }
             
-            get typeopt() {
-                return this.get(_recordFields.TYPE_OPT);
-            } set typeopt(value) {
-                this.set(_recordFields.TYPE_OPT, value)
+            get feederType() {
+                return this.get(_recordFields.FEEDER_TYPE);
+            } set feederType(value) {
+                this.set(_recordFields.FEEDER_TYPE, value)
             }
-            get typeoptName() { return this.getText(_recordFields.TYPE_OPT); }
+            get feederTypeName() { return this.getText(_recordFields.FEEDER_TYPE); }
             
             get filename() {
                 return this.get(_recordFields.FILENAME);
@@ -303,18 +308,36 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.FEEDERS_DESCRIPTION, value)
             }
             
-            get locationText() {
-                return this.get(_recordFields.LOCATION_TEXT);
-            } set locationText(value) {
-                this.set(_recordFields.LOCATION_TEXT, value)
+            get gIELocation() {
+                return this.get(_recordFields.GIE_LOCATION);
+            } set gIELocation(value) {
+                this.set(_recordFields.GIE_LOCATION, value)
             }
             
-            get locationOBSOLETE() {
-                return this.get(_recordFields.LOCATION_OBSOLETE);
-            } set locationOBSOLETE(value) {
-                this.set(_recordFields.LOCATION_OBSOLETE, value)
+            get modifiedAntennaLocation() {
+                return this.get(_recordFields.MODIFIED_ANTENNA_LOCATION);
+            } set modifiedAntennaLocation(value) {
+                this.set(_recordFields.MODIFIED_ANTENNA_LOCATION, value)
             }
-            get locationOBSOLETEName() { return this.getText(_recordFields.LOCATION_OBSOLETE); }
+            get modifiedAntennaLocationName() { return this.getText(_recordFields.MODIFIED_ANTENNA_LOCATION); }
+            
+            get radixID() {
+                return this.get(_recordFields.RADIX_ID);
+            } set radixID(value) {
+                this.set(_recordFields.RADIX_ID, value)
+            }
+            
+            get radixMigrated() {
+                return this.get(_recordFields.RADIX_MIGRATED);
+            } set radixMigrated(value) {
+                this.set(_recordFields.RADIX_MIGRATED, value)
+            }
+            
+            get radixImportRun() {
+                return this.get(_recordFields.RADIX_IMPORT_RUN);
+            } set radixImportRun(value) {
+                this.set(_recordFields.RADIX_IMPORT_RUN, value)
+            }
             
             get created() {
                 return this.get(_recordFields.CREATED);
@@ -348,8 +371,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_SRFItem,
 
-            get: function (id) {
-                var rec = new OSSMTWC_SRFItem(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_SRFItem(id, staticLoad);
                 rec.load();
                 return rec;
             }, 

@@ -40,6 +40,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (col.id == 'site_id') { return false; }
                  if (col.id == 'infra_type') { return false; }
                  if(col.id == 'custrecord_twc_equip_str_text'){return false}
+                if (col.id == 'srf_id') { return false; }
+                // @@NOTE: 'Hide Inactive' toggle flag (oTWC_inventoryUtils.js: getInventoryData)
+                if (col.id == 'eq_inactive') { return false; }
                 //if (col.id == 'name') { return false; }
                 if (col.id == twcSite.Fields.ADDRESS_COUNTY || col.id == twcSite.Fields.SITE_TYPE || col.id == twcSite.Fields.SITE_PORTFOLIO) { return false; }
 
@@ -51,6 +54,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     col.nullText = uf.nullText;
                     col.addCount = uf.addCount;
                     if (uf.styles) { col.styles = uf.styles; }
+                    // @@NOTE: wrapped column (e.g.: Description, ui/modules/oTWC_inventoryUtils.js: getInventoryData)
+                    if (uf.wrap) { col.wrap = true; }
                 }
 
                 if (col.id == 'site_id_text') {
@@ -82,6 +87,25 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
                 if (col.id == twcInventory.Fields.EQUIPMENT_ID) { col.addCount = true; }
+
+                // @@NOTE: (i) icon => equipment details dialog
+                if (col.id == 'name') { col.prefix = twcInventory.infoIconPrefix('id'); }
+
+                // @@NOTE: TL users (employees) can open the native equipment record (new tab)
+                if (col.id == 'name' && window.twc.page.data.userInfo?.isEmployee) {
+                    col.link = {
+                        url: core.url.record(twcInventory.Type) + '&id=${id}',
+                        valueField: 'id'
+                    }
+                }
+
+                // @@NOTE: SRF associated to the equipment (via its equipment action, see oTWC_inventoryUtils.js: getInventoryData), opens the SRF page (view mode)
+                if (col.id == 'srf') {
+                    col.link = {
+                        url: core.url.script('otwc_spacerequest_sl') + '&recId=${srf_id}',
+                        valueField: 'srf_id'
+                    }
+                }
             }
             refresh(data) {
                 var resetCols = (this.#table.table?.data.length == 0)
@@ -108,29 +132,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         if (c.type == 'table') { twcPageBase.initTableExpandCollapse(c); }
                     })
 
-                    if (this.data.recId) {
-                        core.array.each(this.ui.controls, c => {
-                            if (c.type == 'table') {
-                                var row = c.rows.find(r => { return r.data?.id == this.data.recId });
-                                if (row) {
-                                    // @@NOTE: ATME / Feeders are child rows (collapsed by default), expand the parent first
-                                    twcPageBase.expandTableRow(c, row);
-                                    var divs = row.ui();
-                                    divs[0].scrollIntoView({
-                                        behavior: "smooth", // or "auto" or "instant"
-                                        block: 'center',    // vertical alignment: 'start' | 'center' | 'end' | 'nearest'
-                                        inline: 'nearest'   // horizontal alignment
-                                    });
-                                    divs = divs.find('div');
-                                    divs.addClass('app-pulse-red')
-                                    window.setTimeout(() => {
-                                        divs.removeClass('app-pulse-red')
-                                    }, 5000)
-                                    return false;
-                                }
-                            }
-                        })
-                    }
+                    if (this.data.recId) { this.highlightEquipment(this.data.recId); }
 
                 } else {
                     this.#sitesTable = new TWCSiteTable(this);
@@ -142,18 +144,55 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     });
                 }
             }
+            // @@NOTE: scrolls to the equipment row (in whichever table it is) and makes it pulse
+            //         used when the page is opened with a recId and by the 'TME' link on the ATME / Feeders tables (not grouped view, see data/oTWC_equipmentUI.js)
+            highlightEquipment(id) {
+                if (!id) { return; }
+                core.array.each(this.ui.controls, c => {
+                    if (c.type != 'table') { return; }
+                    var row = c.rows.find(r => { return r.data?.id == id });
+                    if (!row) { return; }
+                    // @@NOTE: ATME / Feeders are child rows (collapsed by default), expand the parent first
+                    twcPageBase.expandTableRow(c, row);
+                    var divs = row.ui();
+                    // @@NOTE: the row may not be rendered (e.g.: filtered out on the table)
+                    if (divs.length == 0) { return false; }
+                    divs[0].scrollIntoView({
+                        behavior: "smooth", // or "auto" or "instant"
+                        block: 'center',    // vertical alignment: 'start' | 'center' | 'end' | 'nearest'
+                        inline: 'nearest'   // horizontal alignment
+                    });
+                    divs = divs.find('div');
+                    divs.addClass('app-pulse-red')
+                    window.setTimeout(() => {
+                        divs.removeClass('app-pulse-red')
+                    }, 5000)
+                    return false;
+                })
+            }
+
             initInventoryMode(recId) {
                 this.ui.find('#add-equipment-button').on('click', async (e) => {
                     await this.addEquipment();
                 });
                 this.ui.on('change', e => {
-                    if (e.id != 'group-equipment-toggle') { return; }
-                    // @@NOTE: grouped / ungrouped view is rendered server side, reload the page with the 'grouped' parameter (grouped is the default so we only pass grouped=F)
+                    if (e.id != 'group-equipment-toggle' && e.id != 'hide-inactive-equipment-toggle') { return; }
                     var url = new URL(location.href);
-                    if (!e.value || e.value == 'F') {
-                        url.searchParams.set('grouped', 'F');
+                    var on = (e.value && e.value != 'F');
+                    if (e.id == 'group-equipment-toggle') {
+                        // @@NOTE: grouped / ungrouped view is rendered server side, reload the page with the 'grouped' parameter (grouped is the default so we only pass grouped=F)
+                        if (!on) {
+                            url.searchParams.set('grouped', 'F');
+                        } else {
+                            url.searchParams.delete('grouped');
+                        }
                     } else {
-                        url.searchParams.delete('grouped');
+                        // @@NOTE: hide inactive equipment (ui/oTWC_inventory_sl.js), off is the default so we only pass hideInactive=T
+                        if (on) {
+                            url.searchParams.set('hideInactive', 'T');
+                        } else {
+                            url.searchParams.delete('hideInactive');
+                        }
                     }
                     this.wait();
                     location.href = url.toString();

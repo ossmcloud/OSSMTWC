@@ -5,6 +5,13 @@
 define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', '../../data/oTWC_icons.js'],
     (core, b64, icons) => {
 
+        // @@NOTE: escape values written into html attributes (e.g. a company name with a quote would be cut in the text box)
+        const escAttr = (v) => {
+            if (v === null || v === undefined) { return ''; }
+            return v.toString().replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+        }
+
+
         class DropDown {
             #dataSource = null;
             #options = null;
@@ -205,7 +212,7 @@ define(['SuiteBundles/Bundle 548734/O/core.j.js', 'SuiteBundles/Bundle 548734/O/
                         ${label}
                         <div class="twc_ctrl_table" style="border: 1px solid var(--grid-color); border-radius: 7px;">
                             <div>
-                                <input id="${this.#options.id}" type="text" class="twc twc-filter" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${selectedValueText}" ${disabled} ${readOnly} />
+                                <input id="${this.#options.id}" type="text" class="twc twc-filter" autocomplete="off" placeholder="${this.#options.hint || ''}" value="${escAttr(selectedValueText)}" ${disabled} ${readOnly} />
                             </div>
                             <div style="vertical-align: bottom; width: 28px;">
                                 <span id="${this.#options.id}_arrow" style="cursor: pointer; display: inline-block; padding-left: 2px; margin-right: -4px;">${icons.get('arrowDown', 24, (disabled || readOnly) ? 'silver' : 'var(--nav-icon-color)')}</span>

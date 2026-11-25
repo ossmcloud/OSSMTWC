@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NScriptType ScheduledScript
  */
-define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'N/email', '../data/oTWC_config.js', '../data/oTWC_saf.js', '../data/oTWC_safTimeBlock.js', 'N/render', 'N/format', 'N/config'],
-    (runtime, task, core, coreSQL, recu, email, twcConfig, twcSaf, twcTB, render, format, config) => {
+define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', 'N/email', '../data/oTWC_config.js', '../data/oTWC_saf.js', '../data/oTWC_safTimeBlock.js', 'N/render', 'N/format', 'N/config', '../data/oTWC_safLog.js'],
+    (runtime, task, core, coreSQL, recu, email, twcConfig, twcSaf, twcTB, render, format, config, twcSafLog) => {
         
         function execute(context) {
             try {
@@ -29,25 +29,29 @@ define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
         function updateSAFstatus() {
             var currDate = format.format({ value: new Date(), type: format.Type.DATE, timezone: config.load({ type: config.Type.COMPANY_INFORMATION }).getValue({ fieldId: 'timezone' }) })
             // @@TODO: currently we email the primary contractor, is this ok?
+            // @@NOTE: no delay on the SAF => default delay (twcConfig.SAF_PHOTO_REQ_DELAY_DEFAULT, was 0 = the day after the last time block), an explicit 0 is kept
+            var defaultDelay = parseInt(twcConfig.SAF_PHOTO_REQ_DELAY_DEFAULT) || 0;
             var sql = `
                 SELECT saf.id AS saf_id,
                 saf.${twcSaf.Fields.PRIMARY_CONTRACTOR} AS contractor_id,
                 company.custrecordtwc_entity AS vendor_id,
-                NVL(saf.${twcSaf.Fields.WORKS_PHOTOS_REQ_DELAY}, 0) AS delay_days
+                NVL(saf.${twcSaf.Fields.WORKS_PHOTOS_REQ_DELAY}, ${defaultDelay}) AS delay_days
                 FROM ${twcSaf.Type} saf
                 JOIN
                 customrecord_twc_company company
                 ON company.id = saf.${twcSaf.Fields.PRIMARY_CONTRACTOR}
-                WHERE NVL(saf.${twcSaf.Fields.STATUS}, 0) != ${twcSaf.Status.AwaitingPhotos}
+                WHERE saf.${twcSaf.Fields.STATUS} = ${twcSaf.Status.Approved}
                 AND saf.${twcSaf.Fields.R_TYPE} = 4
                 AND (
                     SELECT MAX(tb.${twcTB.Fields.BLOCK_DATE})
                     FROM ${twcTB.Type} tb
                     WHERE tb.${twcTB.Fields.SAF} = saf.id
-                ) + NVL(saf.${twcSaf.Fields.WORKS_PHOTOS_REQ_DELAY}, 0) < '${currDate}'
+                ) + NVL(saf.${twcSaf.Fields.WORKS_PHOTOS_REQ_DELAY}, ${defaultDelay}) < '${currDate}'
 
             `;
 
+            // @@NOTE: only APPROVED SAFs are moved to Awaiting Photos (it used to pick any status but Awaiting Photos, so it re-opened Photos Received / Complete / Cancelled SAFs and re-sent the email on every run)
+            // @@HARDCODED @@GO-LIVE :: SAF type 4 (the only SAF type requesting completion photos) - should use the SAF type 'requires srf' flag
             var restart = '';
             core.logDebug('SQL', sql);
 
@@ -56,6 +60,8 @@ define(['N/runtime', 'N/task', '/.bundle/548734/O/core.js', '/.bundle/548734/O/c
                     core.logDebug('SAF-' + idx, `SAF: ${saf.saf_id} :: Customer: ${saf.contractor_id} :: Delay: ${saf.delay_days}`);
 
                     recu.submit(twcSaf.Type, saf.saf_id, twcSaf.Fields.STATUS, twcSaf.Status.AwaitingPhotos);
+                    // @@NOTE: Completion Photos Log (PHOTOS category), visible to the SAF submitter
+                    twcSafLog.logInfo(saf.saf_id, twcSafLog.LogMessage.StatusChanged, `status changed to: ${twcSaf.getSafStatusName(twcSaf.Status.AwaitingPhotos)} - old status: ${twcSaf.getSafStatusName(twcSaf.Status.Approved)}`, null, twcSafLog.LogCategory.Photos);
 
                     if (saf.vendor_id) {
                         var mergeResult = render.mergeEmail({

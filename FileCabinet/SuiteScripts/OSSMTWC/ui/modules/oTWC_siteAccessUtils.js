@@ -74,7 +74,18 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
         function getAllSafTimeBlocks(options, userInfo) {
             var timeBlocks = {};
 
-            var allowedCustomers = twcConfig.getUserAllowedCustomers(userInfo);
+            // @@NOTE: the SAFs of the site the user can see (oTWC_config.js: getSafAccessFilter, customer / primary contractor / agent pass rules)
+            //         any other SAF is shown as 'slot used': no SAF number, no link (it used to follow the company ACL: agent pass users saw all the customer SAFs)
+            var visibleSafs = null;
+            if (!userInfo.isEmployee) {
+                visibleSafs = coreSQL.run(`
+                    select  s.id
+                    from    customrecord_twc_saf s
+                    where   s.custrecord_twc_saf_site = ${parseInt(options?.siteId) || 0}
+                    ${twcConfig.getSafAccessFilter(userInfo, 's')}
+                `).map(s => { return parseInt(s.id); });
+            }
+            var hiddenKeys = {}; var hiddenCount = 0;
 
             coreSQL.each(`
                 select  b.id, b.custrecord_twc_saf_tm_blk_block as block_id, BUILTIN.DF(b.custrecord_twc_saf_tm_blk_block) as block_name, TO_CHAR(b.custrecord_twc_saf_tm_blk_date, 'yyyy-MM-dd') as block_date,
@@ -91,22 +102,22 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 order by b.custrecord_twc_saf_tm_blk_date desc
             `, tb => {
                 var safId = tb.saf_id; var safCode = tb.saf_code;
-                if (!options.reUse) {
-                    if (safId == options.id) {
-                        safId = 't';
-                        safCode = 'SAF';
-                    }
+                var isThisSaf = !options.reUse && safId == options.id;
+                if (isThisSaf) {
+                    safId = 't';
+                    safCode = 'SAF';
+                }
+                var hidden = !isThisSaf && visibleSafs != null && visibleSafs.indexOf(parseInt(tb.saf_id)) < 0;
+                if (hidden) {
+                    // @@NOTE: a hidden SAF is keyed by a counter, not by its id (this goes to the client page)
+                    if (!hiddenKeys[tb.saf_id]) { hiddenKeys[tb.saf_id] = `h${++hiddenCount}`; }
+                    safId = hiddenKeys[tb.saf_id];
                 }
 
                 if (!timeBlocks[tb.block_date]) { timeBlocks[tb.block_date] = { blocksCount: 0 }; }
                 if (!timeBlocks[tb.block_date][safId]) {
 
-                    var safLink = { id: tb.saf_id, code: safCode };
-                    if (allowedCustomers != 'all') {
-                        if (!allowedCustomers.find(c => { return c.cust == tb.saf_customer })) {
-                            safLink = { id: null, code: 'slot used' };
-                        }
-                    }
+                    var safLink = hidden ? { id: null, code: 'slot used' } : { id: tb.saf_id, code: safCode };
 
 
                     timeBlocks[tb.block_date][safId] = {
@@ -116,7 +127,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     }
                 }
                 timeBlocks[tb.block_date][safId].blocks.push({
-                    id: tb.id,
+                    id: hidden ? null : tb.id,
                     date: tb.block_date,
                     block: { id: tb.block_id, name: tb.block_name },
                 })
@@ -269,6 +280,9 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             var payload = options.saf;
 
+            // @@NOTE: editing / re-using an existing SAF: same access rule as the SAF page (oTWC_config.js: getSafAccessFilter)
+            if (payload.id && !twcConfig.isUserAllowedSaf(userInfo, payload.id)) { throw new Error('You do not have access to this SAF record'); }
+
             var earliestDate = '2099-31-12'; var latestDate = '1900-01-01'; var blockCount = 0;
             for (var d in options.accessRequirements.timeBlocks) {
                 for (var saf in options.accessRequirements.timeBlocks[d]) {
@@ -288,9 +302,14 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             if (!payload['saf-picw-staff']) { validationErrors.push(`Specify a PICW`); }
             if (payload['saf-mast-access'] == 'T' && !payload['saf-structure']) { validationErrors.push(`Specify a structure`); }
             if (payload['saf-building-access'] == 'T' && !payload['saf-accommodation']) { validationErrors.push(`Specify an accommodation`); }
+            // @@NOTE: external users must describe their changes when editing / re-submitting a SAF (logged on the SAF Log, see below)
+            var resubmitComment = (payload.resubmitComment || '').trim();
+            if (payload.id && !payload.reUse && !userInfo.isEmployee && !resubmitComment) { validationErrors.push(`Specify a comment describing the changes made to the SAF`); }
 
 
             const validateCompanyInsurance = (companyId) => {
+                // @@NOTE: a missing customer / contractor is already reported above ('Specify a customer' / 'Specify a primary contractor'), the query below would fail without an id
+                if (!parseInt(companyId)) { return; }
                 var insuranceInfo = twcUtils.getCompanyInsuranceDetails(companyId);
                 for (var k in twcUtils.Insurances) {
                     if (insuranceInfo[twcUtils.Insurances[k].field] == twcUtils.NoActiveExpired.Active) {
@@ -322,6 +341,9 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 }
             })
 
+            // @@NOTE: a missing PICW (e.g. editing a SAF whose PICW is no longer valid, so the drop down is empty) is already reported above ('Specify a PICW')
+            //         remove empty ids, the profile query would fail with 'in (,x,y)'
+            crewIds = crewIds.filter(id => { return !!parseInt(id); });
             var crew = twcUtils.getProfiles({ id: crewIds });
 
             // @@NOTE: SAF: wherever e have Climber and Rescue Climber they need to be same person
@@ -402,6 +424,13 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             // main SAF record
             var saf = twcSaf.get(payload.reUse ? null : payload.id);
+            // @@NOTE: a cancelled (or old rejected) SAF cannot be edited / re-submitted, its actions have been detached. 'Re Use' (new SAF) is still allowed
+            if (!payload.reUse && payload.id && (saf.status == twcSaf.Status.Cancelled || saf.status == twcSaf.Status.Rejected)) {
+                throw new Error(`This SAF is ${saf.statusName} and cannot be changed, please use 'Re Use' to create a new SAF`);
+            }
+            // @@NOTE: keep the old status (edit only) to log the status change caused by the re-submit
+            var oldStatus = (payload.id && !payload.reUse) ? saf.status : null;
+            var oldStatusName = (payload.id && !payload.reUse) ? saf.statusName : null;
             saf.site = payload.siteId;
             saf.r_type = payload['saf-type'];
             saf.status = options.accessRequirements.autoApprove ? twcSaf.Status.Approved : twcSaf.Status.Pending;
@@ -422,36 +451,53 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             saf.startTimeBlock = twcUtils.parsesSAFDateTime(`${earliestDate} ${twcUtils.getTimeBlockTimeRange(earliestBlock).start}`);
             saf.endTimeBlock = twcUtils.parsesSAFDateTime(`${latestDate} ${twcUtils.getTimeBlockTimeRange(latestBlock).end}`);
             saf.conditionsofAccess = b64.decode(options.conditionsOfAccessHtml);
-            saf.worksPhotosReqDelay = payload['saf-photo-delay'] || null;
+            // @@NOTE: photo req. delay: TL only field ('saf-photo-delay', data/oTWC_safUI.js), customers / contractors do not send it => keep the SAF value
+            //         empty => null (the default delay applies, twcConfig.SAF_PHOTO_REQ_DELAY_DEFAULT), 0 is a valid value
+            //         (it used to be always overwritten: an external save, or a TL edit with the empty field, cleared the delay)
+            if (payload['saf-photo-delay'] !== undefined) {
+                var photoDelay = parseInt(payload['saf-photo-delay']);
+                saf.worksPhotosReqDelay = isNaN(photoDelay) ? null : photoDelay;
+            }
+
+            // @@NOTE: an existing SAF may still point to company documents that were deleted / replaced since (company file made inactive, oTWC_companyProfileUtils.js)
+            //         NetSuite then refuses to save the SAF (invalid reference on H&S / Method Statement): the inactive files are dropped first
+            if (payload.id && !payload.reUse) {
+                saf.health_and_Safety = keepActiveFiles(saf.health_and_Safety);
+                saf.methodStatement = keepActiveFiles(saf.methodStatement);
+            }
 
             var safId = saf.save();
 
             // attachments
+            // @@NOTE: payload.documents is only sent when the documents section was loaded (ui/js/oTWC_siteAccess.js: refreshVendorDocuments)
+            //         so the selection is applied as is: nothing ticked => no H&S / Method Statement (it used to keep the old ones)
             if (payload.documents) {
 
                 saf = twcSaf.get(safId);
 
                 var docIds = [];
-                for (var d in payload.documents) { if (payload.documents[d]) { docIds.push(d.replace('file_toggle_', '')); } }
+                for (var d in payload.documents) { if (payload.documents[d]) { docIds.push(parseInt(d.replace('file_toggle_', ''))); } }
+                docIds = docIds.filter(i => { return !isNaN(i); });
 
                 try {
+                    var health_and_Safety = [];
+                    var methodStatement = [];
                     if (docIds.length > 0) {
                         var sql = `
                             select  f.id, ft.custrecord_twc_file_type_hs as health_safety, ft.custrecord_twc_file_type_method as method_stat, ft.custrecord_twc_file_type_insurance as insurance
                             from    customrecord_twc_file f
                             join    customrecord_twc_file_type ft on ft.id = f.custrecord_twc_file_type
                             where   f.id in (${docIds.join(',')})
+                            and     f.isinactive = 'F'
                         `;
 
-                        var health_and_Safety = [];
-                        var methodStatement = [];
                         coreSQL.each(sql, f => {
                             if (f.health_safety == 'T') { health_and_Safety.push(f.id); }
                             if (f.method_stat == 'T') { methodStatement.push(f.id); }
                         });
-                        saf.health_and_Safety = health_and_Safety;
-                        saf.methodStatement = methodStatement;
                     }
+                    saf.health_and_Safety = health_and_Safety;
+                    saf.methodStatement = methodStatement;
                     saf.save();
                 } catch (error) {
                     saf.logEx('Error while attaching files', error);
@@ -463,7 +509,13 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 if (payload.reUse) {
                     saf.logInfo('SAF Reused from: ' + recu.lookUp(twcSaf.Type, payload.id, 'name'));
                 } else {
-                    saf.logInfo('SAF Edited');
+                    // @@NOTE: SAF Log messages are filtered for external users, use the shared constants (data/oTWC_safLog.js: LogMessage)
+                    //         the status change is written first, then the edit (with the comment): the log is newest first so the comment shows above the status change,
+                    //         same as a TL status change / comment (editSafStatus), the order used to be reversed here (client request: consistent order)
+                    if (oldStatus && oldStatus != saf.status) {
+                        saf.logInfo(twcSafLog.LogMessage.StatusChanged, `status changed to: ${twcSaf.getSafStatusName(saf.status)} - old status: ${oldStatusName}`);
+                    }
+                    saf.logInfo(twcSafLog.LogMessage.Edited, resubmitComment || null);
                 }
             } else {
                 saf.logInfo('SAF Created');
@@ -542,6 +594,13 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             if (payload.actions) {
                 core.array.each(payload.actions, a => {
                     try {
+                        // @@NOTE: a new SAF action can only be created for a Pending EA (completed / cancelled EAs cannot be picked, see twcUtils.getSrfActions)
+                        if (payload.reUse || !a.id) {
+                            var eaStatus = coreSQL.first(`select custrecord_twc_eq_action_sts as s, name from customrecord_twc_eq_action where id = ${parseInt(a.ea_id)}`);
+                            if (eaStatus?.s != twcUtils.EqActionStatus.Pending) {
+                                throw new Error(`Eq. Action [${eaStatus?.name || a.ea_id}] is not pending, it cannot be added to the SAF`);
+                            }
+                        }
                         var action = twcSafAction.get(payload.reUse ? null : a.id);
                         action.sAF = safId;
                         action.sAF_ACTIONEA = a.ea_id;
@@ -575,12 +634,72 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
         }
 
-        function editSafStatus(options) {
+        // @@NOTE: multiselect value (array or comma separated string) => the ids of the files still active (customrecord_twc_file), as an array
+        function keepActiveFiles(value) {
+            var ids = Array.isArray(value) ? value : (value ? value.toString().split(',') : []);
+            ids = ids.map(i => { return parseInt(`${i}`.trim()); }).filter(i => { return !isNaN(i); });
+            if (ids.length == 0) { return []; }
+            var active = coreSQL.run(`select id from customrecord_twc_file where isinactive = 'F' and id in (${ids.join(',')})`).map(r => { return parseInt(r.id); });
+            return ids.filter(i => { return active.indexOf(i) >= 0; });
+        }
+
+        // @@NOTE: customers / contractors (non employees) can cancel their own SAF only when it is Pending or Approved
+        //         own SAF = the user's company is the SAF customer or primary contractor, the user also needs at least EDIT permission (VIEW is read-only)
+        //         used by the page (ui/oTWC_siteAccess_sl.js: 'Cancel SAF' button) and enforced again on the server (editSafStatus)
+        function canExternalCancelSaf(userInfo, safStatus, safCustomer, safPrimaryContractor) {
+            if (!userInfo || userInfo.isEmployee) { return false; }
+            if ((userInfo.permission?.lvl || 0) < twcConfig.PERMISSION_LEVEL.EDIT) { return false; }
+            if (safStatus != twcSaf.Status.Pending && safStatus != twcSaf.Status.Approved) { return false; }
+            var companyId = userInfo.companyProfile?.id;
+            if (!companyId) { return false; }
+            return safCustomer == companyId || safPrimaryContractor == companyId;
+        }
+
+        // @@NOTE: customers / contractors (non employees) uploading completion photos move their own SAF to 'Photos Received'
+        //         (from Awaiting Photos / Partially Complete, 'Upload Completion Photos' button, ui/js/oTWC_siteAccess.js: uploadPhotos)
+        //         same ownership / permission rules as canExternalCancelSaf, no comment allowed
+        function canExternalSetPhotosReceived(userInfo, options, saf) {
+            if (!userInfo || userInfo.isEmployee) { return false; }
+            if (options.status != twcSaf.Status.PhotosReceived || options.comment) { return false; }
+            if ((userInfo.permission?.lvl || 0) < twcConfig.PERMISSION_LEVEL.EDIT) { return false; }
+            if (saf.status != twcSaf.Status.AwaitingPhotos && saf.status != twcSaf.Status.PartiallyComplete) { return false; }
+            var companyId = userInfo.companyProfile?.id;
+            if (!companyId) { return false; }
+            return saf.customer == companyId || saf.primaryContractor == companyId;
+        }
+
+        function editSafStatus(options, userInfo) {
             var saf = twcSaf.get(options.saf);
             try {
                 var statusChanged = options.status ? saf.status != options.status : false;
                 var commentCHanged = options.comment ? saf.reviewComment != options.comment : false;
                 if (!statusChanged && !commentCHanged) { return; }
+
+                // @@NOTE: non employees can only cancel their own SAF (Pending / Approved) or set it to Photos Received after uploading completion photos,
+                //         no other status change and no comment only change (see canExternalCancelSaf / canExternalSetPhotosReceived)
+                if (!userInfo?.isEmployee) {
+                    var externalAllowed = statusChanged && (
+                        (options.status == twcSaf.Status.Cancelled && canExternalCancelSaf(userInfo, saf.status, saf.customer, saf.primaryContractor)) ||
+                        canExternalSetPhotosReceived(userInfo, options, saf)
+                    );
+                    if (!externalAllowed) {
+                        throw new Error('You do not have permissions to change the status of this SAF');
+                    }
+                }
+
+                // @@NOTE: 'Rejected' is no longer used (it had the same effect as 'Cancelled'), a cancelled (or old rejected) SAF cannot be re-opened
+                if (statusChanged && options.status == twcSaf.Status.Rejected) { throw new Error(`The 'Rejected' status is no longer used, please use 'Cancelled'`); }
+                if (statusChanged && (saf.status == twcSaf.Status.Cancelled || saf.status == twcSaf.Status.Rejected)) {
+                    throw new Error(`This SAF is ${saf.statusName}, its status cannot be changed`);
+                }
+                // @@NOTE: a comment (the reason) is mandatory when cancelling a SAF
+                if (statusChanged && options.status == twcSaf.Status.Cancelled && !(options.comment || '').trim()) {
+                    throw new Error('Please, specify a comment (reason) to cancel the SAF');
+                }
+                // @@NOTE: 'Feedback Issued' sends the SAF back to the submitter: the comment (the feedback) is mandatory, the actions stay attached (unlike Cancelled)
+                if (statusChanged && options.status == twcSaf.Status.FeedbackIssued && !(options.comment || '').trim()) {
+                    throw new Error('Please, specify the feedback (comment) for the SAF submitter');
+                }
 
                 var safRequiresSrf = twcUtils.getSafType(saf.r_type)?.requires_srf == 'T';
                 if (statusChanged && (options.status == twcSaf.Status.Cancelled || options.status == twcSaf.Status.Rejected)) {
@@ -589,7 +708,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
                 var logMsgStatus = ''; var infoStatus = '';
                 if (statusChanged) {
-                    logMsgStatus = 'status changed';
+                    logMsgStatus = twcSafLog.LogMessage.StatusChanged;
                     infoStatus = `status changed to: ${twcSaf.getSafStatusName(options.status)} - old status: ${saf.statusName}`;
                 }
 
@@ -597,7 +716,18 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     saf.status = options.status;
                     if (options.status == twcSaf.Status.Approved) {
                         saf.worksEndDate = (new Date()).addHours(12);
-                        saf.completionPhotosRequested = saf.worksEndDate.addDays(saf.worksPhotosReqDelay || 0);
+                        // @@NOTE: no delay on the SAF => default delay (same as svc/oTWC_saf_sts_update_svc.js), an explicit 0 is kept
+                        var photoDelay = parseInt(saf.worksPhotosReqDelay);
+                        if (isNaN(photoDelay)) { photoDelay = parseInt(twcConfig.SAF_PHOTO_REQ_DELAY_DEFAULT) || 0; }
+                        // @@NOTE: photos requested = the day the Awaiting Photos job moves the SAF: the day after the LAST time block + delay
+                        //         (it was the approval date + delay), fallback: approval date + delay when the SAF has no time block
+                        var lastBlockDate = coreSQL.first(`select TO_CHAR(MAX(custrecord_twc_saf_tm_blk_date), 'YYYY-MM-DD') as last_date from customrecord_twc_saf_tm_blk where custrecord_twc_saf_tm_blk_saf = ${parseInt(options.saf) || 0}`)?.last_date;
+                        if (lastBlockDate) {
+                            var p = lastBlockDate.split('-').map(x => { return parseInt(x); });
+                            saf.completionPhotosRequested = (new Date(p[0], p[1] - 1, p[2], 12)).addDays(photoDelay + 1);
+                        } else {
+                            saf.completionPhotosRequested = saf.worksEndDate.addDays(photoDelay);
+                        }
                     }
                 }
                 if (options.comment) { saf.reviewComment = options.comment; }
@@ -608,20 +738,26 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
                 if (statusChanged && options.status == twcSaf.Status.Complete) {
                     validateAndCompleteActions(options.saf);
+                    // @@NOTE: completed manually: any completion photos review still pending approval is no longer relevant
+                    saf.reviewPendingApproval = false;
+                    saf.proposedReviewComment = null;
+                    saf.proposedCompletedActions = null;
                 }
 
                 saf.save();
 
+                // @@NOTE: status changes / comments in the completion photos phase go to the Completion Photos Log (PHOTOS category)
+                var logCategory = twcSafLog.isPhotoStatus(options.status || saf.status) ? twcSafLog.LogCategory.Photos : null;
                 if (statusChanged) {
                     if (options.status == twcSaf.Status.Rejected) {
-                        saf.logWarn(logMsgStatus, infoStatus);
+                        saf.logWarn(logMsgStatus, infoStatus, null, logCategory);
                     } else {
-                        saf.logInfo(logMsgStatus, infoStatus);
+                        saf.logInfo(logMsgStatus, infoStatus, null, logCategory);
                     }
                 }
 
                 if (commentCHanged) {
-                    saf.logInfo('Comment', options.comment);
+                    saf.logInfo(twcSafLog.LogMessage.Comment, options.comment, null, logCategory);
                 }
             } catch (error) {
                 saf.logEx('Error while changing status/comments', error);
@@ -663,9 +799,11 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var safActions = coreSQL.run(`
                 select  sa.id saf_action_id, ea.id as ea_action_id, ea.name as eq_action, ea.custrecord_twc_eq_action_eq as equip_id, ea.custrecord_twc_eq_action_type as ea_type,
                         sa.custrecord_twc_saf_a_status as saf_status, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as saf_status_name,
-                        ea.custrecord_twc_eq_action_sts as ea_status, BUILTIN.DF(ea.custrecord_twc_eq_action_sts) as ea_status_name
+                        ea.custrecord_twc_eq_action_sts as ea_status, BUILTIN.DF(ea.custrecord_twc_eq_action_sts) as ea_status_name,
+                        TO_CHAR(s.${twcSaf.Fields.WORKS_END_DATE}, 'yyyy-MM-dd') as works_end_date
                 from    customrecord_twc_saf_action sa
                 join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea and ea.custrecord_twc_eq_action_saf = sa.custrecord_twc_saf_a_saf
+                join    ${twcSaf.Type} s on s.id = sa.custrecord_twc_saf_a_saf
                 where   sa.custrecord_twc_saf_a_saf = ${saf}
                 and     sa.custrecord_twc_saf_a_status in (${twcUtils.SafActionStatus.Pending}, ${twcUtils.SafActionStatus.AwaitingPhotos})
             `);
@@ -679,13 +817,53 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 recu.submit(twcSafAction.Type, sa.saf_action_id, [twcSafAction.Fields.SAF_ACTION_STATUS, twcSafAction.Fields.SAF_ACTION_COMPLETE], [twcUtils.SafActionStatus.Complete, true]);
                 recu.submit(twcEqAct.Type, sa.ea_action_id, twcEqAct.Fields.EA_STATUS, twcUtils.EaActionStatus.Complete);
 
+                // @@NOTE: installed / removed date = SAF Works End Date (set when the SAF is approved), today if not set
+                var worksEndDate = sa.works_end_date ? twcUtils.fromJsToNs(sa.works_end_date) : new Date();
                 if (sa.ea_type == twcUtils.EqActionType.Licence || sa.ea_type == twcUtils.EqActionType.SwapLicence) {
-                    recu.submit(twcEquipment.Type, sa.equip_id, twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcUtils.EqInstallStatus.Installed)
+                    recu.submit(twcEquipment.Type, sa.equip_id, [twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcEquipment.Fields.INSTALLED_DATE], [twcUtils.EqInstallStatus.Installed, worksEndDate])
+                    if (sa.ea_type == twcUtils.EqActionType.SwapLicence) { moveAtmeToSwappedTme(sa.ea_action_id, sa.equip_id); }
                 } else if (sa.ea_type == twcUtils.EqActionType.Unlicence || sa.ea_type == twcUtils.EqActionType.SwapUnlicence) {
-                    recu.submit(twcEquipment.Type, sa.equip_id, twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcUtils.EqInstallStatus.Removed)
+                    recu.submit(twcEquipment.Type, sa.equip_id, [twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS, twcEquipment.Fields.REMOVED_DATE], [twcUtils.EqInstallStatus.Removed, worksEndDate])
                 }
             })
             return !actionSkipped;
+        }
+
+        // @@IMPORTANT: TME swap: the ATMEs that are NOT swapped with it must move to the new TME (otherwise they stay on the removed panel)
+        //              runs when the new TME is installed (its Swap Licence EA completed by the SAF, see validateAndCompleteActions)
+        //                  old TME = equipment of the Swap Unlicence EA of the same SRF item
+        //                  moved   = ATMEs whose parent is the old TME, unless already removed or with an open removal / swap of their own (they go with the old TME)
+        //              swapped ATMEs need nothing: their new equipment is created with the new TME as parent (oTWC_srfWorkflowEngine.js: initEquipment)
+        function moveAtmeToSwappedTme(eaId, newTmeId) {
+            if (!eaId || !newTmeId) { return; }
+            var swap = coreSQL.first(`
+                select  old_ea.${twcEqAct.Fields.EA_EQUIPMENT} as old_tme, new_eq.${twcEquipment.Fields.EQUIPMENT_CLASS} as eq_class
+                from    ${twcEqAct.Type} new_ea
+                join    ${twcEquipment.Type} new_eq on new_eq.id = new_ea.${twcEqAct.Fields.EA_EQUIPMENT}
+                join    ${twcEqAct.Type} old_ea on old_ea.${twcEqAct.Fields.EA_SRF_ITEM} = new_ea.${twcEqAct.Fields.EA_SRF_ITEM}
+                                               and old_ea.${twcEqAct.Fields.EA_TYPE} = ${twcUtils.EqActionType.SwapUnlicence}
+                where   new_ea.id = ${parseInt(eaId)}
+            `);
+            if (!swap?.old_tme || swap.eq_class != twcUtils.SrfStepType.TME || swap.old_tme == newTmeId) { return; }
+
+            var atmes = coreSQL.run(`
+                select  eq.id
+                from    ${twcEquipment.Type} eq
+                where   eq.${twcEquipment.Fields.PARENT_TME_ID} = ${parseInt(swap.old_tme)}
+                and     eq.${twcEquipment.Fields.EQUIPMENT_CLASS} = ${twcUtils.SrfStepType.ATME}
+                and     NVL(eq.${twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS}, 0) != ${twcUtils.EqInstallStatus.Removed}
+                and     not exists (
+                            select  1
+                            from    ${twcEqAct.Type} rea
+                            where   rea.${twcEqAct.Fields.EA_EQUIPMENT} = eq.id
+                            and     rea.${twcEqAct.Fields.EA_TYPE} in (${twcUtils.EqActionType.Unlicence}, ${twcUtils.EqActionType.SwapUnlicence})
+                            and     rea.${twcEqAct.Fields.EA_STATUS} in (${twcUtils.EqActionStatus.Pending}, ${twcUtils.EqActionStatus.AlreadyRemoved}, ${twcUtils.EqActionStatus.NeverInstalled})
+                        )
+            `);
+            core.array.each(atmes, atme => {
+                recu.submit(twcEquipment.Type, atme.id, twcEquipment.Fields.PARENT_TME_ID, newTmeId);
+            });
+            core.logDebug('SWAP-MOVE-ATME', `old TME ${swap.old_tme} => new TME ${newTmeId}: ${atmes.length} ATME(s) moved`);
         }
 
         function saveSafImage(options) {
@@ -720,17 +898,90 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
         }
 
-        function setSafReviewer(options) {
+        // @@NOTE: completion photos review process (TL only):
+        //              1. an employee assigns a reviewer (setSafReviewer)
+        //              2. the reviewer reviews the photos: comment + completed actions are only PROPOSED, the SAF is flagged 'review pending approval' (setSafReviewed)
+        //              3. an approver (employee with 'Can Approve SAF Photo Reviews') amends the comment and approves (approveSafReview) or sends it back to the reviewer (sendBackSafReview)
+        //                 only on approval the actions are completed, the status changes and the comment is issued to the submitter (PHOTOS log 'status changed' + 'Comment')
+        //         all log entries go to the Completion Photos Log (PHOTOS category), only 'status changed' / 'Comment' are visible to external users
+        function setSafReviewer(options, userInfo) {
+            if (!userInfo.isEmployee) { throw new Error('You do not have permissions to assign a reviewer'); }
+            if (twcSaf.get(options.saf).reviewPendingApproval === true) { throw new Error('The review is pending approval, the reviewer cannot be changed'); }
             recu.submit(twcSaf.Type, options.saf, twcSaf.Fields.COMPLETION_REVIEWER, options.reviewer.value);
-            twcSafLog.logInfo(options.saf, `Reviewer [${options.reviewer.text}] assigned`);
+            twcSafLog.logInfo(options.saf, twcSafLog.LogMessage.ReviewerAssigned, options.reviewer.text, null, twcSafLog.LogCategory.Photos);
         }
 
-        function setSafReviewed(options) {
-            //
-            twcSafLog.logInfo(options.saf, `Completion photos reviewed`, `Comment: ${options.comment}`);
-            var completed = validateAndCompleteActions(options.saf, options.actions);
-            recu.submit(twcSaf.Type, options.saf, [twcSaf.Fields.STATUS, twcSaf.Fields.REVIEW_COMMENT], [completed ? twcSaf.Status.Complete : twcSaf.Status.PartiallyComplete, options.comment]);
+        function setSafReviewed(options, userInfo) {
+            var saf = twcSaf.get(options.saf);
+            if (!userInfo.isEmployee || saf.completionReviewer != userInfo.profile) { throw new Error('Only the assigned reviewer can review the completion photos'); }
+            if (saf.reviewPendingApproval) { throw new Error('The review is already pending approval'); }
+            var comment = (options.comment || '').trim();
+            if (!comment) { throw new Error('Please, specify a review comment'); }
+            if (!options.actions || options.actions.length == 0) { throw new Error('Please, select at least one completed action'); }
 
+            recu.submit(twcSaf.Type, options.saf,
+                [twcSaf.Fields.PROPOSED_REVIEW_COMMENT, twcSaf.Fields.PROPOSED_COMPLETED_ACTIONS, twcSaf.Fields.REVIEW_PENDING_APPROVAL],
+                [comment, JSON.stringify(options.actions.map(a => { return parseInt(a); })), true]);
+            twcSafLog.logInfo(options.saf, twcSafLog.LogMessage.PhotosReviewed, comment, null, twcSafLog.LogCategory.Photos);
+        }
+
+        function getPendingReview(safId, userInfo) {
+            if (!userInfo.canApproveSafReview) { throw new Error('You do not have permissions to approve completion photos reviews'); }
+            var saf = twcSaf.get(safId);
+            if (!saf.reviewPendingApproval) { throw new Error('There is no review pending approval for this SAF'); }
+            return saf;
+        }
+
+        // @@NOTE: data for the approver dialog (ui/js/oTWC_siteAccess.js: approveReview): proposed comment + the actions the reviewer marked as completed
+        function getPendingSafReview(options, userInfo) {
+            var saf = getPendingReview(options.saf, userInfo);
+            var actionIds = [];
+            try { actionIds = JSON.parse(saf.proposedCompletedActions || '[]').map(a => { return parseInt(a); }).filter(a => { return !isNaN(a); }); } catch (e) { actionIds = []; }
+            var actions = (actionIds.length == 0) ? [] : coreSQL.run(`
+                select  sa.id, ea.name as eq_action, BUILTIN.DF(ea.custrecord_twc_eq_action_type) as ea_type, BUILTIN.DF(ea.custrecord_twc_eq_action_eq) as equipment
+                from    customrecord_twc_saf_action sa
+                join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea
+                where   sa.id in (${actionIds.join(',')})
+            `);
+            return {
+                comment: saf.proposedReviewComment || '',
+                reviewer: saf.completionReviewerName || '',
+                actions: actions
+            }
+        }
+
+        function approveSafReview(options, userInfo) {
+            var saf = getPendingReview(options.saf, userInfo);
+            var comment = (options.comment || '').trim();
+            if (!comment) { throw new Error('Please, specify a review comment'); }
+
+            var actions = [];
+            try { actions = JSON.parse(saf.proposedCompletedActions || '[]'); } catch (e) { actions = []; }
+            if (actions.length == 0) { throw new Error('The review has no completed actions, please send it back to the reviewer'); }
+
+            var oldStatusName = saf.statusName;
+            var completed = validateAndCompleteActions(options.saf, actions);
+            var newStatus = completed ? twcSaf.Status.Complete : twcSaf.Status.PartiallyComplete;
+
+            // @@NOTE: the proposal is cleared on approval: 'not pending + proposed comment' means the review was sent back (badge in ui/oTWC_siteAccess_sl.js)
+            recu.submit(twcSaf.Type, options.saf,
+                [twcSaf.Fields.STATUS, twcSaf.Fields.REVIEW_COMMENT, twcSaf.Fields.REVIEW_PENDING_APPROVAL, twcSaf.Fields.REVIEW_APPROVED_BY, twcSaf.Fields.REVIEW_APPROVED_DATE, twcSaf.Fields.PROPOSED_REVIEW_COMMENT, twcSaf.Fields.PROPOSED_COMPLETED_ACTIONS],
+                [newStatus, comment, false, userInfo.profile || null, new Date(), null, null]);
+
+            var photos = twcSafLog.LogCategory.Photos;
+            twcSafLog.logInfo(options.saf, twcSafLog.LogMessage.ReviewApproved, (comment != (saf.proposedReviewComment || '').trim()) ? `Comment amended by the approver` : null, null, photos);
+            // @@NOTE: these two are visible to the submitter
+            twcSafLog.logInfo(options.saf, twcSafLog.LogMessage.StatusChanged, `status changed to: ${twcSaf.getSafStatusName(newStatus)} - old status: ${oldStatusName}`, null, photos);
+            twcSafLog.logInfo(options.saf, twcSafLog.LogMessage.Comment, comment, null, photos);
+        }
+
+        function sendBackSafReview(options, userInfo) {
+            getPendingReview(options.saf, userInfo);
+            var note = (options.note || '').trim();
+            if (!note) { throw new Error('Please, specify a note for the reviewer'); }
+            // @@NOTE: the proposed comment / actions are kept so the reviewer can amend them
+            recu.submit(twcSaf.Type, options.saf, twcSaf.Fields.REVIEW_PENDING_APPROVAL, false);
+            twcSafLog.logInfo(options.saf, twcSafLog.LogMessage.ReviewSentBack, note, null, twcSafLog.LogCategory.Photos);
         }
 
         function getSafTimeBlocks(id) {
@@ -745,14 +996,20 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
         function detachSafAction(payload) {
             //throw new Error(JSON.stringify(payload));
 
-            var safActionId = coreSQL.first(`
-                select  id
-                from    customrecord_twc_saf_action
-                where   custrecord_twc_saf_a_saf = ${payload.saf}
-                and     custrecord_twc_saf_a_ea = ${payload.id}
-            `)?.id;
+            var safAction = coreSQL.first(`
+                select  sa.id, sa.custrecord_twc_saf_a_status as status, ea.custrecord_twc_eq_action_sts as ea_status, ea.name as ea_name
+                from    customrecord_twc_saf_action sa
+                join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea
+                where   sa.custrecord_twc_saf_a_saf = ${parseInt(payload.saf)}
+                and     sa.custrecord_twc_saf_a_ea = ${parseInt(payload.id)}
+            `);
+            var safActionId = safAction?.id;
 
             if (!safActionId) { throw new Error(`No SAF Action found for saf [${payload.saf} and eq. act [${payload.id}]`) }
+            // @@NOTE: only pending actions can be detached (a completed action must never be re-opened, see twcUtils.getSrfActions)
+            if (safAction.status != twcUtils.SafActionStatus.Pending || safAction.ea_status != twcUtils.EqActionStatus.Pending) {
+                throw new Error(`Eq. Action [${safAction.ea_name}] is not pending, it cannot be detached from its SAF`);
+            }
 
             recu.submit(twcSafAction.Type, safActionId,
                 [twcSafAction.Fields.SAF_ACTION_STATUS, twcSafAction.Fields.DETACH_REASON, twcSafAction.Fields.DETACH_COMMENT],
@@ -760,6 +1017,56 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             )
 
             recu.submit(twcEqAct.Type, payload.id, twcEqAct.Fields.EA_SAF, null);
+        }
+
+        // @@NOTE: TL detach from the SAF view page (oTWC_siteAccess.js: TWCSiteAccessPage.detachSafActionTL), whatever the SAF status
+        //         no edit / re-submit: the SAF status does not change, only the action is detached (and the equipment action freed for another SAF)
+        //         only pending actions (detachSafAction): completed work is never re-opened
+        function detachSafActionTL(payload, userInfo) {
+            if (!userInfo.isEmployee || !(userInfo.permission?.lvl > twcConfig.PERMISSION_LEVEL.VIEW)) { throw new Error('You do not have permission to detach equipment actions'); }
+            if (!parseInt(payload.saf) || !parseInt(payload.id)) { throw new Error('invalid parameters passed'); }
+            if (!payload.reason) { throw new Error('Please, specify the detach reason'); }
+            var reason = twcUtils.getSafActionDetachReason().find(r => { return r.value == payload.reason; });
+            if (!reason) { throw new Error('Invalid detach reason'); }
+            if (reason.force_comm == 'T' && !(payload.comment || '').trim()) { throw new Error('Please, specify the detach comment'); }
+
+            // @@NOTE: the related actions (ATME / Feeders of a TME) are read before the parent is detached
+            var related = getRelatedSafActions(payload.saf, payload.id);
+
+            detachSafAction(payload);
+
+            var saf = twcSaf.get(payload.saf);
+            var logInfo = `${reason.text}${payload.comment ? `: ${payload.comment}` : ''}`;
+            var parentName = recu.lookUp(twcEqAct.Type, payload.id, 'name');
+            saf.logInfo(`Eq. Action [${parentName}] detached by TL`, logInfo);
+
+            // @@NOTE: detaching a TME detaches its related ATME / Feeders on the same SAF too (same reason / comment)
+            //         only the pending ones (detachSafAction rule), the others stay and are reported back
+            var skipped = [];
+            core.array.each(related, r => {
+                if (r.status != twcUtils.SafActionStatus.Pending || r.ea_status != twcUtils.EqActionStatus.Pending) {
+                    if (r.status != twcUtils.SafActionStatus.Detached) { skipped.push(r.ea_name); }
+                    return;
+                }
+                detachSafAction({ saf: payload.saf, id: r.ea_id, reason: payload.reason, comment: payload.comment });
+                saf.logInfo(`Eq. Action [${r.ea_name}] detached by TL (related to [${parentName}])`, logInfo);
+            });
+
+            return { status: 'success', skipped: skipped };
+        }
+
+        // @@NOTE: SAF actions related to the given eq. action on the same SAF: the ATME / Feeders whose SRF item is a child of the eq. action SRF item (custrecord_twc_srf_itm_tme_srf)
+        //         same parent / child link as the SAF equipment actions table (twcUtils.getSafActions: parent_srf_item)
+        function getRelatedSafActions(safId, eqActionId) {
+            return coreSQL.run(`
+                select  sa.id, sa.custrecord_twc_saf_a_status as status, ea.id as ea_id, ea.name as ea_name, ea.custrecord_twc_eq_action_sts as ea_status
+                from    customrecord_twc_saf_action sa
+                join    customrecord_twc_eq_action ea on ea.id = sa.custrecord_twc_saf_a_ea
+                join    customrecord_twc_srf_itm srfi on srfi.id = ea.custrecord_twc_eq_action_srf_item
+                where   sa.custrecord_twc_saf_a_saf = ${parseInt(safId)}
+                and     srfi.custrecord_twc_srf_itm_tme_srf = (select pea.custrecord_twc_eq_action_srf_item from customrecord_twc_eq_action pea where pea.id = ${parseInt(eqActionId)})
+                order by ea.id
+            `);
         }
 
         function deleteSaf(safId) {
@@ -801,7 +1108,9 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     if (!saf) { throw new Error(`No SAF found using id ${pageData.recId}`) }
                     saf.siteId = saf[twcSaf.Fields.SITE];
 
-                    if (!twcConfig.isUserAllowedCustomers(pageData.userInfo, saf[twcSaf.Fields.CUSTOMER])) {
+                    // @@NOTE: customer / primary contractor / agent pass rules (oTWC_config.js: getSafAccessFilter), also applies to 'Re Use'
+                    //         (it used to follow the company ACL: agent pass users could open any SAF of the customer)
+                    if (!twcConfig.isUserAllowedSaf(pageData.userInfo, pageData.recId)) {
                         throw new Error('You do not have access to see this SAF record');
                     }
 
@@ -838,10 +1147,15 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             saveNewSaf: saveNewSaf,
             editSafStatus: editSafStatus,
+            canExternalCancelSaf: canExternalCancelSaf,
             saveSafImage: saveSafImage,
             setSafReviewer: setSafReviewer,
             setSafReviewed: setSafReviewed,
+            getPendingSafReview: getPendingSafReview,
+            approveSafReview: approveSafReview,
+            sendBackSafReview: sendBackSafReview,
             getSafTimeBlocks: getSafTimeBlocks,
+            detachSafActionTL: detachSafActionTL,
 
 
             deleteSaf: deleteSaf

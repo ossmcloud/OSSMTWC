@@ -2,8 +2,11 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_config.js', './oTWC_file.js', './oTWC_fileType.js', './oTWC_site.js', './oTWC_icons.js'],
-    (core, cored, coreSQL, twcConfig, twcFile, twcFileType, twcSite, twcIcons) => {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.date.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_config.js', './oTWC_file.js', './oTWC_fileType.js', './oTWC_site.js', './oTWC_icons.js', './oTWC_profileCompany.js'],
+    (core, cored, coreSQL, twcConfig, twcFile, twcFileType, twcSite, twcIcons, twcProfileCompany) => {
+
+
+
         const HEIGH_LIMIT_FOR_1_CLIMBER = 60;
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
@@ -59,7 +62,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var res = [];
                 for (var k in EQ_INSTALL_STATUS) {
                     if (k == 'lookUp') { continue; }
-                    res.push({value: EQ_INSTALL_STATUS[k], text: k})
+                    res.push({ value: EQ_INSTALL_STATUS[k], text: k })
                 }
                 return res;
             }
@@ -69,17 +72,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Draft: 1,
             ReqtoLicence: 2,
             ProptoLicence: 3,
-            ProptoLicence_LicenceRequested: 4,
-            ProptoLicence_LicenceIssued: 5,
+            // @@NOTE: RETIRED (Issue 299): the 'Prop to Licence / Unlicence - Licence Requested / Issued / Signed' values are no longer set (the equipment stays Prop to Licence / Unlicence
+            //         until the licence is executed, see oTWC_srfWorkflowEngine.js: updateEquipment), commented out so they are not offered in drop downs (lookUp)
+            // ProptoLicence_LicenceRequested: 4,          // RETIRED (Issue 299)
+            // ProptoLicence_LicenceIssued: 5,             // RETIRED (Issue 299)
             Licenced: 6,
             ReqtoUnlicence: 7,
             ProptoUnlicence: 8,
-            ProptoUnlicence_LicenceRequested: 9,
-            ProptoUnlicence_LicenceIssued: 10,
+            // ProptoUnlicence_LicenceRequested: 9,        // RETIRED (Issue 299)
+            // ProptoUnlicence_LicenceIssued: 10,          // RETIRED (Issue 299)
             Unlicenced: 11,
             Cancelled: 12,
-            LicenceRetained: 13,
-            LicenceSwapped: 14,
+            LicenceRetained: twcConfig.SB ? 13 : 101,
+            LicenceSwapped: twcConfig.SB ? 14 : 102,
 
             lookUp: () => {
                 var res = [];
@@ -90,6 +95,17 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return res;
             }
         }
+
+        // @@NOTE: 'inactive' equipment = neither licenced nor installed, hidden by the 'Hide Inactive' toggle on the equipment lists
+        //         (site equipment page: data/oTWC_equipmentUI.js: getSiteEquipment, equipment locator: ui/modules/oTWC_inventoryUtils.js: getInventoryData)
+        //         licence status Unlicenced / Licence Swapped / Cancelled AND install status Not Installed / Removed / Cancelled
+        const EQ_INACTIVE_LICENCE_STATUS = [EQ_LICENSE_STATUS.Unlicenced, EQ_LICENSE_STATUS.LicenceSwapped, EQ_LICENSE_STATUS.Cancelled];
+        const EQ_INACTIVE_INSTALL_STATUS = [EQ_INSTALL_STATUS.NotInstalled, EQ_INSTALL_STATUS.Removed, EQ_INSTALL_STATUS.Cancelled];
+        function isEquipmentInactive(licenceStatus, installStatus) {
+            return EQ_INACTIVE_LICENCE_STATUS.indexOf(parseInt(licenceStatus)) >= 0
+                && EQ_INACTIVE_INSTALL_STATUS.indexOf(parseInt(installStatus)) >= 0;
+        }
+
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const CUSTOMER_FLAG = {
@@ -112,7 +128,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Pending: 4,
             // Approved: 5,
             ToBeRenewed: 6,
-            No: 7
+            No: twcConfig.SB ? 7 : 101
         }
         const COMPANY_ACCREDITATION_STATUS_STYLE = {
             Inactive: { color: 'white', backgroundColor: 'silver' },
@@ -149,10 +165,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `
         }
 
-          const COMPANY_INSURANCE_FIELDS = {
-            EL: { field: 'custrecord_twc_co_el_status', fieldEx: 'custrecord_twc_co_el_expiry', fieldLimit: 'custrecord_twc_co_el_limit', fieldAvailable: 'custrecord_twc_co_el_available_typ', fieldCurrency: 'custrecord_twc_co_el_limit_cur', code: 'el', fieldFile : 'custrecord_twc_co_el_inc_file' },
-            PL: { field: 'custrecord_twc_co_pl_status', fieldEx: 'custrecord_twc_co_pl_expiry', fieldLimit: 'custrecord_twc_co_pl_limit', fieldAvailable: 'custrecord_twc_co_pl_available_typ', fieldCurrency: 'custrecord_twc_co_pl_limit_cur', code: 'pl', fieldFile : 'custrecord_twc_co_pl_inc_file' },
-            PI: { field: 'custrecord_twc_co_pi_status', fieldEx: 'custrecord_twc_co_pi_expiry', fieldLimit: 'custrecord_twc_co_pi_limit', fieldAvailable: 'custrecord_twc_co_pi_available_typ', fieldCurrency: 'custrecord_twc_co_pi_limit_cur', code: 'pi', fieldFile : 'custrecord_twc_co_pi_inc_file' },
+        const COMPANY_INSURANCE_FIELDS = {
+            EL: { field: 'custrecord_twc_co_el_status', fieldEx: 'custrecord_twc_co_el_expiry', fieldLimit: 'custrecord_twc_co_el_limit', fieldAvailable: 'custrecord_twc_co_el_available_typ', fieldCurrency: 'custrecord_twc_co_el_limit_cur', code: 'el', fieldFile: 'custrecord_twc_co_el_inc_file' },
+            PL: { field: 'custrecord_twc_co_pl_status', fieldEx: 'custrecord_twc_co_pl_expiry', fieldLimit: 'custrecord_twc_co_pl_limit', fieldAvailable: 'custrecord_twc_co_pl_available_typ', fieldCurrency: 'custrecord_twc_co_pl_limit_cur', code: 'pl', fieldFile: 'custrecord_twc_co_pl_inc_file' },
+            PI: { field: 'custrecord_twc_co_pi_status', fieldEx: 'custrecord_twc_co_pi_expiry', fieldLimit: 'custrecord_twc_co_pi_limit', fieldAvailable: 'custrecord_twc_co_pi_available_typ', fieldCurrency: 'custrecord_twc_co_pi_limit_cur', code: 'pi', fieldFile: 'custrecord_twc_co_pi_inc_file' },
         }
         const COMPANY_INSURANCE_AVAILABLE_TYPE = {
             NA: 1,
@@ -367,6 +383,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             REMOVE: 2,
             SWAP: 3
         }
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids (customrecord_twc_lic_mech)
+        const SRF_LICENCE_MECHANISM = {
+            Online: 1,
+            Traditional: 2
+        }
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SRF_STATUS = {
             Draft: 11,
@@ -377,10 +398,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SRFApproved: 5,
             LicenceRequested: 6,
             LicenceIssued: 8,
-            LicenceSigned: 12,
+            LicenceSigned: twcConfig.SB ? 12 : 101,
             LicenceExecuted: 9,
             SRFCancelled: 10,
-            Completed: 13
+            Completed: twcConfig.SB ? 13 : 201
         }
         // @@REVIEW: these could be on the status table since we have one
         const SRF_STATUS_STYLE = {
@@ -429,13 +450,31 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 </span>
             `
         }
+        // @@NOTE: 'Works Permitted' flag (client request): set when TL enters the Works Permitted Date on the SRF Workflow
+        //         tells customers / contractors they can submit the Construction SAF (on Radix this was an SRF status, on Nexus the status tracks the licence)
+        //         worksPermittedDate: yyyy-MM-dd (or empty = no flag)
+        function getSrfWorksPermittedHtml(worksPermittedDate, spanClass) {
+            if (!worksPermittedDate) { return ''; }
+            var dateText = worksPermittedDate;
+            var dateParts = worksPermittedDate.split('-');
+            if (dateParts.length == 3) { dateText = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`; }
+            return `<span class="${spanClass ? spanClass : 'twc-record-status'}" style="color: white; background-color: darkgreen; white-space: nowrap;" title="Works Permitted on ${dateText}">Works Permitted</span>`;
+        }
 
+
+        // @@HARDCODED @@GO-LIVE :: these map to internal ids (customrecord_twc_package, equipment field custrecord_twc_equip_package)
+        const EQ_PACKAGE = {
+            Yes: 1,
+            No: 2
+        }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SDS_STATUS = {
             Draft: 1,
             Current: 2,
-            Superseded: 3
+            Superseded: 3,
+            // @@HARDCODED @@GO-LIVE :: 'Cancelled' value on customrecord_twc_sds_status (SRF cancelled at a licence stage, oTWC_srfWorkflowEngine.js: cancelSrf)
+            Cancelled: 4
         }
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
@@ -446,7 +485,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         // @@HARDCODED @@GO-LIVE :: these map to internal ids
         const SRF_DEFAULT_FILE_TYPE = {
-            id: 12,     // SRF Attachment
+            id: twcConfig.SB ? 12 : 109,     // SRF Attachment
             status: 5   // N/A
         }
 
@@ -460,7 +499,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Complete: 5,
             Cancelled: 6,
             AwaitingPhotos: 7,
-            PhotosReceived: 8
+            PhotosReceived: 8,
+            // @@HARDCODED @@GO-LIVE :: 'Feedback Issued' (replaces 'Rejected', which is kept only for old SAFs): TL sends the SAF back to the submitter with a comment, the submitter can edit and re-submit
+            FeedbackIssued: twcConfig.SB ? 9 : 101
         }
         // @@TOD: these could be on the status table since we have one
         const SAF_STATUS_STYLE = {
@@ -472,6 +513,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Cancelled: { color: 'white', backgroundColor: 'silver' },
             AwaitingPhotos: { color: 'white', backgroundColor: 'orange' },
             PhotosReceived: { color: 'mediumblue', backgroundColor: 'limegreen' },
+            FeedbackIssued: { color: 'white', backgroundColor: 'crimson' },
         }
         function getSafStatusName(safStatusNumber, asObject) {
             if (!safStatusNumber) { safStatusNumber = 1; }
@@ -479,7 +521,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 if (SAF_STATUS[k] == safStatusNumber) {
                     if (asObject) {
 
-                        return { value: safStatusNumber, text: k, forceComment: safStatusNumber == SAF_STATUS.Rejected }
+                        // @@NOTE: a comment is mandatory when cancelling a SAF or issuing feedback (also enforced on the server: oTWC_siteAccessUtils.js editSafStatus). Rejected is no longer used
+                        return { value: safStatusNumber, text: k, forceComment: safStatusNumber == SAF_STATUS.Rejected || safStatusNumber == SAF_STATUS.Cancelled || safStatusNumber == SAF_STATUS.FeedbackIssued }
                     }
                     return k;
                 }
@@ -539,7 +582,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             Assessed: 2,
             Resolved: 3,
             Cancelled: 4,
-            InProgress : 5
+            InProgress: twcConfig.SB ? 5 : 101
         }
 
         const TKT_STATUS_STYLE = {
@@ -695,6 +738,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
         function getCurrencies() {
             return getLookUpTableValues('currency');
+        }
+
+        // @@NOTE: 'Modified Antenna Location' options (OSSMTWC - SRF Item Location Type), used by SRF items and equipment. Inactive values (Mast, Monopole, Pole) are excluded
+        function getSrfItemLocationTypes() {
+            return getLookUpTableValues('customrecord_twc_srf_itm_loc_type');
         }
 
         function getVoltageTypes() {
@@ -900,7 +948,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             if (options.srf) {
                 // @@NOTE: for SRF the accreditation status does not apply
                 additionalFilters = '';
-                additionalFilters += ` and c.custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer} `
+                if (options.includeContractors) {
+                    // @@NOTE: SRF locator 'Submitter Company' filter (getCompaniesSrf): customers OR contractors (an SRF can be submitted by a contractor on behalf of a customer)
+                    additionalFilters += ` and (c.custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer} or c.custrecord_twc_con_flag = ${CONTRACTOR_FLAG.Contractor}) `
+                } else {
+                    additionalFilters += ` and c.custrecord_twc_cus_flag = ${CUSTOMER_FLAG.Customer} `
+                }
 
                 if (!options.isEmployee) {
                     var agentPasses = [];
@@ -1077,6 +1130,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getCompaniesSrf(userInfo) {
             var o = JSON.parse(JSON.stringify(userInfo));
             o.srf = true;
+            o.includeContractors = true;
             return getCompanies(o);
         }
 
@@ -1084,7 +1138,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getProfiles(options) {
             var filters = '';
             if (options.company) {
-                filters = `where custrecord_twc_prof_company = ${options.company}`
+                // @@NOTE: include profiles linked to the company (customrecord_twc_profilec) as well as the ones with the company as home company
+                filters = `where ${twcProfileCompany.getProfileCompanyWhere(options.company)}`
             } else if (options.id) {
                 if (Array.isArray(options.id)) {
                     if (options.id.length == 0) { return []; }
@@ -1248,12 +1303,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 where   srf.custrecord_twc_srf_site = ${options.siteId}
                 and     srf.custrecord_twc_srf_cust = ${options.customer}
                 and     srf.custrecord_twc_srf_permit_date is not null
-                order by srf.custrecord_twc_srf_app_date desc
+                and     exists (select 1 from customrecord_twc_eq_action ea where ea.custrecord_twc_eq_action_srf = srf.id and ea.custrecord_twc_eq_action_sts = ${EQ_ACTION_STATUS.Pending})
+                order by srf.id desc
             `, srf => {
+                // @@NOTE: SRF number @ site only (client request): the application date (custrecord_twc_srf_app_date) is never set by the portal (it showed [null]) and the customer is the SAF one
+                //         ordered newest first (it was by application date, always empty)
                 siteSrfs.push({
                     value: srf.value,
-                    text: `${srf.name} [${srf.date}] ${srf.customer} @ ${srf.site}`,
-                    text_render: `<b>${srf.name}</b> [${srf.date}] <i>${srf.customer}</i> @ ${srf.site}`
+                    text: `${srf.name} @ ${srf.site}`,
+                    text_render: `<b>${srf.name}</b> @ ${srf.site}`
                 })
             })
             return siteSrfs;
@@ -1262,6 +1320,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getSrfActions(options) {
             //var safFilter = (options.saf) ? `and custrecord_twc_eq_action_saf = ${options.saf}` : 'and custrecord_twc_eq_action_saf is null';
             var safFilter = (options.saf) ? `and custrecord_twc_eq_action_saf = ${options.saf}` : '';
+            // @@NOTE: eq_parent_tme / eq_make / eq_model: equipment parent TME / make / model (client request, to identify the kit), also returned by getSafActions (same columns)
             var srfActions = [];
             coreSQL.each(`
                 select  a.id as ea_id, a.custrecord_twc_eq_action_sts as custrecord_twc_saf_a_status, BUILTIN.DF(a.custrecord_twc_eq_action_sts) as custrecord_twc_saf_a_status_name,
@@ -1284,7 +1343,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         case when a.custrecord_twc_eq_action_type = ${EQ_ACTION_TYPE.Unlicence} then BUILTIN.DF(e.custrecord_twc_equip_opt_type) else BUILTIN.DF(srfi.custrecord_twc_srf_itm_type_opt) end as custrecord_twc_srf_itm_type_opt_name,
 
                         srfi.custrecord_twc_srf_itm_tme_srf as parent_srf_item,
-                        srfi.id as srf_item
+                        srfi.id as srf_item,
+                        BUILTIN.DF(e.custrecord_twc_equip_parent_tme_id) as eq_parent_tme, e.custrecord_twc_equip_make as eq_make, e.custrecord_twc_equip_model as eq_model
                 from    customrecord_twc_eq_action a
                 join 	customrecord_twc_srf_itm srfi on srfi.id = a.custrecord_twc_eq_action_srf_item
                 join    customrecord_twc_equip e on e.id = a.custrecord_twc_eq_action_eq
@@ -1295,7 +1355,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             `, action => {
                 if (options.thisSaf && options.thisSaf == action['custrecord_twc_eq_action_saf']) { return; }
 
-                if (action['custrecord_twc_eq_action_saf']) {
+                // @@IMPORTANT: the EA status is checked FIRST: only Pending EAs can be picked by a SAF or detached from another SAF
+                //              (e.g. 'Complete': already done by its SAF, 'Never Installed' / 'Already Removed': removing equipment that is not on site, 'Cancelled')
+                //              a completed EA used to show 'detach from <SAF>': detaching it re-opened completed work on the other SAF and attached a completed action to this one
+                if (action['custrecord_twc_saf_a_status'] != EQ_ACTION_STATUS.Pending) {
+                    action.select = (action['custrecord_twc_eq_action_saf']) ? `<span style="font-size: 0.8em; font-style: italic;">${action['custrecord_twc_saf_a_status_name']} on<br />${action['custrecord_twc_eq_action_saf_name']}</span>` : '';
+                } else if (action['custrecord_twc_eq_action_saf']) {
                     action.select = `<span data-id="${action.ea_id}" data-srf-id="${action.srf_item}" data-srf-parent-id="${action.parent_srf_item || ''}" data-saf="${action['custrecord_twc_eq_action_saf']}" class="o-table-action twc-clickable" data-action="detach">detach from<br />${action['custrecord_twc_eq_action_saf_name']}</span>`;
                 } else {
                     action.select = `<input data-id="${action.ea_id}" data-srf-id="${action.srf_item}" data-srf-parent-id="${action.parent_srf_item || ''}" type="checkbox" />`;
@@ -1341,7 +1406,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             coreSQL.each(`
                 select  sa.id, 
                         sa.custrecord_twc_saf_a_status, BUILTIN.DF(sa.custrecord_twc_saf_a_status) as custrecord_twc_saf_a_status_name,
-                        a.id as ea_id, BUILTIN.DF(custrecord_twc_srf_itm_srf) as custrecord_twc_srf_itm_srf_name, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
+                        a.id as ea_id, custrecord_twc_srf_itm_srf, BUILTIN.DF(custrecord_twc_srf_itm_srf) as custrecord_twc_srf_itm_srf_name, BUILTIN.DF(custrecord_twc_eq_action_saf) as saf,
                         a.custrecord_twc_eq_action_eq, BUILTIN.DF(a.custrecord_twc_eq_action_eq) as custrecord_twc_eq_action_eq_name,
                         a.custrecord_twc_eq_action_type, BUILTIN.DF(custrecord_twc_eq_action_type) as custrecord_twc_eq_action_type_name,
                         
@@ -1353,7 +1418,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         case when a.custrecord_twc_eq_action_type = ${EQ_ACTION_TYPE.Unlicence} then e.custrecord_twc_equip_azimuth                  else srfi.custrecord_twc_srf_itm_azimuth                    end as custrecord_twc_srf_itm_azimuth,
                         case when a.custrecord_twc_eq_action_type = ${EQ_ACTION_TYPE.Unlicence} then e.custrecord_twc_equip_b_end                    else srfi.custrecord_twc_srf_itm_b_end                      end as custrecord_twc_srf_itm_b_end,
                         case when a.custrecord_twc_eq_action_type = ${EQ_ACTION_TYPE.Unlicence} then BUILTIN.DF(e.custrecord_twc_equip_opt_type)     else BUILTIN.DF(srfi.custrecord_twc_srf_itm_type_opt)       end as custrecord_twc_srf_itm_type_opt_name,
-                        srfi.custrecord_twc_srf_itm_tme_srf as parent_srf_item, srfi.id as srf_item
+                        srfi.custrecord_twc_srf_itm_tme_srf as parent_srf_item, srfi.id as srf_item,
+                        BUILTIN.DF(e.custrecord_twc_equip_parent_tme_id) as eq_parent_tme, e.custrecord_twc_equip_make as eq_make, e.custrecord_twc_equip_model as eq_model
                 from    customrecord_twc_saf_action sa
                 join    customrecord_twc_eq_action a on a.id = sa.custrecord_twc_saf_a_ea
                 join 	customrecord_twc_srf_itm srfi on srfi.id = a.custrecord_twc_eq_action_srf_item
@@ -1362,7 +1428,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 ${actionStatusFilter}
                 order by srfi.id 
             `, action => {
-                action['saf-detach'] = (action['custrecord_twc_saf_a_status'] == SAF_ACTION_STATUS.Pending) ? '<span class="o-table-action twc-clickable" data-action="detach">detach</span>' : '';
+                // @@NOTE: data-id (eq. action id) is used by the SAF view page (TL detach, oTWC_siteAccess.js: TWCSiteAccessPage.detachSafActionTL), the builder uses the row data
+                action['saf-detach'] = (action['custrecord_twc_saf_a_status'] == SAF_ACTION_STATUS.Pending) ? `<span class="o-table-action twc-clickable" data-action="detach" data-id="${action.ea_id}">detach</span>` : '';
 
                 if (saf.showSelect) {
                     action.select = `<input data-id="${action.id}" data-srf-id="${action.srf_item}" data-srf-parent-id="${action.parent_srf_item || ''}" type="checkbox" />`;
@@ -1557,13 +1624,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         function getTicketPriority() {
             return getLookUpTableValues('customrecord_twc_trbl_tkt_priority');
         }
-        function getTktProfiles(){
-                return coreSQL.run(`select id as value, name as text from customrecord_twc_prof where isinactive = 'F'`)
+        function getTktProfiles() {
+            return coreSQL.run(`select id as value, name as text from customrecord_twc_prof where isinactive = 'F'`)
         }
-        function getTktCompanyProfiles(author){
-                var compProfile = author? coreSQL.run(`SELECT custrecord_twc_prof_company
-                              FROM customrecord_twc_prof WHERE id = ${author} AND isinactive = 'F'`): []
-                return compProfile.length ? compProfile[0].custrecord_twc_prof_company : null
+        function getTktCompanyProfiles(author) {
+            var compProfile = author ? coreSQL.run(`SELECT custrecord_twc_prof_company
+                              FROM customrecord_twc_prof WHERE id = ${author} AND isinactive = 'F'`) : []
+            return compProfile.length ? compProfile[0].custrecord_twc_prof_company : null
         }
 
         function getInventoryStatus() {
@@ -1586,7 +1653,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         }
 
         function getRaisedOnBehalf() {
-            return getLookUpTableValues('customrecord_twc_company',"and custrecord_twc_cus_flag = 1");
+            return getLookUpTableValues('customrecord_twc_company', "and custrecord_twc_cus_flag = 1");
         }
 
         // @@NOTE: Length / Width / Depth (mm) shown as a single 'L/W/D' column, e.g.: '600 / 300 / 150' (missing values as '-', all missing => '')
@@ -1599,8 +1666,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
 
         return {
+            SB: twcConfig.SB,
             // @@HARDCODED:
-            TWC_COMPANY: 57,
+            TWC_COMPANY: twcConfig.SB ? 57 : 65,
 
             ROOT_FILE_FOLDER: 'TL Files', // @@NOTE: this is duplicated on twc_confog.js
             HEIGH_LIMIT_FOR_1_CLIMBER: HEIGH_LIMIT_FOR_1_CLIMBER,
@@ -1616,6 +1684,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             EqActionType: EQ_ACTION_TYPE,
             EqInstallStatus: EQ_INSTALL_STATUS,
             EqLicenseStatus: EQ_LICENSE_STATUS,
+            isEquipmentInactive: isEquipmentInactive,
 
             CustomerFlag: CUSTOMER_FLAG,
             ContractorFlag: CONTRACTOR_FLAG,
@@ -1649,10 +1718,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             SrfStepType: SRF_ITEM_STEP_TYPE,
             SrfRequestType: SRF_ITEM_REQUEST_TYPE,
             SrfStatus: SRF_STATUS,
+            SrfLicenceMechanism: SRF_LICENCE_MECHANISM,
             SrfReviewStatus: SRF_REVIEW_STATUS,
             SrfDeafultFileType: SRF_DEFAULT_FILE_TYPE,
 
             SdsStatus: SDS_STATUS,
+            EqPackage: EQ_PACKAGE,
 
             getFileStatusName: getFileStatusName,
             getFileStatusHtml: getFileStatusHtml,
@@ -1669,19 +1740,20 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getSrfStatusName: getSrfStatusName,
             getSrfStatusStyle: getSrfStatusStyle,
             getSrfStatusHtml: getSrfStatusHtml,
+            getSrfWorksPermittedHtml: getSrfWorksPermittedHtml,
             getSrfRevenueImpact: getSrfRevenueImpact,
 
             getSafStatusName: getSafStatusName,
             getSafStatusStyle: getSafStatusStyle,
             getSafStatusHtml: getSafStatusHtml,
 
-            getNSCustomers :getNSCustomers,
+            getNSCustomers: getNSCustomers,
             tktStatus: TKT_STATUS,
             getTktStatusName: getTktStatusName,
             getTktStatusStyle: getTktStatusStyle,
             getTktStatusHtml: getTktStatusHtml,
             getTktProfiles: getTktProfiles,
-            getTktCompanyProfiles:getTktCompanyProfiles,
+            getTktCompanyProfiles: getTktCompanyProfiles,
             getRaisedOnBehalf: getRaisedOnBehalf,
 
             tktPriority: TKT_PRIORITY,
@@ -1723,7 +1795,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getVendors: getVendors,
             getEquipmentIds: getEquipmentIds,
             getEquipmentStatus: getEquipmentStatus,
-            getEquipmentClass:getEquipmentClass,
+            getEquipmentClass: getEquipmentClass,
             getSafIds: getSafIds,
             getSrfIds: getSrfIds,
             getSrfStatus: getSrfStatus,
@@ -1740,6 +1812,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getOperatorSiteId: getOperatorSiteId,
 
             getVoltageTypes: getVoltageTypes,
+            getSrfItemLocationTypes: getSrfItemLocationTypes,
 
             formatLongDate: formatLongDate,
             fromJsToNs: fromJsToNs,

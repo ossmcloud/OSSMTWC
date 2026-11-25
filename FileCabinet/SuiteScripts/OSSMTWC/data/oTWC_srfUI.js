@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItem.js', './oTWC_srfItemUI.js', './oTWC_fileUI.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfReview.js', './oTWC_equipment.js'],
-    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItem, twcSrfItemUI, twcFileUI, configUIFields, twcUI, twcSrfReview, twcEq) => {
+define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', './oTWC_utils.js', './oTWC_srf.js', './oTWC_srfItem.js', './oTWC_srfItemUI.js', './oTWC_fileUI.js', './oTWC_configUIFields.js', '../O/controls/oTWC_ui_ctrl.js', './oTWC_srfReview.js', './oTWC_equipment.js', './oTWC_config.js'],
+    (runtime, core, coreSQL, twcUtils, twcSrf, twcSrfItem, twcSrfItemUI, twcFileUI, configUIFields, twcUI, twcSrfReview, twcEq, twcConfig) => {
 
         function getSrfTableFields() {
             // @@IMPORTANT: make sure some fields are there as they are needed by the ui:
@@ -113,7 +113,9 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             { srf: twcSrfItem.Fields.B_END, eq: twcEq.Fields.B_END },
             { srf: twcSrfItem.Fields.CUSTOMER_REF, eq: twcEq.Fields.CUSTOMER_REF },
             { srf: twcSrfItem.Fields.INVENTORY_FLAG, eq: twcEq.Fields.INVENTORY_FLAG },
-            { srf: twcSrfItem.Fields.TYPE_OPT, eq: twcEq.Fields.OPT_TYPE },
+            { srf: twcSrfItem.Fields.FEEDER_TYPE, eq: twcEq.Fields.FEEDER_TYPE },
+            { srf: twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION, eq: twcEq.Fields.MODIFIED_ANTENNA_LOCATION },
+            { srf: twcSrfItem.Fields.GIE_LOCATION, eq: twcEq.Fields.GIE_LOCATION },
         ];
 
         function getSrfSwapItem(item, swappedItems, itemsToSwapWith) {
@@ -330,18 +332,29 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var basicInfo = { id: 'site-request-struct', title: 'Customer Information', fields: [] };
             fieldGroup.controls.push(basicInfo);
 
-            basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', disabled: !core.utils.isEmpty(dataSource.id), dataSource: customers, value: selectedCustomer, allowAll: false })
+            basicInfo.fields.push({ id: twcSrf.Fields.CUSTOMER, label: 'Customer', width: '200px', disabled: !core.utils.isEmpty(dataSource.id), dataSource: customers, value: selectedCustomer, allowAll: false })
             basicInfo.fields.push({ id: twcSrf.Fields.OPERATOR_SITE_ID, label: 'Operator Site ID', mandatory: true })
             // @@NOTE: the structure is picked once at SRF level and copied (read-only) on the TME / ATME / FEEDER items (GIE items still pick their own accommodation)
             //         only infrastructures of type Structure are listed
             var siteStructures = twcUtils.getInfraStructures({ siteId: dataSource[twcSrf.Fields.SITE] }, userInfo.isEmployee).filter(s => { return s.type == twcUtils.InfraType.Structure });
-            basicInfo.fields.push({ id: twcSrf.Fields.STRUCTURE, label: 'Structure', width: '250px', allowAll: false, dataSource: siteStructures })
+            basicInfo.fields.push({ id: twcSrf.Fields.STRUCTURE, label: 'Structure', width: '300px', allowAll: false, dataSource: siteStructures })
             if (userInfo.isEmployee) {
-                basicInfo.fields.push({ id: twcSrf.Fields.SRF_TYPE, label: 'SRF Type', dataSource: twcUtils.getSrfTypes(), allowAll: false })
-                basicInfo.fields.push({ id: twcSrf.Fields.REVENUE_IMPACTING, label: 'Revenue Impacting', dataSource: twcUtils.getSrfRevenueImpact(), allowAll: false })
-                basicInfo.fields.push({ id: twcSrf.Fields.SRF_STATUS, lineBreak: true })
+                // @@NOTE: list (customrecord_twc_lic_mech) is loaded automatically by configUIFields.formatPanelFields
+                //         new SRFs default to Online (also defaulted server side on create: ui/modules/oTWC_siteRequestUtils.js saveSiteSrf)
+                var licenceMechanism = { id: twcSrf.Fields.LICENCE_MECHANISM, label: 'Licencing Mechanism', width: '150px', allowAll: false };
+                if (!dataSource.id) { licenceMechanism.value = twcUtils.SrfLicenceMechanism.Online; }
+                basicInfo.fields.push(licenceMechanism)
+                basicInfo.fields.push({ id: twcSrf.Fields.SRF_TYPE, label: 'SRF Type', width: '150px', dataSource: twcUtils.getSrfTypes(), allowAll: false })
+                basicInfo.fields.push({ id: twcSrf.Fields.REVENUE_IMPACTING, label: 'Revenue Impacting', width: '150px', dataSource: twcUtils.getSrfRevenueImpact(), allowAll: false })
+                basicInfo.fields.push({ id: twcSrf.Fields.SRF_STATUS, width: '200px', lineBreak: true })
 
                 basicInfo.fields.push({ id: twcSrf.Fields.TL_NOTES, width: '100%', rows: 3 })
+            }
+            // @@NOTE: latest submission / re-submission comment, set by the submit process (modules/oTWC_srfWorkflowEngine.js: initWorkFlow) so read-only here
+            //         visible to everyone (customers included), below the TL Notes for employees
+            //         not shown while the SRF is new / Draft (it is only set on submit)
+            if (dataSource[twcSrf.Fields.SRF_STATUS] && dataSource[twcSrf.Fields.SRF_STATUS] != twcUtils.SrfStatus.Draft) {
+                basicInfo.fields.push({ id: twcSrf.Fields.SUBMISSION_NOTES, width: '100%', rows: 3, disabled: true })
             }
 
             var items = getSrfItems(dataSource, userInfo, readOnly);
@@ -355,7 +368,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 id: 'site-request-step-6', title: 'Step 6 of 6: (Power Supply)', fields: [
                     { id: twcSrf.Fields.POWER_SUPPLY_REQUESTED_FROM_TL, label: 'Power Required from Towercom', labelNoWrap: true, lineBreak: true },
                     { id: twcSrf.Fields.ALTERNATE_POWER_SUPPLIER, label: 'Alternate Supplier', lineBreak: true },
-                    { id: twcSrf.Fields.POWER_NOTES, label: 'Notes / Comments', width: '75%', rows: 3, lineBreak: true },
+                    { id: twcSrf.Fields.POWER_NOTES, label: 'Power Notes / Comments', width: '75%', rows: 3, lineBreak: true },
                     { id: twcSrf.Fields.APPLICATION_FOR_OWN_SUPPLY_MADE_TO_ESB, label: 'Application for own supply made to ESB', labelNoWrap: true, lineBreak: true },
                     { id: twcSrf.Fields.APPLICATION_DATE, label: 'Application Date' },
                     { id: twcSrf.Fields.APPLICATION_REFERENCE, label: 'Application Reference' },
@@ -415,35 +428,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var whereClause = `where ${twcSrf.Fields.SITE} = ${dataSource.siteId} `;
             var orderBy = `${twcSrf.Fields.SRF_REQUESTED_DATE} desc`;
 
-            // @@NOTE: TWC Employees can see everything
-            if (!userInfo.isEmployee) {
-                var allowedCustomers = [];
-
-                if (userInfo.companyProfile?.isVendor || userInfo.companyProfile?.isBoth) {
-                    // @@NOTE the agent passes specifies what customers can be seen 
-                    var agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${userInfo.profile}`)?.agent_passes || '0';
-                    agentPasses = agentPasses.split(',').map(i => { return parseInt(i.trim()); })
-
-                    // @@NOTE: this filter will ensure that even if a customer was not removed from the agent passes field for a profile but was removed from the ACL list the profile will still not see it
-                    var aclList = coreSQL.run(`select custrecord_twc_acl_cust as cust from customrecord_twc_acl where custrecord_twc_acl_cont = ${userInfo.companyProfile.id}`)
-                    allowedCustomers = agentPasses.filter(ap => { return aclList.find(acl => { return acl.cust == ap; }) })
-                }
-
-                if (userInfo.companyProfile?.isCustomer || userInfo.companyProfile?.isBoth) {
-                    // in case we have a customer or a vendor that is also a customer we include the customer into the customer list
-                    allowedCustomers.push(userInfo.companyProfile.id || 0)
-                }
-
-                // @@NOTE: this is to ensure nothing is shown if no customers on the agent passes field
-                if (allowedCustomers.length == 0) { allowedCustomers.push('0'); }
-
-                whereClause += `and ${twcSrf.Fields.CUSTOMER} in (${allowedCustomers.join(',')})`;
-
-                if (userInfo.companyProfile?.isVendor && !userInfo.companyProfile?.isCustomer) {
-                    // @@NOTE: in addition vendors can only see what was created by their organization
-                    whereClause += `and ${twcSrf.Fields.SRF_SUBMITTED_BY} in (select id from customrecord_twc_prof where custrecord_twc_prof_company = ${userInfo.companyProfile.id})`;
-                }
-            }
+            // @@NOTE: TWC Employees can see everything (empty filter), customers / agent pass rules: oTWC_config.js: getSrfAccessFilter
+            whereClause += twcConfig.getSrfAccessFilter(userInfo);
 
 
             var srfList = twcSrf.select({ where: whereClause, orderBy: orderBy, useNames: true })

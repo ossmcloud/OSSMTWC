@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Company Profile - Nexus Help</title>
+<link rel="stylesheet" href="help.css">
+</head>
+<body>
+<div class="layout">
+<nav class="side"></nav>
+<main>
+<h1>Company Profile &amp; Accreditation</h1>
+<p class="lead">Keep your company, insurance, documents, people and certificates up to date so your company stays accredited and your people can go to site.</p>
+
+<div class="toc"><b>On this page</b>
+<ul>
+    <li><a href="#open">Opening your Company Profile</a></li>
+    <li><a href="#main">Company details</a></li>
+    <li><a href="#insurance">Insurance</a></li>
+    <li><a href="#acl">Customers and contractors lists</a></li>
+    <li><a href="#files">H&amp;S and Method Statements</a></li>
+    <li><a href="#profiles">People (profiles)</a></li>
+    <li><a href="#certs">Certificates</a></li>
+    <li><a href="#accreditation">Accreditation</a></li>
+    <li><a href="#reminders">Expiry reminders</a></li>
+</ul></div>
+
+<h2 id="open">Opening your Company Profile</h2>
+<p>Open <b>Company Profile</b> from the menu. Customers and contractors always see their own company. Click <span class="ui">Edit</span> to change the company details (if you have Edit permission).</p>
+<div class="note">Managing documents and people (add, edit, delete) needs <b>Full</b> permission and is done in view mode, not edit mode.</div>
+
+<h2 id="main">Company details</h2>
+<ul>
+    <li><b>Main Information</b>: TL ID, Name, Company Number (read only); <b>Registered Office</b> and <b>Company Address</b> (editable); SAF Auto Approve (read only).</li>
+    <li><b>Accreditation Info</b> (read only): Status, Submitted, Approved, Commencement, Expiry and Comment. Set by Towercom.</li>
+</ul>
+
+<h2 id="insurance">Insurance</h2>
+<p>The <b>Insurance Info</b> section holds the <b>Insurer</b> and, for each of <b>EL</b> (Employer's Liability), <b>PL</b> (Public Liability) and <b>PI</b> (Professional Indemnity): Status, Available / Type, Limit, Currency and Expiry.</p>
+<p>To renew insurance:</p>
+<ol>
+    <li>Upload the new certificate in the <b>Insurance Files</b> table (see <a href="#files">documents</a>).</li>
+    <li>Towercom checks the certificate and updates the insurance details, expiry and status.</li>
+</ol>
+<p>If you change an insurance field yourself, its status goes back to <b>Pending</b> until Towercom checks it. An EL or PL expiry date in the past sets the status to <b>Expired</b>.</p>
+<div class="warn">A SAF can't be submitted if the customer's or primary contractor's active insurance expires before the last day of the SAF. Renew in good time.</div>
+
+<h2 id="acl">Customers and contractors lists</h2>
+<p>This section lists the companies you work with. Its name depends on your company type:</p>
+<ul>
+    <li>Customers: <b>Accredited Contractors List</b>: the contractors allowed to work for you.</li>
+    <li>Contractors: <b>Associated Customers List</b>: the customers you work for, plus your <b>Sub Contractors List</b>.</li>
+</ul>
+<p>Companies marked <i>"- (Not currently valid for SAF)"</i> are not accredited at the moment and can't be used on a SAF.</p>
+
+<h2 id="files">H&amp;S and Method Statements</h2>
+<p>The <b>H&amp;S / Method Statements</b> section holds the <b>Contractor Files</b>: health &amp; safety documents and method statements (RAMS). Contractors attach these to their SAFs in Step 5.</p>
+<p>Document tables show: Uploaded, Status, Type, File Name, Rev., Description. Click the preview icon to open a file.</p>
+<h3>Adding or replacing a document</h3>
+<ol>
+    <li>Click the add icon (or the edit icon on an existing document to upload a new version).</li>
+    <li>Choose the <b>Type</b> and the file, and add a description.</li>
+    <li>Save. The document is <b>Pending</b> until Towercom checks it. A new version raises the revision number.</li>
+</ol>
+<table>
+    <tr><th>Document status</th><th>Meaning</th></tr>
+    <tr><td><span class="badge b-orange">Pending</span></td><td>Uploaded, waiting for Towercom to check it.</td></tr>
+    <tr><td><span class="badge b-green">Received</span> / <span class="badge b-green">Approved</span></td><td>Accepted. Received H&amp;S / method statement documents can be attached to SAFs.</td></tr>
+    <tr><td><span class="badge b-red">Rejected</span></td><td>Not accepted. Upload a corrected document.</td></tr>
+    <tr><td><span class="badge b-grey">Superseded</span></td><td>Replaced by a newer version (hidden from the list).</td></tr>
+</table>
+
+<h2 id="profiles">People (profiles)</h2>
+<p>The <b>Profiles</b> section lists your company's people with their position, designated-contact role, accreditation status, PICW flag and certificate expiry dates. Each certificate date is coloured: <span class="badge b-green">Active</span> <span class="badge b-red">Expired</span> <span class="badge b-orange">Pending</span>.</p>
+<h3>Adding a person</h3>
+<ol>
+    <li>Click the add icon in the profiles table.</li>
+    <li>Fill in <b>Name</b>, <b>Position</b>, <b>Email</b> and <b>Phone</b> (mandatory), plus Experience and ENSUP Card.</li>
+    <li>Upload their certificates (see below).</li>
+    <li>Save. The person starts as <b>Pending</b> until Towercom accredits them.</li>
+</ol>
+<p>On existing profiles, name, email, experience and ENSUP card can only be changed by Towercom. Accreditation status, PICW and <i>User Action Needed</i> are set by Towercom.</p>
+<p>A small info icon next to a name means the person belongs primarily to another company.</p>
+
+<h2 id="certs">Certificates</h2>
+<p>Each person can hold these certificates: <b>Safe Pass</b>, <b>Climber</b>, <b>Rescue</b>, <b>Rooftop</b>, <b>RF</b>, <b>Drone</b>, <b>Electrician</b>.</p>
+<p>In the profile dialog, each certificate box has <span class="ui">View</span>, <span class="ui">Upload</span> and <span class="ui">History</span>.</p>
+<ul>
+    <li><b>Upload</b> a <b>PDF</b> of the new certificate. Its status becomes <b>Pending</b> and its expiry is cleared until Towercom checks it. For Safe Pass you must also enter the <b>Safe Pass ID</b>.</li>
+    <li>The old certificate is kept and can be seen in <b>History</b>.</li>
+</ul>
+<table>
+    <tr><th>Certificate status</th><th>Meaning</th></tr>
+    <tr><td>No</td><td>Not held.</td></tr>
+    <tr><td>Pending</td><td>Uploaded, waiting for Towercom to check it.</td></tr>
+    <tr><td>Active</td><td>Valid. Only Active certificates count on a SAF.</td></tr>
+    <tr><td>Expired</td><td>The expiry date has passed. Nexus updates this automatically.</td></tr>
+</table>
+
+<h2 id="accreditation">Accreditation</h2>
+<h3>People</h3>
+<table>
+    <tr><th>Status</th><th>Meaning</th></tr>
+    <tr><td><span class="badge b-orange">Pending</span></td><td>New, or a new Safe Pass is waiting to be checked.</td></tr>
+    <tr><td><span class="badge b-green">Accredited</span></td><td>Can go to site (with an Active Safe Pass).</td></tr>
+    <tr><td><span class="badge b-red">SP Expired</span></td><td>Safe Pass expired. Can't go to site.</td></tr>
+    <tr><td>No Site Access</td><td>Not allowed on site.</td></tr>
+    <tr><td><span class="badge b-grey">Inactive</span></td><td>No longer active.</td></tr>
+</table>
+<p>Only <b>Accredited</b> people with an <b>Active Safe Pass</b> can be added to a SAF crew.</p>
+<h3>Companies</h3>
+<table>
+    <tr><th>Status</th><th>Meaning</th></tr>
+    <tr><td>Accredited</td><td>Fully accredited. Can raise SAFs.</td></tr>
+    <tr><td>To Be Renewed</td><td>The accreditation expiry date has passed. SAFs are still allowed; contact Towercom to renew.</td></tr>
+    <tr><td>Certs Expired</td><td>EL or PL insurance has expired. SAFs are blocked until it is renewed.</td></tr>
+    <tr><td>Pending</td><td>Accreditation in progress.</td></tr>
+    <tr><td>Inactive / No</td><td>Not accredited.</td></tr>
+</table>
+<p>Nexus downgrades statuses automatically when certificates and insurance expire. Moving back to <b>Accredited</b> is done by Towercom after checking the new documents.</p>
+
+<h2 id="reminders">Expiry reminders</h2>
+<p>Nexus emails reminders <b>30 days before</b> and <b>on the day</b> a certificate or insurance expires:</p>
+<ul>
+    <li>Insurance reminders go to your company's designated <b>Insurance</b> contacts.</li>
+    <li>Certificate reminders go to the person and to your company's designated <b>Accreditation</b> contacts.</li>
+</ul>
+<p>Make sure Towercom has the right designated contacts for your company.</p>
+
+<div class="staff">Staff can open any company. Staff also see each listed company's accreditation status, comments and expiry, and they set people's accreditation status, PICW flag and certificate expiry dates. See <a href="staff-netsuite.html#files">approving files</a>.</div>
+
+<footer>Nexus User Help &middot; Towercom portal &middot; November 2026</footer>
+</main>
+</div>
+<script src="nav.js"></script>
+</body>
+</html>

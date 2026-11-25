@@ -35,7 +35,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                                 <div>
                                     {FILTER_COUNTIES}
                                 </div>
-                                
+                                <div>
+                                    {FILTER_HIDE_INACTIVE}
+                                </div>
+
                             </div>
                             <h3 class="twc">Filter by Location</h3>
                             <div class="twc-div-table-r">
@@ -58,10 +61,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             html = html.replace('{FILTER_NAME}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Site', width: '50%', id: 'site_id', noEmpty: true, dataSource: twcUtils.getSiteNames(userInfo) }));
             html = html.replace('{FILTER_SAF_ID}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Equipment ID', width: 'calc(25% - 2px)', multiSelect: true, id: 'record_id', noEmpty: true, dataSource: twcUtils.getEquipmentIds() }));
             html = html.replace('{FILTER_STATUS}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Status', width: 'calc(25% - 2px)', multiSelect: true, id: twcEqip.Fields.EQUIPMENT_INSTALL_STATUS, noEmpty: true, dataSource: twcUtils.getEquipmentStatus() }));
-            //html = html.replace('{FILTER_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Type', width: '50%', multiSelect: true, id: twcSite.Fields.SITE_TYPE, noEmpty: true, dataSource: twcUtils.getSiteTypes() }));
-            html = html.replace('{FILTER_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Type', width: '50%', multiSelect: true, id: twcEqip.Fields.EQUIPMENT_CLASS, noEmpty: true, dataSource: twcUtils.getEquipmentClass() }));
+            html = html.replace('{FILTER_TYPE}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Class', width: '50%', multiSelect: true, id: twcEqip.Fields.EQUIPMENT_CLASS, noEmpty: true, dataSource: twcUtils.getEquipmentClass() }));
             html = html.replace('{FILTER_CUSTOMER}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Customer', width: '50%', multiSelect: true, id: twcEqip.Fields.CUSTOMER, noEmpty: true, dataSource: twcUtils.getCustomers(userInfo), noAutoSelect: true }));
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
+            // @@NOTE: hides the rows flagged eq_inactive (see getInventoryData), applied client side (ui/js/oTWC_siteLocatorPanel.js: updateResults)
+            html = html.replace('{FILTER_HIDE_INACTIVE}', twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'twc-hide-inactive-eq', label: 'Hide Inactive (not licenced and not installed)', labelNoWrap: true, value: false, small: true }));
 
             html = html.replace('{FILTER_LAT}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Latitude', id: 'twc-coord-latitude', width: '250px' }));
             html = html.replace('{FILTER_LNG}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Longitude', id: 'twc-coord-longitude', width: '250px' }));
@@ -83,7 +87,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS, title: 'Install Status', styles: { width: '150px' }, sortIdx: 50 },
                 { field: twcInventory.Fields.EQUIPMENT_LICENCE_STATUS, title: 'Licence Status', styles: { width: '150px' }, sortIdx: 50 },
                 { field: twcInventory.Fields.EQUIPMENT_CLASS, title: 'Class', styles: { width: '100px' } },
-                { field: twcInventory.Fields.EQUIPMENT_TYPE, title: 'Type', styles: { width: '100px' } },
+                // @@NOTE: feeders show the feeder type (FEEDER_TYPE) under the 'Type' column (same as the site equipment tables, data/oTWC_equipmentUI.js: getSiteInventoryTableFields)
+                {
+                    field: 'eq_type', title: 'Type', nullText: '', styles: { width: '100px' }, sql: `
+                        case when s.${twcInventory.Fields.EQUIPMENT_CLASS} = ${twcInventoryUI.EqClass.FEEDER}
+                            then BUILTIN.DF(s.${twcInventory.Fields.FEEDER_TYPE})
+                            else BUILTIN.DF(s.${twcInventory.Fields.EQUIPMENT_TYPE})
+                        end
+                    `
+                },
+                { field: twcInventory.Fields.DESCRIPTION, title: 'Description', wrap: true, nullText: '', styles: { 'min-width': '200px' } },
                 {
                     field: 'make_model', title: 'Make / Model', nullText: '', sql: `
                         case when (${twcInventory.Fields.MAKE} is null AND ${twcInventory.Fields.MODEL} is null)
@@ -111,7 +124,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         END
                     `
                 },
-                { field: twcInventory.Fields.HEIGHT_ON_TOWER_M, title: 'Height on<br />Tower' },
+                { field: twcInventory.Fields.HEIGHT_ON_TOWER_M, title: 'Height on<br />Tower', nullText: '' },
                 { field: 'srf', sql: 'BUILTIN.DF(ea.custrecord_twc_eq_action_srf)', nullText: '', title: 'SRF' }
             ];
 
@@ -119,26 +132,36 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var sqlFields = 's.id, s.id as record_id, s.custrecord_twc_equip_site as site_id, BUILTIN.DF(s.custrecord_twc_equip_site) as site_id_text';
             sqlFields += formatUserFields(inventoryFields, userFields);
 
-            var whereClause = 'where 1 = 1 ';
+            // @@NOTE: cancelled equipment (install or licence status Cancelled, e.g.: install on a cancelled SRF) is not shown on the equipment list
+            var whereClause = `where NVL(s.${twcInventory.Fields.EQUIPMENT_INSTALL_STATUS}, 0) != ${twcUtils.EqInstallStatus.Cancelled}
+                               and NVL(s.${twcInventory.Fields.EQUIPMENT_LICENCE_STATUS}, 0) != ${twcUtils.EqLicenseStatus.Cancelled} `;
             var orderBy = `order by s.${twcInventory.Fields.EQUIPMENT_ID}`;
 
-            var allowedCustomers = twcConfig.getUserAllowedCustomers(userInfo, true);
+            // @@NOTE: equipment visibility follows the agent passes, see oTWC_config.js: getAgentPassCustomers
+            var allowedCustomers = twcConfig.getAgentPassCustomers(userInfo);
             if (allowedCustomers != 'all') {
+                if (allowedCustomers.length == 0) { allowedCustomers = [0]; }
                 whereClause += `and ${twcInventory.Fields.CUSTOMER} in (${allowedCustomers.join(',')})`;
             }
 
+            // @@NOTE: left join on the infrastructure, equipment (e.g.: GIE) may not be associated to one
             var inventoryDetails = coreSQL.run(`
                 select  s.name, ${sqlFields}, site.${twcSite.Fields.ADDRESS_COUNTY}, site.${twcSite.Fields.SITE_TYPE}, site.${twcSite.Fields.SITE_PORTFOLIO},
                         BUILTIN.DF(i.custrecord_twc_infra_type) as infra_type, BUILTIN.DF(i.custrecord_twc_infra_str_type) as infra_str_type, i.custrecord_twc_infra_id as infra_id,
+                        ea.custrecord_twc_eq_action_srf as srf_id,
                         
                 from    ${twcInventory.Type} s
-                join    customrecord_twc_infra i on i.id = ${twcInventory.Fields.INFRASTRUCTURE}
-                join    ${twcSite.Type} site on site.id = s.${twcInventory.Fields.SITE}
+                left join customrecord_twc_infra i on i.id = s.${twcInventory.Fields.INFRASTRUCTURE}                join    ${twcSite.Type} site on site.id = s.${twcInventory.Fields.SITE}
                 left join customrecord_twc_eq_action ea on ea.id = s.custrecord_twc_equip_assoc_eq_action
                 
-                ${whereClause} 
+                ${whereClause}
                 ${orderBy}
             `)
+
+            // @@NOTE: flag for the 'Hide Inactive' toggle (see renderInventoryPanel), column hidden on the table (ui/js/oTWC_inventory.js: colInit)
+            core.array.each(inventoryDetails, r => {
+                r.eq_inactive = twcUtils.isEquipmentInactive(r[twcInventory.Fields.EQUIPMENT_LICENCE_STATUS], r[twcInventory.Fields.EQUIPMENT_INSTALL_STATUS]) ? 'T' : 'F';
+            });
 
             return {
                 inventoryDetails: inventoryDetails,

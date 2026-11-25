@@ -19,7 +19,20 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 pageData.siteAccessInfo = twcSiteAccessUtils.getSiteAccessInfo(pageData, context.request.parameters.reUse == 'T');
 
                 var safStatus = pageData.siteAccessInfo[twcSaf.Fields.STATUS];
-                var safIsInThePast = context.request.parameters.recId ? pageData.siteAccessInfo[twcSaf.Fields.START_TIME_BLOCK].split(' ')[0] < twcUtils.today() : false;
+                // @@NOTE: 'SAF is in the past' = the day after the LAST time block (it was the start time block: a SAF over several days was in the past from its 2nd day)
+                //         same date as the Awaiting Photos job (svc/oTWC_saf_sts_update_svc.js: MAX time block date), fallback: end / start time block
+                var safIsInThePast = false;
+                if (context.request.parameters.recId) {
+                    var safLastBlockDate = coreSql.first(`
+                        select  TO_CHAR(MAX(tb.${twcSafTimeBlock.Fields.BLOCK_DATE}), 'YYYY-MM-DD') as last_date
+                        from    ${twcSafTimeBlock.Type} tb
+                        where   tb.${twcSafTimeBlock.Fields.SAF} = ${parseInt(context.request.parameters.recId) || 0}
+                    `)?.last_date;
+                    if (!safLastBlockDate) {
+                        safLastBlockDate = (pageData.siteAccessInfo[twcSaf.Fields.END_TIME_BLOCK] || pageData.siteAccessInfo[twcSaf.Fields.START_TIME_BLOCK] || '').split(' ')[0];
+                    }
+                    safIsInThePast = !!safLastBlockDate && safLastBlockDate < twcUtils.today();
+                }
                 var safRequiresSrf = twcUtils.getSafType(pageData.siteAccessInfo[twcSaf.Fields.R_TYPE])?.requires_srf == 'T';
 
                 pageData.siteInfo = twcSiteInfoUtils.getSiteInfo(pageData.siteAccessInfo.siteId || context.request.parameters.siteId, pageData.userInfo);
@@ -27,7 +40,15 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 pageData.timeBlocks = twcUtils.getSafTimeBlocks();
                 pageData.siteTimeBlocks = twcSiteAccessUtils.getAllSafTimeBlocks(pageData.siteAccessInfo, pageData.userInfo);
                 pageData.safActionDetachReason = twcUtils.getSafActionDetachReason();
-                pageData.recordStatus = `<div class="twc-div-span-table">${twcSaf.getSafStatusHtml(safStatus)}</div>`;
+                // @@NOTE: completion photos review pending approval: TL only badge right by the status (the submitter does not know about the approval step)
+                var reviewPending = pageData.siteAccessInfo?.[twcSaf.Fields.REVIEW_PENDING_APPROVAL] === true || pageData.siteAccessInfo?.[twcSaf.Fields.REVIEW_PENDING_APPROVAL] == 'T';
+                // @@NOTE: sent back = not pending but the reviewer's proposal is still there (it is cleared on approval, see oTWC_siteAccessUtils.js: approveSafReview)
+                var reviewSentBack = !reviewPending && !!pageData.siteAccessInfo?.[twcSaf.Fields.PROPOSED_REVIEW_COMMENT];
+                var reviewPendingBadge = '';
+                if (pageData.userInfo.isEmployee && (reviewPending || reviewSentBack)) {
+                    reviewPendingBadge = `<span style="width: 5px;"></span><span class="twc-record-status" style="padding: 0px 11px; vertical-align: middle; background-color: ${reviewPending ? 'orange' : 'crimson'}; color: white; white-space: nowrap;" title="${reviewPending ? 'The completion photos review is waiting for approval' : 'The approver sent the completion photos review back to the reviewer, see the Completion Photos Log'}">${reviewPending ? 'Review pending approval' : 'Review sent back'}</span>`;
+                }
+                pageData.recordStatus = `<div class="twc-div-span-table">${twcSaf.getSafStatusHtml(safStatus)}${reviewPendingBadge}</div>`;
                 if (context.request.parameters.recId) {
 
                     var safIsInThePastMsg = safIsInThePast ? `<span style="padding-right: 5px;text-align: right; vertical-align: middle;">SAF is in the past${pageData.userInfo.powerUser ? '<span style="display: block; font-size: 8px;">(you can edit the SAF because you have special permissions)</span>' : ''}</span><span style="vertical-align: middle;">${twcIcons.get('exclamation', 24)}</span><span style="width: 5px;"></span>` : '';
@@ -48,7 +69,11 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                     `
                 }
                 // @@NOTE: if we have no recId is because we have a new SAF, we have a submit button at the bottom of the page for it, we use the forceViewOnly to hide the Save/Cancel buttons
-                var canEdit = pageData.userInfo.isEmployee ? (safStatus != twcSaf.Status.Cancelled) : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Rejected || safStatus == twcSaf.Status.Approved);
+                // @@NOTE: a cancelled SAF (or an old 'Rejected' one, status no longer used) is closed: no edit, no status change, it cannot be re-submitted ('Re Use' creates a new SAF)
+                var safClosed = !!context.request.parameters.recId && (safStatus == twcSaf.Status.Cancelled || safStatus == twcSaf.Status.Rejected);
+                // @@NOTE: 'Feedback Issued' = TL sent the SAF back to the submitter, who can edit and re-submit it (with a comment, see requireResubmitComment)
+                var canEdit = pageData.userInfo.isEmployee ? !safClosed : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Approved || safStatus == twcSaf.Status.FeedbackIssued);
+                // @@NOTE: a SAF in the past cannot be edited (unless power user), also when feedback was issued: the submitter must use 'Re Use' to create a new SAF
                 if (canEdit && safIsInThePast) {
                     if (!pageData.userInfo.powerUser) {
                         canEdit = false;
@@ -60,19 +85,34 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 }
 
 
+                // @@NOTE: a closed SAF cannot be opened in edit mode, not even by adding edit=T to the url
+                if (safClosed) { pageData.editMode = false; }
+
+                // @@NOTE: external users editing / re-submitting an existing SAF (not 'Re Use') must enter a comment (ui/js/oTWC_siteAccess.js: saf-submit)
+                //         computed here because pageData.userInfo is removed from the client page in production (oTWC_baseView_ue.js)
+                pageData.requireResubmitComment = !pageData.userInfo.isEmployee && !!context.request.parameters.recId && !!pageData.editMode && context.request.parameters.reUse != 'T';
+
                 // @@NOTE: we set pageData.forceViewOnly = true because we do not want the baseView save/cancel buttons
                 pageData.forceViewOnly = canEdit ? context.request.parameters.recId === undefined : true;
                 if (pageData.editMode) { pageData.forceViewOnly = true; }
 
                 //
-                var canChangeStatus = (pageData.userInfo.isEmployee) ? safStatus != twcSaf.Status.Complete : false;
+                var canChangeStatus = (pageData.userInfo.isEmployee) ? (safStatus != twcSaf.Status.Complete && !safClosed) : false;
                 if (core.me()) { canChangeStatus = true; }
-                if (canChangeStatus) {
+                // @@NOTE: customers / contractors can only cancel their own SAF when Pending or Approved (twcSiteAccessUtils.canExternalCancelSaf, also enforced on the server)
+                var externalCanCancel = !!context.request.parameters.recId && twcSiteAccessUtils.canExternalCancelSaf(pageData.userInfo, safStatus,
+                    pageData.siteAccessInfo[twcSaf.Fields.CUSTOMER], pageData.siteAccessInfo[twcSaf.Fields.PRIMARY_CONTRACTOR]);
+                if (externalCanCancel) {
+                    // @@NOTE: externalCancel => the client shows only the comment (reason) box, no status drop down (ui/js/oTWC_siteAccess.js: cancelSafExternal)
+                    pageData.externalCancel = true;
+                    pageData.allowedStatues = [twcUtils.getSafStatusName(twcUtils.SafStatus.Cancelled, true)];
+                } else if (canChangeStatus) {
                     pageData.allowedStatues = [];
                     if (!safIsInThePast) { pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Pending, true)); }
                     if (pageData.userInfo.isEmployee) {
                         pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Approved, true));
-                        pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.Rejected, true));
+                        // @@NOTE: 'Rejected' removed (same effect as 'Cancelled'), 'Feedback Issued' sends the SAF back to the submitter instead
+                        pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.FeedbackIssued, true));
                         if (safRequiresSrf) {
                             pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.AwaitingPhotos, true));
                             pageData.allowedStatues.push(twcUtils.getSafStatusName(twcUtils.SafStatus.PhotosReceived, true));
@@ -86,7 +126,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 html = twcBaseViewUE.initView(PAGE_VERSION, pageData, 'oTWC_siteAccess');
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
 
-                var readOnly = context.request.parameters.edit != 'T';
+                var readOnly = context.request.parameters.edit != 'T' || safClosed;
                 var fieldGroups = twcSiteAccessUtils.getSAFInfoPanels(pageData.siteAccessInfo, pageData.userInfo, { siteTimeBlocks: pageData.siteTimeBlocks, editMode: pageData.editMode });
                 html = html.replaceAll('{SITE_ACCESS_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
 
@@ -111,8 +151,14 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
                         if (safRequiresSrf && (safStatus == twcSaf.Status.Approved || safStatus == twcSaf.Status.AwaitingPhotos || safStatus == twcSaf.Status.PhotosReceived || safStatus == twcSaf.Status.PartiallyComplete)) {
                             if (pageData.userInfo.isEmployee && (safStatus == twcSaf.Status.PhotosReceived || safStatus == twcSaf.Status.PartiallyComplete)) {
-                                if (pageData.siteAccessInfo[twcSaf.Fields.COMPLETION_REVIEWER] == pageData.userInfo.profile) {
-                                    actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Completion Reviewed', id: 'review-completion-button' });
+                                // @@NOTE: completion photos review: reviewer reviews -> pending approval -> approver approves / sends back (ui/modules/oTWC_siteAccessUtils.js: setSafReviewed)
+                                if (reviewPending) {
+                                    if (pageData.userInfo.canApproveSafReview) {
+                                        actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Approve Photos Review', id: 'approve-review-button' });
+                                    }
+                                } else if (pageData.siteAccessInfo[twcSaf.Fields.COMPLETION_REVIEWER] == pageData.userInfo.profile) {
+                                    // @@NOTE: step after 'Assign Reviewer' (the assigned reviewer only), the button was 'Completion Reviewed' (client request)
+                                    actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Review Photos', id: 'review-completion-button' });
                                 } else {
                                     actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Assign Reviewer', id: 'assign-reviewer-button' });
                                 }
@@ -123,7 +169,12 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                             }
 
                         }
-                        if (canChangeStatus) { actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Change Status / Comment', id: 'change-status-button' }); }
+                        if (externalCanCancel) {
+                            // @@NOTE: same dialog as the employees 'Change Status / Comment', with 'Cancelled' as the only status (comment / reason mandatory)
+                            actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Cancel SAF', id: 'change-status-button' });
+                        } else if (canChangeStatus) {
+                            actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Change Status / Comment', id: 'change-status-button' });
+                        }
                         actions += twcUI.render({ type: twcUI.CTRL_TYPE.BUTTON, value: 'Re Use', id: 're-use-button' });
                     }
 
@@ -188,7 +239,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
             } else if (context.request.parameters.action == 'edit-saf-status') {
                 var payload = JSON.parse(context.request.body);
-                return twcSiteAccessUtils.editSafStatus(payload);
+                return twcSiteAccessUtils.editSafStatus(payload, twcConfig.userInfo(context));
 
             } else if (context.request.parameters.action == 'upload-saf-photo') {
                 twcSiteAccessUtils.saveSafImage(JSON.parse(context.request.body));
@@ -200,13 +251,32 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
             } else if (context.request.parameters.action == 'saf-set-reviewer') {
                 var payload = JSON.parse(context.request.body);
-                twcSiteAccessUtils.setSafReviewer(payload);
+                twcSiteAccessUtils.setSafReviewer(payload, twcConfig.userInfo(context));
                 return { status: 'success' };
 
             } else if (context.request.parameters.action == 'saf-set-reviewed') {
                 var payload = JSON.parse(context.request.body);
-                twcSiteAccessUtils.setSafReviewed(payload);
+                twcSiteAccessUtils.setSafReviewed(payload, twcConfig.userInfo(context));
                 return { status: 'success' };
+
+            } else if (context.request.parameters.action == 'saf-get-pending-review') {
+                var payload = JSON.parse(context.request.body);
+                return twcSiteAccessUtils.getPendingSafReview(payload, twcConfig.userInfo(context));
+
+            } else if (context.request.parameters.action == 'saf-approve-review') {
+                var payload = JSON.parse(context.request.body);
+                twcSiteAccessUtils.approveSafReview(payload, twcConfig.userInfo(context));
+                return { status: 'success' };
+
+            } else if (context.request.parameters.action == 'saf-send-back-review') {
+                var payload = JSON.parse(context.request.body);
+                twcSiteAccessUtils.sendBackSafReview(payload, twcConfig.userInfo(context));
+                return { status: 'success' };
+
+            } else if (context.request.parameters.action == 'detach-saf-action') {
+                // @@NOTE: TL only, detach a pending action from the SAF without editing it (no status change)
+                var payload = JSON.parse(context.request.body);
+                return twcSiteAccessUtils.detachSafActionTL(payload, twcConfig.userInfo(context));
 
             } else {
                 throw new Error(`Invalid post action: ${context.request.parameters.action || 'NO ACTION'}`);

@@ -7,7 +7,50 @@
       <feature required="true">SERVERSIDESCRIPTING</feature>
       <feature required="false">CREATESUITEBUNDLES</feature>
       <feature required="false">CRM</feature>
+      <feature required="false">ACCOUNTING</feature>
+      <feature required="false">ADVANCEDJOBS</feature>
+      <feature required="false">CUSTOMSEGMENTS</feature>
+      <feature required="false">EXTREMELIST</feature>
+      <feature required="false">JOBS</feature>
+      <feature required="false">MAILMERGE</feature>
+      <feature required="false">MULTILANGUAGE</feature>
+      <feature required="false">RESOURCEALLOCATIONS</feature>
+      <feature required="false">SUPPORT</feature>
+      <feature required="false">WEBSITE</feature>
     </features>
+    <objects>
+      <object>custentity_twc_project_site</object>
+      <object>customrecord_fsa_job</object>
+      <object>customrecord_twc_con_flag.val_53620_9061443_sb1_770</object>
+      <object>customrecord_twc_con_flag.val_53621_9061443_sb1_193</object>
+      <object>customrecord_twc_cus_flag.val_53623_9061443_sb1_299</object>
+      <object>customrecord_twc_eq_class.val_53813_9061443_sb1_920</object>
+      <object>customrecord_twc_infra_type.val_34817_9061443_sb1_355</object>
+      <object>customrecord_twc_infra_type.val_34818_9061443_sb1_584</object>
+      <object>customrecord_twc_infra_type.val_34820_9061443_sb1_334</object>
+      <object>customrecord_twc_landlord_flag.val_53625_9061443_sb1_310</object>
+      <object>customrecord_twc_lic_mech.val_32654_9061443_sb1_448</object>
+      <object>customrecord1052</object>
+      <object>customrecord1053</object>
+      <object>customrecord1054</object>
+      <object>customrole_ossm_dev</object>
+      <object>customrole_ossm_twc_acountant</object>
+      <object>customrole1319</object>
+      <object>customrole1321</object>
+      <object>customrole1328</object>
+      <object>customrole1329</object>
+      <object>customrole1330</object>
+      <object>customrole1331</object>
+      <object>customrole1332</object>
+      <object>customrole1333</object>
+      <object>customrole1335</object>
+      <object>customrole1336</object>
+      <object>customrole1337</object>
+      <object>customrole1338</object>
+      <object>customrole1339</object>
+      <object>customrole1340</object>
+      <object>customrole1341</object>
+    </objects>
     <files>
     </files>
   </dependencies>

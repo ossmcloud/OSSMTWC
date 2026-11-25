@@ -42,6 +42,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FEE_CHANGE_BREAKDOWN: 'custrecord_twc_srf_rev_fee_chg_brkdwn',
             CUSTOMER_ACCOUNTS_CHECK_PASSED: 'custrecord_twc_srf_rev_cust_acc_chk_pass',
             CUSTOMER_ACCOUNTS_CHECK_COMMENTS: 'custrecord_twc_srf_rev_cust_acc_chk_com',
+            SUBMITTED_BY: 'custrecord_twc_srf_rev_submitted_by',
+            RADIX_ID: 'custrecord_twc_srf_rev_radix_id',
+            RADIX_MIGRATED: 'custrecord_twc_srf_rev_radix_migrated',
+            RADIX_IMPORT_RUN: 'custrecord_twc_srf_rev_radix_import_run',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -84,6 +88,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FEE_CHANGE_BREAKDOWN: { name: 'custrecord_twc_srf_rev_fee_chg_brkdwn', type: 'textarea', alias: 'feeChangeBreakdown', display: 'normal', mandatory: false },
             CUSTOMER_ACCOUNTS_CHECK_PASSED: { name: 'custrecord_twc_srf_rev_cust_acc_chk_pass', type: 'checkbox', alias: 'customerAccountsCheckPassed', display: 'normal', mandatory: false },
             CUSTOMER_ACCOUNTS_CHECK_COMMENTS: { name: 'custrecord_twc_srf_rev_cust_acc_chk_com', type: 'textarea', alias: 'customerAccountsCheckComments', display: 'normal', mandatory: false },
+            SUBMITTED_BY: { name: 'custrecord_twc_srf_rev_submitted_by', type: 'select', alias: 'submittedBy', display: 'normal', mandatory: false, recordType: 'customrecord_twc_prof' },
+            RADIX_ID: { name: 'custrecord_twc_srf_rev_radix_id', type: 'text', alias: 'radixID', display: 'statictext', mandatory: false },
+            RADIX_MIGRATED: { name: 'custrecord_twc_srf_rev_radix_migrated', type: 'checkbox', alias: 'radixMigrated', display: 'statictext', mandatory: false },
+            RADIX_IMPORT_RUN: { name: 'custrecord_twc_srf_rev_radix_import_run', type: 'text', alias: 'radixImportRun', display: 'statictext', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -312,6 +320,31 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.CUSTOMER_ACCOUNTS_CHECK_COMMENTS, value)
             }
             
+            get submittedBy() {
+                return this.get(_recordFields.SUBMITTED_BY);
+            } set submittedBy(value) {
+                this.set(_recordFields.SUBMITTED_BY, value)
+            }
+            get submittedByName() { return this.getText(_recordFields.SUBMITTED_BY); }
+            
+            get radixID() {
+                return this.get(_recordFields.RADIX_ID);
+            } set radixID(value) {
+                this.set(_recordFields.RADIX_ID, value)
+            }
+            
+            get radixMigrated() {
+                return this.get(_recordFields.RADIX_MIGRATED);
+            } set radixMigrated(value) {
+                this.set(_recordFields.RADIX_MIGRATED, value)
+            }
+            
+            get radixImportRun() {
+                return this.get(_recordFields.RADIX_IMPORT_RUN);
+            } set radixImportRun(value) {
+                this.set(_recordFields.RADIX_IMPORT_RUN, value)
+            }
+            
             get created() {
                 return this.get(_recordFields.CREATED);
             } set created(value) {
@@ -344,8 +377,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_SRFReview,
 
-            get: function (id) {
-                var rec = new OSSMTWC_SRFReview(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_SRFReview(id, staticLoad);
                 rec.load();
                 return rec;
             }, 

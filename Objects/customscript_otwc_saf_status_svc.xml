@@ -1,0 +1,38 @@
+<scheduledscript scriptid="customscript_otwc_saf_status_svc">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>OSSMTWC - SAF Status - SVC</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <scriptfile>[/SuiteScripts/OSSMTWC/svc/oTWC_saf_sts_update_svc.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_otwc_saf_status_svc_1">
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>NOTSCHEDULED</status>
+      <title>OSSMTWC - SAF Status - SVC 2</title>
+      <recurrence>
+        <single>
+          <repeat></repeat>
+          <startdate>2026-10-23</startdate>
+          <starttime>17:00:00Z</starttime>
+        </single>
+      </recurrence>
+    </scriptdeployment>
+    <scriptdeployment scriptid="customdeploy_otwc_saf_status_svc">
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>NOTSCHEDULED</status>
+      <title>OSSMTWC - SAF Status - SVC</title>
+      <recurrence>
+        <daily>
+          <everyxdays>1</everyxdays>
+          <repeat></repeat>
+          <startdate>2026-09-10</startdate>
+          <starttime>02:00:00Z</starttime>
+        </daily>
+      </recurrence>
+    </scriptdeployment>
+  </scriptdeployments>
+</scheduledscript>
