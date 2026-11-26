@@ -201,6 +201,13 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 var payload = JSON.parse(context.request.body);
                 return { data: twcUtils.getProfiles({ company: payload.vendor, filters: { 'custrecord_twc_prof_picw_acceptable': 'T', 'custrecord_twc_prof_safe_pass_cert_exp': { op: '>', value: 'CURRENT_DATE' } } }) };
 
+            } else if (context.request.parameters.action == 'get-reuse-sites') {
+                // @@NOTE: SAF Re-Use site picker on the SAF page ('Re Use' button, ui/js/oTWC_siteAccess.js: openReUseDialog)
+                //         same sites as the SAF locator list (oTWC_siteLocatorUtils.js: getSites): all for employees, active public ones for everyone else
+                var userInfo = twcConfig.userInfo(context);
+                var siteWhere = userInfo.isEmployee ? '' : `where s.isinactive = 'F' and s.custrecord_twc_site_public in (${twcUtils.PUBLIC_FLAG.Yes})`;
+                return { data: coreSql.run(`select s.id as value, s.name as text from customrecord_twc_site s ${siteWhere} order by s.name`) };
+
             } else if (context.request.parameters.action == 'get-vendor-docs') {
                 var payload = JSON.parse(context.request.body);
                 return { data: twcSiteAccessUtils.getVendorDocs(payload) };

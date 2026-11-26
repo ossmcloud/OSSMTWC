@@ -111,9 +111,12 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return safFields;
         }
 
-        function getSafCrew(dataSource) {
+        // @@NOTE: re-use (dataSource.reUse): the crew of the original SAF is re-used only if the person is still accredited (profile Accredited + valid Safe Pass,
+        //         i.e. twcUtils.getProfiles attendAs not empty), the others are removed and listed in 'removed' (shown on Step 4)
+        //         re-used rows have NO id: they are new crew records for the new SAF and the original ones must never be touched (edit / delete)
+        function getSafCrew(dataSource, removed) {
             var safCrews = [];
-            if (dataSource.id && !dataSource.reUse) {
+            if (dataSource.id) {
                 coreSQL.each(`
                     select  crew.id, prof.custrecord_twc_prof_company as saf_crew_vendor, BUILTIN.DF(prof.custrecord_twc_prof_company) as saf_crew_vendor_name, 
                             crew.custrecord_twc_saf_crew_member as saf_crew_member, BUILTIN.DF(crew.custrecord_twc_saf_crew_member) as saf_crew_member_name,
@@ -131,6 +134,21 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     safCrew['saf-crew-attend-as'] = crew.saf_crew_attend;
                     safCrews.push(safCrew);
                 })
+
+                if (dataSource.reUse && safCrews.length > 0) {
+                    var profiles = twcUtils.getProfiles({ id: safCrews.map(c => { return parseInt(c['saf-crew-member']); }).filter(i => { return !isNaN(i); }) });
+                    safCrews = safCrews.filter(c => {
+                        var profile = profiles.find(p => { return p.value == c['saf-crew-member']; });
+                        if (!profile || profile.attendAs.length == 0) {
+                            if (removed) { removed.push(`Crew member <b>${c['saf-crew-member_name']}</b> is no longer accredited`); }
+                            return false;
+                        }
+                        delete c.id;
+                        // @@NOTE: certificates as of today (same format as the crew dialog, ui/js/oTWC_siteAccess.js: manageVisitor)
+                        c['saf-crew-attend-as'] = profile.attendAsText.replaceAll(', ', '\n');
+                        return true;
+                    });
+                }
             }
             return safCrews;
         }
@@ -399,9 +417,14 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             var isExistingSaf = dataSource.id !== undefined;
 
             var picwInfo = null; var picwContractorStaff = []; var attendAsText = '';
-            if (isExistingSaf && !dataSource.reUse) {
+            var reUseRemoved = [];
+            if (isExistingSaf && dataSource.reUse) {
+                // @@NOTE: re-use: the PICW list is the primary contractor's (as for edit), the original PICW is kept only if still in the list (PICW acceptable + valid Safe Pass)
+                //         and accredited (attendAs not empty, twcUtils.getProfiles), otherwise it must be entered anew
+                if (dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR]) { picwInfo = { contractor: dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR] }; }
 
-                // @@NOTE: the PICW is cleared on a re-used SAF
+            } else if (isExistingSaf) {
+
                 picwInfo = coreSQL.first('select id, custrecord_twc_prof_company as contractor, custrecord_twc_prof_phone as phone from customrecord_twc_prof where id = ' + dataSource[twcSaf.Fields.PICW]);
                 // @@NOTE: a profile can be linked to multiple companies (customrecord_twc_profilec), so the PICW staff list must be the SAF primary contractor's staff, not the PICW home company's
                 if (picwInfo && dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR]) { picwInfo.contractor = dataSource[twcSaf.Fields.PRIMARY_CONTRACTOR]; }
@@ -423,8 +446,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 });
             }
 
+            if (isExistingSaf && dataSource.reUse && picwInfo && dataSource[twcSaf.Fields.PICW]) {
+                var oldPicw = picwContractorStaff.find(s => { return s.value == dataSource[twcSaf.Fields.PICW] });
+                if (oldPicw && oldPicw.attendAs.length > 0) {
+                    picwInfo.id = oldPicw.value;
+                    picwInfo.phone = oldPicw.phone;
+                } else {
+                    var oldPicwName = coreSQL.first(`select name from customrecord_twc_prof where id = ${parseInt(dataSource[twcSaf.Fields.PICW]) || 0}`)?.name;
+                    reUseRemoved.push(`PICW <b>${oldPicwName || dataSource[twcSaf.Fields.PICW]}</b> is no longer accredited / valid for PICW, please select a new PICW`);
+                }
+            }
+
             if (isExistingSaf) {
-                attendAsText = picwContractorStaff.find(s => { return s.value == picwInfo.id })?.attendAsText
+                attendAsText = picwContractorStaff.find(s => { return s.value == picwInfo?.id })?.attendAsText
             }
 
 
@@ -441,7 +475,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     { id: 'saf-crew-member_name', title: 'Visitor' },
                     { id: 'saf-crew-attend-as', title: 'Certificates' },
                 ],
-                dataSource: getSafCrew(dataSource),
+                dataSource: getSafCrew(dataSource, reUseRemoved),
                 showToolbar: true,
                 showEditDelete: { after: false },
                 newToolBarButton: `
@@ -456,6 +490,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 `
             }
             var step4Info = { id: 'site-access-step-4a', fields: [] };
+
+            // @@NOTE: re-use: tell the user which PICW / crew members of the original SAF were not re-used (no longer accredited)
+            if (reUseRemoved.length > 0) {
+                step4Info.fields.push({ id: 'saf-reuse-removed', type: twcUI.CTRL_TYPE.PANEL, title: 'Not re-used from the original SAF', content: `<ul class="twc">${reUseRemoved.map(r => { return `<li>${r}</li>`; }).join('')}</ul>`, styles: { width: '100%' }, lineBreak: true });
+            }
 
             // step4Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw', label: 'PICW', allowAll: false, value: picwInfo?.contractor, dataSource: primaryContractors, noAutoSelect: true });
             step4Info.fields.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'saf-picw-staff', label: 'PICW', value: picwInfo?.id, dataSource: picwContractorStaff, allowAll: false });

@@ -12,6 +12,38 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             return `${_safLink}&recId=${id}&edit=T&reUse=T${siteId ? `&siteId=${siteId}` : ''}`
         }
 
+        // @@NOTE: SAF Re-Use: Option A = keep the original site (pre-selected), Option B = pick a different site
+        //         used by the SAF locator list ('re-use' link) and by the SAF page ('Re Use' button), saf = { id, name, site_id, site_id_text }
+        function openReUseDialog(saf, sites) {
+            sites = (sites || []).slice();
+            // @@NOTE: the SAF site may not be in the list (e.g. non public site for non employees), make sure it is there so it can be preselected
+            if (!sites.find(s => { return s.value == saf.site_id })) {
+                sites.unshift({ value: saf.site_id, text: saf.site_id_text });
+            }
+
+            var formConfig = {
+                controls: [
+                    { type: twcUI.CTRL_TYPE.DROPDOWN, id: 'reuse-site', label: 'Site (keep the original site or select a different one)', dataSource: sites, value: saf.site_id, allowAll: false, width: '100%', mandatory: true, lineBreak: true },
+                ]
+            }
+            var form = twcUI.init(formConfig);
+            dialog.open({
+                title: `Re-use SAF ${saf.name}`,
+                content: form.ui,
+                size: { width: '450px', height: '200px' },
+                ok: () => {
+                    try {
+                        var values = form.getValues(true);
+                        location.href = safReuseLink(saf.id, values['reuse-site'].value);
+                        return true;
+                    } catch (error) {
+                        dialog.error(error);
+                        return false;
+                    }
+                }
+            });
+        }
+
         class TWCSiteTable {
             #page = null;
             #table = null;
@@ -49,32 +81,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             reUseSaf(saf) {
                 var sites = this.#page.data.data.safInfo.sites.map(s => { return { value: s.id, text: s.name } });
-                // @@NOTE: the SAF site may not be in the list (e.g. non public site for non employees), make sure it is there so it can be preselected
-                if (!sites.find(s => { return s.value == saf.site_id })) {
-                    sites.unshift({ value: saf.site_id, text: saf.site_id_text });
-                }
-
-                var formConfig = {
-                    controls: [
-                        { type: twcUI.CTRL_TYPE.DROPDOWN, id: 'reuse-site', label: 'Site', dataSource: sites, value: saf.site_id, allowAll: false, width: '100%', mandatory: true, lineBreak: true },
-                    ]
-                }
-                var form = twcUI.init(formConfig);
-                dialog.open({
-                    title: `Re-use SAF ${saf.name}`,
-                    content: form.ui,
-                    size: { width: '450px', height: '200px' },
-                    ok: () => {
-                        try {
-                            var values = form.getValues(true);
-                            location.href = safReuseLink(saf.id, values['reuse-site'].value);
-                            return true;
-                        } catch (error) {
-                            dialog.error(error);
-                            return false;
-                        }
-                    }
-                });
+                openReUseDialog(saf, sites);
             }
 
             colInit(tbl, col) {
@@ -222,7 +229,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.ui.getControl('saf-reuse').on('change', e => {
                     if (e.value) {
                         this.#page.dirty = false;
-                        location.href = safReuseLink(e.value);
+                        // @@NOTE: re-use from a new SAF: the user already picked the target site, keep it (Option B when the original SAF is on another site)
+                        //         it used to open the re-used SAF on its original site
+                        location.href = safReuseLink(e.value, this.data.siteAccessInfo.siteId);
                     }
                 })
 
@@ -1135,7 +1144,16 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var file = jQuery(e.currentTarget).data('file')
                     await this.previewFile(file, e)
                 })
-                this.ui.getControl('re-use-button')?.on('click', e => { location.href = safReuseLink(this.data.siteAccessInfo.id) });
+                // @@NOTE: SAF Re-Use: same site picker as the SAF locator (Option A same site / Option B different site), it used to always re-use on the same site
+                this.ui.getControl('re-use-button')?.on('click', e => {
+                    try {
+                        var info = this.data.siteAccessInfo;
+                        var sites = this.postSync({ action: 'get-reuse-sites' }, {}).data;
+                        openReUseDialog({ id: info.id, name: info.name, site_id: info.siteId, site_id_text: this.data.siteInfo?.site?.name || info.siteId }, sites);
+                    } catch (error) {
+                        dialog.error(error);
+                    }
+                });
                 this.ui.getControl('upload-photos-button')?.on('click', e => { this.uploadPhotos(); })
                 this.ui.getControl('change-status-button')?.on('click', e => { this.changeStatus(); })
                 this.ui.getControl('assign-reviewer-button')?.on('click', e => { this.assignReviewer(); })

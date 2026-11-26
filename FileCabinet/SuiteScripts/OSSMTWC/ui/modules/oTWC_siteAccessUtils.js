@@ -327,6 +327,14 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 }
             }
 
+            // @@NOTE: new / re-used SAF: the customer and the primary contractor must be Accredited / ACA to be Renewed (the drop downs only list those, this is the server side check)
+            //         not applied when editing an existing SAF: its saved companies are kept in the drop downs on purpose (data/oTWC_safUI.js: Step 3, ensureOption)
+            if (!payload.id || payload.reUse) {
+                core.array.each(getNotAccreditedCompanies([payload['saf-customer'], payload['saf-vendor']]), c => {
+                    validationErrors.push(`<b>${c.name}</b> accreditation status is <b>${c.status_name || 'not set'}</b>, a SAF cannot be submitted`);
+                });
+            }
+
             validateCompanyInsurance(payload['saf-customer']);
             if (payload['saf-vendor'] != payload['saf-customer']) {
                 validateCompanyInsurance(payload['saf-vendor']);
@@ -564,7 +572,8 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 })
             }
 
-            if (payload.crews_deleted) {
+            // @@NOTE: re-use: the crew rows belong to the original SAF, they must never be deleted (re-used crew rows have no id anyway, data/oTWC_safUI.js: getSafCrew)
+            if (payload.crews_deleted && !payload.reUse) {
                 core.array.each(payload.crews_deleted, c => {
                     try {
                         if (!c.id) { return; }
@@ -632,6 +641,19 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             return { id: safId, errors: errors }
 
+        }
+
+        // @@NOTE: the companies (customer / primary contractor) whose accreditation status does not allow a SAF (only Accredited / ACA to be Renewed do)
+        //         same rule as the SAF drop downs (twcUtils.getCompanies) and userInfo.canEnterSAF (oTWC_config.js)
+        function getNotAccreditedCompanies(companyIds) {
+            var ids = (companyIds || []).map(i => { return parseInt(i); }).filter(i => { return !isNaN(i); });
+            if (ids.length == 0) { return []; }
+            var allowed = [twcUtils.CompanyAccreditationStatus.Accredited, twcUtils.CompanyAccreditationStatus.ToBeRenewed];
+            return coreSQL.run(`
+                select  c.id, c.name, c.custrecord_twc_co_accred_status as status, BUILTIN.DF(c.custrecord_twc_co_accred_status) as status_name
+                from    customrecord_twc_company c
+                where   c.id in (${ids.join(',')})
+            `).filter(c => { return allowed.indexOf(parseInt(c.status)) < 0; });
         }
 
         // @@NOTE: multiselect value (array or comma separated string) => the ids of the files still active (customrecord_twc_file), as an array
@@ -1123,16 +1145,28 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                     }
 
                     if (reUse) {
+                        // @@NOTE: SAF Re-Use (client spec): rejected unless the customer and the primary contractor are Accredited / ACA to be Renewed
+                        var notAccredited = getNotAccreditedCompanies([saf[twcSaf.Fields.CUSTOMER], saf[twcSaf.Fields.PRIMARY_CONTRACTOR]]);
+                        if (notAccredited.length > 0) {
+                            throw new Error(`This SAF cannot be re-used: ${notAccredited.map(c => { return `<b>${c.name}</b> accreditation status is <b>${c.status_name || 'not set'}</b>`; }).join(', ')}`);
+                        }
+
                         saf.reUse = reUse;
                         saf[twcSaf.Fields.STATUS] = twcSaf.Status.Pending;
-                        saf[twcSaf.Fields.PICW] = null;
+                        // @@NOTE: the PICW and the crew are re-used only if still accredited / valid (data/oTWC_safUI.js: getSafCrew, Step 4), time blocks are not re-used (getAllSafTimeBlocks)
 
-                        // @@NOTE: the user can pick a different site when re-using a SAF (SAF locator re-use dialog)
-                        //         the structure belongs to the original site so it must be cleared (crews and actions are not copied on re-use anyway)
+                        // @@NOTE: Option B - the user picked a different site (re-use site dialog, ui/js/oTWC_siteAccess.js: openReUseDialog)
+                        //         Electrical Works / Drone Use are kept, the site specific answers (mast / TL building / rooftop / crane, structure, accommodation) must be entered anew
                         if (pageData.siteId && pageData.siteId != saf[twcSaf.Fields.SITE]) {
                             saf[twcSaf.Fields.SITE] = pageData.siteId;
                             saf.siteId = pageData.siteId;
+                            saf[twcSaf.Fields.MAST_ACCESS] = null;
+                            saf[twcSaf.Fields.MAST_ACCESS_ABOVE_60M] = null;
+                            saf[twcSaf.Fields.TL_BUILDING_ACCESS] = null;
+                            saf[twcSaf.Fields.ROOFTOP_ACCESS] = null;
+                            saf[twcSaf.Fields.CRANE__CHERRYPICKER] = null;
                             saf[twcSaf.Fields.STRUCTURE] = null;
+                            saf[twcSaf.Fields.ACCOMMODATION] = null;
                         }
                     }
 
