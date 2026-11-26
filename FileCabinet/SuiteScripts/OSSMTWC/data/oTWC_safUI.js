@@ -17,7 +17,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (saf.id == 'new') {
                 return '<span style="font-weight: bold; color: magenta">reserved</span>';
             } else if (saf.id == null) {
-                return '<span style="font-weight: bold; color: silver">slot used</span>';
+                // @@NOTE: a SAF this user cannot see (oTWC_config.js: getSafAccessFilter), client wording: 'unavailable' (it was 'slot used')
+                return '<span style="font-weight: bold; color: silver">unavailable</span>';
             }
             if (saf.code == 'SAF') { return saf.code; }
             return `<a class="twc" href="${getSafUrl()}&recId=${saf.id}" target="_blank">${saf.code}</a>`
@@ -233,11 +234,10 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     if (dayCss) { specialDates[k] = { css: dayCss }; }
                     for (var ks in options.siteTimeBlocks[k]) {
                         if (ks == 'blocksCount') { continue; }
+                        // @@NOTE: a SAF with no ID means the saf exists but this user cannot see it: nothing is written on the day, the day colour (amber / red) is enough
+                        //         (client request, it used to show 'n slots used'), the time block list says 'unavailable' (getSafLink)
                         if (options.siteTimeBlocks[k][ks].saf.id) {
                             datesContent[k].push(`${getSafLink(options.siteTimeBlocks[k][ks].saf)}`);
-                        } else {
-                            // @@NOTE: a SAF wiht no ID means the saf exists but this user cannot see it, so we just mark the slots used
-                            datesContent[k].push(`${options.siteTimeBlocks[k][ks].blocks.length} slots used<br />`);
                         }
                     }
                 }
@@ -609,7 +609,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo, twcSafLog.LogCategory.Photos));
                 }
 
-                fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Files(dataSource, userInfo));
+                // @@NOTE: MS / H&S documents: not shown to external users who did not raise the SAF (unless primary contractor), see ui/oTWC_siteAccess_sl.js showContractorFiles (Issue 316)
+                if (options.showContractorFiles !== false) { fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Files(dataSource, userInfo)); }
 
                 // @@NOTE: external users see the log too, limited to status changes and comments (see getSAFInfoPanels_WorkFlowInfo_Logs)
                 fieldGroups.push(getSAFInfoPanels_WorkFlowInfo_Logs(dataSource, userInfo));

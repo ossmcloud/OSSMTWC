@@ -428,7 +428,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         //                  contractor:         SAFs where their company is the Primary Contractor
         //                                      + agent pass: SAFs for a customer on their agent passes, raised (SAF author) by a profile of their own company
         //                                        that also holds an agent pass for that same customer
-        //              a SAF not visible is shown as 'slot used' on the calendar (no SAF number, no link)
+        //              a SAF not visible is shown as 'unavailable' in the time block list (no SAF number, no link, no text on the calendar day, only its colour)
+        //              edit / cancel is further limited to the company that raised the SAF (isSafRaisedByUserCompany)
         //              returns a sql fragment starting with ' and ' ('' for employees), alias is the SAF table alias (optional)
         //              @@NOTE: field ids are literals (custrecord_twc_saf_customer / custrecord_twc_saf_primary_contractor / custrecord_twc_saf_author), oTWC_saf.js is not loaded here
         function getSafAccessFilter(userInfo, alias) {
@@ -454,6 +455,22 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         function isUserAllowedSaf(userInfo, safId) {
             if (userInfo.isEmployee) { return true; }
             return !!coreSQL.first(`select s.id from customrecord_twc_saf s where s.id = ${parseInt(safId) || 0} ${getSafAccessFilter(userInfo, 's')}`);
+        }
+
+        // @@IMPORTANT: SAF edit / cancel by external users (Issue 316): only the users of the company that raised the SAF, i.e. the company of the SAF Author profile
+        //              (home company or linked via customrecord_twc_profilec). Other companies seeing the SAF (getSafAccessFilter) can only view / re-use it
+        //              and do not see its MS / H&S documents. Employees: always true
+        function isSafRaisedByUserCompany(userInfo, safId) {
+            if (userInfo.isEmployee) { return true; }
+            var companyId = parseInt(userInfo.companyProfile?.id) || 0;
+            if (!companyId) { return false; }
+            return !!coreSQL.first(`
+                select  s.id
+                from    customrecord_twc_saf s
+                join    customrecord_twc_prof p on p.id = s.custrecord_twc_saf_author
+                where   s.id = ${parseInt(safId) || 0}
+                and     (p.custrecord_twc_prof_company = ${companyId} or p.id in (select pc.${twcProfileCompany.Fields.PROFILE} from ${twcProfileCompany.Type} pc where pc.${twcProfileCompany.Fields.COMPANY} = ${companyId} and pc.isinactive = 'F'))
+            `);
         }
 
         function isUserAllowedSrf(userInfo, srfId) {
@@ -540,6 +557,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             isUserAllowedSrf: isUserAllowedSrf,
             getSafAccessFilter: getSafAccessFilter,
             isUserAllowedSaf: isUserAllowedSaf,
+            isSafRaisedByUserCompany: isSafRaisedByUserCompany,
             canSeeSds: canSeeSds,
             cfg: getConfig,
             getNsTable: getNsTable,

@@ -71,7 +71,7 @@
     <tr><td><b>available</b> (green link)</td><td>Click to reserve. Only active once you have chosen the SAF <b>Type</b> in Step 1.</td></tr>
     <tr><td><b>reserved</b> (magenta)</td><td>Reserved by you on this SAF.</td></tr>
     <tr><td>a SAF number</td><td>Booked by another SAF you can see. Click to open it.</td></tr>
-    <tr><td><b>slot used</b></td><td>Booked by a SAF you can't see.</td></tr>
+    <tr><td><b>unavailable</b></td><td>Booked by a SAF you can't see (the calendar day only shows the amber / red colour).</td></tr>
     <tr><td><b>not available</b></td><td>In the past.</td></tr>
 </table>
 <p>The <b>Conditions of Access</b> panel on the right keeps a running summary:</p>
@@ -174,7 +174,7 @@
     <li><b>SAF info</b>: ID, author, submitted on, start, end, site, type, status, customer, primary contractor, PICW, access flags, structure / accommodation and summary of works.</li>
     <li><b>Crew / Visitors</b> and <b>Equipment Actions</b> tables.</li>
     <li><b>Completion Photos</b> and <b>Completion Photos Log</b> (SRF works only).</li>
-    <li><b>Contractor Files</b>: the H&amp;S and method statement documents attached.</li>
+    <li><b>Contractor Files</b>: the H&amp;S and method statement documents attached. Only shown to the company that raised the SAF and to its primary contractor.</li>
     <li><b>SAF Logs</b>: status changes and comments.</li>
     <li><b>Existing SAFs</b>: the site's other SAFs.</li>
     <li>On the right, the <b>Conditions of Access</b> and the booked <b>Time Blocks</b>.</li>
@@ -183,12 +183,13 @@
 
 <h2 id="change">Changing, re-using or cancelling a SAF</h2>
 <h3>Editing</h3>
-<p>Customers and contractors can click <span class="ui">Edit</span> while the SAF is <b>Pending</b>, <b>Approved</b> or <b>Feedback Issued</b>, and the SAF isn't in the past. When you re-submit you must describe the changes (<i>"Please describe the changes made to this SAF"</i>).</p>
+<p>Customers and contractors can only edit or cancel the SAFs raised by their own company. Other SAFs you can see are view only: contact the person who raised the SAF if it needs changing.</p>
+<p>Click <span class="ui">Edit</span> while the SAF is <b>Pending</b>, <b>Approved</b> or <b>Feedback Issued</b>, and the SAF isn't in the past. When you re-submit you must describe the changes (<i>"Please describe the changes made to this SAF"</i>).</p>
 <div class="warn">Editing an <b>Approved</b> SAF sends it back to <b>Pending</b> for approval, unless it qualifies for auto-approval. Don't edit an approved SAF just before the visit unless you have to.</div>
 <h3>Re-using</h3>
-<p>Click <span class="ui">Re Use</span> (or <span class="ui">re-use</span> in the list) to start a new SAF from an existing one. You can pick a different <b>Site</b>. The PICW, crew and equipment actions are not copied. Use this for repeat visits, and to replace cancelled or past SAFs.</p>
+<p>Click <span class="ui">Re Use</span> (or <span class="ui">re-use</span> in the list) to start a new SAF from an existing one. You can keep the same <b>Site</b> or pick a different one. The PICW and crew are copied only if still accredited; time blocks and equipment actions are not copied (see <a href="#steps">Step 1</a>). Use this for repeat visits, and to replace cancelled or past SAFs.</p>
 <h3>Cancelling</h3>
-<p>Click <span class="ui">Cancel SAF</span> and enter the reason. Customers and contractors can cancel their own SAFs while they are <b>Pending</b> or <b>Approved</b>. A cancelled SAF can't be reopened; use <b>Re Use</b> instead. Equipment actions on a cancelled SAF are released so they can go on another SAF.</p>
+<p>Click <span class="ui">Cancel SAF</span> and enter the reason. Customers and contractors can cancel the SAFs raised by their own company while they are <b>Pending</b>, <b>Approved</b> or <b>Awaiting Photos</b>. A cancelled SAF can't be reopened; use <b>Re Use</b> instead. Equipment actions on a cancelled SAF are released so they can go on another SAF.</p>
 
 <h2 id="photos">Completion photos</h2>
 <p>For installation, removal and swap works, Towercom needs photos of the completed works before it can mark the equipment as installed or removed.</p>

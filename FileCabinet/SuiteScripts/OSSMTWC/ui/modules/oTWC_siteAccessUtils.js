@@ -75,7 +75,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             var timeBlocks = {};
 
             // @@NOTE: the SAFs of the site the user can see (oTWC_config.js: getSafAccessFilter, customer / primary contractor / agent pass rules)
-            //         any other SAF is shown as 'slot used': no SAF number, no link (it used to follow the company ACL: agent pass users saw all the customer SAFs)
+            //         any other SAF is shown as 'unavailable': no SAF number, no link (it used to follow the company ACL: agent pass users saw all the customer SAFs)
             var visibleSafs = null;
             if (!userInfo.isEmployee) {
                 visibleSafs = coreSQL.run(`
@@ -117,7 +117,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 if (!timeBlocks[tb.block_date]) { timeBlocks[tb.block_date] = { blocksCount: 0 }; }
                 if (!timeBlocks[tb.block_date][safId]) {
 
-                    var safLink = hidden ? { id: null, code: 'slot used' } : { id: tb.saf_id, code: safCode };
+                    var safLink = hidden ? { id: null, code: 'unavailable' } : { id: tb.saf_id, code: safCode };
 
 
                     timeBlocks[tb.block_date][safId] = {
@@ -282,6 +282,10 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
 
             // @@NOTE: editing / re-using an existing SAF: same access rule as the SAF page (oTWC_config.js: getSafAccessFilter)
             if (payload.id && !twcConfig.isUserAllowedSaf(userInfo, payload.id)) { throw new Error('You do not have access to this SAF record'); }
+            // @@NOTE: editing (not re-use): external users can only change the SAFs raised by their own company (Issue 316, same rule as the page: ui/oTWC_siteAccess_sl.js canEdit)
+            if (payload.id && !payload.reUse && !twcConfig.isSafRaisedByUserCompany(userInfo, payload.id)) {
+                throw new Error('This SAF was raised by another company and cannot be changed, please contact the person who raised it');
+            }
 
             var earliestDate = '2099-31-12'; var latestDate = '1900-01-01'; var blockCount = 0;
             for (var d in options.accessRequirements.timeBlocks) {
@@ -665,16 +669,15 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             return ids.filter(i => { return active.indexOf(i) >= 0; });
         }
 
-        // @@NOTE: customers / contractors (non employees) can cancel their own SAF only when it is Pending or Approved
-        //         own SAF = the user's company is the SAF customer or primary contractor, the user also needs at least EDIT permission (VIEW is read-only)
+        // @@NOTE: customers / contractors (non employees) can cancel their own SAF only when it is Pending, Approved or Awaiting Photos (Issue 316: SAFs in the past)
+        //         own SAF = raised by the user's company (twcConfig.isSafRaisedByUserCompany, Issue 316: it was 'the user's company is the SAF customer or primary contractor'),
+        //         the user also needs at least EDIT permission (VIEW is read-only)
         //         used by the page (ui/oTWC_siteAccess_sl.js: 'Cancel SAF' button) and enforced again on the server (editSafStatus)
-        function canExternalCancelSaf(userInfo, safStatus, safCustomer, safPrimaryContractor) {
+        function canExternalCancelSaf(userInfo, safStatus, safId) {
             if (!userInfo || userInfo.isEmployee) { return false; }
             if ((userInfo.permission?.lvl || 0) < twcConfig.PERMISSION_LEVEL.EDIT) { return false; }
-            if (safStatus != twcSaf.Status.Pending && safStatus != twcSaf.Status.Approved) { return false; }
-            var companyId = userInfo.companyProfile?.id;
-            if (!companyId) { return false; }
-            return safCustomer == companyId || safPrimaryContractor == companyId;
+            if (safStatus != twcSaf.Status.Pending && safStatus != twcSaf.Status.Approved && safStatus != twcSaf.Status.AwaitingPhotos) { return false; }
+            return twcConfig.isSafRaisedByUserCompany(userInfo, safId);
         }
 
         // @@NOTE: customers / contractors (non employees) uploading completion photos move their own SAF to 'Photos Received'
@@ -701,7 +704,7 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                 //         no other status change and no comment only change (see canExternalCancelSaf / canExternalSetPhotosReceived)
                 if (!userInfo?.isEmployee) {
                     var externalAllowed = statusChanged && (
-                        (options.status == twcSaf.Status.Cancelled && canExternalCancelSaf(userInfo, saf.status, saf.customer, saf.primaryContractor)) ||
+                        (options.status == twcSaf.Status.Cancelled && canExternalCancelSaf(userInfo, saf.status, options.saf)) ||
                         canExternalSetPhotosReceived(userInfo, options, saf)
                     );
                     if (!externalAllowed) {

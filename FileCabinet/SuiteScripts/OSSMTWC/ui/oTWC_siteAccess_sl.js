@@ -73,6 +73,11 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 var safClosed = !!context.request.parameters.recId && (safStatus == twcSaf.Status.Cancelled || safStatus == twcSaf.Status.Rejected);
                 // @@NOTE: 'Feedback Issued' = TL sent the SAF back to the submitter, who can edit and re-submit it (with a comment, see requireResubmitComment)
                 var canEdit = pageData.userInfo.isEmployee ? !safClosed : (safStatus == twcSaf.Status.Pending || safStatus == twcSaf.Status.Approved || safStatus == twcSaf.Status.FeedbackIssued);
+                // @@NOTE: Issue 316: customers / contractors can only edit (and cancel) the SAFs raised by their own company (twcConfig.isSafRaisedByUserCompany),
+                //         the other SAFs they can see (agent pass, customer, primary contractor) are view only and their MS / H&S documents are not shown
+                var isExistingSaf = !!context.request.parameters.recId && context.request.parameters.reUse != 'T';
+                var safRaisedByUser = isExistingSaf ? twcConfig.isSafRaisedByUserCompany(pageData.userInfo, context.request.parameters.recId) : true;
+                if (!pageData.userInfo.isEmployee && !safRaisedByUser) { canEdit = false; }
                 // @@NOTE: a SAF in the past cannot be edited (unless power user), also when feedback was issued: the submitter must use 'Re Use' to create a new SAF
                 if (canEdit && safIsInThePast) {
                     if (!pageData.userInfo.powerUser) {
@@ -87,6 +92,8 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
 
                 // @@NOTE: a closed SAF cannot be opened in edit mode, not even by adding edit=T to the url
                 if (safClosed) { pageData.editMode = false; }
+                // @@NOTE: same for customers / contractors on an existing SAF they cannot edit (status, in the past, raised by another company), edit=T used to open the builder anyway
+                if (!pageData.userInfo.isEmployee && isExistingSaf && !canEdit) { pageData.editMode = false; }
 
                 // @@NOTE: external users editing / re-submitting an existing SAF (not 'Re Use') must enter a comment (ui/js/oTWC_siteAccess.js: saf-submit)
                 //         computed here because pageData.userInfo is removed from the client page in production (oTWC_baseView_ue.js)
@@ -100,8 +107,7 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 var canChangeStatus = (pageData.userInfo.isEmployee) ? (safStatus != twcSaf.Status.Complete && !safClosed) : false;
                 if (core.me()) { canChangeStatus = true; }
                 // @@NOTE: customers / contractors can only cancel their own SAF when Pending or Approved (twcSiteAccessUtils.canExternalCancelSaf, also enforced on the server)
-                var externalCanCancel = !!context.request.parameters.recId && twcSiteAccessUtils.canExternalCancelSaf(pageData.userInfo, safStatus,
-                    pageData.siteAccessInfo[twcSaf.Fields.CUSTOMER], pageData.siteAccessInfo[twcSaf.Fields.PRIMARY_CONTRACTOR]);
+                var externalCanCancel = isExistingSaf && safRaisedByUser && twcSiteAccessUtils.canExternalCancelSaf(pageData.userInfo, safStatus, context.request.parameters.recId);
                 if (externalCanCancel) {
                     // @@NOTE: externalCancel => the client shows only the comment (reason) box, no status drop down (ui/js/oTWC_siteAccess.js: cancelSafExternal)
                     pageData.externalCancel = true;
@@ -127,7 +133,9 @@ define(['N/file', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 5
                 html = html.replaceAll('{SITE_MAIN_INFO_PANEL}', `${twcSiteInfoUtils.renderInfoPanel(pageData.siteInfo)}`)
 
                 var readOnly = context.request.parameters.edit != 'T' || safClosed;
-                var fieldGroups = twcSiteAccessUtils.getSAFInfoPanels(pageData.siteAccessInfo, pageData.userInfo, { siteTimeBlocks: pageData.siteTimeBlocks, editMode: pageData.editMode });
+                // @@NOTE: Contractor Files (MS / H&S) in view mode: employees, the company that raised the SAF and the SAF primary contractor (the files are theirs) only (Issue 316)
+                var showContractorFiles = pageData.userInfo.isEmployee || safRaisedByUser || (!!pageData.userInfo.companyProfile?.id && pageData.userInfo.companyProfile.id == pageData.siteAccessInfo[twcSaf.Fields.PRIMARY_CONTRACTOR]);
+                var fieldGroups = twcSiteAccessUtils.getSAFInfoPanels(pageData.siteAccessInfo, pageData.userInfo, { siteTimeBlocks: pageData.siteTimeBlocks, editMode: pageData.editMode, showContractorFiles: showContractorFiles });
                 html = html.replaceAll('{SITE_ACCESS_DETAILS}', twcUIPanel.render(fieldGroups, readOnly));
 
                 if (context.request.parameters.recId === undefined) {
