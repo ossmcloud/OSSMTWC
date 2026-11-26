@@ -36,7 +36,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     var values = res?.values || {};
                     this.page.find('.twc-dashboard').each((i, e) => {
                         var value = values[jQuery(e).data('id')];
-                        jQuery(e).find('.twc-dashboard-content').html((value === undefined || value === null) ? '-' : value);
+                        var content = jQuery(e).find('.twc-dashboard-content');
+                        content.html((value === undefined || value === null) ? '-' : value);
+                        // @@NOTE: nothing to do on this KPI: value greyed out
+                        if (value === 0 || value === '0') { content.css('color', 'var(--input-bkgd-color-disabled)'); }
                     })
                 }).catch(err => {
                     var message = err?.message || err;
