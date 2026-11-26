@@ -33,8 +33,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 let actions = '';
 
-                // @@NOTE: hide the equipment neither licenced nor installed (oTWC_utils.js: isEquipmentInactive), off by default, reload with hideInactive=T (ui/js/oTWC_inventory.js)
-                var hideInactive = context.request.parameters.hideInactive == 'T';
+                // @@NOTE: hide the equipment neither licenced nor installed (oTWC_utils.js: isEquipmentInactive), ON by default, reload with hideInactive=F to show them (ui/js/oTWC_inventory.js)
+                var hideInactive = context.request.parameters.hideInactive != 'F';
                 actions += `<div style="white-space: nowrap; width: 80px; margin-top: -11px;">${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'hide-inactive-equipment-toggle', label: 'Hide Inactive', labelNoWrap: true, value: hideInactive, small: true })}</div>`;
 
                 // @@NOTE: grouped view (default) shows TME / GIE with the related ATME / Feeders as child rows, ungrouped shows one table per equipment class

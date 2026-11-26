@@ -65,7 +65,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             html = html.replace('{FILTER_CUSTOMER}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Customer', width: '50%', multiSelect: true, id: twcEqip.Fields.CUSTOMER, noEmpty: true, dataSource: twcUtils.getCustomers(userInfo), noAutoSelect: true }));
             html = html.replace('{FILTER_COUNTIES}', twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, label: 'Counties', width: '50%', multiSelect: true, id: twcSite.Fields.ADDRESS_COUNTY, noEmpty: true, dataSource: twcUtils.getCounties() }));
             // @@NOTE: hides the rows flagged eq_inactive (see getInventoryData), applied client side (ui/js/oTWC_siteLocatorPanel.js: updateResults)
-            html = html.replace('{FILTER_HIDE_INACTIVE}', twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'twc-hide-inactive-eq', label: 'Hide Inactive (not licenced and not installed)', labelNoWrap: true, value: false, small: true }));
+            html = html.replace('{FILTER_HIDE_INACTIVE}', twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'twc-hide-inactive-eq', label: 'Hide Inactive (not licenced and not installed)', labelNoWrap: true, value: true, small: true }));
 
             html = html.replace('{FILTER_LAT}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Latitude', id: 'twc-coord-latitude', width: '250px' }));
             html = html.replace('{FILTER_LNG}', twcUI.render({ type: twcUI.CTRL_TYPE.NUMBER, label: 'Longitude', id: 'twc-coord-longitude', width: '250px' }));

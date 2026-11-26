@@ -540,7 +540,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             if (userinfo?.isEmployee) {
                 eqFilters.controls.push({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'site-equipment-customer', label: 'Customer', width: '250px', value: '', noAutoSelect: true, readOnly: false, dataSource: eqUI.getSiteEquipmentCustomers(dataSource.id) });
             }
-            eqFilters.controls.push({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'hide-inactive-equipment-toggle', label: 'Hide Inactive (not licenced and not installed)', labelNoWrap: true, value: false, small: true, readOnly: false });
+            eqFilters.controls.push({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'hide-inactive-equipment-toggle', label: 'Hide Inactive (not licenced and not installed)', labelNoWrap: true, value: true, small: true, readOnly: false });
             var eqControls = [eqFilters];
             eqControls.push(...eqUI.getInvInfoPanels(dataSource, userinfo));
             fieldGroups.push({ id: 'site-equipment', title: 'Equipment', collapsed: true, controls: eqControls });

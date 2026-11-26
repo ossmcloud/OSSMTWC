@@ -65,6 +65,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     }
                 })
 
+                // @@NOTE: 'Hide Inactive' toggle is on by default (data/oTWC_siteUI.js), apply the equipment filters on load
+                this.applyEquipmentFilters();
+
             }
 
             // @@NOTE: Equipment section filters (data/oTWC_siteUI.js: getSiteInfoPanels), applied on screen (no reload):

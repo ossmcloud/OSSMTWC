@@ -20,7 +20,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     noSort: true,
                     sortIdx: 999,
                     initValue: (d) => {
-                        return `<a href="${safLink}&siteId=${d.site_id}&recId=${d.id}">view</a>`;
+                        // @@NOTE: 'Hide Inactive' is on by default on the site equipment page, pass hideInactive=F for an inactive item so it is shown (and highlighted)
+                        return `<a href="${safLink}&siteId=${d.site_id}&recId=${d.id}${d.eq_inactive == 'T' ? '&hideInactive=F' : ''}">view</a>`;
                     }
                 })
                 this.#table = new uiTable.TableControl(jQuery('#twc_sites_table'), this.colInit, {
@@ -187,9 +188,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                             url.searchParams.delete('grouped');
                         }
                     } else {
-                        // @@NOTE: hide inactive equipment (ui/oTWC_inventory_sl.js), off is the default so we only pass hideInactive=T
-                        if (on) {
-                            url.searchParams.set('hideInactive', 'T');
+                        // @@NOTE: hide inactive equipment (ui/oTWC_inventory_sl.js), on is the default so we only pass hideInactive=F
+                        if (!on) {
+                            url.searchParams.set('hideInactive', 'F');
                         } else {
                             url.searchParams.delete('hideInactive');
                         }
