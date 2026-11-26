@@ -245,6 +245,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             getInventoryData: getInventoryData,
             getSites: getSites,
             getInvInfoPanels: twcInventoryUI.getInvInfoPanels,
+            getSiteEquipmentCustomers: twcInventoryUI.getSiteEquipmentCustomers,
             getInventoryInfo: (pageData) => {
                 var inv = {};
                 if (pageData.siteId) {

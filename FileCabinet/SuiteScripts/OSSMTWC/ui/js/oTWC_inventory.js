@@ -177,6 +177,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     await this.addEquipment();
                 });
                 this.ui.on('change', e => {
+                    if (e.id == 'site-equipment-customer') { this.applyCustomerFilter(); return; }
                     if (e.id != 'group-equipment-toggle' && e.id != 'hide-inactive-equipment-toggle') { return; }
                     var url = new URL(location.href);
                     var on = (e.value && e.value != 'F');
@@ -198,6 +199,15 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     this.wait();
                     location.href = url.toString();
                 })
+            }
+
+            // @@NOTE: 'Customer' drop down (TL users only, ui/oTWC_inventory_sl.js): hides the other customers' equipment on screen, no reload, empty = all customers
+            //         same logic as the Site Info page (ui/js/oTWC_pageBase.js: applyEquipmentFilters), the toggles (Hide Inactive / Group) still reload the page
+            applyCustomerFilter() {
+                var customer = this.ui.getControl('site-equipment-customer')?.value || '';
+                twcPageBase.applyEquipmentFilters(this.ui, (data) => {
+                    return !!customer && (data[twcInventory.Fields.CUSTOMER] || '').toString() != customer.toString();
+                });
             }
 
             async addEquipment() {

@@ -155,6 +155,9 @@ div.twc_action_menu {
     top: 120px;
     right: 70px;
     display: table;
+    /* @@NOTE: fixed => own stacking context: without a z-index the drop down lists in the bar (e.g. Site Equipment 'Customer', navigation)
+               were drawn under the sticky table headers (O/css/html.styles.css: div.o-row-header>div, z-index 99) */
+    z-index: 999;
 }
 
 div.twc_action_menu>div {

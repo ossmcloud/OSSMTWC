@@ -6,9 +6,7 @@
 define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', './oTWC_pageBase.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../data/oTWC_site.js', '../../O/oTWC_dialogEx.js', './oTWC_siteInfoPanel.js', '../../data/oTWC_equipment.js'],
     (core, coreSql, b64, twcPageBase, twcConfig, twcIcons, twcSite, dialog, twcSiteInfoPanel, twcEquipment) => {
 
-        // @@NOTE: Equipment section filters (data/oTWC_siteUI.js: getSiteInfoPanels), rows filtered out get this class (style in ui/views/oTWC_siteInfo.html)
-        const EQ_FILTERED_CLASS = 'twc-eq-filtered';
-
+        // @@NOTE: Equipment section filters (data/oTWC_siteUI.js: getSiteInfoPanels), rows filtered out get the class twcPageBase.EQ_FILTERED_CLASS (style in ui/views/oTWC_siteInfo.html)
 
 
         class TWCSiteInfoPage extends twcPageBase.TWCPageBase {
@@ -86,50 +84,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return false;
             }
 
+            // @@NOTE: shared with the Site Equipment page (ui/js/oTWC_pageBase.js: applyEquipmentFilters)
             applyEquipmentFilters() {
-                const isFiltered = (data) => { return this.isEquipmentFiltered(data); };
-                const setFiltered = (row, filtered) => {
-                    var cssClass = (row.cssClass || '').replace(EQ_FILTERED_CLASS, '').trim();
-                    row.cssClass = filtered ? `${cssClass} ${EQ_FILTERED_CLASS}` : cssClass;
-                    if (filtered) {
-                        row.ui().addClass(EQ_FILTERED_CLASS);
-                    } else {
-                        row.ui().removeClass(EQ_FILTERED_CLASS);
-                    }
-                };
-
-                core.array.each(this.ui.controls, c => {
-                    if (c.type != 'table') { return; }
-                    var rows = c.getDataRows();
-                    if (!rows.find(r => { return r.data?.eq_inactive !== undefined; })) { return; }
-
-                    var parent = null; var parentHasVisibleChild = false;
-                    const closeParent = () => {
-                        if (parent && parentHasVisibleChild) { setFiltered(parent, false); }
-                        parent = null; parentHasVisibleChild = false;
-                    };
-                    core.array.each(rows, row => {
-                        var filtered = isFiltered(row.data);
-                        if (row.data.child) {
-                            if (!filtered) { parentHasVisibleChild = true; }
-                        } else {
-                            closeParent();
-                            parent = row;
-                        }
-                        setFiltered(row, filtered);
-                    });
-                    closeParent();
-
-                    if (!c.twcEqFilterInit) {
-                        c.twcEqFilterInit = true;
-                        var rowInit = c.onRowInit;
-                        c.onRowInit = (table, row) => {
-                            var res = rowInit ? rowInit(table, row) : undefined;
-                            if (row.data && isFiltered(row.data)) { row.cssClass = `${row.cssClass || ''} ${EQ_FILTERED_CLASS}`; }
-                            return res;
-                        };
-                    }
-                });
+                twcPageBase.applyEquipmentFilters(this.ui, (data) => { return this.isEquipmentFiltered(data); });
             }
 
             async onSave() {

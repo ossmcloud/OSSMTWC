@@ -33,6 +33,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
                 let actions = '';
 
+                // @@NOTE: 'Customer' drop down (Issue 323), TL users only, same as the Site Info page equipment filter (data/oTWC_siteUI.js: getSiteInfoPanels)
+                //         filtered on screen, no reload (ui/js/oTWC_inventory.js, shared with Site Info: ui/js/oTWC_pageBase.js applyEquipmentFilters)
+                if (pageData.userInfo.isEmployee && pageData.siteInfo?.site?.id) {
+                    actions += `<div style="white-space: nowrap; margin-top: -11px;">${twcUI.render({ type: twcUI.CTRL_TYPE.DROPDOWN, id: 'site-equipment-customer', label: 'Customer', width: '250px', value: '', noAutoSelect: true, dataSource: twcInventoryUtils.getSiteEquipmentCustomers(pageData.siteInfo.site.id) })}</div>`;
+                }
+
                 // @@NOTE: hide the equipment neither licenced nor installed (oTWC_utils.js: isEquipmentInactive), ON by default, reload with hideInactive=F to show them (ui/js/oTWC_inventory.js)
                 var hideInactive = context.request.parameters.hideInactive != 'F';
                 actions += `<div style="white-space: nowrap; width: 80px; margin-top: -11px;">${twcUI.render({ type: twcUI.CTRL_TYPE.TOGGLE, id: 'hide-inactive-equipment-toggle', label: 'Hide Inactive', labelNoWrap: true, value: hideInactive, small: true })}</div>`;
