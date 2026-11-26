@@ -2,15 +2,22 @@
  * @NApiVersion 2.1
  * @NModuleScope public
  */
-define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_srfReview.js', '../data/oTWC_equipment.js', '../data/oTWC_equipAction.js', '../data/oTWC_srfItem.js', '../data/oTWC_sds.js', './oTWC_sdsEngine.js', '../data/oTWC_file.js'],
-    function (core, coreSql, recu, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSrfReview, twcEquipment, twcEqAct, twcSrfItem, twcSds, twcSdsEngine, twcFile) {
+define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../data/oTWC_profile.js', '../data/oTWC_company.js', '../data/oTWC_utils.js', '../data/oTWC_srfWorkflow.js', '../data/oTWC_srfWorkflowItem.js', '../data/oTWC_srfWorkflowStage.js', '../data/oTWC_srf.js', '../data/oTWC_srfReview.js', '../data/oTWC_equipment.js', '../data/oTWC_equipAction.js', '../data/oTWC_srfItem.js', '../data/oTWC_sds.js', './oTWC_sdsEngine.js', '../data/oTWC_file.js', './oTWC_eqTmeGroup.js'],
+    function (core, coreSql, recu, twcProfile, twcCompany, twcUtils, twcSrfWorkflow, twcSrfWorkflowItem, twcSrfWorkflowStage, twcSrf, twcSrfReview, twcEquipment, twcEqAct, twcSrfItem, twcSds, twcSdsEngine, twcFile, twcEqTmeGroup) {
 
 
         // @IMPORTANT NOTE: API Governance
         //      initEquipment = 10 units + 6 units per action
+        //                      + 2 units per NEW TME installed (Licence, 1st run only: TME Group submit after the save, the id is needed)
+        //                      + swap-out TMEs without a TME Group (data not backfilled only): 10 units + 2 units per child, done only if units allow (see MIN_UNITS_TO_STAMP)
         //      after init equip = 58 units
         //      so we have 1000 - 10 - 58 = 932 / 6 => 155 Max Actions to process we round to 150
+        //      the extra TME Group units are checked against MAX_UNITS_TO_INIT (932) before anything is saved
         const MAX_ACTIONS_TO_INIT = 150;
+        const MAX_UNITS_TO_INIT = 932;
+        // @@NOTE: stamping a swap-out TME (+ children) with its TME Group is skipped (left to the equipment UE / backfill) when units drop below this
+        //         58 units are needed after initEquipment + 10 for the query + 2 per child: this leaves room for ~40 children
+        const MIN_UNITS_TO_STAMP = 150;
 
         // @@HARDCODED
         const WORKFLOW_STATUS = {
@@ -51,13 +58,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             //                  
             //
             //
+            // @@NOTE: eq_tme_group     = TME Group of the action equipment (empty for a new equipment not yet created)
+            //         tme_id_tme_group = TME Group of the existing parent TME picked on the srf item (TME_ID)
             return coreSql.run(`
                 select  act.id as act_id, act.custrecord_twc_eq_action_eq as eq_id, act.custrecord_twc_eq_action_type as ea_type,
-                        srf.custrecord_twc_srf_site, srf.custrecord_twc_srf_cust, 
+                        srf.custrecord_twc_srf_site, srf.custrecord_twc_srf_cust,
+                        act_eq.${twcEquipment.Fields.TME_GROUP} as eq_tme_group,
+                        tme_eq.${twcEquipment.Fields.TME_GROUP} as tme_id_tme_group,
                         srfi.*
                 from    customrecord_twc_eq_action as act
                 join    customrecord_twc_srf_itm as srfi on srfi.id = act.custrecord_twc_eq_action_srf_item
                 join    customrecord_twc_srf as srf on srf.id = srfi.custrecord_twc_srf_itm_srf
+                left join ${twcEquipment.Type} as act_eq on act_eq.id = act.custrecord_twc_eq_action_eq
+                left join ${twcEquipment.Type} as tme_eq on tme_eq.id = srfi.${twcSrfItem.Fields.TME_ID}
                 where   act.custrecord_twc_eq_action_srf = ${options.srf}
                 order by custrecord_twc_eq_action_type, custrecord_twc_srf_itm_tme_srf desc
             `)
@@ -72,9 +85,33 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             var actions = getEqActions(options);
             if (actions.length > MAX_ACTIONS_TO_INIT) { throw new Error(`Too many actions to save: ${MAX_ACTIONS_TO_INIT}`); }
 
-            core.array.each(actions, action => {
-                // LOOP: 2 units (save rec) + 2 UNITS * 2 for submit = 6 units
+            const isLicenceRow = a => { return a.ea_type == twcUtils.EqActionType.Licence || a.ea_type == twcUtils.EqActionType.SwapLicence; };
+            const isTmeLicenceRow = a => { return isLicenceRow(a) && twcEqTmeGroup.isTme(a[twcSrfItem.Fields.STEP_TYPE]); };
+
+            // @@NOTE: governance - a new TME (no equipment yet) needs one extra submit (2 units) for its TME Group, see MAX_UNITS_TO_INIT
+            var newTmeCount = actions.filter(a => { return isTmeLicenceRow(a) && !a.eq_id; }).length;
+            if (actions.length * 6 + newTmeCount * 2 > MAX_UNITS_TO_INIT) { throw new Error(`Too many actions to save: ${actions.length} actions, ${newTmeCount} new TMEs (max ${MAX_UNITS_TO_INIT} units)`); }
+
+            // @@NOTE: TME pre-pass (ATME parent fix): the TME Licence / Swap Licence rows are processed BEFORE all the other rows
+            //         so a child (ATME / Feeder) whose parent is a TME line of this SRF (TMI_ID_SRF) finds the parent equipment already created (eq_id)
+            //         (the query sorts by action type 1, 2, 5, 6: a Licence ATME under a swapped-in TME (type 5) was processed before the new TME existed and got the OLD TME as parent)
+            //         this is a stable re-order: TME licence rows keep their relative order, all other rows keep theirs
+            //         the srf item EQUIPMENT_ID overwrite (see @@IMPORTANT in getEqActions) is preserved: a swap item has one Swap Licence row (moved first if TME, else unchanged)
+            //         and one Swap Unlicence row (never moved, always after ALL the licence rows) so the Swap Unlicence row still writes the OLD eq id back last
+            var orderedActions = actions.filter(a => { return isTmeLicenceRow(a); }).concat(actions.filter(a => { return !isTmeLicenceRow(a); }));
+
+            // @@NOTE: TME Group (modules/oTWC_eqTmeGroup.js)
+            //         tmeGroups      : equipment id => TME Group of the TMEs saved in this loop (the children take the TME Group of their parent from here)
+            //         oldTmesToStamp : swap-out TME id => TME Group, for swap-out TMEs that have none yet (data not backfilled): stamped with their children after the loop
+            //         re-runs (every SRF re-save while Submitted / Under Review / Feedback Issued / Resubmitted) are idempotent: a TME keeps its TME Group once set
+            //         and a child always gets the one of its parent
+            var tmeGroups = {};
+            var oldTmesToStamp = {};
+
+            core.array.each(orderedActions, action => {
+                // LOOP: 2 units (save rec) + 2 UNITS * 2 for submit = 6 units (+ 2 units for a new TME: TME Group submit)
                 var eq = twcEquipment.get(action.eq_id);
+                var setTmeGroupAfterSave = false;
 
                 if (action.ea_type == twcUtils.EqActionType.Licence || action.ea_type == twcUtils.EqActionType.SwapLicence) {
                     eq.equipmentLicenceStatus = twcUtils.EqLicenseStatus.ReqtoLicence;
@@ -104,35 +141,95 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     // @@NOTE: SRF item 'Modified Antenna Location' => equipment custrecord_twc_equip_location (same list), SRF item 'GIE Location' => equipment 'GIE Location'
                     eq.modifiedAntennaLocation = action[twcSrfItem.Fields.MODIFIED_ANTENNA_LOCATION];
                     eq.gIELocation = action[twcSrfItem.Fields.GIE_LOCATION];
+                    // @@IMPORTANT: associatedEQUIP_ACTIONs MUST be set before eq.save(): the equipment UE (oTWC_equipment_ue.js, TME Group fallback)
+                    //              uses it to find the swap-out TME of a swap-in TME and inherit its TME Group
                     eq.associatedEQUIP_ACTIONs = action.act_id;
 
                     // get the parent equipment
-                    // @@NOTE: TMI_ID_SRF = parent TME is a line of this SRF (its equipment is created above, the actions are sorted so TMEs come first)
+                    // @@NOTE: TMI_ID_SRF = parent TME is a line of this SRF (its equipment is created above: the TME licence rows are processed first, see the pre-pass above)
                     //         TME_ID     = parent TME is an existing equipment picked from the site (this used to read a non-existing 'TMI_ID' constant so the parent was never set)
+                    //         a swap item has 2 rows (Swap Licence + Swap Unlicence) with the same srf item id: the Licence / Swap Licence row is preferred
+                    //         so a child of a swapped TME line gets the NEW (swap-in) TME as parent, not the old one (the Swap Unlicence row eq_id)
+                    //         this also covers a swapped ATME / Feeder under a swapped TME on the same SRF: its TME_ID (data/oTWC_srfUI.js SWAPPED_ITEM_FIELDS) is the OLD TME
+                    //         but TMI_ID_SRF (ui/modules/oTWC_siteRequestUtils.js saveSiteSrfItem: parentItem) points to the TME swap line, which wins
                     var parentEqId = null;
+                    var parent = null;
                     if (action[twcSrfItem.Fields.TMI_ID_SRF]) {
-                        var parent = actions.find(a => { return a.id == action[twcSrfItem.Fields.TMI_ID_SRF]; })
+                        parent = actions.find(a => { return a.id == action[twcSrfItem.Fields.TMI_ID_SRF] && isLicenceRow(a); })
+                            || actions.find(a => { return a.id == action[twcSrfItem.Fields.TMI_ID_SRF]; });
                         parentEqId = parent?.eq_id;
                     }
                     if (!parentEqId && action[twcSrfItem.Fields.TME_ID]) {
+                        parent = null;
                         parentEqId = action[twcSrfItem.Fields.TME_ID];
                     }
                     if (parentEqId) { eq.parentTMEID = parentEqId; }
 
+                    // TME Group (modules/oTWC_eqTmeGroup.js)
+                    if (twcEqTmeGroup.isTme(eq.equipmentClass)) {
+                        // @@NOTE: a TME keeps its TME Group once set (re-runs)
+                        if (!eq.tMEGroup) { eq.tMEGroup = action.eq_tme_group || null; }
+                        if (!eq.tMEGroup && action.ea_type == twcUtils.EqActionType.SwapLicence) {
+                            // @@NOTE: swap-in TME: the swap-out TME is the equipment of the Swap Unlicence row of the same srf item
+                            var swapOut = actions.find(a => { return a.id == action.id && a.ea_type == twcUtils.EqActionType.SwapUnlicence; });
+                            if (swapOut?.eq_id && swapOut.eq_id != action.eq_id) {
+                                eq.tMEGroup = swapOut.eq_tme_group || twcEqTmeGroup.fmt(swapOut.eq_id);
+                                if (!swapOut.eq_tme_group) { oldTmesToStamp[swapOut.eq_id] = eq.tMEGroup; }
+                            }
+                        }
+                        if (!eq.tMEGroup) {
+                            // @@NOTE: new install: existing equipment (re-run) => set before the save (no extra units), new equipment => after the save (the id is needed)
+                            if (action.eq_id) {
+                                eq.tMEGroup = twcEqTmeGroup.fmt(action.eq_id);
+                            } else {
+                                setTmeGroupAfterSave = true;
+                            }
+                        }
+                    } else if (twcEqTmeGroup.isChild(eq.equipmentClass) && parentEqId) {
+                        // @@NOTE: a child always takes the TME Group of its (current) parent:
+                        //         the parent TME saved in this loop, else the parent row of this SRF (existing TME), else the existing TME picked on the item (TME_ID)
+                        //         else (parent TME without a TME Group yet, data not backfilled) fmt(parent id)
+                        var childTmeGroup = tmeGroups[parentEqId] || parent?.eq_tme_group || null;
+                        if (!childTmeGroup && parentEqId == action[twcSrfItem.Fields.TME_ID]) { childTmeGroup = action.tme_id_tme_group || null; }
+                        eq.tMEGroup = childTmeGroup || twcEqTmeGroup.fmt(parentEqId);
+                    }
 
                 } else if (action.ea_type == twcUtils.EqActionType.Unlicence || action.ea_type == twcUtils.EqActionType.SwapUnlicence) {
                     eq.equipmentLicenceStatus = twcUtils.EqLicenseStatus.ReqtoUnlicence;
+                    // @@NOTE: swap-out TME without a TME Group (data not backfilled): set it in the same save (no extra units), its children are stamped after the loop
+                    if (oldTmesToStamp[action.eq_id] && !eq.tMEGroup) { eq.tMEGroup = oldTmesToStamp[action.eq_id]; }
                 } else {
                     // @@NOTE: this should not happen
                     throw new Error(`Invalid Eq. Action Type: ${action.ea_type}`);
                 }
-                
+
                 eq.save();
                 action.eq_id = eq.id;
+
+                if (setTmeGroupAfterSave) {
+                    // @@NOTE: new TME (1st run only): its TME Group is its own id (+2 units, accounted for in MAX_UNITS_TO_INIT)
+                    eq.tMEGroup = twcEqTmeGroup.fmt(eq.id);
+                    recu.submit(twcEquipment.Type, eq.id, twcEquipment.Fields.TME_GROUP, eq.tMEGroup);
+                }
+                if (twcEqTmeGroup.isTme(eq.equipmentClass) && eq.tMEGroup) { tmeGroups[eq.id] = eq.tMEGroup; }
 
                 recu.submit(twcEqAct.Type, action.act_id, twcEqAct.Fields.EA_EQUIPMENT, eq.id);
                 recu.submit(twcSrfItem.Type, action.id, twcSrfItem.Fields.EQUIPMENT_ID, eq.id);
             })
+
+            // @@NOTE: swap-out TMEs that had no TME Group (data not backfilled): stamp their children (the TME itself was set in the loop)
+            //         skipped when units are low: the equipment UE / the backfill (svc/oTWC_eqTmeGroup_svc.js) fix it later. Never blocks the SRF save
+            for (var oldTmeId in oldTmesToStamp) {
+                if (core.env.units() < MIN_UNITS_TO_STAMP) {
+                    core.logError('INIT-EQ-TMEG-SKIPPED', `TME ${oldTmeId} (${oldTmesToStamp[oldTmeId]}): not enough units (${core.env.units()})`);
+                    break;
+                }
+                try {
+                    twcEqTmeGroup.stampTmeAndChildren(oldTmeId, oldTmesToStamp[oldTmeId]);
+                } catch (e) {
+                    core.logError('INIT-EQ-TMEG-ERROR', `TME ${oldTmeId} (${oldTmesToStamp[oldTmeId]}): ${e.message}`);
+                }
+            }
 
             return actions;
 

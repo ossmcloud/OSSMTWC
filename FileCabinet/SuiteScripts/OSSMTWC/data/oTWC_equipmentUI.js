@@ -62,6 +62,8 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                     link: (userInfo?.isEmployee) ? { url: core.url.record(twcInventory.Type) + '&id=${id}', valueField: 'id' } : null
                 },
                 [twcInventory.Fields.EQUIPMENT_CLASS]: 'Class',
+                // @@NOTE: TME Group (TMEG, modules/oTWC_eqTmeGroup.js), TME / ATME / Feeders only (hidden on the GIE tables, see CLASS_HIDDEN_FIELDS / GROUPED_HIDDEN_FIELDS)
+                [twcInventory.Fields.TME_GROUP]: 'TME Group',
                 [twcInventory.Fields.EQUIPMENT_INSTALL_STATUS]: 'Install Status',
                 [twcInventory.Fields.EQUIPMENT_LICENCE_STATUS]: 'License Status',
                 [twcInventory.Fields.CUSTOMER]: 'Customer',
@@ -169,7 +171,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 return item[twcInventory.Fields.EQUIPMENT_INSTALL_STATUS] != twcUtils.EqInstallStatus.Cancelled
                     && item[twcInventory.Fields.EQUIPMENT_LICENCE_STATUS] != twcUtils.EqLicenseStatus.Cancelled;
             });
-            // @@NOTE: 'Hide Inactive' toggle (ui/oTWC_inventory_sl.js), filtered before grouping: an ATME / Feeder whose TME is hidden ends up in the 'unlinked' list
+            // @@NOTE: 'Hide Inactive' toggle (ui/oTWC_inventory_sl.js), filtered before grouping: an ATME / Feeder whose TME is hidden goes under a visible TME of the same TMEG (if any, see below), otherwise in the 'unlinked' list
             if (hideInactive) {
                 items = items.filter(item => {
                     return !twcUtils.isEquipmentInactive(item[twcInventory.Fields.EQUIPMENT_LICENCE_STATUS], item[twcInventory.Fields.EQUIPMENT_INSTALL_STATUS]);
@@ -208,7 +210,16 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 var parentId = item[twcInventory.Fields.PARENT_TME_ID];
                 // @@NOTE: only TME can be a parent, GIE never have related items (anything pointing to a GIE ends up in the 'unlinked' list)
                 var parent = (parentId) ? items.find(i => { return i.id == parentId && i[twcInventory.Fields.EQUIPMENT_CLASS] == EQ_CLASS_ENUM.TME; }) : null;
-                // @@NOTE: no parent (or parent not visible to this user, e.g.: other customer) => goes to the 'unlinked' list
+                // @@NOTE: parent set but not in the list (e.g.: swapped out TME hidden by 'Hide Inactive') => under a visible TME of the same TME Group (TMEG, modules/oTWC_eqTmeGroup.js)
+                //         the latest one (highest id, usually the swap-in TME). A child with no parent at all stays in the 'unlinked' list
+                var tmeGroup = item[twcInventory.Fields.TME_GROUP];
+                if (!parent && parentId && tmeGroup) {
+                    core.array.each(items, i => {
+                        if (i[twcInventory.Fields.EQUIPMENT_CLASS] != EQ_CLASS_ENUM.TME || i[twcInventory.Fields.TME_GROUP] != tmeGroup) { return; }
+                        if (!parent || parseInt(i.id) > parseInt(parent.id)) { parent = i; }
+                    });
+                }
+                // @@NOTE: no parent (or parent not visible to this user, e.g.: other customer, and no visible TME of the same TMEG) => goes to the 'unlinked' list
                 if (!parent) {
                     unlinked.push(item);
                     return;
@@ -220,6 +231,19 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 item.child = true;
                 parent.relatedItems.push(item);
             })
+
+            // @@NOTE: TMEs of the same TME Group (TMEG, e.g.: swap-out and swap-in TME) next to each other: groups in order of first appearance, then by id inside the group
+            //         a TME with no TMEG is a group on its own. GIE order unchanged (GIE have no TMEG)
+            var groupIdx = {};
+            var tmeGroupKey = p => { return p[twcInventory.Fields.TME_GROUP] || ('id:' + p.id); };
+            parents.forEach((p, idx) => {
+                if (p[twcInventory.Fields.EQUIPMENT_CLASS] != EQ_CLASS_ENUM.TME) { return; }
+                var key = tmeGroupKey(p);
+                if (groupIdx[key] === undefined) { groupIdx[key] = idx; }
+            });
+            var tmeParents = parents.filter(p => { return p[twcInventory.Fields.EQUIPMENT_CLASS] == EQ_CLASS_ENUM.TME; });
+            tmeParents.sort((a, b) => { return (groupIdx[tmeGroupKey(a)] - groupIdx[tmeGroupKey(b)]) || (parseInt(a.id) - parseInt(b.id)); });
+            parents = tmeParents.concat(parents.filter(p => { return p[twcInventory.Fields.EQUIPMENT_CLASS] != EQ_CLASS_ENUM.TME; }));
 
             var res = { [EQ_CLASS_ENUM.TME]: [], [EQ_CLASS_ENUM.GIE]: [], unlinked: unlinked };
             core.array.each(parents, parent => {
@@ -236,7 +260,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         const CLASS_HIDDEN_FIELDS = {
             [EQ_CLASS_ENUM.TME]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.GIE_LOCATION],
             [EQ_CLASS_ENUM.ATME]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.AZIMUTH, twcInventory.Fields.B_END, twcInventory.Fields.GIE_LOCATION],
-            [EQ_CLASS_ENUM.GIE]: [twcInventory.Fields.AZIMUTH, twcInventory.Fields.MODIFIED_ANTENNA_LOCATION],
+            [EQ_CLASS_ENUM.GIE]: [twcInventory.Fields.AZIMUTH, twcInventory.Fields.MODIFIED_ANTENNA_LOCATION, twcInventory.Fields.TME_GROUP],
             [EQ_CLASS_ENUM.FEEDER]: [twcInventory.Fields.EQUIPMENT_CLASS, twcInventory.Fields.LENGTH_MM, twcInventory.Fields.AZIMUTH, twcInventory.Fields.B_END, twcInventory.Fields.CUSTOMER_REF, twcInventory.Fields.MODIFIED_ANTENNA_LOCATION, twcInventory.Fields.GIE_LOCATION],
         }
 
@@ -255,7 +279,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         // @@NOTE: grouped view hidden columns (the ungrouped ones are in CLASS_HIDDEN_FIELDS): GIE Location is a GIE field, the antenna location a TME / ATME field
         const GROUPED_HIDDEN_FIELDS = {
             [GROUPED_TME]: [twcInventory.Fields.GIE_LOCATION],
-            [GROUPED_GIE]: [twcInventory.Fields.MODIFIED_ANTENNA_LOCATION],
+            [GROUPED_GIE]: [twcInventory.Fields.MODIFIED_ANTENNA_LOCATION, twcInventory.Fields.TME_GROUP],
         }
         const TABLE_TYPE_TITLE = {
             [EQ_CLASS_ENUM.TME]: 'Equipment<br />Type',
@@ -364,7 +388,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
         // @@NOTE: equipment details dialog field sequence (client request), keys of twcInventory.Fields / FieldsInfo
         //         'Equipment ID' is the record name, Length / Width / Height are LENGTH_MM / WIDTH_MM / HEIGHTDEPTH_MM
         const EQ_INFO_FIELD_ORDER = [
-            'NAME', 'PARENT_TME_ID', 'CUSTOMER', 'SITE', 'INFRASTRUCTURE',
+            'NAME', 'PARENT_TME_ID', 'TME_GROUP', 'CUSTOMER', 'SITE', 'INFRASTRUCTURE',
             'EQUIPMENT_CLASS', 'EQUIPMENT_TYPE', 'EQUIPMENT_INSTALL_STATUS', 'EQUIPMENT_LICENCE_STATUS',
             'HEIGHT_ON_TOWER_M', 'MODIFIED_ANTENNA_LOCATION', 'GIE_LOCATION', 'AZIMUTH', 'B_END', 'CUSTOMER_REF', 'INVENTORY_FLAG', 'FEEDER_TYPE',
             'USE_LIBRARY', 'EQUIPMENT_LIBRARY_ENTRY', 'MAKE', 'MODEL', 'DESCRIPTION',

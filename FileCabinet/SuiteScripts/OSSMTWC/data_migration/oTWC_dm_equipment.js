@@ -277,7 +277,7 @@ define(['N/record', '../data/oTWC_equipment.js', './oTWC_dm_config.js', './oTWC_
                 { key: 'parents', file: 'equipment', modes: [Mode.IMPORT], radixId: radixId, prepare: lookups, process: processParent }
             ],
             cleanup: [
-                { recordType: twcEquipment.Type, runField: F.RADIX_IMPORT_RUN, clearFields: [F.PARENT_TME_ID] }
+                { recordType: twcEquipment.Type, runField: F.RADIX_IMPORT_RUN, clearFields: [F.PARENT_TME_ID, F.TME_GROUP] }
             ]
         }
     });

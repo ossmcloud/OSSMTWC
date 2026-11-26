@@ -9,6 +9,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             NAME: 'name',
             EQUIPMENT_ID: 'custrecord_twc_equip_id',
             PARENT_TME_ID: 'custrecord_twc_equip_parent_tme_id',
+            TME_GROUP: 'custrecord_twc_equip_tme_group',
             CUSTOMER: 'custrecord_twc_equip_customer',
             SITE: 'custrecord_twc_equip_site',
             INFRASTRUCTURE: 'custrecord_twc_equip_str',
@@ -62,6 +63,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             NAME: { name: 'name', type: 'text', alias: 'name', display: 'normal', mandatory: true },
             EQUIPMENT_ID: { name: 'custrecord_twc_equip_id', type: 'text', alias: 'equipmentID', display: 'normal', mandatory: false },
             PARENT_TME_ID: { name: 'custrecord_twc_equip_parent_tme_id', type: 'select', alias: 'parentTMEID', display: 'normal', mandatory: false, recordType: 'customrecord_twc_equip' },
+            TME_GROUP: { name: 'custrecord_twc_equip_tme_group', type: 'text', alias: 'tMEGroup', display: 'normal', mandatory: false },
             CUSTOMER: { name: 'custrecord_twc_equip_customer', type: 'select', alias: 'customer', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             SITE: { name: 'custrecord_twc_equip_site', type: 'select', alias: 'site', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site' },
             INFRASTRUCTURE: { name: 'custrecord_twc_equip_str', type: 'select', alias: 'infrastructure', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
@@ -134,6 +136,12 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.PARENT_TME_ID, value)
             }
             get parentTMEIDName() { return this.getText(_recordFields.PARENT_TME_ID); }
+            
+            get tMEGroup() {
+                return this.get(_recordFields.TME_GROUP);
+            } set tMEGroup(value) {
+                this.set(_recordFields.TME_GROUP, value)
+            }
             
             get customer() {
                 return this.get(_recordFields.CUSTOMER);

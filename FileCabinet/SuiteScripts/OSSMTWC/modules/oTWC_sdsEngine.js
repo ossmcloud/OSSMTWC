@@ -145,7 +145,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                         sdsi.custrecord_twc_sds_item_azimuth as azimuth, sdsi.custrecord_twc_sds_item_b_end as b_end, 
                         BUILTIN.DF(eq.custrecord_twc_equip_str) as location,
                         BUILTIN.DF(sdsi.custrecord_twc_sds_item_inventory_flag) as inventory_flag,
-                        sdsi.custrecord_twc_sds_item_make as make, sdsi.custrecord_twc_sds_item_model as model, BUILTIN.DF(eq.custrecord_twc_equip_opt_type) as feeder_type
+                        sdsi.custrecord_twc_sds_item_make as make, sdsi.custrecord_twc_sds_item_model as model, BUILTIN.DF(eq.custrecord_twc_equip_opt_type) as feeder_type,
+                        eq.${twcEquipment.Fields.TME_GROUP} as tme_group
                 from    customrecord_twc_sds_item sdsi
                 join    customrecord_twc_sds sds on sds.id = sdsi.custrecord_twc_sds_item_parent 
                 join    customrecord_twc_equip eq on eq.id = sdsi.custrecord_twc_sds_item_eq
@@ -158,9 +159,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             // @@NOTE: print the equipment in the same order as the SDS equipment dialog (SRF oldest to newest, see getSdsEquipments)
             //         the template groups by class (TME table / GIE table) and lists ATME then Feeders under each TME, each group keeps this order
+            var sdsEqGroup = {};
             if (srfItems.length > 0) {
                 var sdsEqOrder = {};
-                core.array.each(getSdsEquipments({ id: srfItems[0].sds_id }), (sdsEq, idx) => { sdsEqOrder[sdsEq.id] = idx; });
+                core.array.each(getSdsEquipments({ id: srfItems[0].sds_id }), (sdsEq, idx) => {
+                    sdsEqOrder[sdsEq.id] = idx;
+                    sdsEqGroup[sdsEq.id] = { idx: sdsEq.group_idx, key: sdsEq.group_key };
+                });
                 srfItems.sort((a, b) => {
                     var idxA = sdsEqOrder[a.sds_eq_id] ?? Number.MAX_SAFE_INTEGER;
                     var idxB = sdsEqOrder[b.sds_eq_id] ?? Number.MAX_SAFE_INTEGER;
@@ -183,8 +188,43 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 }
             })
 
+            srfInfo.tmeGroups = getSrfInfoTmeGroups(srfItems, srfInfo.srfItems, sdsEqGroup);
 
             return srfInfo;
+        }
+
+        // @@NOTE: Tower Mounted Equipment table of the SDS PDF (XML/oTwc_print_SDS.xml), grouped by TME Group (TMEG, see getSdsEquipments):
+        //              [{ tme_group, multi ('T' when the group has more than one TME, i.e. a TME swap: the template prints a 'TME Group ... (swap)' label row), tmes, orphans }]
+        //              tmes    : the TMEs of the group in SDS order (swap-out first), each with its ATMEs (items) and Feeders (feeders) as on srfInfo.srfItems
+        //              orphans : ATMEs / Feeders whose parent TME is not on the SDS (not printed under any TME, they used to be dropped from the PDF)
+        //         groups are in SDS order (srfItems is already sorted as getSdsEquipments)
+        //         @@IMPORTANT: the result is a deep copy: the same objects are also in srfInfo.srfItems and oTWC_sdsRender.js (escapeForTemplate) escapes every object it visits,
+        //                      a shared object would be escaped twice ('&' => '&amp;amp;')
+        function getSrfInfoTmeGroups(srfItems, srfInfoItems, sdsEqGroup) {
+            var tmeIds = {};
+            core.array.each(srfInfoItems, i => { if (i.equip_class == twcUtils.SrfStepType.TME) { tmeIds[i.id] = true; } });
+
+            var tmeGroups = [];
+            var tmeGroupsByKey = {};
+            core.array.each(srfItems, i => {
+                var isTme = i.equip_class == twcUtils.SrfStepType.TME;
+                var isOrphan = (i.equip_class == twcUtils.SrfStepType.ATME || i.equip_class == twcUtils.SrfStepType.FEEDER) && !tmeIds[i.parent_tme];
+                if (!isTme && !isOrphan) { return; }
+
+                // @@NOTE: group from the SDS equipment order (getSdsEquipments), falls back to the equipment TMEG (or a group of its own)
+                var key = String(sdsEqGroup[i.sds_eq_id]?.key || i.tme_group || `EQ-${i.id}`);
+                var group = tmeGroupsByKey[key];
+                if (!group) {
+                    group = { tme_group: key.startsWith('EQ-') ? (i.tme_group || '') : key, multi: 'F', tmes: [], orphans: [] };
+                    tmeGroupsByKey[key] = group;
+                    tmeGroups.push(group);
+                }
+                if (isTme) { group.tmes.push(i); } else { group.orphans.push(i); }
+            });
+
+            core.array.each(tmeGroups, group => { group.multi = group.tmes.length > 1 ? 'T' : 'F'; });
+
+            return JSON.parse(JSON.stringify(tmeGroups));
         }
 
 
@@ -373,6 +413,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
         // @@NOTE: returns the sds equipment ordered as parent / child: each parent (TME / GIE) is followed by its related equipment (ATME / Feeders)
         //         the relation comes from the equipment record (PARENT_TME_ID), children get child_level > 0
         //         equipment whose parent is not in the list is shown as a parent (child_level = 0)
+        //         parents are grouped by TME Group (swapped TMEs together, see below): group_idx / group_key on each row (oTWC_sdsEngineUI.js: column sort keeps a group together)
         //         also adds: infra_id (infrastructure id of the structure) and srf_id / srf_name:
         //              the SRF that licensed the equipment (SRF of the equipment 'associated eq. action', set on licence only)
         //              @@IMPORTANT: same SRF as the 'SRF ID' column on the SDS PDF (getSrfInfo), which is also printed in this order
@@ -387,10 +428,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             coreSql.each(`
                 select  sdsi.id,
                         eq.${twcEquipment.Fields.PARENT_TME_ID} as parent_eq_id,
+                        eq.${twcEquipment.Fields.EQUIPMENT_CLASS} as eq_class,
+                        eq.${twcEquipment.Fields.TME_GROUP} as tme_group, peq.${twcEquipment.Fields.TME_GROUP} as parent_tme_group,
                         infra.custrecord_twc_infra_id as infra_id,
                         eqAct.custrecord_twc_eq_action_srf as srf_id, BUILTIN.DF(eqAct.custrecord_twc_eq_action_srf) as srf_name
                 from    ${twcSdsEquipment.Type} sdsi
                 left join ${twcEquipment.Type} eq on eq.id = sdsi.${twcSdsEquipment.Fields.EQUIPMENT}
+                left join ${twcEquipment.Type} peq on peq.id = eq.${twcEquipment.Fields.PARENT_TME_ID}
                 left join customrecord_twc_infra infra on infra.id = sdsi.${twcSdsEquipment.Fields.INFRASTRUCTURE}
                 left join customrecord_twc_eq_action eqAct on eqAct.id = eq.custrecord_twc_equip_assoc_eq_action
                 where   sdsi.${twcSdsEquipment.Fields.SDS} = ${sds.id}
@@ -404,6 +448,9 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 sdsEq.infra_id = info.infra_id || '';
                 sdsEq.srf_id = info.srf_id || null;
                 sdsEq.srf_name = info.srf_name || '';
+                sdsEq.eq_class = info.eq_class || sdsEq[twcSdsEquipment.Fields.EQUIPMENT_CLASS] || null;
+                sdsEq.tme_group = info.tme_group || null;
+                sdsEq.parent_tme_group = info.parent_tme_group || null;
             });
 
             // @@NOTE: order by SRF, oldest to newest (by SRF internal id), equipment with no SRF last, then by sds eq. id
@@ -417,21 +464,47 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             var orderedEquipments = [];
             var added = {};
-            const addWithChildren = (sdsEq, level) => {
+            const addWithChildren = (sdsEq, level, groupIdx, groupKey) => {
                 if (added[sdsEq.id]) { return; }
                 added[sdsEq.id] = true;
                 sdsEq.child_level = level;
+                sdsEq.group_idx = groupIdx;
+                sdsEq.group_key = groupKey;
                 orderedEquipments.push(sdsEq);
                 var children = sdsEquipments.filter(c => { return c.parent_eq_id && c.parent_eq_id == sdsEq[twcSdsEquipment.Fields.EQUIPMENT]; });
-                core.array.each(children, child => { addWithChildren(child, level + 1); });
+                core.array.each(children, child => { addWithChildren(child, level + 1, groupIdx, groupKey); });
             }
 
+            // @@NOTE: TME Group (TMEG, see modules/oTWC_eqTmeGroup.js): the roots (equipment with no parent in the list) are grouped so that a swapped TME
+            //         (swap-out and swap-in TMEs share the same TMEG) and its children are listed together
+            //         group key: the equipment TMEG, else its parent TMEG (child whose parent is not on the SDS), else 'EQ-' + equipment id (GIE, data not backfilled: a group of its own)
+            //         groups are ordered by the position of their first root (i.e. the SRF order above), within a group: TMEs first (SRF order: swap-out before swap-in), then the other roots
+            //         each root is then followed by its children (addWithChildren), every row gets group_idx (1 based) and group_key
+            var groups = [];
+            var groupsByKey = {};
             core.array.each(sdsEquipments, sdsEq => {
                 var hasParent = sdsEq.parent_eq_id && sdsEquipments.find(p => { return p[twcSdsEquipment.Fields.EQUIPMENT] == sdsEq.parent_eq_id; });
-                if (!hasParent) { addWithChildren(sdsEq, 0); }
+                if (hasParent) { return; }
+                var key = sdsEq.tme_group || sdsEq.parent_tme_group || `EQ-${sdsEq[twcSdsEquipment.Fields.EQUIPMENT] || sdsEq.id}`;
+                var group = groupsByKey[key];
+                if (!group) {
+                    group = { key: key, tmes: [], others: [] };
+                    groupsByKey[key] = group;
+                    groups.push(group);
+                }
+                if (parseInt(sdsEq.eq_class) == twcUtils.SrfStepType.TME) { group.tmes.push(sdsEq); } else { group.others.push(sdsEq); }
             });
-            // @@NOTE: safety net (e.g.: circular references), anything not added yet is shown as a parent
-            core.array.each(sdsEquipments, sdsEq => { addWithChildren(sdsEq, 0); });
+
+            core.array.each(groups, (group, idx) => {
+                core.array.each(group.tmes.concat(group.others), sdsEq => { addWithChildren(sdsEq, 0, idx + 1, group.key); });
+            });
+            // @@NOTE: safety net (e.g.: circular references), anything not added yet is shown as a parent (in a group of its own)
+            var groupIdx = groups.length;
+            core.array.each(sdsEquipments, sdsEq => {
+                if (added[sdsEq.id]) { return; }
+                groupIdx++;
+                addWithChildren(sdsEq, 0, groupIdx, `EQ-${sdsEq[twcSdsEquipment.Fields.EQUIPMENT] || sdsEq.id}`);
+            });
 
             return orderedEquipments;
         }

@@ -3,8 +3,8 @@
  * @NModuleScope public
  */
 // define([], () => {
-define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_safCrew.js', '../../data/oTWC_safAction.js', '../../data/oTWC_equipAction.js', '../../data/oTWC_equipment.js', '../../data/oTWC_safTimeBlock.js', '../../data/oTWC_safLog.js', '../../data/oTWC_file.js', '../../data/oTWC_fileType.js', '../../O/oTWC_nsFileUtils.js'],
-    (record, core, coreSQL, b64, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew, twcSafAction, twcEqAct, twcEquipment, twcSafTimeBlock, twcSafLog, twcFile, twcFileType, nsFileUtils) => {
+define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/core.sql.js', 'SuiteBundles/Bundle 548734/O/core.base64.js', 'SuiteBundles/Bundle 548734/O/data/rec.utils.js', '../../data/oTWC_site.js', '../../data/oTWC_config.js', '../../data/oTWC_icons.js', '../../O/controls/oTWC_ui_ctrl.js', '../../data/oTWC_utils.js', '../../data/oTWC_saf.js', '../../data/oTWC_safUI.js', '../../data/oTWC_safCrew.js', '../../data/oTWC_safAction.js', '../../data/oTWC_equipAction.js', '../../data/oTWC_equipment.js', '../../data/oTWC_safTimeBlock.js', '../../data/oTWC_safLog.js', '../../data/oTWC_file.js', '../../data/oTWC_fileType.js', '../../O/oTWC_nsFileUtils.js', '../../modules/oTWC_eqTmeGroup.js'],
+    (record, core, coreSQL, b64, recu, twcSite, twcConfig, twcIcons, twcUI, twcUtils, twcSaf, twcSafUI, twcSafCrew, twcSafAction, twcEqAct, twcEquipment, twcSafTimeBlock, twcSafLog, twcFile, twcFileType, nsFileUtils, twcTmeg) => {
 
         function renderSiteAccessPanel(userInfo, featureId) {
             var html = `
@@ -829,28 +829,35 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
             return !actionSkipped;
         }
 
-        // @@IMPORTANT: TME swap: the ATMEs that are NOT swapped with it must move to the new TME (otherwise they stay on the removed panel)
+        // @@IMPORTANT: TME swap: the ATMEs and Feeders that are NOT swapped with it must move to the new TME (otherwise they stay on the removed panel)
         //              runs when the new TME is installed (its Swap Licence EA completed by the SAF, see validateAndCompleteActions)
         //                  old TME = equipment of the Swap Unlicence EA of the same SRF item
-        //                  moved   = ATMEs whose parent is the old TME, unless already removed or with an open removal / swap of their own (they go with the old TME)
-        //              swapped ATMEs need nothing: their new equipment is created with the new TME as parent (oTWC_srfWorkflowEngine.js: initEquipment)
+        //                  moved   = ATMEs / Feeders whose parent is the old TME, unless already removed or with an open removal / swap of their own (they go with the old TME)
+        //              swapped ATMEs / Feeders need nothing: their new equipment is created with the new TME as parent (oTWC_srfWorkflowEngine.js: initEquipment)
+        //              (the function name is kept for the existing call sites, it moves Feeders too)
+        // @@NOTE: the moved children also get the TME Group (TMEG) of the new TME (modules/oTWC_eqTmeGroup.js), normally unchanged (a swap-in TME inherits the old TME TMEG): safety net
+        //         if neither TME has a TMEG yet (data not backfilled) the swap-in TME would inherit fmt(old TME id), so that is used
         function moveAtmeToSwappedTme(eaId, newTmeId) {
             if (!eaId || !newTmeId) { return; }
             var swap = coreSQL.first(`
-                select  old_ea.${twcEqAct.Fields.EA_EQUIPMENT} as old_tme, new_eq.${twcEquipment.Fields.EQUIPMENT_CLASS} as eq_class
+                select  old_ea.${twcEqAct.Fields.EA_EQUIPMENT} as old_tme, new_eq.${twcEquipment.Fields.EQUIPMENT_CLASS} as eq_class,
+                        new_eq.${twcEquipment.Fields.TME_GROUP} as new_tme_group, old_eq.${twcEquipment.Fields.TME_GROUP} as old_tme_group
                 from    ${twcEqAct.Type} new_ea
                 join    ${twcEquipment.Type} new_eq on new_eq.id = new_ea.${twcEqAct.Fields.EA_EQUIPMENT}
                 join    ${twcEqAct.Type} old_ea on old_ea.${twcEqAct.Fields.EA_SRF_ITEM} = new_ea.${twcEqAct.Fields.EA_SRF_ITEM}
                                                and old_ea.${twcEqAct.Fields.EA_TYPE} = ${twcUtils.EqActionType.SwapUnlicence}
+                left join ${twcEquipment.Type} old_eq on old_eq.id = old_ea.${twcEqAct.Fields.EA_EQUIPMENT}
                 where   new_ea.id = ${parseInt(eaId)}
             `);
             if (!swap?.old_tme || swap.eq_class != twcUtils.SrfStepType.TME || swap.old_tme == newTmeId) { return; }
 
-            var atmes = coreSQL.run(`
+            var tmeGroup = swap.new_tme_group || swap.old_tme_group || twcTmeg.fmt(swap.old_tme);
+
+            var children = coreSQL.run(`
                 select  eq.id
                 from    ${twcEquipment.Type} eq
                 where   eq.${twcEquipment.Fields.PARENT_TME_ID} = ${parseInt(swap.old_tme)}
-                and     eq.${twcEquipment.Fields.EQUIPMENT_CLASS} = ${twcUtils.SrfStepType.ATME}
+                and     eq.${twcEquipment.Fields.EQUIPMENT_CLASS} in (${twcUtils.SrfStepType.ATME}, ${twcUtils.SrfStepType.FEEDER})
                 and     NVL(eq.${twcEquipment.Fields.EQUIPMENT_INSTALL_STATUS}, 0) != ${twcUtils.EqInstallStatus.Removed}
                 and     not exists (
                             select  1
@@ -860,10 +867,11 @@ define(['N/record', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle
                             and     rea.${twcEqAct.Fields.EA_STATUS} in (${twcUtils.EqActionStatus.Pending}, ${twcUtils.EqActionStatus.AlreadyRemoved}, ${twcUtils.EqActionStatus.NeverInstalled})
                         )
             `);
-            core.array.each(atmes, atme => {
-                recu.submit(twcEquipment.Type, atme.id, twcEquipment.Fields.PARENT_TME_ID, newTmeId);
+            // @@NOTE: one submit per child (same governance as before): parent and TMEG together
+            core.array.each(children, child => {
+                recu.submit(twcEquipment.Type, child.id, [twcEquipment.Fields.PARENT_TME_ID, twcEquipment.Fields.TME_GROUP], [newTmeId, tmeGroup]);
             });
-            core.logDebug('SWAP-MOVE-ATME', `old TME ${swap.old_tme} => new TME ${newTmeId}: ${atmes.length} ATME(s) moved`);
+            core.logDebug('SWAP-MOVE-ATME', `old TME ${swap.old_tme} => new TME ${newTmeId} (${tmeGroup}): ${children.length} ATME(s) / Feeder(s) moved`);
         }
 
         function saveSafImage(options) {

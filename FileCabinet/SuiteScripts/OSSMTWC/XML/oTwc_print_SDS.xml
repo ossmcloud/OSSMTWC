@@ -74,6 +74,11 @@
             .rowAtme {
                 background-color: #EDEDED;
             }
+            /* @@NOTE: TME Group label row, printed above a TME swap group (swap-out / swap-in TMEs, see oTWC_sdsEngine.js: getSrfInfoTmeGroups) */
+            .rowGroup td {
+                background-color: #BDD7EE;
+                font-weight: bold;
+            }
 
             li {
                 margin-left: 15px;
@@ -249,17 +254,44 @@
             </thead>
 
             <tbody class="eqBody">
-            <#list requestJSON.srfItems as srfItems>
-                <#if srfItems.equip_class != "3">
-                    <@eqRow item=srfItems rowClass="rowTme" />
-                    <#list srfItems.items as srfSubItem>
-                        <@eqRow item=srfSubItem rowClass="rowAtme" />
+            <!-- @@NOTE: TMEs grouped by TME Group (TMEG): a group with more than one TME (TME swap) gets a label row, swap-out TME first -->
+            <!--         then each TME with its ATMEs and Feeders, then the ATMEs / Feeders whose parent TME is not on the SDS (orphans) -->
+            <!--         falls back to the old list (srfItems) if tmeGroups is not there -->
+            <#if requestJSON.tmeGroups?? && requestJSON.tmeGroups?has_content>
+                <#list requestJSON.tmeGroups as grp>
+                    <#if (grp.multi!"F") == "T">
+                        <tr class="rowGroup"><td colspan="14">TME Group ${(grp.tme_group!"")?replace("null", "")} (swap)</td></tr>
+                    </#if>
+                    <#list (grp.tmes![]) as srfItems>
+                        <@eqRow item=srfItems rowClass="rowTme" />
+                        <#list (srfItems.items![]) as srfSubItem>
+                            <@eqRow item=srfSubItem rowClass="rowAtme" />
+                        </#list>
+                        <#list (srfItems.feeders![]) as srfSubItem>
+                            <@eqRow item=srfSubItem rowClass="" />
+                        </#list>
                     </#list>
-                    <#list srfItems.feeders as srfSubItem>
-                        <@eqRow item=srfSubItem rowClass="" />
+                    <#list (grp.orphans![]) as srfSubItem>
+                        <#if (srfSubItem.equip_class!"")?string == "2">
+                            <@eqRow item=srfSubItem rowClass="rowAtme" />
+                        <#else>
+                            <@eqRow item=srfSubItem rowClass="" />
+                        </#if>
                     </#list>
-                </#if>
-            </#list>
+                </#list>
+            <#else>
+                <#list requestJSON.srfItems as srfItems>
+                    <#if srfItems.equip_class != "3">
+                        <@eqRow item=srfItems rowClass="rowTme" />
+                        <#list srfItems.items as srfSubItem>
+                            <@eqRow item=srfSubItem rowClass="rowAtme" />
+                        </#list>
+                        <#list srfItems.feeders as srfSubItem>
+                            <@eqRow item=srfSubItem rowClass="" />
+                        </#list>
+                    </#if>
+                </#list>
+            </#if>
             </tbody>
         </table>
 

@@ -87,6 +87,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 { field: twcInventory.Fields.EQUIPMENT_INSTALL_STATUS, title: 'Install Status', styles: { width: '150px' }, sortIdx: 50 },
                 { field: twcInventory.Fields.EQUIPMENT_LICENCE_STATUS, title: 'Licence Status', styles: { width: '150px' }, sortIdx: 50 },
                 { field: twcInventory.Fields.EQUIPMENT_CLASS, title: 'Class', styles: { width: '100px' } },
+                // @@NOTE: TME Group (TMEG, modules/oTWC_eqTmeGroup.js), empty for GIE
+                { field: twcInventory.Fields.TME_GROUP, title: 'TME Group', nullText: '' },
                 // @@NOTE: feeders show the feeder type (FEEDER_TYPE) under the 'Type' column (same as the site equipment tables, data/oTWC_equipmentUI.js: getSiteInventoryTableFields)
                 {
                     field: 'eq_type', title: 'Type', nullText: '', styles: { width: '100px' }, sql: `

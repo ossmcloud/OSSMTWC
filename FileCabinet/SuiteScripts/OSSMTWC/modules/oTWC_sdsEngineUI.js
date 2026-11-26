@@ -312,6 +312,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
 
             // @@NOTE: parent / child: the server returns the equipment already ordered (parent followed by its children, see twcSdsEngine.getSdsEquipments)
             //         each parent (child_level = 0) starts a group, children are tagged with the group id and can be collapsed (via 'o-row-hidden')
+            //         @@IMPORTANT: data-sds-eq-group is per parent (include cascade / collapse depend on it), data-sds-tmeg is the TME Group (TMEG) group of the
+            //                      server (group_idx: swapped TMEs and their children), used only by the column sort (initSDEquipmentSort) to keep a TMEG group together
             var srfLinkBase = core.url.script('otwc_spacerequest_sl');
             var groupId = 0;
             var sdsEqRows = [];
@@ -321,7 +323,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 var eqIdStyle = isChild ? `style="padding-left: ${27 * eq.child_level}px; font-style: italic;"` : '';
                 var srfLink = eq.srf_id ? `<a href="${srfLinkBase}&recId=${eq.srf_id}" target="_blank">${eq.srf_name || eq.srf_id}</a>` : '';
                 var sdsEqTableRow = jQuery(`
-                    <div class="${isChild ? 'twc-sds-eq-child' : 'twc-sds-eq-header'}" data-sds-eq-group="${groupId}">
+                    <div class="${isChild ? 'twc-sds-eq-child' : 'twc-sds-eq-header'}" data-sds-eq-group="${groupId}" data-sds-tmeg="${eq.group_idx || `r${groupId}`}">
                         <div class="twc-sds-eq-toggle" style="width: 30px; text-align: center; padding: 0px;"></div>
                         <div ${eqIdStyle}>${eq[twcSdsEquipment.Fields.EQUIPMENT_ID]}</div>
                         <div>${srfLink}</div>
@@ -454,14 +456,27 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             };
 
             // @@NOTE: build the tree (server order is depth first: parent followed by its children)
-            var roots = [];
+            //         parents are then grouped by TME Group (data-sds-tmeg, see manageSDEquipment): a group is sorted as a block, parents are sorted within their group
+            var groups = [];
+            var groupsByKey = {};
             var path = [];
             core.array.each(sdsEqRows, (sdsEqRow, idx) => {
                 var level = parseInt(sdsEqRow.eq.child_level) || 0;
                 var node = { eq: sdsEqRow.eq, row: sdsEqRow.row, idx: idx, children: [] };
                 path.length = level;
                 var parent = path[level - 1];
-                if (parent) { parent.children.push(node); } else { roots.push(node); }
+                if (parent) {
+                    parent.children.push(node);
+                } else {
+                    var groupKey = sdsEqRow.row.attr('data-sds-tmeg') || `idx${idx}`;
+                    var group = groupsByKey[groupKey];
+                    if (!group) {
+                        group = { children: [] };
+                        groupsByKey[groupKey] = group;
+                        groups.push(group);
+                    }
+                    group.children.push(node);
+                }
                 path[level] = node;
             });
 
@@ -512,8 +527,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     jQuery(e.currentTarget).find('.twc-sds-eq-sort-dir').html(currentDir == 1 ? ' &#9650;' : ' &#9660;');
                 }
 
-                sortNodes(roots, currentKey, currentDir);
-                appendNodes(roots);
+                // @@NOTE: sort the parents within each group (and their children), then the groups by their first parent (ties: original order)
+                core.array.each(groups, group => { sortNodes(group.children, currentKey, currentDir); });
+                groups.sort((a, b) => { return compare(a.children[0], b.children[0], currentKey, currentDir); });
+                core.array.each(groups, group => { appendNodes(group.children); });
             });
         }
 
