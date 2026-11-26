@@ -53,21 +53,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             OCCUPANCY: 'custrecord_twc_site_occ',
             SITE_WHAT3WORDS: 'custrecord_twc_site_what3words',
             ACCESS_WHAT3WORDS: 'custrecord_twc_site_acc_wt3words',
-            CUSTOMER_PRESENCE_LIST: 'custrecord_twc_site_cust_pres_list',
-            LAND_AGREEMENT_LIST: 'custrecord_twc_site_land_agr_list',
-            ROW_AGREEMENT_LIST: 'custrecord_twc_site_row_agr_list',
-            POWER_SUPPLY_LIST: 'custrecord_twc_site_pew_sup_list',
-            GENERATOR_LIST: 'custrecord_twc_site_gen_list',
-            EARTH__AND__LP_INSPECTIONS_LIST: 'custrecord_twc_site_earth_lp_insp_list',
-            STRUCTURE_INSPECTIONS_LIST: 'custrecord_twc_site_str_insp_list',
-            FACILITIES_SERVICES_LIST: 'custrecord_twc_list_fac_svc_list',
-            SITE_LOCATION: 'custrecord_twc_site_location',
             SITE_SRF_STATUS: 'custrecord_twc_site_srf_status',
             SITE_FIBRE_SERVICE_PROVIDERS: 'custrecord_twc_site_fiber_svc_providers',
             ORIGIN_SITE_ID: 'custrecord_twc_site_origin_site_id',
             FIRE_EXTINGUISHER: 'custrecord_twc_site_fire_exting',
             FINANCIAL_STATUS: 'custrecord_ossm_twcm_site_fin_status',
-            GEOTYPE: 'custrecord_twc_site_geotype',
             PROXIMITY_TO_BODY_OF_WATER_KM: 'custrecord_twc_site_prox_body_wtr_km',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
@@ -122,21 +112,11 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             OCCUPANCY: { name: 'custrecord_twc_site_occ', type: 'integer', alias: 'occupancy', display: 'normal', mandatory: false },
             SITE_WHAT3WORDS: { name: 'custrecord_twc_site_what3words', type: 'text', alias: 'siteWhat3Words', display: 'normal', mandatory: false },
             ACCESS_WHAT3WORDS: { name: 'custrecord_twc_site_acc_wt3words', type: 'text', alias: 'accessWhat3Words', display: 'normal', mandatory: false },
-            CUSTOMER_PRESENCE_LIST: { name: 'custrecord_twc_site_cust_pres_list', type: 'select', alias: 'customerPresenceList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_cust_pres' },
-            LAND_AGREEMENT_LIST: { name: 'custrecord_twc_site_land_agr_list', type: 'select', alias: 'landAgreementList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_land' },
-            ROW_AGREEMENT_LIST: { name: 'custrecord_twc_site_row_agr_list', type: 'select', alias: 'rOWAgreementList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_row' },
-            POWER_SUPPLY_LIST: { name: 'custrecord_twc_site_pew_sup_list', type: 'select', alias: 'powerSupplyList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_pwr_sply' },
-            GENERATOR_LIST: { name: 'custrecord_twc_site_gen_list', type: 'select', alias: 'generatorList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra' },
-            EARTH__AND__LP_INSPECTIONS_LIST: { name: 'custrecord_twc_site_earth_lp_insp_list', type: 'select', alias: 'earth_and_LPInspectionsList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_elp_svc' },
-            STRUCTURE_INSPECTIONS_LIST: { name: 'custrecord_twc_site_str_insp_list', type: 'select', alias: 'structureInspectionsList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_insp' },
-            FACILITIES_SERVICES_LIST: { name: 'custrecord_twc_list_fac_svc_list', type: 'select', alias: 'facilitiesServicesList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_fac_svc' },
-            SITE_LOCATION: { name: 'custrecord_twc_site_location', type: 'select', alias: 'siteLocation', display: 'normal', mandatory: false, recordType: '-103' },
             SITE_SRF_STATUS: { name: 'custrecord_twc_site_srf_status', type: 'select', alias: 'siteSRFStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_site_srf_status' },
             SITE_FIBRE_SERVICE_PROVIDERS: { name: 'custrecord_twc_site_fiber_svc_providers', type: 'multiselect', alias: 'siteFibreServiceProviders', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_svc_provide' },
             ORIGIN_SITE_ID: { name: 'custrecord_twc_site_origin_site_id', type: 'text', alias: 'originSiteID', display: 'normal', mandatory: false },
             FIRE_EXTINGUISHER: { name: 'custrecord_twc_site_fire_exting', type: 'select', alias: 'fireExtinguisher', display: 'normal', mandatory: false, recordType: 'customrecord_ossm_twc_fire_extinguisher' },
             FINANCIAL_STATUS: { name: 'custrecord_ossm_twcm_site_fin_status', type: 'text', alias: 'financialStatus', display: 'normal', mandatory: false },
-            GEOTYPE: { name: 'custrecord_twc_site_geotype', type: 'select', alias: 'geotype', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_geotype' },
             PROXIMITY_TO_BODY_OF_WATER_KM: { name: 'custrecord_twc_site_prox_body_wtr_km', type: 'float', alias: 'proximitytoBodyofWaterkm', display: 'normal', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
@@ -440,69 +420,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.ACCESS_WHAT3WORDS, value)
             }
             
-            get customerPresenceList() {
-                return this.get(_recordFields.CUSTOMER_PRESENCE_LIST);
-            } set customerPresenceList(value) {
-                this.set(_recordFields.CUSTOMER_PRESENCE_LIST, value)
-            }
-            get customerPresenceListName() { return this.getText(_recordFields.CUSTOMER_PRESENCE_LIST); }
-            
-            get landAgreementList() {
-                return this.get(_recordFields.LAND_AGREEMENT_LIST);
-            } set landAgreementList(value) {
-                this.set(_recordFields.LAND_AGREEMENT_LIST, value)
-            }
-            get landAgreementListName() { return this.getText(_recordFields.LAND_AGREEMENT_LIST); }
-            
-            get rOWAgreementList() {
-                return this.get(_recordFields.ROW_AGREEMENT_LIST);
-            } set rOWAgreementList(value) {
-                this.set(_recordFields.ROW_AGREEMENT_LIST, value)
-            }
-            get rOWAgreementListName() { return this.getText(_recordFields.ROW_AGREEMENT_LIST); }
-            
-            get powerSupplyList() {
-                return this.get(_recordFields.POWER_SUPPLY_LIST);
-            } set powerSupplyList(value) {
-                this.set(_recordFields.POWER_SUPPLY_LIST, value)
-            }
-            get powerSupplyListName() { return this.getText(_recordFields.POWER_SUPPLY_LIST); }
-            
-            get generatorList() {
-                return this.get(_recordFields.GENERATOR_LIST);
-            } set generatorList(value) {
-                this.set(_recordFields.GENERATOR_LIST, value)
-            }
-            get generatorListName() { return this.getText(_recordFields.GENERATOR_LIST); }
-            
-            get earth_and_LPInspectionsList() {
-                return this.get(_recordFields.EARTH__AND__LP_INSPECTIONS_LIST);
-            } set earth_and_LPInspectionsList(value) {
-                this.set(_recordFields.EARTH__AND__LP_INSPECTIONS_LIST, value)
-            }
-            get earth_and_LPInspectionsListName() { return this.getText(_recordFields.EARTH__AND__LP_INSPECTIONS_LIST); }
-            
-            get structureInspectionsList() {
-                return this.get(_recordFields.STRUCTURE_INSPECTIONS_LIST);
-            } set structureInspectionsList(value) {
-                this.set(_recordFields.STRUCTURE_INSPECTIONS_LIST, value)
-            }
-            get structureInspectionsListName() { return this.getText(_recordFields.STRUCTURE_INSPECTIONS_LIST); }
-            
-            get facilitiesServicesList() {
-                return this.get(_recordFields.FACILITIES_SERVICES_LIST);
-            } set facilitiesServicesList(value) {
-                this.set(_recordFields.FACILITIES_SERVICES_LIST, value)
-            }
-            get facilitiesServicesListName() { return this.getText(_recordFields.FACILITIES_SERVICES_LIST); }
-            
-            get siteLocation() {
-                return this.get(_recordFields.SITE_LOCATION);
-            } set siteLocation(value) {
-                this.set(_recordFields.SITE_LOCATION, value)
-            }
-            get siteLocationName() { return this.getText(_recordFields.SITE_LOCATION); }
-            
             get siteSRFStatus() {
                 return this.get(_recordFields.SITE_SRF_STATUS);
             } set siteSRFStatus(value) {
@@ -535,13 +452,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set financialStatus(value) {
                 this.set(_recordFields.FINANCIAL_STATUS, value)
             }
-            
-            get geotype() {
-                return this.get(_recordFields.GEOTYPE);
-            } set geotype(value) {
-                this.set(_recordFields.GEOTYPE, value)
-            }
-            get geotypeName() { return this.getText(_recordFields.GEOTYPE); }
             
             get proximitytoBodyofWaterkm() {
                 return this.get(_recordFields.PROXIMITY_TO_BODY_OF_WATER_KM);

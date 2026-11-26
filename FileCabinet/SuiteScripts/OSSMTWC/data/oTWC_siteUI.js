@@ -411,7 +411,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
                 id: `${twcInfra.Type}`, label: 'Fire Safety',
                 fields: {
                     [twcInfra.Fields.INFRASTRUCTURE_ID]: 'Infra Id',
-                    [twcInfra.Fields.NEXT_FIRE_SERVICE]: 'Next Service Date',
+                    [twcInfra.Fields.NEXT_FIRE_ALARM_SERVICE]: 'Next Service Date',
                 },
                 where: { [twcInfra.Fields.SITE]: dataSource.id },
                 FieldsInfo: twcInfra.FieldsInfo,

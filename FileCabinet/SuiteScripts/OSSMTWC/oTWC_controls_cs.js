@@ -55,6 +55,44 @@ define(['N/xml', '/.bundle/548734/O/core.js', '/.bundle/548734/O/core.sql.js', '
             testFunction() {
 
                 try {
+                    // @@NOTE: ONE-OFF FIX - equipment 'Associated Equip Action' (custrecord_twc_equip_assoc_eq_action) lost (field deleted by mistake and re-created empty)
+                    //         rebuilt as oTWC_srfWorkflowEngine.js: initEquipment sets it: the Licence / Swap Licence EA of the equipment
+                    //         more than one => the latest (highest id, initEquipment overwrites it on every licence), whatever its status
+                    //         only equipment with the field empty is touched; equipment with no licence EA (e.g. not created by an SRF) stays empty
+                    var assocEas = {};
+                    coreSQL.each(`
+                        select  eq.id, eq.name, ea.id as ea_id, ea.name as ea_name, BUILTIN.DF(ea.custrecord_twc_eq_action_type) as ea_type,
+                                BUILTIN.DF(ea.custrecord_twc_eq_action_sts) as ea_status, BUILTIN.DF(ea.custrecord_twc_eq_action_srf) as srf
+                        from    customrecord_twc_equip eq
+                        join    customrecord_twc_eq_action ea on ea.custrecord_twc_eq_action_eq = eq.id
+                        where   eq.custrecord_twc_equip_assoc_eq_action is null
+                        and     ea.custrecord_twc_eq_action_type in (${twcUtils.EqActionType.Licence}, ${twcUtils.EqActionType.SwapLicence})
+                        order by eq.id, ea.id desc
+                    `, r => {
+                        // @@NOTE: rows ordered by EA id desc, the first one per equipment is the latest
+                        if (assocEas[r.id]) { assocEas[r.id].candidates++; return; }
+                        assocEas[r.id] = { id: r.id, name: r.name, ea_id: r.ea_id, ea_name: r.ea_name, ea_type: r.ea_type, ea_status: r.ea_status, srf: r.srf, candidates: 1 };
+                    });
+                    var toFix = Object.values(assocEas);
+                    console.table(toFix);
+                    if (toFix.length == 0) { alert('Nothing to fix'); return; }
+                    if (!confirm(`Set 'Associated Equip Action' on ${toFix.length} equipment record(s)? (see console for the list, candidates > 1 => the latest EA is used)`)) { return; }
+
+                    var fixed = 0; var failed = 0;
+                    core.array.each(toFix, r => {
+                        try {
+                            recu.submit(twcEquipment.Type, r.id, twcEquipment.Fields.ASSOCIATED_EQUIP_ACTIONS, r.ea_id);
+                            fixed++;
+                            console.log(`FIXED: equipment ${r.id} (${r.name}) -> EA ${r.ea_id} (${r.ea_name} - ${r.ea_type} - ${r.ea_status} - ${r.srf})`);
+                        } catch (error) {
+                            failed++;
+                            console.log(`FAILED: equipment ${r.id} (${r.name})`, error);
+                        }
+                    });
+                    console.log(`DONE - fixed: ${fixed} - failed: ${failed}`);
+                    alert(`Done - fixed: ${fixed} - failed: ${failed} (see console)`);
+                    return;
+
                     // @@NOTE: ONE-OFF FIX - Issue 299: retired equipment licence statuses 'Prop to Licence - Licence Requested / Issued / Signed' and 'Prop to Unlicence - ...'
                     //         equipment (and SDS equipment lines) in one of those statuses go back to 'Prop to Licence' / 'Prop to Unlicence' (the equipment stays there until the licence is executed)
                     //         the retired values are found by name on customrecord_twc_equip_licence_status (some of them are not in twcUtils.EqLicenseStatus)

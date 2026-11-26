@@ -2,7 +2,7 @@
   <description></description>
   <isinactive>F</isinactive>
   <isordered>T</isordered>
-  <name>_twc_equip_wind_regime</name>
+  <name>OSSMTWC - Eq. Wind Regime</name>
   <customvalues>
     <customvalue scriptid="val_51339_9061443_sb1_621">
       <isinactive>F</isinactive>

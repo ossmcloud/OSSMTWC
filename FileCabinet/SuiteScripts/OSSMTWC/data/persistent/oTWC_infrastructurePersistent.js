@@ -12,6 +12,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             INFRASTRUCTURE_ID: 'custrecord_twc_infra_id',
             LEGACY_ID: 'custrecord_twc_infra_legacy_id',
             INFRASTRUCTURE_STATUS: 'custrecord_twc_infra_status',
+            INFRASTRUCTURE_UTS_STATUS: 'custrecord_twc_infra_uts_sts',
             INFRASTRUCTURE_SRF_STATUS: 'custrecord_twc_infra_srf_status',
             INFRASTRUCTURE_SAF_STATUS: 'custrecord_twc_infra_saf_status',
             INFRASTRUCTURE_SAF_AUTO_APPROVE: 'custrecord_twc_infra_saf_auto_apprv',
@@ -29,16 +30,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             STRUCTURE_TYPE: 'custrecord_twc_infra_str_type',
             TOWER_FAMILY: 'custrecord_twc_infra_tw_fam',
             STRUCTURE_HEIGHT_M: 'custrecord_twc_infra_str_ht_m',
-            FUTURE_PLANNED_STRUCTURE_HEIGHT_M: 'custrecord_twc_infra_fut_pln_str_ht_m',
             ROOFTOP_HEIGHT_M: 'custrecord_twc_infra_rooftop_ht_m',
             FALL_ARREST_STATUS: 'custrecord_twc_infra_fall_arr_sts',
             FALL_ARREST_TYPE: 'custrecord_twc_infra_fall_arr_type',
             ANTI_CLIMB: 'custrecord_twc_infra_anti_climb',
+            LAST_SITE_INSPECTION_DATE: 'custrecord_twc_infra_last_site_insp_date',
             NEXT_SITE_INSPECTION_DATE: 'custrecord_twc_infra_nxt_site_insp_date',
+            LAST_FALL_ARREST_CERTIFICATION_DATE: 'custrecord_twc_last_fall_cert_date',
             NEXT_FALL_ARREST_CERTIFICATION_DATE: 'custrecord_twc_infra_nxt_fall_cert_date',
             TOWER_LAST_PAINTED_DATE: 'custrecord_twc_infra_twr_lst_pnt_date',
             SCHEDULED_NEXT_PAINTING_DATE: 'custrecord_twc_infra_sch_nxt_pnt_date',
             PAINTING_WARRANTY_EXPIRY_DATE: 'custrecord_twc_infra_pnt_war_exp_date',
+            PAINT_COLOUR: 'custrecord_twc_infra_twr_lst_pnt_color',
+            PAINTING_YEAR: 'custrecord_twc_infra_twr_lst_pnt_year',
             STRUCTURE_DESIGN: 'custrecord_twc_infra_str_design',
             YEAR_OF_BUILD: 'custrecord_twc_infra_yr_of_build',
             GEOTYPE: 'custrecord_twc_infra_geotype',
@@ -59,41 +63,41 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             _PC_CAPACITY_USED: 'custrecord_twc_infra_pct_cap_used',
             _PC_CAPACITY_REMAINING: 'custrecord_twc_infra_pct_cap_rem',
             TLM: 'custrecord_twc_infra_tlm',
-            ACCOMMODATION_DIMENSIONS: 'custrecord_twc_infra_accom_dim',
-            RACK_SPACES_AVAILABLE: 'custrecord_twc_infra_rack_space_avail',
-            // AC_UNITS: 'custrecord_twc_infra_units',
-            // AC_MODEL: 'custrecord_twc_infra_model',
-            // AC_INSTALLED: 'custrecord_twc_infra_installed',
-            // AC_FEED_PHASE: 'custrecord_twc_infra_ac_feed_phase',
-            // LOADINGS: 'custrecord_twc_infra_ldg',
-            // NOISE_LEVEL: 'custrecord_twc_infra_noise_lvl',
-            NEXT_AIRCON_SERVICE: 'custrecord_twc_infra_nxt_aircon_svc',
+            ACCOMMODATION_TYPE: 'custrecord_twc_accom_type',
+            LAST_AC_SERVICE: 'custrecord_twc_last_ser_date',
+            NEXT_AC_SERVICE: 'custrecord_twc_infra_nxt_aircon_svc',
             INTRUDER_ALARM_PRESENT: 'custrecord_twc_infra_intru_alrm_pres',
             INTRUDER_CODE: 'custrecord_twc_infra_intru_code',
+            LAST_INTRUDER_ALARM_SERVICE: 'custrecord_twc_last_int_al_ser',
+            NEXT_INTRUDER_ALARM_SERVICE: 'custrecord_twc_infra_nxt_alrm_svc',
+            INTRUDER_ALARM_COMMENT: 'custrecord_twc_int_al_com',
             FIRE_ALARM_PRESENT: 'custrecord_twc_infra_fire_alrm_pres',
-            NEXT_FIRE_SERVICE: 'custrecord_twc_infra_nxt_fire_svc',
-            NEXT_ALARM_SERVICE: 'custrecord_twc_infra_nxt_alrm_svc',
+            LAST_FIRE_ALARM_SERVICE: 'custrecord_twc_last_fire_ser',
+            NEXT_FIRE_ALARM_SERVICE: 'custrecord_twc_infra_nxt_fire_svc',
+            FIRE_ALARM_COMMENT: 'custrecord_twc_fire_al_com',
+            FIRE_EXTINGUISHER: 'custrecord_twc_infra_fire_extin',
+            LAST_FIRE_EXTINGUISHER_SERVICE: 'custrecord_twc_last_fire_ser_date',
+            NEXT_FIRE_EXTINGUISHER_SERVICE: 'custrecord_twc_nxt_fire_ser_date',
             GENERATOR_MODEL: 'custrecord_twc_infra_gen_model',
             POWER_CAPACITY: 'custrecord_twc_infra_pwr_cap',
             TANK_CAPACITY_L: 'custrecord_twc_infra_tnk_cap_l',
             NEXT_GENERATOR_SERVICE: 'custrecord_twc_infra_nxt_gen_svc',
             NEXT_GENERATOR_SERVICE_TYPE: 'custrecord_twc_infra_nxt_gen_svc_type',
-            LOCKS_LIST: 'custrecord_twc_infra_locks_list',
-            PLANNING_RECORDS_LIST: 'custrecord_twc_infra_plan_rec_list',
-            AIRCRAFT_LIGHTS_LIST: 'custrecord_twc_infra_aircraft_light_list',
-            STRUCTURE_INSPECTIONS_LIST: 'custrecord_twc_infra_str_insp_list',
-            CAPACITY_REVIEW_LIST: 'custrecord_twc_infra_cap_rev_list',
-            FACILITIES_SERVICE_LIST: 'custrecord_twc_infra_fac_svc_list',
-            GENERATOR_SERVICE_LIST: 'custrecord_twc_infra_gen_svc_list',
-            FIBRE_INFRASTRUCTURE_STATUS: 'custrecord_twc_infra_fibre_infra_sts',
             FIBRE_DUCT_INSTALLED: 'custrecord_twc_infra_fibre_duct_instal',
             FIBRE_INFRASTRUCTURE_TYPE: 'custrecord_twc_infra_fibre_infra_type',
             FIBRE_SERVICE_PROVIDERS: 'custrecord_twc_infra_fibre_svc_providers',
-            // FIBRE_PRIORITY: 'custrecord_twc_infra_fibre_priority',
-            // FIBRE_PHASE: 'custrecord_twc_infra_fibre_phase',
-            // FIBRE_PARTNER_PRIORITY: 'custrecord_twc_infra_fibre_partner_prior',
             FIBRE_COMMENTS: 'custrecord_twc_infra_fibre_comm',
-            ACCOMMODATION_TYPE: 'custrecord_twc_accom_type',
+            BOTTOM_WIDTH_MM: 'custrecord_twc_infra_bot_width',
+            TOP_WIDTH_MM: 'custrecord_twc_infra_top_width',
+            TOWER_SECTIONS_BOTTOM_TOP: 'custrecord_twc_infra_sect_bot_top',
+            TOWER_SECTION_1: 'custrecord_twc_infra_sect_1',
+            TOWER_SECTION_2: 'custrecord_twc_infra_sect_2',
+            TOWER_SECTION_3: 'custrecord_twc_infra_sect_3',
+            TOWER_SECTION_4: 'custrecord_twc_infra_sect_4',
+            TOWER_SECTION_5: 'custrecord_twc_infra_sect_5',
+            TOWER_SECTION_6: 'custrecord_twc_infra_sect_6',
+            STRUCTURAL_COMMENTS: 'custrecord_twc_infra_struct_comments',
+            HEIGHT_ASL_M: 'custrecord_twc_infra_height_asl',
             CREATED: 'created',
             MODIFIED: 'lastmodified',
             OWNER: 'owner',
@@ -106,6 +110,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             INFRASTRUCTURE_ID: { name: 'custrecord_twc_infra_id', type: 'text', alias: 'infrastructureID', display: 'normal', mandatory: false },
             LEGACY_ID: { name: 'custrecord_twc_infra_legacy_id', type: 'text', alias: 'legacyID', display: 'normal', mandatory: false },
             INFRASTRUCTURE_STATUS: { name: 'custrecord_twc_infra_status', type: 'select', alias: 'infrastructureStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_sts' },
+            INFRASTRUCTURE_UTS_STATUS: { name: 'custrecord_twc_infra_uts_sts', type: 'select', alias: 'infrastructureUTSStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_uts_sts' },
             INFRASTRUCTURE_SRF_STATUS: { name: 'custrecord_twc_infra_srf_status', type: 'select', alias: 'infrastructureSRFStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_srf_sts' },
             INFRASTRUCTURE_SAF_STATUS: { name: 'custrecord_twc_infra_saf_status', type: 'select', alias: 'infrastructureSAFStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_saf_sts' },
             INFRASTRUCTURE_SAF_AUTO_APPROVE: { name: 'custrecord_twc_infra_saf_auto_apprv', type: 'checkbox', alias: 'infrastructureSAFAutoApprove', display: 'normal', mandatory: false },
@@ -123,16 +128,19 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             STRUCTURE_TYPE: { name: 'custrecord_twc_infra_str_type', type: 'select', alias: 'structureType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_str_type' },
             TOWER_FAMILY: { name: 'custrecord_twc_infra_tw_fam', type: 'select', alias: 'towerFamily', display: 'normal', mandatory: false, recordType: 'customrecord_twc_tower_family' },
             STRUCTURE_HEIGHT_M: { name: 'custrecord_twc_infra_str_ht_m', type: 'float', alias: 'structureHeightm', display: 'normal', mandatory: false },
-            FUTURE_PLANNED_STRUCTURE_HEIGHT_M: { name: 'custrecord_twc_infra_fut_pln_str_ht_m', type: 'float', alias: 'futurePlannedStructureHeightm', display: 'normal', mandatory: false },
             ROOFTOP_HEIGHT_M: { name: 'custrecord_twc_infra_rooftop_ht_m', type: 'float', alias: 'rooftopHeightm', display: 'normal', mandatory: false },
             FALL_ARREST_STATUS: { name: 'custrecord_twc_infra_fall_arr_sts', type: 'select', alias: 'fallArrestStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fall_arr_sts' },
             FALL_ARREST_TYPE: { name: 'custrecord_twc_infra_fall_arr_type', type: 'select', alias: 'fallArrestType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fall_arr_types' },
             ANTI_CLIMB: { name: 'custrecord_twc_infra_anti_climb', type: 'checkbox', alias: 'antiClimb', display: 'normal', mandatory: false },
+            LAST_SITE_INSPECTION_DATE: { name: 'custrecord_twc_infra_last_site_insp_date', type: 'date', alias: 'lastSiteInspectionDate', display: 'normal', mandatory: false },
             NEXT_SITE_INSPECTION_DATE: { name: 'custrecord_twc_infra_nxt_site_insp_date', type: 'date', alias: 'nextSiteInspectionDate', display: 'normal', mandatory: false },
+            LAST_FALL_ARREST_CERTIFICATION_DATE: { name: 'custrecord_twc_last_fall_cert_date', type: 'date', alias: 'lastFallArrestCertificationDate', display: 'normal', mandatory: false },
             NEXT_FALL_ARREST_CERTIFICATION_DATE: { name: 'custrecord_twc_infra_nxt_fall_cert_date', type: 'date', alias: 'nextFallArrestCertificationDate', display: 'normal', mandatory: false },
             TOWER_LAST_PAINTED_DATE: { name: 'custrecord_twc_infra_twr_lst_pnt_date', type: 'date', alias: 'towerLastPaintedDate', display: 'normal', mandatory: false },
             SCHEDULED_NEXT_PAINTING_DATE: { name: 'custrecord_twc_infra_sch_nxt_pnt_date', type: 'date', alias: 'scheduledNextPaintingDate', display: 'normal', mandatory: false },
             PAINTING_WARRANTY_EXPIRY_DATE: { name: 'custrecord_twc_infra_pnt_war_exp_date', type: 'date', alias: 'paintingWarrantyExpiryDate', display: 'normal', mandatory: false },
+            PAINT_COLOUR: { name: 'custrecord_twc_infra_twr_lst_pnt_color', type: 'text', alias: 'paintColour', display: 'normal', mandatory: false },
+            PAINTING_YEAR: { name: 'custrecord_twc_infra_twr_lst_pnt_year', type: 'integer', alias: 'paintingYear', display: 'normal', mandatory: false },
             STRUCTURE_DESIGN: { name: 'custrecord_twc_infra_str_design', type: 'textarea', alias: 'structureDesign', display: 'normal', mandatory: false },
             YEAR_OF_BUILD: { name: 'custrecord_twc_infra_yr_of_build', type: 'text', alias: 'yearofBuild', display: 'normal', mandatory: false },
             GEOTYPE: { name: 'custrecord_twc_infra_geotype', type: 'select', alias: 'geotype', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_geotype' },
@@ -150,44 +158,44 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             STRUCTURE_CAPACITY_ESA: { name: 'custrecord_twc_infra_str_cap_esa', type: 'float', alias: 'structureCapacityESA', display: 'normal', mandatory: false },
             STRUCTURE_CAPACITY_E_BM: { name: 'custrecord_twc_infra_str_cap_ebm', type: 'float', alias: 'structureCapacityE_BM', display: 'normal', mandatory: false },
             STRUCTURE_EQUIPMENT_LOADING_E_BM: { name: 'custrecord_twc_infra_str_equip_ldg_ebm', type: 'float', alias: 'structureEquipmentloadingE_BM', display: 'normal', mandatory: false },
-            _PC_CAPACITY_USED: { name: 'custrecord_twc_infra_pct_cap_used', type: 'float', alias: '_pcCapacityused', display: 'normal', mandatory: false },
-            _PC_CAPACITY_REMAINING: { name: 'custrecord_twc_infra_pct_cap_rem', type: 'float', alias: '_pcCapacityremaining', display: 'normal', mandatory: false },
+            _PC_CAPACITY_USED: { name: 'custrecord_twc_infra_pct_cap_used', type: 'percent', alias: '_pcCapacityused', display: 'normal', mandatory: false },
+            _PC_CAPACITY_REMAINING: { name: 'custrecord_twc_infra_pct_cap_rem', type: 'percent', alias: '_pcCapacityremaining', display: 'normal', mandatory: false },
             TLM: { name: 'custrecord_twc_infra_tlm', type: 'select', alias: 'tLM', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_tlm' },
-            ACCOMMODATION_DIMENSIONS: { name: 'custrecord_twc_infra_accom_dim', type: 'text', alias: 'accommodationDimensions', display: 'normal', mandatory: false },
-            RACK_SPACES_AVAILABLE: { name: 'custrecord_twc_infra_rack_space_avail', type: 'integer', alias: 'rackSpacesAvailable', display: 'normal', mandatory: false },
-            // AC_UNITS: { name: 'custrecord_twc_infra_units', type: 'integer', alias: 'aCUnits', display: 'normal', mandatory: false },
-            // AC_MODEL: { name: 'custrecord_twc_infra_model', type: 'text', alias: 'aCModel', display: 'normal', mandatory: false },
-            // AC_INSTALLED: { name: 'custrecord_twc_infra_installed', type: 'date', alias: 'aCInstalled', display: 'normal', mandatory: false },
-            // AC_FEED_PHASE: { name: 'custrecord_twc_infra_ac_feed_phase', type: 'select', alias: 'aCFeedPhase', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_ac_feed_phase' },
-            // LOADINGS: { name: 'custrecord_twc_infra_ldg', type: 'integer', alias: 'loadings', display: 'normal', mandatory: false },
-            // NOISE_LEVEL: { name: 'custrecord_twc_infra_noise_lvl', type: 'integer', alias: 'noiseLevel', display: 'normal', mandatory: false },
-            NEXT_AIRCON_SERVICE: { name: 'custrecord_twc_infra_nxt_aircon_svc', type: 'date', alias: 'nextAirconService', display: 'normal', mandatory: false },
-            INTRUDER_ALARM_PRESENT: { name: 'custrecord_twc_infra_intru_alrm_pres', type: 'checkbox', alias: 'intruderAlarmPresent', display: 'normal', mandatory: false },
+            ACCOMMODATION_TYPE: { name: 'custrecord_twc_accom_type', type: 'select', alias: 'accommodationType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_accom_type' },
+            LAST_AC_SERVICE: { name: 'custrecord_twc_last_ser_date', type: 'date', alias: 'lastACService', display: 'normal', mandatory: false },
+            NEXT_AC_SERVICE: { name: 'custrecord_twc_infra_nxt_aircon_svc', type: 'date', alias: 'nextACService', display: 'normal', mandatory: false },
+            INTRUDER_ALARM_PRESENT: { name: 'custrecord_twc_infra_intru_alrm_pres', type: 'select', alias: 'intruderAlarmPresent', display: 'normal', mandatory: false, recordType: 'customrecord1052' },
             INTRUDER_CODE: { name: 'custrecord_twc_infra_intru_code', type: 'text', alias: 'intruderCode', display: 'normal', mandatory: false },
-            FIRE_ALARM_PRESENT: { name: 'custrecord_twc_infra_fire_alrm_pres', type: 'checkbox', alias: 'fireAlarmPresent', display: 'normal', mandatory: false },
-            NEXT_FIRE_SERVICE: { name: 'custrecord_twc_infra_nxt_fire_svc', type: 'date', alias: 'nextFireService', display: 'normal', mandatory: false },
-            NEXT_ALARM_SERVICE: { name: 'custrecord_twc_infra_nxt_alrm_svc', type: 'date', alias: 'nextAlarmService', display: 'normal', mandatory: false },
+            LAST_INTRUDER_ALARM_SERVICE: { name: 'custrecord_twc_last_int_al_ser', type: 'date', alias: 'lastIntruderAlarmService', display: 'normal', mandatory: false },
+            NEXT_INTRUDER_ALARM_SERVICE: { name: 'custrecord_twc_infra_nxt_alrm_svc', type: 'date', alias: 'nextIntruderAlarmService', display: 'normal', mandatory: false },
+            INTRUDER_ALARM_COMMENT: { name: 'custrecord_twc_int_al_com', type: 'textarea', alias: 'intruderAlarmComment', display: 'normal', mandatory: false },
+            FIRE_ALARM_PRESENT: { name: 'custrecord_twc_infra_fire_alrm_pres', type: 'select', alias: 'fireAlarmPresent', display: 'normal', mandatory: false, recordType: 'customrecord1053' },
+            LAST_FIRE_ALARM_SERVICE: { name: 'custrecord_twc_last_fire_ser', type: 'date', alias: 'lastFireAlarmService', display: 'normal', mandatory: false },
+            NEXT_FIRE_ALARM_SERVICE: { name: 'custrecord_twc_infra_nxt_fire_svc', type: 'date', alias: 'nextFireAlarmService', display: 'normal', mandatory: false },
+            FIRE_ALARM_COMMENT: { name: 'custrecord_twc_fire_al_com', type: 'textarea', alias: 'fireAlarmComment', display: 'normal', mandatory: false },
+            FIRE_EXTINGUISHER: { name: 'custrecord_twc_infra_fire_extin', type: 'select', alias: 'fireExtinguisher', display: 'normal', mandatory: false, recordType: 'customrecord_ossm_twc_fire_extinguisher' },
+            LAST_FIRE_EXTINGUISHER_SERVICE: { name: 'custrecord_twc_last_fire_ser_date', type: 'date', alias: 'lastFireExtinguisherService', display: 'normal', mandatory: false },
+            NEXT_FIRE_EXTINGUISHER_SERVICE: { name: 'custrecord_twc_nxt_fire_ser_date', type: 'date', alias: 'nextFireExtinguisherService', display: 'normal', mandatory: false },
             GENERATOR_MODEL: { name: 'custrecord_twc_infra_gen_model', type: 'text', alias: 'generatorModel', display: 'normal', mandatory: false },
             POWER_CAPACITY: { name: 'custrecord_twc_infra_pwr_cap', type: 'integer', alias: 'powerCapacity', display: 'normal', mandatory: false },
             TANK_CAPACITY_L: { name: 'custrecord_twc_infra_tnk_cap_l', type: 'integer', alias: 'tankCapacityl', display: 'normal', mandatory: false },
             NEXT_GENERATOR_SERVICE: { name: 'custrecord_twc_infra_nxt_gen_svc', type: 'date', alias: 'nextGeneratorService', display: 'normal', mandatory: false },
             NEXT_GENERATOR_SERVICE_TYPE: { name: 'custrecord_twc_infra_nxt_gen_svc_type', type: 'select', alias: 'nextGeneratorServiceType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_nxt_gen_svc_type' },
-            LOCKS_LIST: { name: 'custrecord_twc_infra_locks_list', type: 'select', alias: 'locksList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_lock' },
-            PLANNING_RECORDS_LIST: { name: 'custrecord_twc_infra_plan_rec_list', type: 'select', alias: 'planningRecordsList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_plan' },
-            AIRCRAFT_LIGHTS_LIST: { name: 'custrecord_twc_infra_aircraft_light_list', type: 'select', alias: 'aircraftLightsList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_awl' },
-            STRUCTURE_INSPECTIONS_LIST: { name: 'custrecord_twc_infra_str_insp_list', type: 'select', alias: 'structureInspectionsList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_insp' },
-            CAPACITY_REVIEW_LIST: { name: 'custrecord_twc_infra_cap_rev_list', type: 'select', alias: 'capacityReviewList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_capacity_review' },
-            FACILITIES_SERVICE_LIST: { name: 'custrecord_twc_infra_fac_svc_list', type: 'select', alias: 'facilitiesServiceList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_fac_svc' },
-            GENERATOR_SERVICE_LIST: { name: 'custrecord_twc_infra_gen_svc_list', type: 'select', alias: 'generatorServiceList', display: 'normal', mandatory: false, recordType: 'customrecord_twc_gen_svc' },
-            FIBRE_INFRASTRUCTURE_STATUS: { name: 'custrecord_twc_infra_fibre_infra_sts', type: 'select', alias: 'fibreInfrastructureStatus', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_sts' },
             FIBRE_DUCT_INSTALLED: { name: 'custrecord_twc_infra_fibre_duct_instal', type: 'select', alias: 'fibreDuctInstalled', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_duct_inst' },
             FIBRE_INFRASTRUCTURE_TYPE: { name: 'custrecord_twc_infra_fibre_infra_type', type: 'select', alias: 'fibreInfrastructureType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_type' },
             FIBRE_SERVICE_PROVIDERS: { name: 'custrecord_twc_infra_fibre_svc_providers', type: 'multiselect', alias: 'fibreServiceProviders', display: 'normal', mandatory: false, recordType: 'customrecord_twc_infra_fibre_svc_provide' },
-            // FIBRE_PRIORITY: { name: 'custrecord_twc_infra_fibre_priority', type: 'text', alias: 'fibrePriority', display: 'normal', mandatory: false },
-            // FIBRE_PHASE: { name: 'custrecord_twc_infra_fibre_phase', type: 'text', alias: 'fibrePhase', display: 'normal', mandatory: false },
-            // FIBRE_PARTNER_PRIORITY: { name: 'custrecord_twc_infra_fibre_partner_prior', type: 'text', alias: 'fibrePartnerPriority', display: 'normal', mandatory: false },
             FIBRE_COMMENTS: { name: 'custrecord_twc_infra_fibre_comm', type: 'text', alias: 'fibreComments', display: 'normal', mandatory: false },
-            ACCOMMODATION_TYPE: { name: 'custrecord_twc_accom_type', type: 'select', alias: 'accommodationType', display: 'normal', mandatory: false, recordType: 'customrecord_twc_accom_type' },
+            BOTTOM_WIDTH_MM: { name: 'custrecord_twc_infra_bot_width', type: 'integer', alias: 'bottomWidthmm', display: 'normal', mandatory: false },
+            TOP_WIDTH_MM: { name: 'custrecord_twc_infra_top_width', type: 'integer', alias: 'topWidthmm', display: 'normal', mandatory: false },
+            TOWER_SECTIONS_BOTTOM_TOP: { name: 'custrecord_twc_infra_sect_bot_top', type: 'text', alias: 'towerSectionsBottom_Top', display: 'normal', mandatory: false },
+            TOWER_SECTION_1: { name: 'custrecord_twc_infra_sect_1', type: 'text', alias: 'towerSection1', display: 'normal', mandatory: false },
+            TOWER_SECTION_2: { name: 'custrecord_twc_infra_sect_2', type: 'text', alias: 'towerSection2', display: 'normal', mandatory: false },
+            TOWER_SECTION_3: { name: 'custrecord_twc_infra_sect_3', type: 'text', alias: 'towerSection3', display: 'normal', mandatory: false },
+            TOWER_SECTION_4: { name: 'custrecord_twc_infra_sect_4', type: 'text', alias: 'towerSection4', display: 'normal', mandatory: false },
+            TOWER_SECTION_5: { name: 'custrecord_twc_infra_sect_5', type: 'text', alias: 'towerSection5', display: 'normal', mandatory: false },
+            TOWER_SECTION_6: { name: 'custrecord_twc_infra_sect_6', type: 'text', alias: 'towerSection6', display: 'normal', mandatory: false },
+            STRUCTURAL_COMMENTS: { name: 'custrecord_twc_infra_struct_comments', type: 'textarea', alias: 'structuralComments', display: 'normal', mandatory: false },
+            HEIGHT_ASL_M: { name: 'custrecord_twc_infra_height_asl', type: 'integer', alias: 'heightASLm', display: 'locked', mandatory: false },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
             MODIFIED: { name: 'lastmodified', type: 'datetimetz', alias: 'last_modified', display: 'inline', }, 
             OWNER: { name: 'owner', type: 'select', alias: 'created_by', display: 'inline', recordType: 'employee'}, 
@@ -236,6 +244,13 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.INFRASTRUCTURE_STATUS, value)
             }
             get infrastructureStatusName() { return this.getText(_recordFields.INFRASTRUCTURE_STATUS); }
+            
+            get infrastructureUTSStatus() {
+                return this.get(_recordFields.INFRASTRUCTURE_UTS_STATUS);
+            } set infrastructureUTSStatus(value) {
+                this.set(_recordFields.INFRASTRUCTURE_UTS_STATUS, value)
+            }
+            get infrastructureUTSStatusName() { return this.getText(_recordFields.INFRASTRUCTURE_UTS_STATUS); }
             
             get infrastructureSRFStatus() {
                 return this.get(_recordFields.INFRASTRUCTURE_SRF_STATUS);
@@ -348,12 +363,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.STRUCTURE_HEIGHT_M, value)
             }
             
-            get futurePlannedStructureHeightm() {
-                return this.get(_recordFields.FUTURE_PLANNED_STRUCTURE_HEIGHT_M);
-            } set futurePlannedStructureHeightm(value) {
-                this.set(_recordFields.FUTURE_PLANNED_STRUCTURE_HEIGHT_M, value)
-            }
-            
             get rooftopHeightm() {
                 return this.get(_recordFields.ROOFTOP_HEIGHT_M);
             } set rooftopHeightm(value) {
@@ -380,10 +389,22 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.ANTI_CLIMB, value)
             }
             
+            get lastSiteInspectionDate() {
+                return this.get(_recordFields.LAST_SITE_INSPECTION_DATE);
+            } set lastSiteInspectionDate(value) {
+                this.set(_recordFields.LAST_SITE_INSPECTION_DATE, value)
+            }
+            
             get nextSiteInspectionDate() {
                 return this.get(_recordFields.NEXT_SITE_INSPECTION_DATE);
             } set nextSiteInspectionDate(value) {
                 this.set(_recordFields.NEXT_SITE_INSPECTION_DATE, value)
+            }
+            
+            get lastFallArrestCertificationDate() {
+                return this.get(_recordFields.LAST_FALL_ARREST_CERTIFICATION_DATE);
+            } set lastFallArrestCertificationDate(value) {
+                this.set(_recordFields.LAST_FALL_ARREST_CERTIFICATION_DATE, value)
             }
             
             get nextFallArrestCertificationDate() {
@@ -408,6 +429,18 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 return this.get(_recordFields.PAINTING_WARRANTY_EXPIRY_DATE);
             } set paintingWarrantyExpiryDate(value) {
                 this.set(_recordFields.PAINTING_WARRANTY_EXPIRY_DATE, value)
+            }
+            
+            get paintColour() {
+                return this.get(_recordFields.PAINT_COLOUR);
+            } set paintColour(value) {
+                this.set(_recordFields.PAINT_COLOUR, value)
+            }
+            
+            get paintingYear() {
+                return this.get(_recordFields.PAINTING_YEAR);
+            } set paintingYear(value) {
+                this.set(_recordFields.PAINTING_YEAR, value)
             }
             
             get structureDesign() {
@@ -535,59 +568,23 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get tLMName() { return this.getText(_recordFields.TLM); }
             
-            get accommodationDimensions() {
-                return this.get(_recordFields.ACCOMMODATION_DIMENSIONS);
-            } set accommodationDimensions(value) {
-                this.set(_recordFields.ACCOMMODATION_DIMENSIONS, value)
+            get accommodationType() {
+                return this.get(_recordFields.ACCOMMODATION_TYPE);
+            } set accommodationType(value) {
+                this.set(_recordFields.ACCOMMODATION_TYPE, value)
+            }
+            get accommodationTypeName() { return this.getText(_recordFields.ACCOMMODATION_TYPE); }
+            
+            get lastACService() {
+                return this.get(_recordFields.LAST_AC_SERVICE);
+            } set lastACService(value) {
+                this.set(_recordFields.LAST_AC_SERVICE, value)
             }
             
-            get rackSpacesAvailable() {
-                return this.get(_recordFields.RACK_SPACES_AVAILABLE);
-            } set rackSpacesAvailable(value) {
-                this.set(_recordFields.RACK_SPACES_AVAILABLE, value)
-            }
-            
-            // get aCUnits() {
-            //     return this.get(_recordFields.AC_UNITS);
-            // } set aCUnits(value) {
-            //     this.set(_recordFields.AC_UNITS, value)
-            // }
-            
-            // get aCModel() {
-            //     return this.get(_recordFields.AC_MODEL);
-            // } set aCModel(value) {
-            //     this.set(_recordFields.AC_MODEL, value)
-            // }
-            
-            // get aCInstalled() {
-            //     return this.get(_recordFields.AC_INSTALLED);
-            // } set aCInstalled(value) {
-            //     this.set(_recordFields.AC_INSTALLED, value)
-            // }
-            
-            // get aCFeedPhase() {
-            //     return this.get(_recordFields.AC_FEED_PHASE);
-            // } set aCFeedPhase(value) {
-            //     this.set(_recordFields.AC_FEED_PHASE, value)
-            // }
-            // get aCFeedPhaseName() { return this.getText(_recordFields.AC_FEED_PHASE); }
-            
-            // get loadings() {
-            //     return this.get(_recordFields.LOADINGS);
-            // } set loadings(value) {
-            //     this.set(_recordFields.LOADINGS, value)
-            // }
-            
-            // get noiseLevel() {
-            //     return this.get(_recordFields.NOISE_LEVEL);
-            // } set noiseLevel(value) {
-            //     this.set(_recordFields.NOISE_LEVEL, value)
-            // }
-            
-            get nextAirconService() {
-                return this.get(_recordFields.NEXT_AIRCON_SERVICE);
-            } set nextAirconService(value) {
-                this.set(_recordFields.NEXT_AIRCON_SERVICE, value)
+            get nextACService() {
+                return this.get(_recordFields.NEXT_AC_SERVICE);
+            } set nextACService(value) {
+                this.set(_recordFields.NEXT_AC_SERVICE, value)
             }
             
             get intruderAlarmPresent() {
@@ -595,6 +592,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             } set intruderAlarmPresent(value) {
                 this.set(_recordFields.INTRUDER_ALARM_PRESENT, value)
             }
+            get intruderAlarmPresentName() { return this.getText(_recordFields.INTRUDER_ALARM_PRESENT); }
             
             get intruderCode() {
                 return this.get(_recordFields.INTRUDER_CODE);
@@ -602,22 +600,66 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.INTRUDER_CODE, value)
             }
             
+            get lastIntruderAlarmService() {
+                return this.get(_recordFields.LAST_INTRUDER_ALARM_SERVICE);
+            } set lastIntruderAlarmService(value) {
+                this.set(_recordFields.LAST_INTRUDER_ALARM_SERVICE, value)
+            }
+            
+            get nextIntruderAlarmService() {
+                return this.get(_recordFields.NEXT_INTRUDER_ALARM_SERVICE);
+            } set nextIntruderAlarmService(value) {
+                this.set(_recordFields.NEXT_INTRUDER_ALARM_SERVICE, value)
+            }
+            
+            get intruderAlarmComment() {
+                return this.get(_recordFields.INTRUDER_ALARM_COMMENT);
+            } set intruderAlarmComment(value) {
+                this.set(_recordFields.INTRUDER_ALARM_COMMENT, value)
+            }
+            
             get fireAlarmPresent() {
                 return this.get(_recordFields.FIRE_ALARM_PRESENT);
             } set fireAlarmPresent(value) {
                 this.set(_recordFields.FIRE_ALARM_PRESENT, value)
             }
+            get fireAlarmPresentName() { return this.getText(_recordFields.FIRE_ALARM_PRESENT); }
             
-            get nextFireService() {
-                return this.get(_recordFields.NEXT_FIRE_SERVICE);
-            } set nextFireService(value) {
-                this.set(_recordFields.NEXT_FIRE_SERVICE, value)
+            get lastFireAlarmService() {
+                return this.get(_recordFields.LAST_FIRE_ALARM_SERVICE);
+            } set lastFireAlarmService(value) {
+                this.set(_recordFields.LAST_FIRE_ALARM_SERVICE, value)
             }
             
-            get nextAlarmService() {
-                return this.get(_recordFields.NEXT_ALARM_SERVICE);
-            } set nextAlarmService(value) {
-                this.set(_recordFields.NEXT_ALARM_SERVICE, value)
+            get nextFireAlarmService() {
+                return this.get(_recordFields.NEXT_FIRE_ALARM_SERVICE);
+            } set nextFireAlarmService(value) {
+                this.set(_recordFields.NEXT_FIRE_ALARM_SERVICE, value)
+            }
+            
+            get fireAlarmComment() {
+                return this.get(_recordFields.FIRE_ALARM_COMMENT);
+            } set fireAlarmComment(value) {
+                this.set(_recordFields.FIRE_ALARM_COMMENT, value)
+            }
+            
+            get fireExtinguisher() {
+                return this.get(_recordFields.FIRE_EXTINGUISHER);
+            } set fireExtinguisher(value) {
+                this.set(_recordFields.FIRE_EXTINGUISHER, value)
+            }
+            get fireExtinguisherName() { return this.getText(_recordFields.FIRE_EXTINGUISHER); }
+            
+            get lastFireExtinguisherService() {
+                return this.get(_recordFields.LAST_FIRE_EXTINGUISHER_SERVICE);
+            } set lastFireExtinguisherService(value) {
+                this.set(_recordFields.LAST_FIRE_EXTINGUISHER_SERVICE, value)
+            }
+            
+            get nextFireExtinguisherService() {
+                return this.get(_recordFields.NEXT_FIRE_EXTINGUISHER_SERVICE);
+            } set nextFireExtinguisherService(value) {
+                this.set(_recordFields.NEXT_FIRE_EXTINGUISHER_SERVICE, value)
             }
             
             get generatorModel() {
@@ -651,62 +693,6 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get nextGeneratorServiceTypeName() { return this.getText(_recordFields.NEXT_GENERATOR_SERVICE_TYPE); }
             
-            get locksList() {
-                return this.get(_recordFields.LOCKS_LIST);
-            } set locksList(value) {
-                this.set(_recordFields.LOCKS_LIST, value)
-            }
-            get locksListName() { return this.getText(_recordFields.LOCKS_LIST); }
-            
-            get planningRecordsList() {
-                return this.get(_recordFields.PLANNING_RECORDS_LIST);
-            } set planningRecordsList(value) {
-                this.set(_recordFields.PLANNING_RECORDS_LIST, value)
-            }
-            get planningRecordsListName() { return this.getText(_recordFields.PLANNING_RECORDS_LIST); }
-            
-            get aircraftLightsList() {
-                return this.get(_recordFields.AIRCRAFT_LIGHTS_LIST);
-            } set aircraftLightsList(value) {
-                this.set(_recordFields.AIRCRAFT_LIGHTS_LIST, value)
-            }
-            get aircraftLightsListName() { return this.getText(_recordFields.AIRCRAFT_LIGHTS_LIST); }
-            
-            get structureInspectionsList() {
-                return this.get(_recordFields.STRUCTURE_INSPECTIONS_LIST);
-            } set structureInspectionsList(value) {
-                this.set(_recordFields.STRUCTURE_INSPECTIONS_LIST, value)
-            }
-            get structureInspectionsListName() { return this.getText(_recordFields.STRUCTURE_INSPECTIONS_LIST); }
-            
-            get capacityReviewList() {
-                return this.get(_recordFields.CAPACITY_REVIEW_LIST);
-            } set capacityReviewList(value) {
-                this.set(_recordFields.CAPACITY_REVIEW_LIST, value)
-            }
-            get capacityReviewListName() { return this.getText(_recordFields.CAPACITY_REVIEW_LIST); }
-            
-            get facilitiesServiceList() {
-                return this.get(_recordFields.FACILITIES_SERVICE_LIST);
-            } set facilitiesServiceList(value) {
-                this.set(_recordFields.FACILITIES_SERVICE_LIST, value)
-            }
-            get facilitiesServiceListName() { return this.getText(_recordFields.FACILITIES_SERVICE_LIST); }
-            
-            get generatorServiceList() {
-                return this.get(_recordFields.GENERATOR_SERVICE_LIST);
-            } set generatorServiceList(value) {
-                this.set(_recordFields.GENERATOR_SERVICE_LIST, value)
-            }
-            get generatorServiceListName() { return this.getText(_recordFields.GENERATOR_SERVICE_LIST); }
-            
-            get fibreInfrastructureStatus() {
-                return this.get(_recordFields.FIBRE_INFRASTRUCTURE_STATUS);
-            } set fibreInfrastructureStatus(value) {
-                this.set(_recordFields.FIBRE_INFRASTRUCTURE_STATUS, value)
-            }
-            get fibreInfrastructureStatusName() { return this.getText(_recordFields.FIBRE_INFRASTRUCTURE_STATUS); }
-            
             get fibreDuctInstalled() {
                 return this.get(_recordFields.FIBRE_DUCT_INSTALLED);
             } set fibreDuctInstalled(value) {
@@ -728,36 +714,77 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             }
             get fibreServiceProvidersName() { return this.getText(_recordFields.FIBRE_SERVICE_PROVIDERS); }
             
-            // get fibrePriority() {
-            //     return this.get(_recordFields.FIBRE_PRIORITY);
-            // } set fibrePriority(value) {
-            //     this.set(_recordFields.FIBRE_PRIORITY, value)
-            // }
-            
-            // get fibrePhase() {
-            //     return this.get(_recordFields.FIBRE_PHASE);
-            // } set fibrePhase(value) {
-            //     this.set(_recordFields.FIBRE_PHASE, value)
-            // }
-            
-            // get fibrePartnerPriority() {
-            //     return this.get(_recordFields.FIBRE_PARTNER_PRIORITY);
-            // } set fibrePartnerPriority(value) {
-            //     this.set(_recordFields.FIBRE_PARTNER_PRIORITY, value)
-            // }
-            
             get fibreComments() {
                 return this.get(_recordFields.FIBRE_COMMENTS);
             } set fibreComments(value) {
                 this.set(_recordFields.FIBRE_COMMENTS, value)
             }
             
-            get accommodationType() {
-                return this.get(_recordFields.ACCOMMODATION_TYPE);
-            } set accommodationType(value) {
-                this.set(_recordFields.ACCOMMODATION_TYPE, value)
+            get bottomWidthmm() {
+                return this.get(_recordFields.BOTTOM_WIDTH_MM);
+            } set bottomWidthmm(value) {
+                this.set(_recordFields.BOTTOM_WIDTH_MM, value)
             }
-            get accommodationTypeName() { return this.getText(_recordFields.ACCOMMODATION_TYPE); }
+            
+            get topWidthmm() {
+                return this.get(_recordFields.TOP_WIDTH_MM);
+            } set topWidthmm(value) {
+                this.set(_recordFields.TOP_WIDTH_MM, value)
+            }
+            
+            get towerSectionsBottom_Top() {
+                return this.get(_recordFields.TOWER_SECTIONS_BOTTOM_TOP);
+            } set towerSectionsBottom_Top(value) {
+                this.set(_recordFields.TOWER_SECTIONS_BOTTOM_TOP, value)
+            }
+            
+            get towerSection1() {
+                return this.get(_recordFields.TOWER_SECTION_1);
+            } set towerSection1(value) {
+                this.set(_recordFields.TOWER_SECTION_1, value)
+            }
+            
+            get towerSection2() {
+                return this.get(_recordFields.TOWER_SECTION_2);
+            } set towerSection2(value) {
+                this.set(_recordFields.TOWER_SECTION_2, value)
+            }
+            
+            get towerSection3() {
+                return this.get(_recordFields.TOWER_SECTION_3);
+            } set towerSection3(value) {
+                this.set(_recordFields.TOWER_SECTION_3, value)
+            }
+            
+            get towerSection4() {
+                return this.get(_recordFields.TOWER_SECTION_4);
+            } set towerSection4(value) {
+                this.set(_recordFields.TOWER_SECTION_4, value)
+            }
+            
+            get towerSection5() {
+                return this.get(_recordFields.TOWER_SECTION_5);
+            } set towerSection5(value) {
+                this.set(_recordFields.TOWER_SECTION_5, value)
+            }
+            
+            get towerSection6() {
+                return this.get(_recordFields.TOWER_SECTION_6);
+            } set towerSection6(value) {
+                this.set(_recordFields.TOWER_SECTION_6, value)
+            }
+            
+            get structuralComments() {
+                return this.get(_recordFields.STRUCTURAL_COMMENTS);
+            } set structuralComments(value) {
+                this.set(_recordFields.STRUCTURAL_COMMENTS, value)
+            }
+            
+            get heightASLm() {
+                return this.get(_recordFields.HEIGHT_ASL_M);
+            } set heightASLm(value) {
+                this.set(_recordFields.HEIGHT_ASL_M, value)
+            }
             
             get created() {
                 return this.get(_recordFields.CREATED);
@@ -791,8 +818,8 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             FieldsInfo: _recordFieldInfo,
             PersistentRecord: OSSMTWC_Infrastructure,
 
-            get: function (id) {
-                var rec = new OSSMTWC_Infrastructure(id);
+            get: function (id, staticLoad) {
+                var rec = new OSSMTWC_Infrastructure(id, staticLoad);
                 rec.load();
                 return rec;
             }, 
