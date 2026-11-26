@@ -7,7 +7,7 @@ Guidance for Claude Code when working in this repository. For the full backgroun
 OSSMTWC is a **NetSuite SuiteScript 2.1 customization** for TWC (tower/site infrastructure, equipment, contractor accreditation, and the SRF / SAF / SDS paper-form-replacement workflows). It is built on OSSM's in-house framework, **Bundle 548734**, which is installed in the NetSuite account and is **not in this repo**.
 
 - All code lives under `FileCabinet/SuiteScripts/OSSMTWC/`. Everything else at the root is IDE scaffolding or docs.
-- Custom records, script deployments, roles, saved searches and NetSuite workflows live **only in the NetSuite account**. Only `Objects/customscript_oTWC_controls_sl.xml` is tracked — ignore `Objects/`.
+- Custom records, script deployments, roles, saved searches and NetSuite workflows live **only in the NetSuite account**. `Objects/` holds only the script objects (`customscript_*.xml`); all other objects are in `Objects-NoDeploy/` (never deploy them — see Deployment rules). Ignore both folders otherwise.
 - **Do not read or rely on anything in `.docs/`** (specs, schemas, TODO files, HOWTO, data). It is out of date and messy — the code is the source of truth. `ONBOARDING.md` points to `.docs/` in places; ignore those pointers. Only open a `.docs/` file if the user explicitly asks you to.
 
 ## Domain: main entities
@@ -67,6 +67,13 @@ The same records are touched from two places — changing one does **not** chang
 - So you **cannot run or verify** changes locally. Check syntax carefully, say plainly that the change is untested in NetSuite, and tell the user which files need pushing.
 - Never read, print, create or commit `.vscode/settings*.json` — they hold NetSuite TBA credentials. Ignore `.temp/` (local diff/preview output, gitignored).
 
+## Deployment rules (MANDATORY)
+
+- **NEVER deploy anything to LIVE (TWC_LIVE)** — no files, no scripts, no objects, no dry runs. The user deploys to LIVE themselves.
+- **NEVER deploy NetSuite objects to the sandbox (TWC_SB) either.** On TWC_SB only upload files to the File Cabinet or deploy script objects (`Objects/customscript_*.xml`).
+- All other objects (custom records, fields, lists, forms, roles, …) have been moved to `Objects-NoDeploy/` so they are outside the deployable project. Never move them back into `Objects/` and never deploy them.
+- Deploy only when the user explicitly asks in that turn.
+
 ## Code conventions
 
 - Every script starts with a JSDoc header: `@NApiVersion 2.1` plus `@NScriptType` for entry-point scripts (`@NModuleScope public` for library modules). AMD `define([...], (a, b) => { ... })` modules — no ES `import`.
@@ -123,13 +130,13 @@ Each page is five pieces — copy `ui/oTWC_siteInfo_*` when adding one:
 
 `data/oTWC_config.js` (top of the module) has `const SB = true;`. It selects the sandbox or the LIVE internal id wherever the two accounts differ (`twcConfig.SB ? <sb id> : <live id>`, re-exported as `twcUtils.SB`).
 
-- **When deploying / pushing files to LIVE (TWC_LIVE), `SB` MUST be changed to `const SB = false;`.** In the sandbox (TWC_SB) it must be `true`. Before any push, deploy or deploy dry run, check its value against the target account and remind the user if it is wrong.
+- **When the user deploys / pushes files to LIVE (TWC_LIVE), `SB` MUST be changed to `const SB = false;`** (you never deploy to LIVE yourself — see Deployment rules). In the sandbox (TWC_SB) it must be `true`. Before any push, deploy or deploy dry run, check its value against the target account and remind the user if it is wrong.
 - It is a plain constant on purpose: detecting the account with `N/runtime` / `core.env.sb()` while the module is being defined throws `SUITESCRIPT_API_UNAVAILABLE_IN_DEFINE`. Don't replace it with a runtime check at define time.
 - A new id that differs between the accounts: `twcConfig.SB ? <sb id> : <live id>`, tagged `// @@HARDCODED @@GO-LIVE`.
 
 ## Ignore
 
-`.docs/` (outdated — see above), `data_nx/`, `FileCabinet/Templates/`, `Objects/`, `AccountConfiguration/`, `FileUtils/`, `.temp/`.
+`.docs/` (outdated — see above), `data_nx/`, `FileCabinet/Templates/`, `Objects/`, `Objects-NoDeploy/`, `AccountConfiguration/`, `FileUtils/`, `.temp/`.
 
 Ignore the following files as they only contain test/debug code:
 - FileCabinet\SuiteScripts\OSSMTWC\oTWC_controls_sl.js
