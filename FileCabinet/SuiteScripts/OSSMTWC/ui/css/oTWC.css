@@ -2740,10 +2740,39 @@ table.twc-srf-wkf-table input {
 }
 
 
+div.twc-dashboard-section {
+    margin-bottom: 21px;
+}
+
+div.twc-dashboard-section-title {
+    margin: 0px 7px 7px 7px;
+    padding: 7px 0px;
+    font-size: 1.2em;
+    font-weight: bold;
+    border-bottom: 2px solid var(--accent-bkgd-color);
+}
+
+a.twc-dashboard-back {
+    display: inline-block;
+    margin: 0px 7px 7px 7px;
+    cursor: pointer;
+}
+
+/* @@NOTE: KPI details: the back icon is moved to the left of the NetSuite page title (oTWC_dashBoards.js: initKpiDetails) */
+a.twc-dashboard-back.twc-dashboard-back-title {
+    margin: 0px 10px 0px 0px;
+    vertical-align: middle;
+}
+
+div.uir-page-title-firstline:has(> a.twc-dashboard-back-title) {
+    display: flex;
+    align-items: center;
+}
+
 div.twc-dashboards {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 div.twc-dashboard {

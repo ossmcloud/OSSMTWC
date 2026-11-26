@@ -452,6 +452,45 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             return ` and (${conditions.join(' or ')}) `;
         }
 
+        // @@IMPORTANT: Trouble Ticket visibility (Trouble Ticket locator list, Dashboards)
+        //                  employees:          all
+        //                  contractor:         tickets for a customer on their agent passes that is also on their company ACL
+        //                  customer company:   tickets of their own company
+        //                  contractor only:    in addition, only the tickets raised (author) by a profile of their own company
+        //              returns a sql fragment starting with ' and ' ('' for employees), alias is the ticket table alias (optional)
+        //              @@NOTE: field ids are literals (custrecord_twc_trbl_tkt_customer / custrecord_twc_trbl_tkt_author), oTWC_troubleTickets.js is not loaded here
+        function getTktAccessFilter(userInfo, alias) {
+            if (userInfo.isEmployee) { return ''; }
+            var a = alias ? `${alias}.` : '';
+            var allowedCustomers = [];
+
+            if (userInfo.companyProfile?.isVendor || userInfo.companyProfile?.isBoth) {
+                // @@NOTE the agent passes specifies what customers can be seen
+                var agentPasses = coreSQL.first(`select custrecord_twc_prof_agent_passes as agent_passes from customrecord_twc_prof where id = ${userInfo.profile}`)?.agent_passes || '0';
+                agentPasses = agentPasses.split(',').map(i => { return parseInt(i.trim()); })
+
+                // @@NOTE: this filter will ensure that even if a customer was not removed from the agent passes field for a profile but was removed from the ACL list the profile will still not see it
+                var aclList = coreSQL.run(`select custrecord_twc_acl_cust as cust from customrecord_twc_acl where custrecord_twc_acl_cont = ${userInfo.companyProfile.id}`)
+                allowedCustomers = agentPasses.filter(ap => { return aclList.find(acl => { return acl.cust == ap; }) })
+            }
+
+            if (userInfo.companyProfile?.isCustomer || userInfo.companyProfile?.isBoth) {
+                // in case we have a customer or a vendor that is also a customer we include the customer into the customer list
+                allowedCustomers.push(userInfo.companyProfile.id || 0)
+            }
+
+            // @@NOTE: this is to ensure nothing is shown if no customers on the agent passes field
+            if (allowedCustomers.length == 0) { allowedCustomers.push('0'); }
+
+            var filter = ` and ${a}custrecord_twc_trbl_tkt_customer in (${allowedCustomers.join(',')}) `;
+
+            if (userInfo.companyProfile?.isVendor && !userInfo.companyProfile?.isCustomer) {
+                // @@NOTE: in addition vendors can only see what was created by their organization
+                filter += ` and ${a}custrecord_twc_trbl_tkt_author in (select id from customrecord_twc_prof where custrecord_twc_prof_company = ${userInfo.companyProfile.id}) `;
+            }
+            return filter;
+        }
+
         function isUserAllowedSaf(userInfo, safId) {
             if (userInfo.isEmployee) { return true; }
             return !!coreSQL.first(`select s.id from customrecord_twc_saf s where s.id = ${parseInt(safId) || 0} ${getSafAccessFilter(userInfo, 's')}`);
@@ -537,7 +576,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             CUSTOMER_FLAG: CUSTOMER_FLAG,
             PERMISSION_LEVEL: permissions.LEVEL,
             PERMISSION_FEATURE: permissions.FEATURE,
-            PORTLET_STYLES_PROPS: { Height: '600px' },
+            PORTLET_STYLES_PROPS: 'height: 850px;',
             TOWERCOM_ENTITY: TOWERCOM_ENTITY,
             TKT_CASE_PROFILE: TKT_CASE_PROFILE,
             TKT_CASE_STATUS: TKT_CASE_STATUS,
@@ -558,6 +597,7 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundl
             getSafAccessFilter: getSafAccessFilter,
             isUserAllowedSaf: isUserAllowedSaf,
             isSafRaisedByUserCompany: isSafRaisedByUserCompany,
+            getTktAccessFilter: getTktAccessFilter,
             canSeeSds: canSeeSds,
             cfg: getConfig,
             getNsTable: getNsTable,

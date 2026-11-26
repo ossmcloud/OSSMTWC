@@ -106,7 +106,7 @@ define(['N/email', 'N/url', 'SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundle
 
 
                     if (this.#data?.portlet) {
-                        jQuery('.twc_page').css('height', twcConfig.PORTLET_STYLES_PROPS.Height);
+                        //jQuery('.twc_page').css('height', twcConfig.PORTLET_STYLES_PROPS);
                         jQuery('.twc-container-outer').css('height', '99vh');
                         jQuery('.twc_action_menu ').css('top', '5px');
                         jQuery('.twc_action_menu ').css('right', '5px');
