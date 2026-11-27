@@ -732,7 +732,7 @@
       <isformula>F</isformula>
       <ismandatory>F</ismandatory>
       <isparent>F</isparent>
-      <label>Corrective Action Taken incl Root Cause</label>
+      <label>Resolution description</label>
       <linktext></linktext>
       <maxlength></maxlength>
       <maxvalue></maxvalue>

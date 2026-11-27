@@ -23,7 +23,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WORKS_REQUIRED: 'custrecord_twc_trbl_tkt_works_req',
             RESOLUTION_COMPLETION_DATE: 'custrecord_twc_trbl_tkt_corrective_act',
             PLANNED_RESOLUTION_DATE: 'custrecord_twc_trbl_tkt_sch_compltn_date',
-            CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE: 'custrecord_twc_trbl_tkt_cor_act_tkn_root',
+            RESOLUTION_DESCRIPTION: 'custrecord_twc_trbl_tkt_cor_act_tkn_root',
             CASE_REFERENCE: 'custrecord_twc_trbl_tkt_case',
             ON_BEHALF: 'custrecord_twc_trbl_tkt_on_behalf_cust',
             CREATED: 'created',
@@ -49,7 +49,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
             WORKS_REQUIRED: { name: 'custrecord_twc_trbl_tkt_works_req', type: 'clobtext', alias: 'worksRequired', display: 'normal', mandatory: false },
             RESOLUTION_COMPLETION_DATE: { name: 'custrecord_twc_trbl_tkt_corrective_act', type: 'date', alias: 'resolutionCompletionDate', display: 'normal', mandatory: false },
             PLANNED_RESOLUTION_DATE: { name: 'custrecord_twc_trbl_tkt_sch_compltn_date', type: 'date', alias: 'plannedResolutionDate', display: 'normal', mandatory: false },
-            CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE: { name: 'custrecord_twc_trbl_tkt_cor_act_tkn_root', type: 'clobtext', alias: 'correctiveActionTakeninclRootCause', display: 'normal', mandatory: false },
+            RESOLUTION_DESCRIPTION: { name: 'custrecord_twc_trbl_tkt_cor_act_tkn_root', type: 'clobtext', alias: 'resolutiondescription', display: 'normal', mandatory: false },
             CASE_REFERENCE: { name: 'custrecord_twc_trbl_tkt_case', type: 'select', alias: 'caseReference', display: 'normal', mandatory: false, recordType: '-23' },
             ON_BEHALF: { name: 'custrecord_twc_trbl_tkt_on_behalf_cust', type: 'select', alias: 'onBehalf', display: 'normal', mandatory: false, recordType: 'customrecord_twc_company' },
             CREATED: { name: 'created', type: 'datetimetz', alias: 'created', display: 'inline', }, 
@@ -173,10 +173,10 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                 this.set(_recordFields.PLANNED_RESOLUTION_DATE, value)
             }
             
-            get correctiveActionTakeninclRootCause() {
-                return this.get(_recordFields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE);
-            } set correctiveActionTakeninclRootCause(value) {
-                this.set(_recordFields.CORRECTIVE_ACTION_TAKEN_INCL_ROOT_CAUSE, value)
+             get resolutiondescription() {
+                return this.get(_recordFields.RESOLUTION_DESCRIPTION);
+            } set resolutiondescription(value) {
+                this.set(_recordFields.RESOLUTION_DESCRIPTION, value)
             }
             
             get caseReference() {

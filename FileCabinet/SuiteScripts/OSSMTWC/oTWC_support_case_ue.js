@@ -56,6 +56,11 @@ define(['N/runtime', 'SuiteBundles/Bundle 548734/O/core.js', 'O/form', 'SuiteBun
                 let resCompleteDate = format.parse({ value: resComplete, type: format.Type.DATETIMETZ });
                 values[twcTroubleTicket.Fields.RESOLUTION_COMPLETION_DATE] = resCompleteDate
             }
+
+            let resWorkDesc = newRec.getValue('custevent_twc_res_work_desc')
+            if(resWorkDesc){
+                values[twcTroubleTicket.Fields.RESOLUTION_DESCRIPTION] = resWorkDesc
+            }
         }
 
         function updateStatus(values, oldRec, newRec) {
