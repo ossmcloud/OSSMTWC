@@ -1,5 +1,16 @@
 
 
+SUITELETS NEEDTO ADDED THE EXTERNAL ROLES FOR NEXUS
+
+=> create customer center role
+    => update all scripts 
+    => create TWC role
+
+
+
+if permission level 1 buttons such as submit and cancel should not nbe there
+
+
 GO-LIVE:
 --------
 

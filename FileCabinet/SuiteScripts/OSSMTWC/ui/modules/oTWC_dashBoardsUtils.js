@@ -119,7 +119,7 @@ define(['SuiteBundles/Bundle 548734/O/core.js', 'SuiteBundles/Bundle 548734/O/co
                     },
                     {
                         // @@NOTE: customer side of the feedback loop: Towercom issued feedback, the customer must review it and re-submit the SRF
-                        id: 18, title: 'Feedback to Review', entity: 'srf', roles: [ROLE.AGENT], where: () => { return `s.custrecord_twc_srf_status = ${twcUtils.SrfStatus.FeedbackIssued}`; },
+                        id: 18, title: 'Feedback to Review', entity: 'srf', roles: [ROLE.AGENT, ROLE.BASIC], where: () => { return `s.custrecord_twc_srf_status = ${twcUtils.SrfStatus.FeedbackIssued}`; },
                         hideFields: ['created_date'],
                         fields: [
                             { id: 'tl_response_date', title: 'Towercom Response Date', sql: getSrfStepDateSql(`ws.id = ${FEEDBACK_STAGE}`, 'custrecord_twc_srf_wkfi_actual') },
